@@ -18,6 +18,7 @@ REFLECTION_RE = re.compile(
 )
 FINAL_ANSWER_RE = re.compile(r"final\s+answer\s*:\s*(?P<answer>.+)", re.IGNORECASE)
 MASK_CANDIDATE_STRINGS = (
+    "[REASONING_MASK]",
     "[MASK]",
     "<mask>",
     "<MASK>",
@@ -155,6 +156,8 @@ def mask_reflection_content_ids(
         )
         token_count = max(0, content_end_token - content_start_token)
         if token_count > 0:
+            # Structure-preserving intervention: replace the span payload with
+            # the same number of placeholder token IDs; never delete tokens.
             masked_ids[content_start_token:content_end_token] = [mask_token_id] * token_count
         masked_spans.append(
             {
@@ -322,5 +325,10 @@ def replay_record(
             "max_input_tokens": config.max_input_tokens,
             "model_name_or_path": config.model_name_or_path,
             "mask_token_id": mask_token_id,
+            "mask_token_text": tokenizer.decode(
+                [mask_token_id],
+                skip_special_tokens=False,
+                clean_up_tokenization_spaces=False,
+            ),
         },
     }
