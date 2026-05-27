@@ -1,0 +1,15 @@
+You are generating a reasoning trace for a math word problem.
+
+Question:
+{question}
+
+Instructions:
+- Reason step by step.
+- Explicitly mark any self-check, self-critique, error diagnosis, or plan revision inside reflection tags.
+- Use this format for reflective spans:
+  <reflection type="self-evaluation">
+  Your reflective check here.
+  </reflection>
+- If you notice a mistake, correct it after the reflection span.
+- End with exactly one final answer line:
+  Final Answer: <answer>

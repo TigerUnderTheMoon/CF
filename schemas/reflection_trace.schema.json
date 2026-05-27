@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ReflectionTrace",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "task_id",
+    "question",
+    "reasoning_trace",
+    "reflection_spans",
+    "final_answer",
+    "correctness",
+    "model_name",
+    "generation_config"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "question": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reasoning_trace": {
+      "type": "string"
+    },
+    "reflection_spans": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "start_token",
+          "end_token",
+          "reflection_type",
+          "content"
+        ],
+        "properties": {
+          "start_token": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "end_token": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "reflection_type": {
+            "type": "string",
+            "minLength": 1
+          },
+          "content": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "final_answer": {
+      "type": "string"
+    },
+    "correctness": {
+      "type": "boolean"
+    },
+    "model_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "generation_config": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}
