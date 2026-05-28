@@ -1,0 +1,84 @@
+{
+  "alignment_metrics": {
+    "alignment_accuracy": 0.07875,
+    "misattribution_rate": 0.5433333333333333,
+    "partial_alignment_rate": 0.3779166666666667
+  },
+  "category_conditioned_utility": {
+    "BACKTRACKING": {
+      "harmful_ratio": 0.3274647887323944,
+      "helpful_ratio": 0.3345070422535211,
+      "neutral_ratio": 0.09859154929577464,
+      "sample_count": 284.0,
+      "spurious_ratio": 0.23943661971830985
+    },
+    "CONSTRAINT_TRACKING": {
+      "harmful_ratio": 0.40894568690095845,
+      "helpful_ratio": 0.10862619808306709,
+      "neutral_ratio": 0.3769968051118211,
+      "sample_count": 313.0,
+      "spurious_ratio": 0.10543130990415335
+    },
+    "DECOMPOSITION": {
+      "harmful_ratio": 0.34397163120567376,
+      "helpful_ratio": 0.21631205673758866,
+      "neutral_ratio": 0.24113475177304963,
+      "sample_count": 282.0,
+      "spurious_ratio": 0.19858156028368795
+    },
+    "ERROR_CORRECTION": {
+      "harmful_ratio": 0.4131944444444444,
+      "helpful_ratio": 0.15625,
+      "neutral_ratio": 0.0,
+      "sample_count": 288.0,
+      "spurious_ratio": 0.4305555555555556
+    },
+    "PLANNING": {
+      "harmful_ratio": 0.3801916932907348,
+      "helpful_ratio": 0.1597444089456869,
+      "neutral_ratio": 0.2108626198083067,
+      "sample_count": 313.0,
+      "spurious_ratio": 0.24920127795527156
+    },
+    "RETRIEVAL": {
+      "harmful_ratio": 0.20333333333333334,
+      "helpful_ratio": 0.4066666666666667,
+      "neutral_ratio": 0.0,
+      "sample_count": 300.0,
+      "spurious_ratio": 0.39
+    },
+    "UNCERTAINTY_MONITORING": {
+      "harmful_ratio": 0.3053691275167785,
+      "helpful_ratio": 0.3288590604026846,
+      "neutral_ratio": 0.0,
+      "sample_count": 298.0,
+      "spurious_ratio": 0.36577181208053694
+    },
+    "VERIFICATION": {
+      "harmful_ratio": 0.3198757763975155,
+      "helpful_ratio": 0.2639751552795031,
+      "neutral_ratio": 0.0,
+      "sample_count": 322.0,
+      "spurious_ratio": 0.4161490683229814
+    }
+  },
+  "degradation_metrics": {
+    "false_correction_rate": 0.2995833333333333,
+    "max_degradation": 0.646240625180289,
+    "mean_degradation_score": 0.1748635769123851,
+    "recovery_rate": 0.45125
+  },
+  "harmful_by_intervention": {
+    "contradict": 0.9645833333333333,
+    "delete": 0.29583333333333334,
+    "replace": 0.13125,
+    "shuffle": 0.0,
+    "truncate": 0.29791666666666666
+  },
+  "utility_distribution": {
+    "harmful_ratio": 0.33791666666666664,
+    "helpful_ratio": 0.24583333333333332,
+    "neutral_ratio": 0.11666666666666667,
+    "spurious_ratio": 0.2995833333333333
+  }
+}

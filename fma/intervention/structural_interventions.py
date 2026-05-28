@@ -127,6 +127,9 @@ class StructuralInterventionEngine:
         steps[target_index] = ReflectionStep(
             category=replacement_style.name,
             text=replacement_template.template,
+            attribution_type=replacement_template.attribution_type,
+            expected_intervention=replacement_template.expected_intervention,
+            confidence=replacement_template.confidence,
         )
         return _with_steps(trace, steps), {
             "removed_category": original.category,
@@ -150,7 +153,16 @@ class StructuralInterventionEngine:
     ) -> tuple[ReflectionChain, dict[str, Any]]:
         steps = list(trace.reflection_chain)
         cue = rng.choice(CONTRADICTION_TEMPLATES)
-        steps.insert(target_index + 1, ReflectionStep(category="CONTRADICTION", text=cue))
+        steps.insert(
+            target_index + 1,
+            ReflectionStep(
+                category="CONTRADICTION",
+                text=cue,
+                attribution_type="factual_error",
+                expected_intervention="contradict",
+                confidence=0.9,
+            ),
+        )
         return _with_steps(trace, steps), {"inserted_category": "CONTRADICTION"}
 
     @staticmethod

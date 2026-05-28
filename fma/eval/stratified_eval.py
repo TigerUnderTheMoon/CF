@@ -14,12 +14,16 @@ from fma.types import AttributionRecord, ReflectionAnnotation, ReflectionCategor
 
 LOGGER = logging.getLogger(__name__)
 MIN_BUCKET_SIZE = 5
+MIN_UTILITY_BUCKET_SIZE = 5
 DIMENSION_BUCKETS: dict[str, tuple[str, ...]] = {
     "category": tuple(category.name for category in ReflectionCategory),
     "difficulty": ("low", "medium", "high"),
     "intervention": ("weak", "moderate", "strong"),
     "locality": ("local", "mixed", "global"),
     "trace_length": ("short", "medium", "long"),
+    "necessity": ("q1", "q2", "q3", "q4"),
+    "redundancy": ("t1", "t2", "t3"),
+    "faithfulness": tuple(f"d{index:02d}" for index in range(1, 11)),
 }
 
 
@@ -40,7 +44,12 @@ class BucketMetrics:
     intervention_sensitivity: float
     n_samples: int
     status: str = "ok"
+    utility_status: str = "ok"
+    necessity_status: str = "ok"
+    redundancy_status: str = "ok"
+    faithfulness_status: str = "ok"
     required: int = MIN_BUCKET_SIZE
+    utility_required: int = MIN_UTILITY_BUCKET_SIZE
 
 
 @dataclass(frozen=True)
@@ -127,6 +136,9 @@ class StratifiedEvaluator:
         return rows
 
     def _build_buckets(self, rows: list[_EvalRow], dimension: str) -> list[StratifiedBucket]:
+        if dimension in {"necessity", "redundancy", "faithfulness"}:
+            return self._build_dynamic_buckets(rows, dimension)
+
         bucket_indices: dict[str, list[int]] = {name: [] for name in DIMENSION_BUCKETS[dimension]}
         for row in rows:
             bucket_name = self._bucket_name(row, dimension)
@@ -154,10 +166,16 @@ class StratifiedEvaluator:
                 intervention_sensitivity=float("nan"),
                 n_samples=len(rows),
                 status="insufficient_samples",
+                utility_status="insufficient_samples",
+                necessity_status="insufficient_samples",
+                redundancy_status="insufficient_samples",
+                faithfulness_status="insufficient_samples",
                 required=MIN_BUCKET_SIZE,
+                utility_required=MIN_UTILITY_BUCKET_SIZE,
             )
 
         utility_deltas = np.asarray([row.record.utility_delta for row in rows], dtype=float)
+        utility_status = "ok" if len(utility_deltas) >= MIN_UTILITY_BUCKET_SIZE else "insufficient_samples"
         attribution_scores = np.asarray([row.record.attribution_score for row in rows], dtype=float)
         mean_attribution = float(np.mean(attribution_scores))
         attribution_stability = bounded_stability(attribution_scores)
@@ -173,7 +191,40 @@ class StratifiedEvaluator:
             attribution_stability=attribution_stability,
             intervention_sensitivity=self._intervention_sensitivity(rows, all_rows),
             n_samples=len(rows),
+            utility_status=utility_status,
+            necessity_status=self._field_status(rows, "necessity_score"),
+            redundancy_status=self._field_status(rows, "redundancy_ratio"),
+            faithfulness_status="ok" if len(attribution_scores) >= MIN_BUCKET_SIZE else "insufficient_samples",
         )
+
+    def _build_dynamic_buckets(self, rows: list[_EvalRow], dimension: str) -> list[StratifiedBucket]:
+        bucket_names = DIMENSION_BUCKETS[dimension]
+        bucket_indices: dict[str, list[int]] = {name: [] for name in bucket_names}
+        values: list[tuple[_EvalRow, float]] = []
+        for row in rows:
+            value = self._dynamic_value(row, dimension)
+            if value is None:
+                continue
+            values.append((row, value))
+
+        values.sort(key=lambda item: (item[1], item[0].index))
+        if values:
+            for rank, (row, _value) in enumerate(values):
+                bucket_index = min(
+                    len(bucket_names) - 1,
+                    int(rank * len(bucket_names) / len(values)),
+                )
+                bucket_indices[bucket_names[bucket_index]].append(row.index)
+
+        return [
+            StratifiedBucket(
+                dimension=dimension,
+                bucket_name=bucket_name,
+                indices=indices,
+                n_samples=len(indices),
+            )
+            for bucket_name, indices in bucket_indices.items()
+        ]
 
     @staticmethod
     def _intervention_sensitivity(rows: list[_EvalRow], all_rows: list[_EvalRow]) -> float:
@@ -215,6 +266,34 @@ class StratifiedEvaluator:
                 return None
             return StratifiedEvaluator._trace_length_bucket(len(row.trace.reflection_text))
         raise ValueError(f"Unsupported stratification dimension {dimension!r}.")
+
+    @staticmethod
+    def _dynamic_value(row: _EvalRow, dimension: str) -> float | None:
+        if dimension == "necessity":
+            return StratifiedEvaluator._finite_or_none(row.record.necessity_score)
+        if dimension == "redundancy":
+            return StratifiedEvaluator._finite_or_none(row.record.redundancy_ratio)
+        if dimension == "faithfulness":
+            return StratifiedEvaluator._finite_or_none(row.record.attribution_score)
+        raise ValueError(f"Unsupported dynamic stratification dimension {dimension!r}.")
+
+    @staticmethod
+    def _field_status(rows: list[_EvalRow], field_name: str) -> str:
+        count = sum(
+            1
+            for row in rows
+            if StratifiedEvaluator._finite_or_none(getattr(row.record, field_name)) is not None
+        )
+        return "ok" if count >= MIN_BUCKET_SIZE else "insufficient_samples"
+
+    @staticmethod
+    def _finite_or_none(value: float | None) -> float | None:
+        if value is None:
+            return None
+        number = float(value)
+        if not np.isfinite(number):
+            return None
+        return number
 
     @staticmethod
     def _difficulty_bucket(task_difficulty: int) -> str:

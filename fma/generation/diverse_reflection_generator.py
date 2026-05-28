@@ -19,9 +19,18 @@ from fma.generation.reflection_templates import (
 class ReflectionStep:
     category: str
     text: str
+    attribution_type: str | None = None
+    expected_intervention: str | None = None
+    confidence: float | None = None
 
-    def to_dict(self) -> dict[str, str]:
-        return {"category": self.category, "text": self.text}
+    def to_dict(self) -> dict[str, str | float | None]:
+        return {
+            "category": self.category,
+            "text": self.text,
+            "attribution_type": self.attribution_type,
+            "expected_intervention": self.expected_intervention,
+            "confidence": self.confidence,
+        }
 
 
 @dataclass(frozen=True)
@@ -148,12 +157,19 @@ class DiverseReflectionGenerator:
         trace_index: int,
         rng: random.Random,
     ) -> ReflectionTrace:
-        steps = tuple(
-            ReflectionStep(category=style.name, text=self._sample_template(style, rng).template)
-            for style in styles
-        )
+        steps = tuple(self._build_step(style, rng) for style in styles)
         trace_id = self._trace_id(seed, trace_index, steps)
         return ReflectionChain(trace_id=trace_id, reflection_chain=steps)
+
+    def _build_step(self, style: ReflectionStyle, rng: random.Random) -> ReflectionStep:
+        template = self._sample_template(style, rng)
+        return ReflectionStep(
+            category=style.name,
+            text=template.template,
+            attribution_type=template.attribution_type,
+            expected_intervention=template.expected_intervention,
+            confidence=template.confidence,
+        )
 
     def _sample_category(self, rng: random.Random) -> ReflectionStyle:
         styles = list(ReflectionStyle)

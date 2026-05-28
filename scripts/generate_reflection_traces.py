@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import math
 import re
 import sys
@@ -29,6 +30,7 @@ REFLECTION_RE = re.compile(
 )
 FINAL_ANSWER_RE = re.compile(r"final\s+answer\s*:\s*(?P<answer>.+)", re.IGNORECASE)
 NUMBER_RE = re.compile(r"[-+]?\d[\d,]*(?:\.\d+)?")
+LOGGER = logging.getLogger(__name__)
 
 
 def parse_args() -> argparse.Namespace:
@@ -261,19 +263,24 @@ def annotate_taxonomy(input_path: Path, output_path: Path, dry_run: bool = False
             }
             for record in annotated[:3]
         ]
-        print(
-            {
-                "dry_run": True,
-                "taxonomy_input": str(input_path),
-                "output": str(output_path),
-                "records": len(annotated),
-                "preview": preview,
-            }
+        LOGGER.info(
+            "%s",
+            json.dumps(
+                {
+                    "dry_run": True,
+                    "taxonomy_input": str(input_path),
+                    "output": str(output_path),
+                    "records": len(annotated),
+                    "preview": preview,
+                },
+                ensure_ascii=False,
+                sort_keys=True,
+            ),
         )
         return annotated
 
     write_records(annotated, output_path)
-    print(f"Wrote {len(annotated)} taxonomy-annotated traces to {output_path}")
+    LOGGER.info("Wrote %s taxonomy-annotated traces to %s", len(annotated), output_path)
     return annotated
 
 
@@ -303,12 +310,16 @@ def synthetic_record_from_chain(
                 "reflection_type": step.category.lower(),
                 "content": step.text,
                 "step_index": step_index,
+                "attribution_type": step.attribution_type,
+                "expected_intervention": step.expected_intervention,
+                "confidence": step.confidence,
             }
         )
         cursor += length
 
     categories = chain.categories()
     primary_category = categories[0] if categories else "OTHER"
+    primary_step = chain.reflection_chain[0] if chain.reflection_chain else None
     return {
         "trace_id": chain.trace_id,
         "sample_id": chain.trace_id,
@@ -321,6 +332,9 @@ def synthetic_record_from_chain(
         "reflection_categories": categories,
         "reflection_spans": spans,
         "category": primary_category,
+        "attribution_type": primary_step.attribution_type if primary_step else None,
+        "expected_intervention": primary_step.expected_intervention if primary_step else None,
+        "template_confidence": primary_step.confidence if primary_step else None,
         "taxonomy_confidence": 1.0,
         "taxonomy_rationale": "synthetic category-conditioned template",
         "task_difficulty": 1 + (index % 5),
@@ -374,22 +388,29 @@ def generate_synthetic_balanced(args: argparse.Namespace) -> list[dict[str, Any]
                 "trace_id": record["trace_id"],
                 "category": record["category"],
                 "reflection_categories": record["reflection_categories"],
+                "attribution_type": record["attribution_type"],
+                "expected_intervention": record["expected_intervention"],
             }
             for record in records[:3]
         ]
-        print(
-            {
-                "dry_run": True,
-                "mode": "synthetic_balanced",
-                "records": len(records),
-                "output": str(args.output),
-                "preview": preview,
-            }
+        LOGGER.info(
+            "%s",
+            json.dumps(
+                {
+                    "dry_run": True,
+                    "mode": "synthetic_balanced",
+                    "records": len(records),
+                    "output": str(args.output),
+                    "preview": preview,
+                },
+                ensure_ascii=False,
+                sort_keys=True,
+            ),
         )
         return records
 
     write_synthetic_records(records, args.output)
-    print(f"Wrote {len(records)} synthetic traces to {args.output}")
+    LOGGER.info("Wrote %s synthetic traces to %s", len(records), args.output)
     return records
 
 
@@ -428,6 +449,7 @@ def generate_trace(
 
 
 def main() -> None:
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
     args = parse_args()
     if args.taxonomy:
         annotate_taxonomy(args.taxonomy_input, args.output, dry_run=args.dry_run)
@@ -438,15 +460,20 @@ def main() -> None:
         return
 
     if args.dry_run:
-        print(
-            {
-                "dry_run": True,
-                "mode": "generate",
-                "model_name_or_path": args.model_name_or_path,
-                "split": args.split,
-                "max_samples": args.max_samples,
-                "output": str(args.output),
-            }
+        LOGGER.info(
+            "%s",
+            json.dumps(
+                {
+                    "dry_run": True,
+                    "mode": "generate",
+                    "model_name_or_path": args.model_name_or_path,
+                    "split": args.split,
+                    "max_samples": args.max_samples,
+                    "output": str(args.output),
+                },
+                ensure_ascii=False,
+                sort_keys=True,
+            ),
         )
         return
 
@@ -519,7 +546,7 @@ def main() -> None:
             }
             handle.write(json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n")
 
-    print(f"Wrote {len(dataset)} traces to {args.output}")
+    LOGGER.info("Wrote %s traces to %s", len(dataset), args.output)
 
 
 if __name__ == "__main__":

@@ -7,6 +7,8 @@ from fma.generation.diverse_reflection_generator import (
     ReflectionTrace,
 )
 from fma.generation.reflection_templates import (
+    SUPPORTED_TEMPLATE_ATTRIBUTIONS,
+    SUPPORTED_TEMPLATE_INTERVENTIONS,
     TEMPLATE_POOLS,
     ReflectionStyle,
     ReflectionTemplate,
@@ -21,6 +23,8 @@ __all__ = [
     "ReflectionStyle",
     "ReflectionTemplate",
     "ReflectionTrace",
+    "SUPPORTED_TEMPLATE_ATTRIBUTIONS",
+    "SUPPORTED_TEMPLATE_INTERVENTIONS",
     "TEMPLATE_POOLS",
     "templates_for",
     "validate_template_pools",

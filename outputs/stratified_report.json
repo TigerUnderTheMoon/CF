@@ -1,4 +1,176 @@
 {
+  "alignment_metrics": {
+    "alignment_accuracy": 0.07875,
+    "misattribution_rate": 0.5433333333333333,
+    "partial_alignment_rate": 0.3779166666666667
+  },
+  "faithfulness_buckets": {
+    "d01": {
+      "faithfulness_status": "ok",
+      "frequency": 240,
+      "mean": -0.030208333333333334,
+      "status": "ok",
+      "std": 0.06663682057602599
+    },
+    "d02": {
+      "faithfulness_status": "ok",
+      "frequency": 240,
+      "mean": -0.026388888888888892,
+      "status": "ok",
+      "std": 0.06542536507396599
+    },
+    "d03": {
+      "faithfulness_status": "ok",
+      "frequency": 240,
+      "mean": 0.04305555555555556,
+      "status": "ok",
+      "std": 0.23459069293106355
+    },
+    "d04": {
+      "faithfulness_status": "ok",
+      "frequency": 240,
+      "mean": 0.10659722222222223,
+      "status": "ok",
+      "std": 0.34064446654081515
+    },
+    "d05": {
+      "faithfulness_status": "ok",
+      "frequency": 240,
+      "mean": 0.0763888888888889,
+      "status": "ok",
+      "std": 0.28210176235002093
+    },
+    "d06": {
+      "faithfulness_status": "ok",
+      "frequency": 240,
+      "mean": 0.10590277777777776,
+      "status": "ok",
+      "std": 0.3150082594326734
+    },
+    "d07": {
+      "faithfulness_status": "ok",
+      "frequency": 240,
+      "mean": 0.13055555555555556,
+      "status": "ok",
+      "std": 0.34798250097907846
+    },
+    "d08": {
+      "faithfulness_status": "ok",
+      "frequency": 240,
+      "mean": 0.13229166666666667,
+      "status": "ok",
+      "std": 0.3302006658766308
+    },
+    "d09": {
+      "faithfulness_status": "ok",
+      "frequency": 240,
+      "mean": 0.09270833333333335,
+      "status": "ok",
+      "std": 0.35778229999514344
+    },
+    "d10": {
+      "faithfulness_status": "ok",
+      "frequency": 240,
+      "mean": 0.005555555555555556,
+      "status": "ok",
+      "std": 0.2180334383687823
+    }
+  },
+  "faithfulness_correlation_summary": {
+    "num_samples": 2400,
+    "pearson": 0.1582914003206566,
+    "rank_agreement": 0.5766666666666667,
+    "spearman": 0.1458897195146045,
+    "top_k_overlap": {
+      "10": 0.0,
+      "3": 0.0,
+      "5": 0.0
+    }
+  },
+  "functional_validity": {
+    "alignment_metrics": {
+      "alignment_accuracy": 0.07875,
+      "misattribution_rate": 0.5433333333333333,
+      "partial_alignment_rate": 0.3779166666666667
+    },
+    "category_conditioned_utility": {
+      "BACKTRACKING": {
+        "harmful_ratio": 0.3274647887323944,
+        "helpful_ratio": 0.3345070422535211,
+        "neutral_ratio": 0.09859154929577464,
+        "sample_count": 284.0,
+        "spurious_ratio": 0.23943661971830985
+      },
+      "CONSTRAINT_TRACKING": {
+        "harmful_ratio": 0.40894568690095845,
+        "helpful_ratio": 0.10862619808306709,
+        "neutral_ratio": 0.3769968051118211,
+        "sample_count": 313.0,
+        "spurious_ratio": 0.10543130990415335
+      },
+      "DECOMPOSITION": {
+        "harmful_ratio": 0.34397163120567376,
+        "helpful_ratio": 0.21631205673758866,
+        "neutral_ratio": 0.24113475177304963,
+        "sample_count": 282.0,
+        "spurious_ratio": 0.19858156028368795
+      },
+      "ERROR_CORRECTION": {
+        "harmful_ratio": 0.4131944444444444,
+        "helpful_ratio": 0.15625,
+        "neutral_ratio": 0.0,
+        "sample_count": 288.0,
+        "spurious_ratio": 0.4305555555555556
+      },
+      "PLANNING": {
+        "harmful_ratio": 0.3801916932907348,
+        "helpful_ratio": 0.1597444089456869,
+        "neutral_ratio": 0.2108626198083067,
+        "sample_count": 313.0,
+        "spurious_ratio": 0.24920127795527156
+      },
+      "RETRIEVAL": {
+        "harmful_ratio": 0.20333333333333334,
+        "helpful_ratio": 0.4066666666666667,
+        "neutral_ratio": 0.0,
+        "sample_count": 300.0,
+        "spurious_ratio": 0.39
+      },
+      "UNCERTAINTY_MONITORING": {
+        "harmful_ratio": 0.3053691275167785,
+        "helpful_ratio": 0.3288590604026846,
+        "neutral_ratio": 0.0,
+        "sample_count": 298.0,
+        "spurious_ratio": 0.36577181208053694
+      },
+      "VERIFICATION": {
+        "harmful_ratio": 0.3198757763975155,
+        "helpful_ratio": 0.2639751552795031,
+        "neutral_ratio": 0.0,
+        "sample_count": 322.0,
+        "spurious_ratio": 0.4161490683229814
+      }
+    },
+    "degradation_metrics": {
+      "false_correction_rate": 0.2995833333333333,
+      "max_degradation": 0.646240625180289,
+      "mean_degradation_score": 0.1748635769123851,
+      "recovery_rate": 0.45125
+    },
+    "harmful_by_intervention": {
+      "contradict": 0.9645833333333333,
+      "delete": 0.29583333333333334,
+      "replace": 0.13125,
+      "shuffle": 0.0,
+      "truncate": 0.29791666666666666
+    },
+    "utility_distribution": {
+      "harmful_ratio": 0.33791666666666664,
+      "helpful_ratio": 0.24583333333333332,
+      "neutral_ratio": 0.11666666666666667,
+      "spurious_ratio": 0.2995833333333333
+    }
+  },
   "instability_cases": [
     {
       "bucket": "category:BACKTRACKING",
@@ -1120,204 +1292,380 @@
     "n_categories": 9,
     "n_records": 800,
     "seed": 42,
-    "timestamp": "2026-05-28T16:52:37"
+    "timestamp": "2026-05-28T17:47:22"
+  },
+  "minimal_subset_statistics": {
+    "mean_compression_ratio": 0.2858333333333334,
+    "mean_minimal_step_count": 2.1425,
+    "mean_utility_retained": -0.044375,
+    "median_compression_ratio": 0.0,
+    "num_traces": 800,
+    "utility_threshold": 0.9
+  },
+  "necessity_buckets": {
+    "q1": {
+      "frequency": 600,
+      "mean": -0.06999999999999999,
+      "necessity_status": "ok",
+      "status": "ok",
+      "std": 0.06406738350853441
+    },
+    "q2": {
+      "frequency": 600,
+      "mean": 0.0,
+      "necessity_status": "ok",
+      "status": "ok",
+      "std": 0.0
+    },
+    "q3": {
+      "frequency": 600,
+      "mean": 0.0,
+      "necessity_status": "ok",
+      "status": "ok",
+      "std": 0.0
+    },
+    "q4": {
+      "frequency": 600,
+      "mean": 0.32458333333333333,
+      "necessity_status": "ok",
+      "status": "ok",
+      "std": 0.47049994342110096
+    }
+  },
+  "necessity_distribution_summary": {
+    "max": 1.5,
+    "mean": 0.06364583333333333,
+    "median": 0.0,
+    "min": -0.16666666666666666,
+    "num_samples": 2400,
+    "q25": 0.0,
+    "q75": 0.0,
+    "std": 0.2826331536921531
   },
   "per_category": {
     "BACKTRACKING": {
       "attribution_consistency": 0.4096033313547796,
+      "faithfulness_status": "ok",
       "frequency": 100,
       "intervention_sensitivity": 0.02239440002382035,
       "locality_sensitivity": 0.022398662399108173,
       "mean_intervention_impact": 0.18162532299058515,
       "mean_utility_delta": 0.15754011469330964,
+      "necessity_status": "insufficient_samples",
+      "redundancy_status": "insufficient_samples",
       "status": "ok",
+      "utility_required": 5,
+      "utility_status": "ok",
       "utility_variance": 0.05628122936507275
     },
     "CONSTRAINT_TRACKING": {
       "attribution_consistency": 0.43843233722125563,
+      "faithfulness_status": "ok",
       "frequency": 100,
       "intervention_sensitivity": 0.03981689554573764,
       "locality_sensitivity": 0.040370815131422357,
       "mean_intervention_impact": 0.18786717715364606,
       "mean_utility_delta": 0.16211530218970385,
+      "necessity_status": "insufficient_samples",
+      "redundancy_status": "insufficient_samples",
       "status": "ok",
+      "utility_required": 5,
+      "utility_status": "ok",
       "utility_variance": 0.05476821471007782
     },
     "DECOMPOSITION": {
       "attribution_consistency": 0.42860669142653557,
+      "faithfulness_status": "ok",
       "frequency": 100,
       "intervention_sensitivity": 0.059713042926114124,
       "locality_sensitivity": 0.05642862240899256,
       "mean_intervention_impact": 0.20080828133113005,
       "mean_utility_delta": 0.17794863552303725,
+      "necessity_status": "insufficient_samples",
+      "redundancy_status": "insufficient_samples",
       "status": "ok",
+      "utility_required": 5,
+      "utility_status": "ok",
       "utility_variance": 0.06304760493247649
     },
     "ERROR_CORRECTION": {
       "attribution_consistency": 0.40927338574578925,
+      "faithfulness_status": "ok",
       "frequency": 100,
       "intervention_sensitivity": 0.076595772459422,
       "locality_sensitivity": 0.07562992083467214,
       "mean_intervention_impact": 0.18808772924238806,
       "mean_utility_delta": 0.1710777084415068,
+      "necessity_status": "insufficient_samples",
+      "redundancy_status": "insufficient_samples",
       "status": "ok",
+      "utility_required": 5,
+      "utility_status": "ok",
       "utility_variance": 0.05774989994741951
     },
     "OTHER": {
       "bucket_size": 0,
+      "faithfulness_status": "insufficient_samples",
       "metrics": null,
+      "necessity_status": "insufficient_samples",
+      "redundancy_status": "insufficient_samples",
       "required": 5,
-      "status": "insufficient_samples"
+      "status": "insufficient_samples",
+      "utility_required": 5,
+      "utility_status": "insufficient_samples"
     },
     "PLANNING": {
       "attribution_consistency": 0.38444729786248094,
+      "faithfulness_status": "ok",
       "frequency": 100,
       "intervention_sensitivity": 0.10171644633552743,
       "locality_sensitivity": 0.10151922881285078,
       "mean_intervention_impact": 0.17388847922796494,
       "mean_utility_delta": 0.150652895937901,
+      "necessity_status": "insufficient_samples",
+      "redundancy_status": "insufficient_samples",
       "status": "ok",
+      "utility_required": 5,
+      "utility_status": "ok",
       "utility_variance": 0.05652162319682802
     },
     "RETRIEVAL": {
       "attribution_consistency": 0.4022747752021458,
+      "faithfulness_status": "ok",
       "frequency": 100,
       "intervention_sensitivity": 0.09081135092638858,
       "locality_sensitivity": 0.09469990397475796,
       "mean_intervention_impact": 0.17660903131670697,
       "mean_utility_delta": 0.16211530218970388,
+      "necessity_status": "insufficient_samples",
+      "redundancy_status": "insufficient_samples",
       "status": "ok",
+      "utility_required": 5,
+      "utility_status": "ok",
       "utility_variance": 0.05177378532571474
     },
     "UNCERTAINTY_MONITORING": {
       "attribution_consistency": 0.4131684805346761,
+      "faithfulness_status": "ok",
       "frequency": 100,
       "intervention_sensitivity": 0.10137110745027447,
       "locality_sensitivity": 0.10490489651497431,
       "mean_intervention_impact": 0.17888847922796494,
       "mean_utility_delta": 0.15939475010096185,
+      "necessity_status": "insufficient_samples",
+      "redundancy_status": "insufficient_samples",
       "status": "ok",
+      "utility_required": 5,
+      "utility_status": "ok",
       "utility_variance": 0.052573345620391
     },
     "VERIFICATION": {
       "attribution_consistency": 0.42503115300116096,
+      "faithfulness_status": "ok",
       "frequency": 100,
       "intervention_sensitivity": 0.0026217205161019937,
       "locality_sensitivity": 0.0026042941540450277,
       "mean_intervention_impact": 0.19291605217528077,
       "mean_utility_delta": 0.1762819688563705,
+      "necessity_status": "insufficient_samples",
+      "redundancy_status": "insufficient_samples",
       "status": "ok",
+      "utility_required": 5,
+      "utility_status": "ok",
       "utility_variance": 0.05705866657517411
     }
   },
   "per_difficulty": {
     "high": {
       "attribution_consistency": 0.6831643477839214,
+      "faithfulness_status": "ok",
       "frequency": 320,
       "intervention_sensitivity": 0.052315695964352336,
       "mean_intervention_impact": 0.3604668100333037,
       "mean_utility_delta": 0.35599861345815864,
+      "necessity_status": "insufficient_samples",
+      "redundancy_status": "insufficient_samples",
       "status": "ok",
+      "utility_required": 5,
+      "utility_status": "ok",
       "utility_variance": 0.06366214417845383
     },
     "low": {
       "attribution_consistency": 0.3806469905014767,
+      "faithfulness_status": "ok",
       "frequency": 320,
       "intervention_sensitivity": 0.029688584678687777,
       "mean_intervention_impact": 0.06096530928592009,
       "mean_utility_delta": 0.05547581063645611,
+      "necessity_status": "insufficient_samples",
+      "redundancy_status": "insufficient_samples",
       "status": "ok",
+      "utility_required": 5,
+      "utility_status": "ok",
       "utility_variance": 0.00670937438040595
     },
     "medium": {
       "attribution_consistency": 0.47668242587261345,
+      "faithfulness_status": "ok",
       "frequency": 160,
       "intervention_sensitivity": 0.047603883488330646,
       "mean_intervention_impact": 0.08256735677759416,
       "mean_utility_delta": 0.00025532551857971946,
+      "necessity_status": "insufficient_samples",
+      "redundancy_status": "insufficient_samples",
       "status": "ok",
+      "utility_required": 5,
+      "utility_status": "ok",
       "utility_variance": 0.014392685573639234
     }
   },
   "per_intervention": {
     "moderate": {
       "attribution_consistency": 0.4188369037499612,
+      "faithfulness_status": "ok",
       "frequency": 267,
       "intervention_sensitivity": null,
       "mean_intervention_impact": 0.18890250865122044,
       "mean_utility_delta": 0.16339492441937098,
+      "necessity_status": "insufficient_samples",
+      "redundancy_status": "insufficient_samples",
       "status": "ok",
+      "utility_required": 5,
+      "utility_status": "ok",
       "utility_variance": 0.058721635319550845
     },
     "strong": {
       "attribution_consistency": 0.40970081798164826,
+      "faithfulness_status": "ok",
       "frequency": 266,
       "intervention_sensitivity": null,
       "mean_intervention_impact": 0.18172217269631435,
       "mean_utility_delta": 0.1648661263575107,
+      "necessity_status": "insufficient_samples",
+      "redundancy_status": "insufficient_samples",
       "status": "ok",
+      "utility_required": 5,
+      "utility_status": "ok",
       "utility_variance": 0.05362479057105311
     },
     "weak": {
       "attribution_consistency": 0.41202859363868904,
+      "faithfulness_status": "ok",
       "frequency": 267,
       "intervention_sensitivity": null,
       "mean_intervention_impact": 0.18462167610288846,
       "mean_utility_delta": 0.16566229723662762,
+      "necessity_status": "insufficient_samples",
+      "redundancy_status": "insufficient_samples",
       "status": "ok",
+      "utility_required": 5,
+      "utility_status": "ok",
       "utility_variance": 0.055490497420817006
     }
   },
   "per_length": {
     "long": {
       "bucket_size": 0,
+      "faithfulness_status": "insufficient_samples",
       "metrics": null,
+      "necessity_status": "insufficient_samples",
+      "redundancy_status": "insufficient_samples",
       "required": 5,
-      "status": "insufficient_samples"
+      "status": "insufficient_samples",
+      "utility_required": 5,
+      "utility_status": "insufficient_samples"
     },
     "medium": {
       "attribution_consistency": 0.4135074159727489,
+      "faithfulness_status": "ok",
       "frequency": 800,
       "intervention_sensitivity": 0.0033722705632102485,
       "mean_intervention_impact": 0.18508631908320836,
       "mean_utility_delta": 0.16464083474156183,
+      "necessity_status": "insufficient_samples",
+      "redundancy_status": "insufficient_samples",
       "status": "ok",
+      "utility_required": 5,
+      "utility_status": "ok",
       "utility_variance": 0.055809390935562746
     },
     "short": {
       "bucket_size": 0,
+      "faithfulness_status": "insufficient_samples",
       "metrics": null,
+      "necessity_status": "insufficient_samples",
+      "redundancy_status": "insufficient_samples",
       "required": 5,
-      "status": "insufficient_samples"
+      "status": "insufficient_samples",
+      "utility_required": 5,
+      "utility_status": "insufficient_samples"
     }
   },
   "per_locality": {
     "global": {
       "attribution_consistency": 0.40970081798164826,
+      "faithfulness_status": "ok",
       "frequency": 266,
       "intervention_sensitivity": null,
       "mean_intervention_impact": 0.18172217269631435,
       "mean_utility_delta": 0.1648661263575107,
+      "necessity_status": "insufficient_samples",
+      "redundancy_status": "insufficient_samples",
       "status": "ok",
+      "utility_required": 5,
+      "utility_status": "ok",
       "utility_variance": 0.05362479057105311
     },
     "local": {
       "attribution_consistency": 0.41202859363868904,
+      "faithfulness_status": "ok",
       "frequency": 267,
       "intervention_sensitivity": null,
       "mean_intervention_impact": 0.18462167610288846,
       "mean_utility_delta": 0.16566229723662762,
+      "necessity_status": "insufficient_samples",
+      "redundancy_status": "insufficient_samples",
       "status": "ok",
+      "utility_required": 5,
+      "utility_status": "ok",
       "utility_variance": 0.055490497420817006
     },
     "mixed": {
       "attribution_consistency": 0.4188369037499612,
+      "faithfulness_status": "ok",
       "frequency": 267,
       "intervention_sensitivity": null,
       "mean_intervention_impact": 0.18890250865122044,
       "mean_utility_delta": 0.16339492441937098,
+      "necessity_status": "insufficient_samples",
+      "redundancy_status": "insufficient_samples",
       "status": "ok",
+      "utility_required": 5,
+      "utility_status": "ok",
       "utility_variance": 0.058721635319550845
+    }
+  },
+  "redundancy_buckets": {
+    "t1": {
+      "frequency": 267,
+      "mean": 0.0,
+      "redundancy_status": "ok",
+      "status": "ok",
+      "std": 0.0
+    },
+    "t2": {
+      "frequency": 267,
+      "mean": 0.046192259675405745,
+      "redundancy_status": "ok",
+      "status": "ok",
+      "std": 0.11516811641197315
+    },
+    "t3": {
+      "frequency": 266,
+      "mean": 0.3909774436090225,
+      "redundancy_status": "ok",
+      "status": "ok",
+      "std": 0.13252435154288006
     }
   },
   "top_categories_by_utility": [
@@ -1325,12 +1673,37 @@
     "VERIFICATION",
     "ERROR_CORRECTION"
   ],
+  "utility_warnings": [
+    "attribution mismatch spike for contradict: 0.965 exceeds 0.35.",
+    "attribution mismatch spike for delete: 0.385 exceeds 0.35.",
+    "attribution mismatch spike for replace: 0.506 exceeds 0.35.",
+    "attribution mismatch spike for shuffle: 0.465 exceeds 0.35.",
+    "attribution mismatch spike for truncate: 0.396 exceeds 0.35.",
+    "attribution mismatch spike: global misattribution rate exceeds 0.35.",
+    "high spurious utility ratio exceeds 0.25.",
+    "utility bucket ERROR_CORRECTION:neutral has 0 samples; required 5.",
+    "utility bucket RETRIEVAL:neutral has 0 samples; required 5.",
+    "utility bucket UNCERTAINTY_MONITORING:neutral has 0 samples; required 5.",
+    "utility bucket VERIFICATION:neutral has 0 samples; required 5."
+  ],
   "warnings": [
+    "attribution mismatch spike for contradict: 0.965 exceeds 0.35.",
+    "attribution mismatch spike for delete: 0.385 exceeds 0.35.",
+    "attribution mismatch spike for replace: 0.506 exceeds 0.35.",
+    "attribution mismatch spike for shuffle: 0.465 exceeds 0.35.",
+    "attribution mismatch spike for truncate: 0.396 exceeds 0.35.",
+    "attribution mismatch spike: global misattribution rate exceeds 0.35.",
+    "high spurious utility ratio exceeds 0.25.",
+    "outputs\\reflection_traces.jsonl has no attribution overlap; using data\\traces\\synthetic_100x8.json for stratified trace metadata.",
     "per_intervention.moderate.intervention_sensitivity is NaN or infinite; wrote null.",
     "per_intervention.strong.intervention_sensitivity is NaN or infinite; wrote null.",
     "per_intervention.weak.intervention_sensitivity is NaN or infinite; wrote null.",
     "per_locality.global.intervention_sensitivity is NaN or infinite; wrote null.",
     "per_locality.local.intervention_sensitivity is NaN or infinite; wrote null.",
-    "per_locality.mixed.intervention_sensitivity is NaN or infinite; wrote null."
+    "per_locality.mixed.intervention_sensitivity is NaN or infinite; wrote null.",
+    "utility bucket ERROR_CORRECTION:neutral has 0 samples; required 5.",
+    "utility bucket RETRIEVAL:neutral has 0 samples; required 5.",
+    "utility bucket UNCERTAINTY_MONITORING:neutral has 0 samples; required 5.",
+    "utility bucket VERIFICATION:neutral has 0 samples; required 5."
   ]
 }

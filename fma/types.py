@@ -45,6 +45,9 @@ class AttributionRecord:
     utility_delta: float
     intervention_type: str
     is_local: bool
+    necessity_score: Optional[float] = None
+    necessity_normalized: Optional[float] = None
+    redundancy_ratio: Optional[float] = None
 
 
 @dataclass(frozen=True)
