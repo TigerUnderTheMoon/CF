@@ -4,17 +4,28 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
+    "sample_id",
     "task_id",
+    "task_type",
     "question",
     "reasoning_trace",
     "reflection_spans",
     "final_answer",
+    "reference_answer",
     "correctness",
     "model_name",
     "generation_config"
   ],
   "properties": {
+    "sample_id": {
+      "type": "string",
+      "minLength": 1
+    },
     "task_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "task_type": {
       "type": "string",
       "minLength": 1
     },
@@ -56,6 +67,9 @@
       }
     },
     "final_answer": {
+      "type": "string"
+    },
+    "reference_answer": {
       "type": "string"
     },
     "correctness": {

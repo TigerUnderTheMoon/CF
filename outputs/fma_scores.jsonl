@@ -1,0 +1,3 @@
+{"fma_score": 0.0, "mean_ciu": -1.0, "sample_count": 2, "span_type": "error-diagnosis", "std_ciu": 0.0, "task_distribution": "gsm8k"}
+{"fma_score": 0.5, "mean_ciu": 0.0, "sample_count": 9, "span_type": "plan_revision", "std_ciu": 0.0, "task_distribution": "gsm8k"}
+{"fma_score": 1.0, "mean_ciu": 1.0, "sample_count": 1, "span_type": "self-reflection", "std_ciu": 0.0, "task_distribution": "gsm8k"}

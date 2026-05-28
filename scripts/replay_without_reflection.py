@@ -25,7 +25,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--input",
         type=Path,
-        default=Path("outputs") / "reflection_traces" / "gsm8k_reflection_traces.jsonl",
+        default=Path("outputs") / "reflection_traces.jsonl",
         help="Input JSONL produced by generate_reflection_traces.py.",
     )
     parser.add_argument(

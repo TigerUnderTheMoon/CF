@@ -1,0 +1,12 @@
+{"sample_id": "gsm8k_1", "task_id": "gsm8k_1", "task_type": "gsm8k", "status": "fixture", "counterfactual_correctness": false, "original_token_count": 10}
+{"sample_id": "gsm8k_2", "task_id": "gsm8k_2", "task_type": "gsm8k", "status": "fixture", "counterfactual_correctness": true, "original_token_count": 10}
+{"sample_id": "gsm8k_3", "task_id": "gsm8k_3", "task_type": "gsm8k", "status": "fixture", "counterfactual_correctness": true, "original_token_count": 10}
+{"sample_id": "gsm8k_4", "task_id": "gsm8k_4", "task_type": "gsm8k", "status": "fixture", "counterfactual_correctness": true, "original_token_count": 10}
+{"sample_id": "gsm8k_5", "task_id": "gsm8k_5", "task_type": "gsm8k", "status": "fixture", "counterfactual_correctness": true, "original_token_count": 10}
+{"sample_id": "gsm8k_6", "task_id": "gsm8k_6", "task_type": "gsm8k", "status": "fixture", "counterfactual_correctness": true, "original_token_count": 10}
+{"sample_id": "gsm8k_7", "task_id": "gsm8k_7", "task_type": "gsm8k", "status": "fixture", "counterfactual_correctness": true, "original_token_count": 10}
+{"sample_id": "gsm8k_8", "task_id": "gsm8k_8", "task_type": "gsm8k", "status": "fixture", "counterfactual_correctness": true, "original_token_count": 10}
+{"sample_id": "gsm8k_9", "task_id": "gsm8k_9", "task_type": "gsm8k", "status": "fixture", "counterfactual_correctness": true, "original_token_count": 10}
+{"sample_id": "gsm8k_10", "task_id": "gsm8k_10", "task_type": "gsm8k", "status": "fixture", "counterfactual_correctness": true, "original_token_count": 10}
+{"sample_id": "gsm8k_11", "task_id": "gsm8k_11", "task_type": "gsm8k", "status": "fixture", "counterfactual_correctness": true, "original_token_count": 10}
+{"sample_id": "gsm8k_12", "task_id": "gsm8k_12", "task_type": "gsm8k", "status": "fixture", "counterfactual_correctness": true, "original_token_count": 10}

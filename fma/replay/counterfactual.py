@@ -17,7 +17,8 @@ REFLECTION_RE = re.compile(
     flags=re.IGNORECASE | re.DOTALL,
 )
 FINAL_ANSWER_RE = re.compile(r"final\s+answer\s*:\s*(?P<answer>.+)", re.IGNORECASE)
-MASK_CANDIDATE_STRINGS = (
+NUMBER_RE = re.compile(r"[-+]?\d[\d,]*(?:\.\d+)?")
+MASK_PLACEHOLDER_STRINGS = (
     "[REASONING_MASK]",
     "[MASK]",
     "<mask>",
@@ -77,7 +78,7 @@ def resolve_mask_token_id(tokenizer: AutoTokenizer) -> int:
         tokenizer.unk_token,
         tokenizer.pad_token,
         tokenizer.eos_token,
-        *MASK_CANDIDATE_STRINGS,
+        *MASK_PLACEHOLDER_STRINGS,
     )
     seen = set()
     for candidate in candidate_strings:
@@ -178,6 +179,32 @@ def extract_final_answer(text: str) -> str:
     return ""
 
 
+def normalize_answer(text: str) -> str:
+    if "####" in text:
+        text = text.split("####")[-1]
+    numbers = NUMBER_RE.findall(text)
+    if numbers:
+        return numbers[-1].replace(",", "")
+    return text.strip().lower()
+
+
+def is_correct(final_answer: str | None, reference_answer: str | None) -> bool | None:
+    if reference_answer is None or reference_answer == "":
+        return None
+    if not final_answer:
+        return False
+    return normalize_answer(final_answer) == normalize_answer(reference_answer)
+
+
+def record_sample_id(record: dict[str, Any]) -> str:
+    return str(record.get("sample_id") or record.get("task_id") or "")
+
+
+def record_task_type(record: dict[str, Any]) -> str:
+    generation_config = record.get("generation_config") or {}
+    return str(record.get("task_type") or generation_config.get("dataset") or "")
+
+
 def count_tokens(text: str, tokenizer: AutoTokenizer) -> int:
     return len(tokenizer.encode(text, add_special_tokens=False))
 
@@ -211,10 +238,13 @@ def build_no_reflection_result(record: dict[str, Any], tokenizer: AutoTokenizer)
     original_trace = record.get("reasoning_trace", "")
     original_token_count = count_tokens(original_trace, tokenizer)
     return {
+        "sample_id": record_sample_id(record),
         "task_id": record.get("task_id", ""),
+        "task_type": record_task_type(record),
         "status": "no_reflection_found",
         "original_answer": record.get("final_answer") or extract_final_answer(original_trace),
         "counterfactual_answer": None,
+        "counterfactual_correctness": None,
         "token_length_difference": None,
         "original_token_count": original_token_count,
         "counterfactual_token_count": None,
@@ -225,10 +255,13 @@ def build_no_reflection_result(record: dict[str, Any], tokenizer: AutoTokenizer)
 def build_truncated_result(record: dict[str, Any], tokenizer: AutoTokenizer) -> dict[str, Any]:
     original_trace = record.get("reasoning_trace", "")
     return {
+        "sample_id": record_sample_id(record),
         "task_id": record.get("task_id", ""),
+        "task_type": record_task_type(record),
         "status": "context_too_long",
         "original_answer": record.get("final_answer") or extract_final_answer(original_trace),
         "counterfactual_answer": None,
+        "counterfactual_correctness": None,
         "token_length_difference": None,
         "original_token_count": count_tokens(original_trace, tokenizer),
         "counterfactual_token_count": None,
@@ -291,16 +324,21 @@ def replay_record(
     counterfactual_token_count = len(replay_prefix_ids) + len(counterfactual_continuation_ids)
     original_answer = record.get("final_answer") or extract_final_answer(original_trace)
     counterfactual_answer = extract_final_answer(counterfactual_trace)
+    reference_answer = record.get("reference_answer")
+    counterfactual_correctness = is_correct(counterfactual_answer, reference_answer)
 
-    # Causal limitation: this is an intervention-sensitive contrast, not a
-    # globally identifiable causal quantity. The result depends on the prompt,
-    # model, tokenizer, context window, and the observable trace prefix.
+    # Framing limitation: this is an intervention-sensitive contrast whose
+    # interpretation depends on the prompt, model, tokenizer, context window,
+    # and the observable trace prefix.
     return {
+        "sample_id": record_sample_id(record),
         "task_id": record.get("task_id", ""),
+        "task_type": record_task_type(record),
         "status": "replayed_with_masking",
         "question": question,
         "original_answer": original_answer,
         "counterfactual_answer": counterfactual_answer,
+        "counterfactual_correctness": counterfactual_correctness,
         "token_length_difference": counterfactual_token_count - original_token_count,
         "original_token_count": original_token_count,
         "counterfactual_token_count": counterfactual_token_count,

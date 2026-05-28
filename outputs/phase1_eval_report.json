@@ -1,0 +1,26 @@
+{
+  "dataset_counts": {
+    "gsm8k": 12
+  },
+  "experiment": "phase1_attribution",
+  "fma_distribution": {
+    "high": 1,
+    "low": 9,
+    "medium": 0,
+    "negative": 2
+  },
+  "intervention_sensitivity": {
+    "top_10pct_drop": 0.5,
+    "top_25pct_drop": 0.33333333333333337,
+    "top_50pct_drop": 0.16666666666666663
+  },
+  "notes": "Matching and DR deferred to Phase 2",
+  "timestamp": "2026-05-27T20:41:14.982971+00:00",
+  "utility_calibration": {
+    "p_value": null,
+    "pearson_ciu_vs_span_length": null,
+    "pearson_ciu_vs_step_index": 7.037322847196353e-18,
+    "status": "insufficient or constant span length data",
+    "step_index_p_value": 1.0
+  }
+}

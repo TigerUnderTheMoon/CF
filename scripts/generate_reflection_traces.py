@@ -53,7 +53,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path("outputs") / "reflection_traces" / "gsm8k_reflection_traces.jsonl",
+        default=Path("outputs") / "reflection_traces.jsonl",
     )
     parser.add_argument("--trust-remote-code", action="store_true")
     return parser.parse_args()
@@ -204,11 +204,14 @@ def main() -> None:
             final_answer = extract_final_answer(reasoning_trace)
             writer.write(
                 {
+                    "sample_id": f"gsm8k-{args.split}-{idx}",
                     "task_id": f"gsm8k-{args.split}-{idx}",
+                    "task_type": "gsm8k",
                     "question": sample["question"],
                     "reasoning_trace": reasoning_trace,
                     "reflection_spans": extract_reflection_spans(reasoning_trace, tokenizer),
                     "final_answer": final_answer,
+                    "reference_answer": sample["answer"],
                     "correctness": is_correct(final_answer, sample["answer"]),
                     "model_name": args.model_name_or_path,
                     "generation_config": generation_config,
