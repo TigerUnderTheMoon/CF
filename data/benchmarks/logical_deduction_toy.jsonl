@@ -1,0 +1,20 @@
+{"id":"logic-toy-001","question":"If all A are B and all B are C, is every A a C?","answer":"yes","expected_reflection_categories":["DECOMPOSITION","VERIFICATION"]}
+{"id":"logic-toy-002","question":"If no cats are birds and Milo is a cat, is Milo a bird?","answer":"no","expected_reflection_categories":["CONSTRAINT_TRACKING","VERIFICATION"]}
+{"id":"logic-toy-003","question":"If P implies Q, and P is true, must Q be true?","answer":"yes","expected_reflection_categories":["RETRIEVAL","VERIFICATION"]}
+{"id":"logic-toy-004","question":"If P implies Q, and Q is true, must P be true?","answer":"no","expected_reflection_categories":["BACKTRACKING","ERROR_CORRECTION"]}
+{"id":"logic-toy-005","question":"Exactly one of A and B is true. If A is true, is B false?","answer":"yes","expected_reflection_categories":["CONSTRAINT_TRACKING","VERIFICATION"]}
+{"id":"logic-toy-006","question":"A is before B, and B is before C. Is A before C?","answer":"yes","expected_reflection_categories":["DECOMPOSITION","VERIFICATION"]}
+{"id":"logic-toy-007","question":"If X is greater than Y and Y is greater than Z, is Z greater than X?","answer":"no","expected_reflection_categories":["BACKTRACKING","VERIFICATION"]}
+{"id":"logic-toy-008","question":"If all squares are rectangles, is every rectangle a square?","answer":"no","expected_reflection_categories":["ERROR_CORRECTION","VERIFICATION"]}
+{"id":"logic-toy-009","question":"If a switch is on only when the door is closed, and the switch is on, is the door closed?","answer":"yes","expected_reflection_categories":["CONSTRAINT_TRACKING","VERIFICATION"]}
+{"id":"logic-toy-010","question":"If neither A nor B is true, is A true?","answer":"no","expected_reflection_categories":["RETRIEVAL","VERIFICATION"]}
+{"id":"logic-toy-011","question":"If exactly two of A, B, and C are true, and A and B are true, is C false?","answer":"yes","expected_reflection_categories":["CONSTRAINT_TRACKING","VERIFICATION"]}
+{"id":"logic-toy-012","question":"If all red blocks are heavy and this block is not heavy, can it be red?","answer":"no","expected_reflection_categories":["BACKTRACKING","VERIFICATION"]}
+{"id":"logic-toy-013","question":"If P or Q is true and P is false, must Q be true?","answer":"yes","expected_reflection_categories":["CONSTRAINT_TRACKING","VERIFICATION"]}
+{"id":"logic-toy-014","question":"If P and Q are both required, and Q is false, is the requirement satisfied?","answer":"no","expected_reflection_categories":["CONSTRAINT_TRACKING","ERROR_CORRECTION"]}
+{"id":"logic-toy-015","question":"If Anna is taller than Ben and Ben is taller than Cara, is Anna taller than Cara?","answer":"yes","expected_reflection_categories":["DECOMPOSITION","VERIFICATION"]}
+{"id":"logic-toy-016","question":"If every item in box 1 is blue and this item is green, can it be from box 1?","answer":"no","expected_reflection_categories":["CONSTRAINT_TRACKING","VERIFICATION"]}
+{"id":"logic-toy-017","question":"If task A must happen before task B, can B happen first?","answer":"no","expected_reflection_categories":["CONSTRAINT_TRACKING","PLANNING"]}
+{"id":"logic-toy-018","question":"If at least one of A or B must be true and A is true, is the condition satisfied?","answer":"yes","expected_reflection_categories":["CONSTRAINT_TRACKING","VERIFICATION"]}
+{"id":"logic-toy-019","question":"If all members paid and Lee is a member, did Lee pay?","answer":"yes","expected_reflection_categories":["RETRIEVAL","VERIFICATION"]}
+{"id":"logic-toy-020","question":"If no weekend days are workdays in this schedule and Saturday is a weekend day, is Saturday a workday?","answer":"no","expected_reflection_categories":["RETRIEVAL","VERIFICATION"]}

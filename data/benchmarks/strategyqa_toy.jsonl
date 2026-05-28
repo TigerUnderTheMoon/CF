@@ -1,0 +1,20 @@
+{"id":"strategyqa-toy-001","question":"Would a glass bottle usually break if dropped on concrete?","answer":"yes","expected_reflection_categories":["RETRIEVAL","VERIFICATION"]}
+{"id":"strategyqa-toy-002","question":"Can a person mail a letter without knowing the recipient address?","answer":"no","expected_reflection_categories":["CONSTRAINT_TRACKING","VERIFICATION"]}
+{"id":"strategyqa-toy-003","question":"Would turning off a freezer keep ice cream frozen for days?","answer":"no","expected_reflection_categories":["BACKTRACKING","UNCERTAINTY_MONITORING"]}
+{"id":"strategyqa-toy-004","question":"Could a bicycle fit inside most kitchen drawers?","answer":"no","expected_reflection_categories":["RETRIEVAL","VERIFICATION"]}
+{"id":"strategyqa-toy-005","question":"Would opening an umbrella help during rain?","answer":"yes","expected_reflection_categories":["RETRIEVAL","VERIFICATION"]}
+{"id":"strategyqa-toy-006","question":"Can someone read a printed book in a completely dark room without a light source?","answer":"no","expected_reflection_categories":["CONSTRAINT_TRACKING","VERIFICATION"]}
+{"id":"strategyqa-toy-007","question":"Would adding salt to fresh water usually make it taste salty?","answer":"yes","expected_reflection_categories":["RETRIEVAL","VERIFICATION"]}
+{"id":"strategyqa-toy-008","question":"Could a standard refrigerator keep food warmer than room temperature?","answer":"no","expected_reflection_categories":["BACKTRACKING","VERIFICATION"]}
+{"id":"strategyqa-toy-009","question":"Would wearing a raincoat help keep clothes dry in a storm?","answer":"yes","expected_reflection_categories":["PLANNING","VERIFICATION"]}
+{"id":"strategyqa-toy-010","question":"Can a person breathe normally underwater without equipment?","answer":"no","expected_reflection_categories":["RETRIEVAL","CONSTRAINT_TRACKING"]}
+{"id":"strategyqa-toy-011","question":"Would planting a seed in soil and watering it improve its chance to grow?","answer":"yes","expected_reflection_categories":["DECOMPOSITION","VERIFICATION"]}
+{"id":"strategyqa-toy-012","question":"Can a car run after its fuel tank is completely empty?","answer":"no","expected_reflection_categories":["CONSTRAINT_TRACKING","VERIFICATION"]}
+{"id":"strategyqa-toy-013","question":"Would a thick coat usually help in cold weather?","answer":"yes","expected_reflection_categories":["RETRIEVAL","VERIFICATION"]}
+{"id":"strategyqa-toy-014","question":"Can a locked door be opened with the correct key?","answer":"yes","expected_reflection_categories":["CONSTRAINT_TRACKING","VERIFICATION"]}
+{"id":"strategyqa-toy-015","question":"Would ice melt faster in sunlight than in a freezer?","answer":"yes","expected_reflection_categories":["BACKTRACKING","VERIFICATION"]}
+{"id":"strategyqa-toy-016","question":"Could a paper map work without battery power?","answer":"yes","expected_reflection_categories":["RETRIEVAL","VERIFICATION"]}
+{"id":"strategyqa-toy-017","question":"Would a person need permission to enter a private restricted area?","answer":"yes","expected_reflection_categories":["CONSTRAINT_TRACKING","PLANNING"]}
+{"id":"strategyqa-toy-018","question":"Can an unplugged lamp produce light without batteries or another power source?","answer":"no","expected_reflection_categories":["CONSTRAINT_TRACKING","VERIFICATION"]}
+{"id":"strategyqa-toy-019","question":"Would boiling water be hotter than ice water?","answer":"yes","expected_reflection_categories":["RETRIEVAL","VERIFICATION"]}
+{"id":"strategyqa-toy-020","question":"Can a person finish a marathon by running only one meter?","answer":"no","expected_reflection_categories":["DECOMPOSITION","CONSTRAINT_TRACKING"]}

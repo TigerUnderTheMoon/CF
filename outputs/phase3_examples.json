@@ -1,0 +1,340 @@
+{
+  "example_diverse_traces": [
+    {
+      "reflection_chain": [
+        {
+          "category": "BACKTRACKING",
+          "text": "Backtrack to the point where the assumption entered."
+        },
+        {
+          "category": "VERIFICATION",
+          "text": "Verify the answer by substituting it back into the conditions."
+        },
+        {
+          "category": "VERIFICATION",
+          "text": "Verify the previous conclusion against the problem statement."
+        }
+      ],
+      "trace_id": "aa9a0887-6619-5054-947c-be0ee2bb52f0"
+    },
+    {
+      "reflection_chain": [
+        {
+          "category": "BACKTRACKING",
+          "text": "Return to the last reliable conclusion and branch from there."
+        },
+        {
+          "category": "CONSTRAINT_TRACKING",
+          "text": "Need to satisfy both conditions at the same time."
+        },
+        {
+          "category": "PLANNING",
+          "text": "First choose a strategy, then execute it in order."
+        }
+      ],
+      "trace_id": "c4c47f0f-ce90-5cd2-894a-10d84d139b18"
+    },
+    {
+      "reflection_chain": [
+        {
+          "category": "PLANNING",
+          "text": "First choose a strategy, then execute it in order."
+        },
+        {
+          "category": "VERIFICATION",
+          "text": "Verify the previous conclusion against the problem statement."
+        },
+        {
+          "category": "RETRIEVAL",
+          "text": "Remember the relevant rule from the setup."
+        }
+      ],
+      "trace_id": "c7e10793-21f1-504e-85a8-aa184cf15a7e"
+    }
+  ],
+  "intervention_examples": [
+    {
+      "after": {
+        "reflection_chain": [
+          {
+            "category": "PLANNING",
+            "text": "Plan the next step before doing the calculation."
+          },
+          {
+            "category": "RETRIEVAL",
+            "text": "Use the previously established fact here."
+          }
+        ],
+        "trace_id": "30b41ffc-1907-5078-a9f6-6618b6a92a83"
+      },
+      "before": {
+        "reflection_chain": [
+          {
+            "category": "PLANNING",
+            "text": "Plan the next step before doing the calculation."
+          },
+          {
+            "category": "VERIFICATION",
+            "text": "Check the arithmetic carefully before accepting the result."
+          },
+          {
+            "category": "RETRIEVAL",
+            "text": "Use the previously established fact here."
+          }
+        ],
+        "trace_id": "30b41ffc-1907-5078-a9f6-6618b6a92a83"
+      },
+      "intervention_type": "delete",
+      "metadata": {
+        "after_hash": "d331db47eae4a6d8286819e834ada098548b7749899933c93dae795e9ae372c3",
+        "before_hash": "a64e86a6d28e2930cde25315fa4eacd64fb456bc4dd887937a0d7350a6332843",
+        "details": {
+          "removed_category": "VERIFICATION"
+        },
+        "intervention_type": "delete",
+        "seed": 200,
+        "target_index": 1
+      }
+    },
+    {
+      "after": {
+        "reflection_chain": [
+          {
+            "category": "RETRIEVAL",
+            "text": "Use the previously established fact here."
+          },
+          {
+            "category": "VERIFICATION",
+            "text": "Check the arithmetic carefully before accepting the result."
+          },
+          {
+            "category": "PLANNING",
+            "text": "Plan the next step before doing the calculation."
+          }
+        ],
+        "trace_id": "30b41ffc-1907-5078-a9f6-6618b6a92a83"
+      },
+      "before": {
+        "reflection_chain": [
+          {
+            "category": "PLANNING",
+            "text": "Plan the next step before doing the calculation."
+          },
+          {
+            "category": "VERIFICATION",
+            "text": "Check the arithmetic carefully before accepting the result."
+          },
+          {
+            "category": "RETRIEVAL",
+            "text": "Use the previously established fact here."
+          }
+        ],
+        "trace_id": "30b41ffc-1907-5078-a9f6-6618b6a92a83"
+      },
+      "intervention_type": "shuffle",
+      "metadata": {
+        "after_hash": "d7b4dd7f5e7a6de8c20052b1166ebc2acccdb30772cfb1e31edf7521552853e1",
+        "before_hash": "a64e86a6d28e2930cde25315fa4eacd64fb456bc4dd887937a0d7350a6332843",
+        "details": {
+          "after_order": [
+            "RETRIEVAL",
+            "VERIFICATION",
+            "PLANNING"
+          ],
+          "before_order": [
+            "PLANNING",
+            "VERIFICATION",
+            "RETRIEVAL"
+          ]
+        },
+        "intervention_type": "shuffle",
+        "seed": 201,
+        "target_index": null
+      }
+    },
+    {
+      "after": {
+        "reflection_chain": [
+          {
+            "category": "PLANNING",
+            "text": "Plan the next step before doing the calculation."
+          },
+          {
+            "category": "RETRIEVAL",
+            "text": "Retrieve the known relation and plug it into this step."
+          },
+          {
+            "category": "RETRIEVAL",
+            "text": "Use the previously established fact here."
+          }
+        ],
+        "trace_id": "30b41ffc-1907-5078-a9f6-6618b6a92a83"
+      },
+      "before": {
+        "reflection_chain": [
+          {
+            "category": "PLANNING",
+            "text": "Plan the next step before doing the calculation."
+          },
+          {
+            "category": "VERIFICATION",
+            "text": "Check the arithmetic carefully before accepting the result."
+          },
+          {
+            "category": "RETRIEVAL",
+            "text": "Use the previously established fact here."
+          }
+        ],
+        "trace_id": "30b41ffc-1907-5078-a9f6-6618b6a92a83"
+      },
+      "intervention_type": "replace",
+      "metadata": {
+        "after_hash": "49804f482bcd78a3de0ac9ae1edd05efb2aec9701cb6eac20974e7f5669c8ba1",
+        "before_hash": "a64e86a6d28e2930cde25315fa4eacd64fb456bc4dd887937a0d7350a6332843",
+        "details": {
+          "removed_category": "VERIFICATION",
+          "replacement_category": "RETRIEVAL"
+        },
+        "intervention_type": "replace",
+        "seed": 202,
+        "target_index": 1
+      }
+    },
+    {
+      "after": {
+        "reflection_chain": [
+          {
+            "category": "PLANNING",
+            "text": "Plan the next step before doing the calculation."
+          },
+          {
+            "category": "VERIFICATION",
+            "text": "Check the arithmetic carefully before accepting the result."
+          }
+        ],
+        "trace_id": "30b41ffc-1907-5078-a9f6-6618b6a92a83"
+      },
+      "before": {
+        "reflection_chain": [
+          {
+            "category": "PLANNING",
+            "text": "Plan the next step before doing the calculation."
+          },
+          {
+            "category": "VERIFICATION",
+            "text": "Check the arithmetic carefully before accepting the result."
+          },
+          {
+            "category": "RETRIEVAL",
+            "text": "Use the previously established fact here."
+          }
+        ],
+        "trace_id": "30b41ffc-1907-5078-a9f6-6618b6a92a83"
+      },
+      "intervention_type": "truncate",
+      "metadata": {
+        "after_hash": "0f0781965646def110ecee0fda701da65634ba6f5cd7eaf4664a0bf2c2ec2d82",
+        "before_hash": "a64e86a6d28e2930cde25315fa4eacd64fb456bc4dd887937a0d7350a6332843",
+        "details": {
+          "truncate_policy": "exclusive_keep_target"
+        },
+        "intervention_type": "truncate",
+        "seed": 203,
+        "target_index": 1
+      }
+    },
+    {
+      "after": {
+        "reflection_chain": [
+          {
+            "category": "PLANNING",
+            "text": "Plan the next step before doing the calculation."
+          },
+          {
+            "category": "VERIFICATION",
+            "text": "Check the arithmetic carefully before accepting the result."
+          },
+          {
+            "category": "CONTRADICTION",
+            "text": "Treat the last step as suspect before using it."
+          },
+          {
+            "category": "RETRIEVAL",
+            "text": "Use the previously established fact here."
+          }
+        ],
+        "trace_id": "30b41ffc-1907-5078-a9f6-6618b6a92a83"
+      },
+      "before": {
+        "reflection_chain": [
+          {
+            "category": "PLANNING",
+            "text": "Plan the next step before doing the calculation."
+          },
+          {
+            "category": "VERIFICATION",
+            "text": "Check the arithmetic carefully before accepting the result."
+          },
+          {
+            "category": "RETRIEVAL",
+            "text": "Use the previously established fact here."
+          }
+        ],
+        "trace_id": "30b41ffc-1907-5078-a9f6-6618b6a92a83"
+      },
+      "intervention_type": "contradict",
+      "metadata": {
+        "after_hash": "0b4911c8843f56c67183fd55661180d1f39dc37e23bdd3986db87dc6c6bed2b7",
+        "before_hash": "a64e86a6d28e2930cde25315fa4eacd64fb456bc4dd887937a0d7350a6332843",
+        "details": {
+          "inserted_category": "CONTRADICTION"
+        },
+        "intervention_type": "contradict",
+        "seed": 204,
+        "target_index": 1
+      }
+    }
+  ],
+  "locality_stress_examples": [
+    {
+      "edit_distance": 0.3333333333333333,
+      "intervention_type": "delete",
+      "locality_ratio": 0.6887198093814391,
+      "primary_category": "DECOMPOSITION",
+      "trace_id": "3b0258d1-ae0e-5281-98a6-11faff5e2877",
+      "utility_after": 0.25,
+      "utility_before": 0.4795739585136224,
+      "utility_delta": 0.2295739585136224,
+      "utility_shift": 0.2295739585136224
+    },
+    {
+      "edit_distance": 0.6666666666666666,
+      "intervention_type": "shuffle",
+      "locality_ratio": 0.0,
+      "primary_category": "DECOMPOSITION",
+      "trace_id": "d51e6b12-9ddf-52e9-9d7c-877e3085ea1b",
+      "utility_after": 0.646240625180289,
+      "utility_before": 0.646240625180289,
+      "utility_delta": 0.0,
+      "utility_shift": 0.0
+    },
+    {
+      "edit_distance": 0.3333333333333333,
+      "intervention_type": "replace",
+      "locality_ratio": 0.49999850000449997,
+      "primary_category": "DECOMPOSITION",
+      "trace_id": "58166416-46bf-5064-a6d9-50c1126bc61c",
+      "utility_after": 0.4795739585136224,
+      "utility_before": 0.646240625180289,
+      "utility_delta": 0.16666666666666663,
+      "utility_shift": 0.16666666666666663
+    }
+  ],
+  "stability_scores_preview": [
+    0.42497783682480234,
+    0.44239921735335325,
+    0.41634074829494006,
+    0.4310926411476563,
+    0.41689178207746547
+  ]
+}

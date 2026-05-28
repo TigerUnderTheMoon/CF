@@ -1,0 +1,19 @@
+{
+  "benign_local_perturbation_count": 9,
+  "control_ciu_mean": 0.0,
+  "control_ciu_std": 0.0,
+  "drift_artifact_count": 0,
+  "drift_ratio_mean": 0.0,
+  "drift_ratio_std": 0.0,
+  "functional_influence_count": 3,
+  "interpretation": [
+    "Reflective interventions do not exceed ordinary control masking in this diagnostic run.",
+    "Most interventions preserve downstream locality while selectively altering functional outcomes.",
+    "Lexical locality metrics are approximate proxies and do not guarantee semantic equivalence."
+  ],
+  "locality_index_mean": 1.0,
+  "reflection_ciu_mean": -0.08333333333333333,
+  "reflection_ciu_std": 0.4930066485916347,
+  "specificity_gap": -0.08333333333333333,
+  "unstable_global_rewrite_count": 0
+}

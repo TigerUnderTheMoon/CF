@@ -1,0 +1,29 @@
+{
+  "collapsed": false,
+  "entropy": 2.9984499726165517,
+  "imbalance_ratio": 0.13416666666666666,
+  "rare_categories": [],
+  "taxonomy_distribution": {
+    "BACKTRACKING": 284,
+    "CONSTRAINT_TRACKING": 313,
+    "DECOMPOSITION": 282,
+    "ERROR_CORRECTION": 288,
+    "PLANNING": 313,
+    "RETRIEVAL": 300,
+    "UNCERTAINTY_MONITORING": 298,
+    "VERIFICATION": 322
+  },
+  "taxonomy_normalized": {
+    "BACKTRACKING": 0.11833333333333333,
+    "CONSTRAINT_TRACKING": 0.13041666666666665,
+    "DECOMPOSITION": 0.1175,
+    "ERROR_CORRECTION": 0.12,
+    "PLANNING": 0.13041666666666665,
+    "RETRIEVAL": 0.125,
+    "UNCERTAINTY_MONITORING": 0.12416666666666666,
+    "VERIFICATION": 0.13416666666666666
+  },
+  "total_reflections": 2400,
+  "total_traces": 800,
+  "warnings": []
+}

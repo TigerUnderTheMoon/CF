@@ -3,14 +3,22 @@
 from __future__ import annotations
 
 import argparse
+import json
+import math
 import re
+import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, Sequence
 
-import jsonlines
-import torch
-from datasets import load_dataset
-from transformers import AutoModelForCausalLM, AutoTokenizer, set_seed
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from fma.io import load_records, write_records
+from fma.generation import DiverseReflectionGenerator, ReflectionChain, ReflectionStyle
+from fma.taxonomy import ReflectionTaxonomizer
+from fma.types import ReflectionTrace
 
 
 REFLECTION_RE = re.compile(
@@ -29,7 +37,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--model-name-or-path",
-        required=True,
+        default=None,
         help="Local path or HuggingFace model id for a causal language model.",
     )
     parser.add_argument("--split", default="train", help="GSM8K split or slice.")
@@ -55,11 +63,47 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         default=Path("outputs") / "reflection_traces.jsonl",
     )
+    parser.add_argument(
+        "--synthetic-balanced",
+        action="store_true",
+        help="Generate deterministic category-balanced synthetic reflection chains.",
+    )
+    parser.add_argument(
+        "--n-per-category",
+        type=int,
+        default=100,
+        help="Synthetic traces per ReflectionStyle category.",
+    )
+    parser.add_argument(
+        "--chain-length",
+        type=int,
+        default=3,
+        help="Number of reflection steps per synthetic chain.",
+    )
+    parser.add_argument(
+        "--category-sequence",
+        default=None,
+        help="Optional comma-separated category sequence for synthetic mixed chains.",
+    )
+    parser.add_argument(
+        "--taxonomy",
+        action="store_true",
+        help="Annotate an existing reflection trace JSONL file with deterministic taxonomy labels.",
+    )
+    parser.add_argument(
+        "--taxonomy-input",
+        type=Path,
+        default=Path("outputs") / "reflection_traces.jsonl",
+        help="Input JSONL for --taxonomy mode.",
+    )
+    parser.add_argument("--dry-run", action="store_true", help="Print planned actions without writing files.")
     parser.add_argument("--trust-remote-code", action="store_true")
     return parser.parse_args()
 
 
 def resolve_dtype(dtype_name: str) -> Any:
+    import torch
+
     if dtype_name == "auto":
         return "auto"
     return {
@@ -121,6 +165,234 @@ def is_correct(final_answer: str, reference_answer: str) -> bool:
     return normalize_answer(final_answer) == normalize_answer(reference_answer)
 
 
+def clamp_float(value: Any, low: float, high: float, fallback: float) -> float:
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        number = fallback
+    if not math.isfinite(number):
+        number = fallback
+    return min(high, max(low, number))
+
+
+def first_reflection_text(record: dict[str, Any]) -> str:
+    value = record.get("reflection_text")
+    if isinstance(value, str):
+        return value
+    spans = record.get("reflection_spans") or record.get("metacognitive_spans") or []
+    if isinstance(spans, list) and spans:
+        content = spans[0].get("content") if isinstance(spans[0], dict) else None
+        if isinstance(content, str):
+            return content
+    return str(record.get("reasoning_trace") or "")
+
+
+def trace_id_for_record(record: dict[str, Any], index: int) -> str:
+    return str(record.get("trace_id") or record.get("sample_id") or record.get("task_id") or f"trace_{index:03d}")
+
+
+def task_difficulty(record: dict[str, Any]) -> int:
+    value = int(clamp_float(record.get("task_difficulty"), 1.0, 5.0, 3.0))
+    return min(5, max(1, value))
+
+
+def intervention_magnitude(record: dict[str, Any]) -> float:
+    if "intervention_magnitude" in record:
+        return clamp_float(record["intervention_magnitude"], 0.0, 1.0, 0.0)
+
+    spans = record.get("reflection_spans") or record.get("metacognitive_spans") or []
+    span_length = 0
+    if isinstance(spans, list) and spans and isinstance(spans[0], dict):
+        span = spans[0]
+        if "start_token" in span and "end_token" in span:
+            span_length = max(0, int(span.get("end_token") or 0) - int(span.get("start_token") or 0))
+        elif "span_length" in span:
+            span_length = max(0, int(span.get("span_length") or 0))
+        elif "content" in span:
+            span_length = len(str(span.get("content") or "").split())
+    token_count = max(1, len(str(record.get("reasoning_trace") or "").split()))
+    return clamp_float(span_length / token_count, 0.0, 1.0, 0.0)
+
+
+def reflection_trace_from_record(record: dict[str, Any], index: int) -> ReflectionTrace:
+    trace_id = trace_id_for_record(record, index)
+    return ReflectionTrace(
+        trace_id=trace_id,
+        reflection_text=first_reflection_text(record),
+        task_id=str(record.get("task_id") or trace_id),
+        task_difficulty=task_difficulty(record),
+        intervention_magnitude=intervention_magnitude(record),
+        locality_score=clamp_float(record.get("locality_score"), 0.0, 1.0, 1.0),
+    )
+
+
+def annotate_taxonomy(input_path: Path, output_path: Path, dry_run: bool = False) -> list[dict[str, Any]]:
+    records = load_records(input_path)
+    taxonomizer = ReflectionTaxonomizer()
+    annotated: list[dict[str, Any]] = []
+
+    for index, record in enumerate(records):
+        trace = reflection_trace_from_record(record, index)
+        annotation = taxonomizer.classify(trace)
+        confidence = annotation.confidence
+        if not math.isfinite(confidence) or confidence < 0.0 or confidence > 1.0:
+            raise ValueError(f"Invalid taxonomy_confidence for trace_id={trace.trace_id!r}: {confidence!r}")
+        annotated.append(
+            {
+                **record,
+                "trace_id": trace.trace_id,
+                "task_id": trace.task_id,
+                "reflection_text": trace.reflection_text,
+                "task_difficulty": trace.task_difficulty,
+                "intervention_magnitude": trace.intervention_magnitude,
+                "locality_score": trace.locality_score,
+                "category": annotation.category.name,
+                "taxonomy_confidence": confidence,
+                "taxonomy_rationale": annotation.rationale,
+            }
+        )
+
+    if dry_run:
+        preview = [
+            {
+                "trace_id": record["trace_id"],
+                "category": record["category"],
+                "taxonomy_confidence": record["taxonomy_confidence"],
+            }
+            for record in annotated[:3]
+        ]
+        print(
+            {
+                "dry_run": True,
+                "taxonomy_input": str(input_path),
+                "output": str(output_path),
+                "records": len(annotated),
+                "preview": preview,
+            }
+        )
+        return annotated
+
+    write_records(annotated, output_path)
+    print(f"Wrote {len(annotated)} taxonomy-annotated traces to {output_path}")
+    return annotated
+
+
+def parse_category_sequence(value: str | None) -> list[ReflectionStyle] | None:
+    if value is None or not value.strip():
+        return None
+    categories: list[ReflectionStyle] = []
+    for raw_name in value.split(","):
+        normalized = raw_name.strip().upper().replace("-", "_")
+        categories.append(ReflectionStyle[normalized])
+    return categories
+
+
+def synthetic_record_from_chain(
+    chain: ReflectionChain,
+    index: int,
+    seed: int,
+) -> dict[str, Any]:
+    spans: list[dict[str, Any]] = []
+    cursor = 0
+    for step_index, step in enumerate(chain.reflection_chain):
+        length = len(step.text.split())
+        spans.append(
+            {
+                "start_token": cursor,
+                "end_token": cursor + length,
+                "reflection_type": step.category.lower(),
+                "content": step.text,
+                "step_index": step_index,
+            }
+        )
+        cursor += length
+
+    categories = chain.categories()
+    primary_category = categories[0] if categories else "OTHER"
+    return {
+        "trace_id": chain.trace_id,
+        "sample_id": chain.trace_id,
+        "task_id": f"synthetic-reflection-{index:05d}",
+        "task_type": "synthetic_reflection",
+        "question": f"Synthetic reflection benchmark item {index}.",
+        "reasoning_trace": chain.chain_text(),
+        "reflection_text": chain.chain_text(),
+        "reflection_chain": [step.to_dict() for step in chain.reflection_chain],
+        "reflection_categories": categories,
+        "reflection_spans": spans,
+        "category": primary_category,
+        "taxonomy_confidence": 1.0,
+        "taxonomy_rationale": "synthetic category-conditioned template",
+        "task_difficulty": 1 + (index % 5),
+        "intervention_magnitude": [0.2, 0.5, 0.9][index % 3],
+        "locality_score": [0.9, 0.6, 0.2][index % 3],
+        "correctness": True,
+        "final_answer": "synthetic",
+        "reference_answer": "synthetic",
+        "synthetic": True,
+        "generation_config": {
+            "mode": "synthetic_balanced",
+            "seed": seed,
+            "chain_length": len(chain),
+        },
+    }
+
+
+def write_synthetic_records(records: list[dict[str, Any]], output_path: Path) -> None:
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    if output_path.suffix.lower() == ".json":
+        output_path.write_text(
+            json.dumps(records, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        return
+    write_records(records, output_path)
+
+
+def generate_synthetic_balanced(args: argparse.Namespace) -> list[dict[str, Any]]:
+    generator = DiverseReflectionGenerator()
+    sequence = parse_category_sequence(args.category_sequence)
+    if sequence is not None:
+        chains = generator.generate_chain(
+            sequence,
+            seed=args.seed,
+            n=args.n_per_category * len(ReflectionStyle),
+        )
+    else:
+        chains = generator.generate_balanced(
+            n_per_category=args.n_per_category,
+            seed=args.seed,
+            chain_length=args.chain_length,
+        )
+    records = [
+        synthetic_record_from_chain(chain, index=index, seed=args.seed)
+        for index, chain in enumerate(chains)
+    ]
+    if args.dry_run:
+        preview = [
+            {
+                "trace_id": record["trace_id"],
+                "category": record["category"],
+                "reflection_categories": record["reflection_categories"],
+            }
+            for record in records[:3]
+        ]
+        print(
+            {
+                "dry_run": True,
+                "mode": "synthetic_balanced",
+                "records": len(records),
+                "output": str(args.output),
+                "preview": preview,
+            }
+        )
+        return records
+
+    write_synthetic_records(records, args.output)
+    print(f"Wrote {len(records)} synthetic traces to {args.output}")
+    return records
+
+
 def generate_trace(
     question: str,
     prompt_template: str,
@@ -128,6 +400,8 @@ def generate_trace(
     model: AutoModelForCausalLM,
     args: argparse.Namespace,
 ) -> str:
+    import torch
+
     prompt = build_prompt(prompt_template, question)
     inputs = tokenizer(
         prompt,
@@ -155,6 +429,34 @@ def generate_trace(
 
 def main() -> None:
     args = parse_args()
+    if args.taxonomy:
+        annotate_taxonomy(args.taxonomy_input, args.output, dry_run=args.dry_run)
+        return
+
+    if args.synthetic_balanced:
+        generate_synthetic_balanced(args)
+        return
+
+    if args.dry_run:
+        print(
+            {
+                "dry_run": True,
+                "mode": "generate",
+                "model_name_or_path": args.model_name_or_path,
+                "split": args.split,
+                "max_samples": args.max_samples,
+                "output": str(args.output),
+            }
+        )
+        return
+
+    if not args.model_name_or_path:
+        raise ValueError("--model-name-or-path is required unless --taxonomy or --dry-run is set.")
+
+    import torch
+    from datasets import load_dataset
+    from transformers import AutoModelForCausalLM, AutoTokenizer, set_seed
+
     set_seed(args.seed)
 
     prompt_template = args.prompt_file.read_text(encoding="utf-8")
@@ -192,7 +494,7 @@ def main() -> None:
         "prompt_file": str(args.prompt_file),
     }
 
-    with jsonlines.open(args.output, mode="w") as writer:
+    with args.output.open("w", encoding="utf-8") as handle:
         for idx, sample in enumerate(dataset):
             reasoning_trace = generate_trace(
                 sample["question"],
@@ -202,21 +504,20 @@ def main() -> None:
                 args,
             )
             final_answer = extract_final_answer(reasoning_trace)
-            writer.write(
-                {
-                    "sample_id": f"gsm8k-{args.split}-{idx}",
-                    "task_id": f"gsm8k-{args.split}-{idx}",
-                    "task_type": "gsm8k",
-                    "question": sample["question"],
-                    "reasoning_trace": reasoning_trace,
-                    "reflection_spans": extract_reflection_spans(reasoning_trace, tokenizer),
-                    "final_answer": final_answer,
-                    "reference_answer": sample["answer"],
-                    "correctness": is_correct(final_answer, sample["answer"]),
-                    "model_name": args.model_name_or_path,
-                    "generation_config": generation_config,
-                }
-            )
+            record = {
+                "sample_id": f"gsm8k-{args.split}-{idx}",
+                "task_id": f"gsm8k-{args.split}-{idx}",
+                "task_type": "gsm8k",
+                "question": sample["question"],
+                "reasoning_trace": reasoning_trace,
+                "reflection_spans": extract_reflection_spans(reasoning_trace, tokenizer),
+                "final_answer": final_answer,
+                "reference_answer": sample["answer"],
+                "correctness": is_correct(final_answer, sample["answer"]),
+                "model_name": args.model_name_or_path,
+                "generation_config": generation_config,
+            }
+            handle.write(json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n")
 
     print(f"Wrote {len(dataset)} traces to {args.output}")
 
