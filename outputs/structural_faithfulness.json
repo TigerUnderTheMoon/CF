@@ -1,0 +1,43 @@
+{
+  "mean_phase5_attribution_score": 0.536125,
+  "mean_structural_node_necessity": 0.27455968391630153,
+  "num_edges": 2098,
+  "num_graphs": 800,
+  "num_nodes": 2400,
+  "num_samples": 2400,
+  "pearson": 0.07532678914864946,
+  "phase5_summary": {
+    "faithfulness_pearson": 0.1582914003206566,
+    "faithfulness_rank_agreement": 0.5766666666666667,
+    "faithfulness_spearman": 0.1458897195146045,
+    "faithfulness_top_k_overlap": {
+      "10": 0.0,
+      "3": 0.0,
+      "5": 0.0
+    },
+    "mean_compression_ratio": 0.2858333333333334,
+    "mean_necessity": 0.06364583333333333,
+    "mean_necessity_normalized": 0.12166666666666667,
+    "median_compression_ratio": 0.0,
+    "num_ablation_runs_by_strategy": {
+      "ATTRIBUTION_BOTTOM_K": 2400,
+      "ATTRIBUTION_TOP_K": 2400,
+      "CATEGORY_MATCHED_RANDOM": 2400,
+      "POSITIONAL_FIRST_K": 2400,
+      "POSITIONAL_LAST_K": 2400,
+      "RANDOM_K": 2400
+    },
+    "num_ablations": 2400,
+    "num_traces": 800,
+    "redundancy_ratio": 0.14541666666666667,
+    "std_necessity": 0.2826331536921531,
+    "traces_with_redundancy": 303
+  },
+  "removal_mode": "PRUNE",
+  "structural_metrics": {
+    "bridge_node_fraction": 0.45916666666666667,
+    "influence_depth": 1.1189583333333333,
+    "reachable_ratio": 1.0,
+    "structural_influence_mean": 0.16469166666666665
+  }
+}
