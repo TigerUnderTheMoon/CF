@@ -21,7 +21,9 @@ def test_balanced_taxonomy_entropy_high_and_all_represented() -> None:
 
 def test_taxonomy_collapse_warning() -> None:
     traces = DiverseReflectionGenerator().generate(ReflectionStyle.VERIFICATION, seed=1, n=20)
-    with pytest.warns(RuntimeWarning, match="taxonomy collapse detected"):
+    with pytest.warns(RuntimeWarning) as warning_records:
         report = TaxonomyCoverageAnalyzer().analyze(traces)
+    warning_messages = [str(warning.message) for warning in warning_records]
+    assert "low taxonomy diversity" in warning_messages
     assert report.collapsed is True
-    assert "taxonomy collapse detected" in report.warnings
+    assert "low taxonomy diversity" in report.warnings

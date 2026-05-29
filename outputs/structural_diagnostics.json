@@ -1,0 +1,412 @@
+{
+  "cross_mode": {
+    "highest_pearson_mode": "BYPASS",
+    "lowest_pearson_mode": "CASCADE",
+    "mean_zero_structural_necessity_fraction": 0.6779166666666666
+  },
+  "inputs": {
+    "phase5_scores": "D:\\CF\\outputs\\necessity_scores.jsonl",
+    "traces": "D:\\CF\\data\\traces\\synthetic_100x8.json"
+  },
+  "interpretation": {
+    "boundary": "local attribution and topology-sensitive necessity are different signals",
+    "causal_scope": "Phase 6 studies topology-mediated functional influence, not true causal identification",
+    "primary_reading": "weak structural alignment"
+  },
+  "modes": {
+    "BYPASS": {
+      "correlation": {
+        "kendall_tau": 0.054531098429590245,
+        "num_samples": 2400,
+        "pearson": 0.0916572314944008,
+        "spearman": 0.062345177534305025,
+        "top_k_overlap": {
+          "10": 0.2,
+          "3": 0.3333333333333333,
+          "5": 0.2
+        }
+      },
+      "num_node_rows": 2400,
+      "scatter": {
+        "attribution_score": {
+          "count": 2400.0,
+          "max": 0.9,
+          "mean": 0.536125,
+          "median": 0.6,
+          "min": 0.0,
+          "p25": 0.3,
+          "p75": 0.75,
+          "std": 0.3282453112764903
+        },
+        "num_samples": 2400,
+        "structural_necessity": {
+          "count": 2400.0,
+          "max": 1.0,
+          "mean": 0.2570699401804053,
+          "median": 0.0,
+          "min": 0.0,
+          "p25": 0.0,
+          "p75": 0.5625,
+          "std": 0.40898486890901486
+        }
+      },
+      "stratified": {
+        "source_role": {
+          "non_source_node": {
+            "num_samples": 1600,
+            "pearson": 0.20267790923430654,
+            "spearman": 0.11136878354264729
+          },
+          "source_node": {
+            "num_samples": 800,
+            "pearson": -0.04574534926130169,
+            "spearman": -0.012462217678591427
+          }
+        },
+        "step_idx": {
+          "0": {
+            "num_samples": 800,
+            "pearson": -0.04574534926130169,
+            "spearman": -0.012462217678591427
+          },
+          "1": {
+            "num_samples": 800,
+            "pearson": 0.19241511345491508,
+            "spearman": 0.08232228397530587
+          },
+          "2": {
+            "num_samples": 800,
+            "pearson": 0.2136146955566838,
+            "spearman": 0.1539982757267178
+          }
+        },
+        "taxonomy": {
+          "BACKTRACKING": {
+            "num_samples": 284,
+            "pearson": 0.19843678735554113,
+            "spearman": 0.1264537453127588
+          },
+          "CONSTRAINT_TRACKING": {
+            "num_samples": 313,
+            "pearson": 0.16494746444101788,
+            "spearman": 0.13756055986627566
+          },
+          "DECOMPOSITION": {
+            "num_samples": 282,
+            "pearson": 0.10944166609794821,
+            "spearman": 0.1168483179896727
+          },
+          "ERROR_CORRECTION": {
+            "num_samples": 288,
+            "pearson": 5.98023875780482e-17,
+            "spearman": 0.0
+          },
+          "PLANNING": {
+            "num_samples": 313,
+            "pearson": 0.09810375637185818,
+            "spearman": 0.06728103635912037
+          },
+          "RETRIEVAL": {
+            "num_samples": 300,
+            "pearson": 0.0,
+            "spearman": 0.0
+          },
+          "UNCERTAINTY_MONITORING": {
+            "num_samples": 298,
+            "pearson": -0.01710089703486584,
+            "spearman": -0.02465226478038214
+          },
+          "VERIFICATION": {
+            "num_samples": 322,
+            "pearson": 0.06299868005919497,
+            "spearman": 0.08213902265892148
+          }
+        }
+      },
+      "zero_inflation": {
+        "both_positive_count": 615,
+        "both_positive_fraction": 0.25625,
+        "both_zero_count": 438,
+        "both_zero_fraction": 0.1825,
+        "num_samples": 2400,
+        "positive_attribution_count": 1804,
+        "positive_attribution_fraction": 0.7516666666666667,
+        "positive_attribution_zero_necessity_count": 1189,
+        "positive_attribution_zero_necessity_fraction": 0.49541666666666667,
+        "positive_structural_necessity_count": 773,
+        "positive_structural_necessity_fraction": 0.32208333333333333,
+        "zero_attribution_positive_necessity_count": 158,
+        "zero_attribution_positive_necessity_fraction": 0.06583333333333333,
+        "zero_structural_necessity_count": 1627,
+        "zero_structural_necessity_fraction": 0.6779166666666666,
+        "zero_tolerance": 0.0
+      }
+    },
+    "CASCADE": {
+      "correlation": {
+        "kendall_tau": 0.0455428481387802,
+        "num_samples": 2400,
+        "pearson": 0.05225636814210746,
+        "spearman": 0.051152623409248074,
+        "top_k_overlap": {
+          "10": 0.2,
+          "3": 0.3333333333333333,
+          "5": 0.2
+        }
+      },
+      "num_node_rows": 2400,
+      "scatter": {
+        "attribution_score": {
+          "count": 2400.0,
+          "max": 0.9,
+          "mean": 0.536125,
+          "median": 0.6,
+          "min": 0.0,
+          "p25": 0.3,
+          "p75": 0.75,
+          "std": 0.3282453112764903
+        },
+        "num_samples": 2400,
+        "structural_necessity": {
+          "count": 2400.0,
+          "max": 1.0,
+          "mean": 0.29385945243482003,
+          "median": 0.0,
+          "min": 0.0,
+          "p25": 0.0,
+          "p75": 1.0,
+          "std": 0.4365938079749049
+        }
+      },
+      "stratified": {
+        "source_role": {
+          "non_source_node": {
+            "num_samples": 1600,
+            "pearson": 0.11268863096125135,
+            "spearman": 0.08842028108292048
+          },
+          "source_node": {
+            "num_samples": 800,
+            "pearson": -0.04574534926130169,
+            "spearman": -0.012462217678591427
+          }
+        },
+        "step_idx": {
+          "0": {
+            "num_samples": 800,
+            "pearson": -0.04574534926130169,
+            "spearman": -0.012462217678591427
+          },
+          "1": {
+            "num_samples": 800,
+            "pearson": 0.04344374179534112,
+            "spearman": 0.04176077869099879
+          },
+          "2": {
+            "num_samples": 800,
+            "pearson": 0.2136146955566838,
+            "spearman": 0.1539982757267178
+          }
+        },
+        "taxonomy": {
+          "BACKTRACKING": {
+            "num_samples": 284,
+            "pearson": 0.07293029273585128,
+            "spearman": 0.07580444559951728
+          },
+          "CONSTRAINT_TRACKING": {
+            "num_samples": 313,
+            "pearson": 0.09924354584554848,
+            "spearman": 0.10800954092565446
+          },
+          "DECOMPOSITION": {
+            "num_samples": 282,
+            "pearson": 0.09044429574243723,
+            "spearman": 0.1134275339950459
+          },
+          "ERROR_CORRECTION": {
+            "num_samples": 288,
+            "pearson": 1.3828648920827626e-16,
+            "spearman": 0.0
+          },
+          "PLANNING": {
+            "num_samples": 313,
+            "pearson": 0.042590298102303435,
+            "spearman": 0.045687552014502565
+          },
+          "RETRIEVAL": {
+            "num_samples": 300,
+            "pearson": 0.0,
+            "spearman": 0.0
+          },
+          "UNCERTAINTY_MONITORING": {
+            "num_samples": 298,
+            "pearson": -0.03630839167816703,
+            "spearman": -0.033698278619237056
+          },
+          "VERIFICATION": {
+            "num_samples": 322,
+            "pearson": 0.08686504805178676,
+            "spearman": 0.08621054091603199
+          }
+        }
+      },
+      "zero_inflation": {
+        "both_positive_count": 615,
+        "both_positive_fraction": 0.25625,
+        "both_zero_count": 438,
+        "both_zero_fraction": 0.1825,
+        "num_samples": 2400,
+        "positive_attribution_count": 1804,
+        "positive_attribution_fraction": 0.7516666666666667,
+        "positive_attribution_zero_necessity_count": 1189,
+        "positive_attribution_zero_necessity_fraction": 0.49541666666666667,
+        "positive_structural_necessity_count": 773,
+        "positive_structural_necessity_fraction": 0.32208333333333333,
+        "zero_attribution_positive_necessity_count": 158,
+        "zero_attribution_positive_necessity_fraction": 0.06583333333333333,
+        "zero_structural_necessity_count": 1627,
+        "zero_structural_necessity_fraction": 0.6779166666666666,
+        "zero_tolerance": 0.0
+      }
+    },
+    "PRUNE": {
+      "correlation": {
+        "kendall_tau": 0.052720005729508586,
+        "num_samples": 2400,
+        "pearson": 0.07532678914864946,
+        "spearman": 0.059630735131801046,
+        "top_k_overlap": {
+          "10": 0.2,
+          "3": 0.3333333333333333,
+          "5": 0.2
+        }
+      },
+      "num_node_rows": 2400,
+      "scatter": {
+        "attribution_score": {
+          "count": 2400.0,
+          "max": 0.9,
+          "mean": 0.536125,
+          "median": 0.6,
+          "min": 0.0,
+          "p25": 0.3,
+          "p75": 0.75,
+          "std": 0.3282453112764903
+        },
+        "num_samples": 2400,
+        "structural_necessity": {
+          "count": 2400.0,
+          "max": 1.0,
+          "mean": 0.27455968391630153,
+          "median": 0.0,
+          "min": 0.0,
+          "p25": 0.0,
+          "p75": 0.6323529411764706,
+          "std": 0.42181642413759696
+        }
+      },
+      "stratified": {
+        "source_role": {
+          "non_source_node": {
+            "num_samples": 1600,
+            "pearson": 0.16082122654444597,
+            "spearman": 0.10334446346211727
+          },
+          "source_node": {
+            "num_samples": 800,
+            "pearson": -0.04574534926130169,
+            "spearman": -0.012462217678591427
+          }
+        },
+        "step_idx": {
+          "0": {
+            "num_samples": 800,
+            "pearson": -0.04574534926130169,
+            "spearman": -0.012462217678591427
+          },
+          "1": {
+            "num_samples": 800,
+            "pearson": 0.12015782401599341,
+            "spearman": 0.0672273674793594
+          },
+          "2": {
+            "num_samples": 800,
+            "pearson": 0.2136146955566838,
+            "spearman": 0.1539982757267178
+          }
+        },
+        "taxonomy": {
+          "BACKTRACKING": {
+            "num_samples": 284,
+            "pearson": 0.1408123063918968,
+            "spearman": 0.10315051223339476
+          },
+          "CONSTRAINT_TRACKING": {
+            "num_samples": 313,
+            "pearson": 0.13759136809891392,
+            "spearman": 0.1261017825545965
+          },
+          "DECOMPOSITION": {
+            "num_samples": 282,
+            "pearson": 0.11016603616100863,
+            "spearman": 0.12008251326336931
+          },
+          "ERROR_CORRECTION": {
+            "num_samples": 288,
+            "pearson": -1.2730653848128853e-16,
+            "spearman": 0.0
+          },
+          "PLANNING": {
+            "num_samples": 313,
+            "pearson": 0.04855809501741633,
+            "spearman": 0.04630735689745277
+          },
+          "RETRIEVAL": {
+            "num_samples": 300,
+            "pearson": 0.0,
+            "spearman": 0.0
+          },
+          "UNCERTAINTY_MONITORING": {
+            "num_samples": 298,
+            "pearson": -0.017722759922064697,
+            "spearman": -0.023080701071855978
+          },
+          "VERIFICATION": {
+            "num_samples": 322,
+            "pearson": 0.0778450161691291,
+            "spearman": 0.08387982877293249
+          }
+        }
+      },
+      "zero_inflation": {
+        "both_positive_count": 615,
+        "both_positive_fraction": 0.25625,
+        "both_zero_count": 438,
+        "both_zero_fraction": 0.1825,
+        "num_samples": 2400,
+        "positive_attribution_count": 1804,
+        "positive_attribution_fraction": 0.7516666666666667,
+        "positive_attribution_zero_necessity_count": 1189,
+        "positive_attribution_zero_necessity_fraction": 0.49541666666666667,
+        "positive_structural_necessity_count": 773,
+        "positive_structural_necessity_fraction": 0.32208333333333333,
+        "zero_attribution_positive_necessity_count": 158,
+        "zero_attribution_positive_necessity_fraction": 0.06583333333333333,
+        "zero_structural_necessity_count": 1627,
+        "zero_structural_necessity_fraction": 0.6779166666666666,
+        "zero_tolerance": 0.0
+      }
+    }
+  },
+  "summary": {
+    "num_graphs": 800,
+    "num_phase5_scores": 2400,
+    "num_source_nodes": 800,
+    "top_k_values": [
+      3,
+      5,
+      10
+    ]
+  }
+}
