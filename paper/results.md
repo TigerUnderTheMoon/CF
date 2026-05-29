@@ -14,6 +14,20 @@ This mismatch does not invalidate reflective utility attribution. It indicates t
 
 The primary Phase 6 figure `outputs/figures/structural_diagnostics_attribution_vs_necessity.png` plots the weak alignment pattern. Mode-comparison and structural-faithfulness figures summarize supplementary diagnostics without changing the main interpretation.
 
+## Stage 2 Confirmatory Check
+
+The Stage 2 held-out validation reports a weak aggregate structural signal. Across 280 held-out traces and 840 held-out steps, FMA has Spearman rho 0.1628 with a 95 percent bootstrap interval of [0.0916, 0.2347]. The interval excludes zero on the full held-out set, but the effect-size label is `small`, so this should be described as low-magnitude aggregate alignment rather than a high-magnitude prediction result.
+
+The projection audit is sign-consistent across `pi_1`, `pi_2`, `pi_3`, and `pi_4`. Because FMA is already a step-level score vector, these projections are identity mappings for FMA and should be interpreted as a step-level representation audit.
+
+The stratum audit is heterogeneous. `S_high` and `S_low` pass the Spearman confidence-interval gate, while `S_mid` fails under part of the projection audit and the overlapping random audit stratum `S_rand` includes zero in its confidence intervals. Because the global Stage 2 gate requires all four strata, the claim table maps C1, C2, and C3 to `stratum_dependent`, not to a confirmation label.
+
+## Baseline Gate
+
+Required baseline families are not integrated. `outputs/stage2_baseline_results.json` registers random masking, span masking, graph removal, and edge dropout, but each is marked `not_evaluated_no_stage2_step_scores`. `outputs/stage2_baseline_leakage_audit.json` marks the same required rows as `missing_artifact`, with no independent held-out score vector `s_B(r_i)` available for comparison to the target `Delta U(r_i)`.
+
+These rows are blockers rather than negative baseline results. No primary comparison table should report fabricated rank, AUC, correlation, or confidence-interval values for these baselines. The current results therefore support a stratum-limited Stage 2 FMA audit only; they do not support a baseline-complete journal claim.
+
 ## Redundancy
 
 Phase 7 tests whether weak alignment can be explained by redundancy and compensatory redistribution. Redundancy density is moderate at 0.3842, with mean redundancy cluster size 1.1310 and cluster density 0.0983. This means that some reflective steps have substitutable structural profiles, but the graph is not broadly diffuse.
@@ -42,8 +56,8 @@ This result is consistent with the attribution-necessity distinction. Attributio
 
 The empirical pattern refines the initial hypothesis rather than rejecting the framework. The initial hypothesis expected reflection to exhibit distributed compensatory organization. The reported results record weak alignment, weak compensation, low distributedness, and sparse bottlenecks. The final interpretation is more conservative and more consistent with the reported outputs: reflective reasoning exhibits widespread local utility, but only sparse structural necessity.
 
-Empirical observations: weak Pearson alignment, high zero-necessity rate, moderate redundancy density, low compensation ratios, low distributedness, and sparse bottlenecks.
+Empirical observations: weak Pearson alignment, a weak aggregate Stage 2 rank-alignment signal with `stratum_dependent` gating, high zero-necessity rate, moderate redundancy density, low compensation ratios, low distributedness, sparse bottlenecks, and missing required baseline evidence.
 
-Structural interpretation: local utility is substantially more widespread than topology-sensitive dependence, so many reflective steps are locally functional without being structurally necessary under the protocol.
+Structural interpretation: local utility is substantially more widespread than topology-sensitive dependence, so many reflective steps are locally functional without being structurally necessary under the protocol. Held-out validation supports this relation only in a weak-effect regime and with `stratum_dependent` generalization.
 
 Possible interpretation: future process supervision may motivate future work that tests whether separating local utility scores from sparse bottleneck diagnostics is useful, but this remains a future direction rather than a conclusion drawn from the current deterministic proxy pipeline.

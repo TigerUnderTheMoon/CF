@@ -1,0 +1,59 @@
+{
+  "claim_rule": "All claims must hold across all strata or be labeled stratum-dependent.",
+  "forbidden": [
+    "reporting only stable subsets",
+    "excluding unstable regimes",
+    "choosing k, q, or delta after Stage 2 results",
+    "treating Stage 1 as confirmatory evidence"
+  ],
+  "protocol_version": "journal_step_impact_v2_3",
+  "result_schema": {
+    "claim_label": [
+      "supported",
+      "confirmed",
+      "confirmed_weak",
+      "qualified",
+      "projection-dependent",
+      "stratum-dependent",
+      "unsupported",
+      "insufficient_samples"
+    ],
+    "metrics": "all primary metrics with mean/std/bootstrap_ci95",
+    "model": "<model_id>",
+    "n_traces": "int",
+    "stratum": "S_high|S_mid|S_low|S_rand",
+    "trace_regime": "<trace_regime>"
+  },
+  "results": [],
+  "stage_1": {
+    "inputs": "pilot traces with reduced seeds",
+    "name": "screening_only",
+    "outputs": "stability strata only",
+    "restriction": "No final claim may be made from Stage 1."
+  },
+  "stage_2": {
+    "held_out_requirement": "Use disjoint held-out traces or held-out tasks.",
+    "name": "held_out_validation",
+    "parameter_lock": "k, q, delta, projections, metrics, and strata rules must be fixed before Stage 2."
+  },
+  "strata": {
+    "S_high": "high-stability region under frozen g(T)",
+    "S_low": "low-stability region under frozen g(T)",
+    "S_mid": "median-stability region under frozen g(T)",
+    "S_rand": "overlapping uniform random audit sample with a fixed seed"
+  },
+  "strata_semantics": {
+    "audit_strata": [
+      "S_rand"
+    ],
+    "overlap_allowed": {
+      "S_rand": true
+    },
+    "partition_rule": "Only S_low, S_mid, and S_high are expected to sum to the Stage 2 trace count.",
+    "partition_strata": [
+      "S_low",
+      "S_mid",
+      "S_high"
+    ]
+  }
+}

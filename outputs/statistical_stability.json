@@ -1,0 +1,46 @@
+{
+  "bootstrap": {
+    "ci_percentiles": [
+      2.5,
+      97.5
+    ],
+    "minimum_resamples": 1000,
+    "resample_unit": "trace"
+  },
+  "descriptive_labels": {
+    "allowed": [
+      "unstable",
+      "partial",
+      "stable"
+    ],
+    "restriction": "Labels summarize distributions only; they are not primary claims."
+  },
+  "protocol_version": "journal_step_impact_v2_3",
+  "required_group_keys": [
+    "model",
+    "trace_regime"
+  ],
+  "required_outputs": [
+    "mean_rho",
+    "std_rho",
+    "bootstrap_ci95_rho",
+    "full_distribution_plot"
+  ],
+  "result_schema": {
+    "baseline": "<baseline_id>",
+    "bootstrap_ci95_rho": [
+      "float_low",
+      "float_high"
+    ],
+    "distribution_plot": "outputs/figures/stability_distributions/<file>.png",
+    "label": "unstable|partial|stable",
+    "mean_rho": "float",
+    "model": "<model_id>",
+    "n_traces": "int",
+    "projection": "pi_1|pi_2|pi_3|pi_4|not_applicable",
+    "std_rho": "float",
+    "trace_regime": "<trace_regime>"
+  },
+  "results": [],
+  "target_distribution": "P(spearman_rho | model, trace_regime)"
+}

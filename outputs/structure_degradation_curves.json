@@ -1,0 +1,59 @@
+{
+  "claim": "Step-impact prediction changes as a function of structural integrity.",
+  "degradation_curve": {
+    "definition": "D_k = Delta_U_L0 - Delta_U_Lk",
+    "required_points": [
+      "L0",
+      "L1",
+      "L2",
+      "L3"
+    ]
+  },
+  "levels": [
+    {
+      "corruption_index": 0,
+      "level": "L0",
+      "modification": "original graph"
+    },
+    {
+      "corruption_index": 1,
+      "dropout_fraction_range": [
+        0.1,
+        0.2
+      ],
+      "level": "L1",
+      "modification": "edge dropout"
+    },
+    {
+      "corruption_index": 2,
+      "level": "L2",
+      "modification": "neighborhood rewiring"
+    },
+    {
+      "corruption_index": 3,
+      "level": "L3",
+      "modification": "full randomization"
+    }
+  ],
+  "protocol_version": "journal_step_impact_v2_3",
+  "result_schema": {
+    "D_k": "float",
+    "baseline": "<baseline_id>",
+    "curve_plot": "outputs/figures/structure_degradation/<file>.png",
+    "delta_u_ci95": [
+      "float_low",
+      "float_high"
+    ],
+    "delta_u_mean": "float",
+    "delta_u_std": "float",
+    "level": "L0|L1|L2|L3",
+    "model": "<model_id>",
+    "sensitivity_slope": "float",
+    "trace_regime": "<trace_regime>"
+  },
+  "results": [],
+  "sensitivity_slope": {
+    "definition": "slope of Delta_U with respect to corruption_index over L0-L3",
+    "estimator": "pre-registered linear slope or finite-difference slope; choice fixed before Stage 2"
+  }
+}

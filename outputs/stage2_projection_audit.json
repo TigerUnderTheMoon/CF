@@ -1,0 +1,2897 @@
+{
+  "baseline_projection_status": {
+    "evaluated": [
+      {
+        "method": "fma_v1_2_step_attribution",
+        "projection_policy": "identity_for_preprojected_step_level_fma",
+        "status": "evaluated"
+      }
+    ],
+    "not_evaluated": [
+      {
+        "baseline": "random masking",
+        "status": "not_available_no_stage2_prediction_vector"
+      },
+      {
+        "baseline": "token dropout",
+        "status": "not_available_no_stage2_prediction_vector"
+      },
+      {
+        "baseline": "span masking",
+        "status": "not_available_no_stage2_prediction_vector"
+      },
+      {
+        "baseline": "gradient attribution",
+        "status": "not_available_no_stage2_prediction_vector"
+      },
+      {
+        "baseline": "integrated gradients",
+        "status": "not_available_no_stage2_prediction_vector"
+      },
+      {
+        "baseline": "attention rollout",
+        "status": "not_available_no_stage2_prediction_vector"
+      },
+      {
+        "baseline": "activation attribution",
+        "status": "not_available_no_stage2_prediction_vector"
+      },
+      {
+        "baseline": "graph removal",
+        "status": "not_available_no_stage2_prediction_vector"
+      },
+      {
+        "baseline": "edge dropout",
+        "status": "not_available_no_stage2_prediction_vector"
+      },
+      {
+        "baseline": "neighborhood rewiring",
+        "status": "not_available_no_stage2_prediction_vector"
+      },
+      {
+        "baseline": "full randomization",
+        "status": "not_available_no_stage2_prediction_vector"
+      },
+      {
+        "baseline": "self-refine",
+        "status": "not_available_no_stage2_prediction_vector"
+      },
+      {
+        "baseline": "reflexion",
+        "status": "not_available_no_stage2_prediction_vector"
+      }
+    ]
+  },
+  "claim_gating": {
+    "claims": [
+      {
+        "ci_excludes_zero": true,
+        "claim_id": "C1_rank_generalization",
+        "downgrade_reason": "Multiple stratum Spearman CIs include zero: S_mid, S_rand",
+        "effect_size_label": "small",
+        "full_stage2_spearman_mean": 0.1628159188147139,
+        "label": "stratum-dependent",
+        "notes": "Multiple stratum Spearman CIs include zero: S_mid, S_rand",
+        "passing_strata": 2,
+        "projection_status": "sign_consistent_positive",
+        "rho_ci95": [
+          0.09164376442087281,
+          0.2346950280012327
+        ],
+        "rho_mean": 0.1628159188147139,
+        "stage2_confirmation_label": "stratum-dependent"
+      },
+      {
+        "ci_excludes_zero": true,
+        "claim_id": "C2_projection_robustness",
+        "downgrade_reason": "Multiple stratum Spearman CIs include zero: S_mid, S_rand",
+        "effect_size_label": "small",
+        "full_stage2_spearman_mean": 0.1628159188147139,
+        "label": "stratum-dependent",
+        "notes": "Multiple stratum Spearman CIs include zero: S_mid, S_rand",
+        "passing_strata": 2,
+        "projection_status": "sign_consistent_positive",
+        "rho_ci95": [
+          0.09164376442087281,
+          0.2346950280012327
+        ],
+        "rho_mean": 0.1628159188147139,
+        "stage2_confirmation_label": "stratum-dependent"
+      },
+      {
+        "ci_excludes_zero": true,
+        "claim_id": "C3_stratified_generalization",
+        "downgrade_reason": "Multiple stratum Spearman CIs include zero: S_mid, S_rand",
+        "effect_size_label": "small",
+        "full_stage2_spearman_mean": 0.1628159188147139,
+        "label": "stratum-dependent",
+        "notes": "Multiple stratum Spearman CIs include zero: S_mid, S_rand",
+        "passing_strata": 2,
+        "projection_status": "sign_consistent_positive",
+        "rho_ci95": [
+          0.09164376442087281,
+          0.2346950280012327
+        ],
+        "rho_mean": 0.1628159188147139,
+        "stage2_confirmation_label": "stratum-dependent"
+      }
+    ],
+    "full_stage2_pass": true,
+    "full_stage2_rho_gate": {
+      "all_ci_lower_gt_zero": true,
+      "all_gate_pass": true,
+      "all_mean_positive": true,
+      "by_projection": {
+        "pi_1": {
+          "ci_excludes_zero": true,
+          "effect_size_label": "small",
+          "gate_pass": true,
+          "rho_ci95": [
+            0.09756769153580891,
+            0.2311570939642776
+          ],
+          "rho_mean": 0.1628159188147139
+        },
+        "pi_2": {
+          "ci_excludes_zero": true,
+          "effect_size_label": "small",
+          "gate_pass": true,
+          "rho_ci95": [
+            0.09164376442087281,
+            0.2292376195695472
+          ],
+          "rho_mean": 0.1628159188147139
+        },
+        "pi_3": {
+          "ci_excludes_zero": true,
+          "effect_size_label": "small",
+          "gate_pass": true,
+          "rho_ci95": [
+            0.09637670445071041,
+            0.2346950280012327
+          ],
+          "rho_mean": 0.1628159188147139
+        },
+        "pi_4": {
+          "ci_excludes_zero": true,
+          "effect_size_label": "small",
+          "gate_pass": true,
+          "rho_ci95": [
+            0.09397874935521011,
+            0.22735958281902546
+          ],
+          "rho_mean": 0.1628159188147139
+        }
+      },
+      "ci_excludes_zero": true,
+      "effect_size_label": "small",
+      "rho_ci95": [
+        0.09164376442087281,
+        0.2346950280012327
+      ],
+      "rho_mean": 0.1628159188147139
+    },
+    "primary_metric": "spearman_rho",
+    "projection_status": "sign_consistent_positive",
+    "stratum_passes": {
+      "S_high": true,
+      "S_low": true,
+      "S_mid": false,
+      "S_rand": false
+    },
+    "stratum_rho_gates": {
+      "S_high": {
+        "all_ci_lower_gt_zero": true,
+        "all_gate_pass": true,
+        "all_mean_positive": true,
+        "by_projection": {
+          "pi_1": {
+            "ci_excludes_zero": true,
+            "effect_size_label": "small",
+            "gate_pass": true,
+            "rho_ci95": [
+              0.11394109425474236,
+              0.35623118211968424
+            ],
+            "rho_mean": 0.2372277185644201
+          },
+          "pi_2": {
+            "ci_excludes_zero": true,
+            "effect_size_label": "small",
+            "gate_pass": true,
+            "rho_ci95": [
+              0.1261150692759515,
+              0.3561951674432822
+            ],
+            "rho_mean": 0.2372277185644201
+          },
+          "pi_3": {
+            "ci_excludes_zero": true,
+            "effect_size_label": "small",
+            "gate_pass": true,
+            "rho_ci95": [
+              0.12177659363822073,
+              0.3669285554084101
+            ],
+            "rho_mean": 0.2372277185644201
+          },
+          "pi_4": {
+            "ci_excludes_zero": true,
+            "effect_size_label": "small",
+            "gate_pass": true,
+            "rho_ci95": [
+              0.10462899313878066,
+              0.35333070780060655
+            ],
+            "rho_mean": 0.2372277185644201
+          }
+        },
+        "ci_excludes_zero": true,
+        "ci_includes_zero": false,
+        "effect_size_label": "small",
+        "mean_direction_failure": false,
+        "passed": true,
+        "rho_ci95": [
+          0.10462899313878066,
+          0.3669285554084101
+        ],
+        "rho_mean": 0.2372277185644201,
+        "status": "ok"
+      },
+      "S_low": {
+        "all_ci_lower_gt_zero": true,
+        "all_gate_pass": true,
+        "all_mean_positive": true,
+        "by_projection": {
+          "pi_1": {
+            "ci_excludes_zero": true,
+            "effect_size_label": "small",
+            "gate_pass": true,
+            "rho_ci95": [
+              0.02127659574468085,
+              0.23394022400815512
+            ],
+            "rho_mean": 0.1283210407073518
+          },
+          "pi_2": {
+            "ci_excludes_zero": true,
+            "effect_size_label": "small",
+            "gate_pass": true,
+            "rho_ci95": [
+              0.030489631955153605,
+              0.22615244945955001
+            ],
+            "rho_mean": 0.1283210407073518
+          },
+          "pi_3": {
+            "ci_excludes_zero": true,
+            "effect_size_label": "small",
+            "gate_pass": true,
+            "rho_ci95": [
+              0.030454000413606915,
+              0.23828727207685146
+            ],
+            "rho_mean": 0.1283210407073518
+          },
+          "pi_4": {
+            "ci_excludes_zero": true,
+            "effect_size_label": "small",
+            "gate_pass": true,
+            "rho_ci95": [
+              0.030454000413606915,
+              0.22901950943926705
+            ],
+            "rho_mean": 0.1283210407073518
+          }
+        },
+        "ci_excludes_zero": true,
+        "ci_includes_zero": false,
+        "effect_size_label": "small",
+        "mean_direction_failure": false,
+        "passed": true,
+        "rho_ci95": [
+          0.02127659574468085,
+          0.23828727207685146
+        ],
+        "rho_mean": 0.1283210407073518,
+        "status": "ok"
+      },
+      "S_mid": {
+        "all_ci_lower_gt_zero": false,
+        "all_gate_pass": false,
+        "all_mean_positive": true,
+        "by_projection": {
+          "pi_1": {
+            "ci_excludes_zero": true,
+            "effect_size_label": "small",
+            "gate_pass": true,
+            "rho_ci95": [
+              0.007871514059880402,
+              0.24942099379254443
+            ],
+            "rho_mean": 0.12326990984019091
+          },
+          "pi_2": {
+            "ci_excludes_zero": true,
+            "effect_size_label": "small",
+            "gate_pass": true,
+            "rho_ci95": [
+              0.009276086439559676,
+              0.24657583435678385
+            ],
+            "rho_mean": 0.12326990984019091
+          },
+          "pi_3": {
+            "ci_excludes_zero": false,
+            "effect_size_label": "small",
+            "gate_pass": false,
+            "rho_ci95": [
+              -0.000788722746094269,
+              0.2336946801422705
+            ],
+            "rho_mean": 0.12326990984019091
+          },
+          "pi_4": {
+            "ci_excludes_zero": false,
+            "effect_size_label": "small",
+            "gate_pass": false,
+            "rho_ci95": [
+              -0.0014405870560813042,
+              0.23866830562050143
+            ],
+            "rho_mean": 0.12326990984019091
+          }
+        },
+        "ci_excludes_zero": false,
+        "ci_includes_zero": true,
+        "effect_size_label": "small",
+        "mean_direction_failure": false,
+        "passed": false,
+        "rho_ci95": [
+          -0.0014405870560813042,
+          0.24942099379254443
+        ],
+        "rho_mean": 0.12326990984019091,
+        "status": "ok"
+      },
+      "S_rand": {
+        "all_ci_lower_gt_zero": false,
+        "all_gate_pass": false,
+        "all_mean_positive": true,
+        "by_projection": {
+          "pi_1": {
+            "ci_excludes_zero": false,
+            "effect_size_label": "negligible",
+            "gate_pass": false,
+            "rho_ci95": [
+              -0.04511991852372722,
+              0.17638148639041892
+            ],
+            "rho_mean": 0.06883789020050197
+          },
+          "pi_2": {
+            "ci_excludes_zero": false,
+            "effect_size_label": "negligible",
+            "gate_pass": false,
+            "rho_ci95": [
+              -0.05590862137217227,
+              0.18144385569094068
+            ],
+            "rho_mean": 0.06883789020050197
+          },
+          "pi_3": {
+            "ci_excludes_zero": false,
+            "effect_size_label": "negligible",
+            "gate_pass": false,
+            "rho_ci95": [
+              -0.04223874441156462,
+              0.1921078000406929
+            ],
+            "rho_mean": 0.06883789020050197
+          },
+          "pi_4": {
+            "ci_excludes_zero": false,
+            "effect_size_label": "negligible",
+            "gate_pass": false,
+            "rho_ci95": [
+              -0.05014627314784706,
+              0.18283171360113318
+            ],
+            "rho_mean": 0.06883789020050197
+          }
+        },
+        "ci_excludes_zero": false,
+        "ci_includes_zero": true,
+        "effect_size_label": "negligible",
+        "mean_direction_failure": false,
+        "passed": false,
+        "rho_ci95": [
+          -0.05590862137217227,
+          0.1921078000406929
+        ],
+        "rho_mean": 0.06883789020050197,
+        "status": "ok"
+      }
+    },
+    "underfilled_strata": []
+  },
+  "fma_version": "v1.2",
+  "forbidden_selection_check": {
+    "all_four_projections_reported": true,
+    "best_projection_selected_for_main_table": false,
+    "worst_case_projection_reported": true
+  },
+  "metric_summary_across_pi": {
+    "auc_high_impact_q10": {
+      "ci_excludes_zero_all_projections": false,
+      "gate_pass_all_projections": false,
+      "metric_mean_across_pi": 0.5473214285714286,
+      "metric_variance_across_pi": 0.0,
+      "sign_consistency": true,
+      "signs": {
+        "pi_1": "positive",
+        "pi_2": "positive",
+        "pi_3": "positive",
+        "pi_4": "positive"
+      },
+      "worst_case_projection": "pi_1",
+      "worst_case_projection_performance": 0.5473214285714286
+    },
+    "auc_high_impact_q20": {
+      "ci_excludes_zero_all_projections": false,
+      "gate_pass_all_projections": false,
+      "metric_mean_across_pi": 0.5473214285714286,
+      "metric_variance_across_pi": 0.0,
+      "sign_consistency": true,
+      "signs": {
+        "pi_1": "positive",
+        "pi_2": "positive",
+        "pi_3": "positive",
+        "pi_4": "positive"
+      },
+      "worst_case_projection": "pi_1",
+      "worst_case_projection_performance": 0.5473214285714286
+    },
+    "kendall_tau": {
+      "ci_excludes_zero_all_projections": false,
+      "gate_pass_all_projections": false,
+      "metric_mean_across_pi": 0.15963192305963955,
+      "metric_variance_across_pi": 0.0,
+      "sign_consistency": true,
+      "signs": {
+        "pi_1": "positive",
+        "pi_2": "positive",
+        "pi_3": "positive",
+        "pi_4": "positive"
+      },
+      "worst_case_projection": "pi_1",
+      "worst_case_projection_performance": 0.15963192305963955
+    },
+    "ndcg_at_3": {
+      "ci_excludes_zero_all_projections": false,
+      "gate_pass_all_projections": false,
+      "metric_mean_across_pi": 0.4353448927250367,
+      "metric_variance_across_pi": 0.0,
+      "sign_consistency": true,
+      "signs": {
+        "pi_1": "positive",
+        "pi_2": "positive",
+        "pi_3": "positive",
+        "pi_4": "positive"
+      },
+      "worst_case_projection": "pi_1",
+      "worst_case_projection_performance": 0.4353448927250367
+    },
+    "ndcg_at_5": {
+      "ci_excludes_zero_all_projections": false,
+      "gate_pass_all_projections": false,
+      "metric_mean_across_pi": 0.4353448927250367,
+      "metric_variance_across_pi": 0.0,
+      "sign_consistency": true,
+      "signs": {
+        "pi_1": "positive",
+        "pi_2": "positive",
+        "pi_3": "positive",
+        "pi_4": "positive"
+      },
+      "worst_case_projection": "pi_1",
+      "worst_case_projection_performance": 0.4353448927250367
+    },
+    "ndcg_at_ceil_10pct": {
+      "ci_excludes_zero_all_projections": false,
+      "gate_pass_all_projections": false,
+      "metric_mean_across_pi": 0.33928571428571436,
+      "metric_variance_across_pi": 0.0,
+      "sign_consistency": true,
+      "signs": {
+        "pi_1": "positive",
+        "pi_2": "positive",
+        "pi_3": "positive",
+        "pi_4": "positive"
+      },
+      "worst_case_projection": "pi_1",
+      "worst_case_projection_performance": 0.33928571428571436
+    },
+    "spearman_rho": {
+      "ci_excludes_zero_all_projections": true,
+      "gate_pass_all_projections": true,
+      "metric_mean_across_pi": 0.1628159188147139,
+      "metric_variance_across_pi": 0.0,
+      "sign_consistency": true,
+      "signs": {
+        "pi_1": "positive",
+        "pi_2": "positive",
+        "pi_3": "positive",
+        "pi_4": "positive"
+      },
+      "worst_case_projection": "pi_1",
+      "worst_case_projection_performance": 0.1628159188147139
+    }
+  },
+  "projection_family": [
+    "pi_1",
+    "pi_2",
+    "pi_3",
+    "pi_4"
+  ],
+  "projection_identity_interpretation": "FMA scores are already step-level vectors. The identity projection is expected behavior for this method and is reported as a step-level representation audit, not as evidence of nontrivial token-to-step projection robustness.",
+  "projection_policy": "identity_for_preprojected_step_level_fma",
+  "projection_specific_metric_table": [
+    {
+      "ci95": [
+        0.4973214285714286,
+        0.59375
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "group": "full_stage2",
+      "mean": 0.5473214285714286,
+      "metric": "auc_high_impact_q10",
+      "n_steps": 840,
+      "n_traces": 280,
+      "projection": "pi_1",
+      "std": 0.3951338917009167
+    },
+    {
+      "ci95": [
+        0.5017633928571429,
+        0.5928794642857143
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "group": "full_stage2",
+      "mean": 0.5473214285714286,
+      "metric": "auc_high_impact_q10",
+      "n_steps": 840,
+      "n_traces": 280,
+      "projection": "pi_2",
+      "std": 0.3951338917009167
+    },
+    {
+      "ci95": [
+        0.4981919642857143,
+        0.5919642857142857
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "group": "full_stage2",
+      "mean": 0.5473214285714286,
+      "metric": "auc_high_impact_q10",
+      "n_steps": 840,
+      "n_traces": 280,
+      "projection": "pi_3",
+      "std": 0.3951338917009167
+    },
+    {
+      "ci95": [
+        0.5008928571428571,
+        0.5964508928571429
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "group": "full_stage2",
+      "mean": 0.5473214285714286,
+      "metric": "auc_high_impact_q10",
+      "n_steps": 840,
+      "n_traces": 280,
+      "projection": "pi_4",
+      "std": 0.3951338917009167
+    },
+    {
+      "ci95": [
+        0.5017633928571429,
+        0.5919642857142857
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "group": "full_stage2",
+      "mean": 0.5473214285714286,
+      "metric": "auc_high_impact_q20",
+      "n_steps": 840,
+      "n_traces": 280,
+      "projection": "pi_1",
+      "std": 0.3951338917009167
+    },
+    {
+      "ci95": [
+        0.49910714285714286,
+        0.5928794642857143
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "group": "full_stage2",
+      "mean": 0.5473214285714286,
+      "metric": "auc_high_impact_q20",
+      "n_steps": 840,
+      "n_traces": 280,
+      "projection": "pi_2",
+      "std": 0.3951338917009167
+    },
+    {
+      "ci95": [
+        0.5017633928571429,
+        0.59375
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "group": "full_stage2",
+      "mean": 0.5473214285714286,
+      "metric": "auc_high_impact_q20",
+      "n_steps": 840,
+      "n_traces": 280,
+      "projection": "pi_3",
+      "std": 0.3951338917009167
+    },
+    {
+      "ci95": [
+        0.50265625,
+        0.59375
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "group": "full_stage2",
+      "mean": 0.5473214285714286,
+      "metric": "auc_high_impact_q20",
+      "n_steps": 840,
+      "n_traces": 280,
+      "projection": "pi_4",
+      "std": 0.3951338917009167
+    },
+    {
+      "ci95": [
+        0.09016945969255677,
+        0.22421221914763464
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "group": "full_stage2",
+      "mean": 0.15963192305963955,
+      "metric": "kendall_tau",
+      "n_steps": 840,
+      "n_traces": 280,
+      "projection": "pi_1",
+      "std": 0.5579819685916388
+    },
+    {
+      "ci95": [
+        0.09540339483440444,
+        0.22910009582804763
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "group": "full_stage2",
+      "mean": 0.15963192305963955,
+      "metric": "kendall_tau",
+      "n_steps": 840,
+      "n_traces": 280,
+      "projection": "pi_2",
+      "std": 0.5579819685916388
+    },
+    {
+      "ci95": [
+        0.09374088826398534,
+        0.2261137766035871
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "group": "full_stage2",
+      "mean": 0.15963192305963955,
+      "metric": "kendall_tau",
+      "n_steps": 840,
+      "n_traces": 280,
+      "projection": "pi_3",
+      "std": 0.5579819685916388
+    },
+    {
+      "ci95": [
+        0.09307815436509877,
+        0.2258322687476886
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "group": "full_stage2",
+      "mean": 0.15963192305963955,
+      "metric": "kendall_tau",
+      "n_steps": 840,
+      "n_traces": 280,
+      "projection": "pi_4",
+      "std": 0.5579819685916388
+    },
+    {
+      "ci95": [
+        0.3822458721896012,
+        0.494249158374801
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "group": "full_stage2",
+      "mean": 0.4353448927250367,
+      "metric": "ndcg_at_3",
+      "n_steps": 840,
+      "n_traces": 280,
+      "projection": "pi_1",
+      "std": 0.45992853099995373
+    },
+    {
+      "ci95": [
+        0.38014757653382464,
+        0.4865061270307485
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "group": "full_stage2",
+      "mean": 0.4353448927250367,
+      "metric": "ndcg_at_3",
+      "n_steps": 840,
+      "n_traces": 280,
+      "projection": "pi_2",
+      "std": 0.45992853099995373
+    },
+    {
+      "ci95": [
+        0.37894986633950795,
+        0.4899700260687523
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "group": "full_stage2",
+      "mean": 0.4353448927250367,
+      "metric": "ndcg_at_3",
+      "n_steps": 840,
+      "n_traces": 280,
+      "projection": "pi_3",
+      "std": 0.45992853099995373
+    },
+    {
+      "ci95": [
+        0.3848189220723224,
+        0.4859924918522921
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "group": "full_stage2",
+      "mean": 0.4353448927250367,
+      "metric": "ndcg_at_3",
+      "n_steps": 840,
+      "n_traces": 280,
+      "projection": "pi_4",
+      "std": 0.45992853099995373
+    },
+    {
+      "ci95": [
+        0.3833418650281524,
+        0.48711297286538263
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "group": "full_stage2",
+      "mean": 0.4353448927250367,
+      "metric": "ndcg_at_5",
+      "n_steps": 840,
+      "n_traces": 280,
+      "projection": "pi_1",
+      "std": 0.45992853099995373
+    },
+    {
+      "ci95": [
+        0.3843196365523761,
+        0.48679515266138035
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "group": "full_stage2",
+      "mean": 0.4353448927250367,
+      "metric": "ndcg_at_5",
+      "n_steps": 840,
+      "n_traces": 280,
+      "projection": "pi_2",
+      "std": 0.45992853099995373
+    },
+    {
+      "ci95": [
+        0.3821888592248715,
+        0.4882754337301102
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "group": "full_stage2",
+      "mean": 0.4353448927250367,
+      "metric": "ndcg_at_5",
+      "n_steps": 840,
+      "n_traces": 280,
+      "projection": "pi_3",
+      "std": 0.45992853099995373
+    },
+    {
+      "ci95": [
+        0.3857874838238153,
+        0.4897961094685966
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "group": "full_stage2",
+      "mean": 0.4353448927250367,
+      "metric": "ndcg_at_5",
+      "n_steps": 840,
+      "n_traces": 280,
+      "projection": "pi_4",
+      "std": 0.45992853099995373
+    },
+    {
+      "ci95": [
+        0.2928125000000001,
+        0.38750000000000007
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "group": "full_stage2",
+      "mean": 0.33928571428571436,
+      "metric": "ndcg_at_ceil_10pct",
+      "n_steps": 840,
+      "n_traces": 280,
+      "projection": "pi_1",
+      "std": 0.4202229189219712
+    },
+    {
+      "ci95": [
+        0.29107142857142865,
+        0.38928571428571435
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "group": "full_stage2",
+      "mean": 0.33928571428571436,
+      "metric": "ndcg_at_ceil_10pct",
+      "n_steps": 840,
+      "n_traces": 280,
+      "projection": "pi_2",
+      "std": 0.4202229189219712
+    },
+    {
+      "ci95": [
+        0.29459821428571437,
+        0.38750000000000007
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "group": "full_stage2",
+      "mean": 0.33928571428571436,
+      "metric": "ndcg_at_ceil_10pct",
+      "n_steps": 840,
+      "n_traces": 280,
+      "projection": "pi_3",
+      "std": 0.4202229189219712
+    },
+    {
+      "ci95": [
+        0.2892857142857143,
+        0.38397321428571424
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "group": "full_stage2",
+      "mean": 0.33928571428571436,
+      "metric": "ndcg_at_ceil_10pct",
+      "n_steps": 840,
+      "n_traces": 280,
+      "projection": "pi_4",
+      "std": 0.4202229189219712
+    },
+    {
+      "ci95": [
+        0.09756769153580891,
+        0.2311570939642776
+      ],
+      "ci_excludes_zero": true,
+      "effect_size_label": "small",
+      "gate_pass": true,
+      "group": "full_stage2",
+      "mean": 0.1628159188147139,
+      "metric": "spearman_rho",
+      "n_steps": 840,
+      "n_traces": 280,
+      "projection": "pi_1",
+      "std": 0.5682062369871173
+    },
+    {
+      "ci95": [
+        0.09164376442087281,
+        0.2292376195695472
+      ],
+      "ci_excludes_zero": true,
+      "effect_size_label": "small",
+      "gate_pass": true,
+      "group": "full_stage2",
+      "mean": 0.1628159188147139,
+      "metric": "spearman_rho",
+      "n_steps": 840,
+      "n_traces": 280,
+      "projection": "pi_2",
+      "std": 0.5682062369871173
+    },
+    {
+      "ci95": [
+        0.09637670445071041,
+        0.2346950280012327
+      ],
+      "ci_excludes_zero": true,
+      "effect_size_label": "small",
+      "gate_pass": true,
+      "group": "full_stage2",
+      "mean": 0.1628159188147139,
+      "metric": "spearman_rho",
+      "n_steps": 840,
+      "n_traces": 280,
+      "projection": "pi_3",
+      "std": 0.5682062369871173
+    },
+    {
+      "ci95": [
+        0.09397874935521011,
+        0.22735958281902546
+      ],
+      "ci_excludes_zero": true,
+      "effect_size_label": "small",
+      "gate_pass": true,
+      "group": "full_stage2",
+      "mean": 0.1628159188147139,
+      "metric": "spearman_rho",
+      "n_steps": 840,
+      "n_traces": 280,
+      "projection": "pi_4",
+      "std": 0.5682062369871173
+    }
+  ],
+  "protocol_version": "journal_step_impact_v2_3",
+  "stage2_protocol_version": "fma_v1_2_stage2_confirmatory",
+  "stratum_projection_rows": [
+    {
+      "ci95": [
+        0.4381048387096774,
+        0.5994623655913979
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.5188172043010753,
+      "metric": "auc_high_impact_q10",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_1",
+      "status": "ok",
+      "std": 0.3922422982932361,
+      "stratum": "S_high"
+    },
+    {
+      "ci95": [
+        0.44086021505376344,
+        0.5994623655913979
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.5188172043010753,
+      "metric": "auc_high_impact_q20",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_1",
+      "status": "ok",
+      "std": 0.3922422982932361,
+      "stratum": "S_high"
+    },
+    {
+      "ci95": [
+        0.11823024101637843,
+        0.3614950875004005
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.23349974265047402,
+      "metric": "kendall_tau",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_1",
+      "status": "ok",
+      "std": 0.58603409710869,
+      "stratum": "S_high"
+    },
+    {
+      "ci95": [
+        0.5073841370110215,
+        0.6774408913326858
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.5935012867518388,
+      "metric": "ndcg_at_3",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_1",
+      "status": "ok",
+      "std": 0.43342882556006307,
+      "stratum": "S_high"
+    },
+    {
+      "ci95": [
+        0.5068288048317837,
+        0.6785471852183123
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.5935012867518388,
+      "metric": "ndcg_at_5",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_1",
+      "status": "ok",
+      "std": 0.43342882556006307,
+      "stratum": "S_high"
+    },
+    {
+      "ci95": [
+        0.3494623655913979,
+        0.5215053763440861
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.435483870967742,
+      "metric": "ndcg_at_ceil_10pct",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_1",
+      "status": "ok",
+      "std": 0.41849761343933367,
+      "stratum": "S_high"
+    },
+    {
+      "ci95": [
+        0.11394109425474236,
+        0.35623118211968424
+      ],
+      "ci_excludes_zero": true,
+      "effect_size_label": "small",
+      "gate_pass": true,
+      "mean": 0.2372277185644201,
+      "metric": "spearman_rho",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_1",
+      "status": "ok",
+      "std": 0.5990594066467412,
+      "stratum": "S_high"
+    },
+    {
+      "ci95": [
+        0.43548387096774194,
+        0.5967741935483871
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.5188172043010753,
+      "metric": "auc_high_impact_q10",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_2",
+      "status": "ok",
+      "std": 0.3922422982932361,
+      "stratum": "S_high"
+    },
+    {
+      "ci95": [
+        0.4381048387096774,
+        0.5967741935483871
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.5188172043010753,
+      "metric": "auc_high_impact_q20",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_2",
+      "status": "ok",
+      "std": 0.3922422982932361,
+      "stratum": "S_high"
+    },
+    {
+      "ci95": [
+        0.11630641484868523,
+        0.34874208823230246
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.23349974265047402,
+      "metric": "kendall_tau",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_2",
+      "status": "ok",
+      "std": 0.58603409710869,
+      "stratum": "S_high"
+    },
+    {
+      "ci95": [
+        0.5062378049725519,
+        0.681741755867005
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.5935012867518388,
+      "metric": "ndcg_at_3",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_2",
+      "status": "ok",
+      "std": 0.43342882556006307,
+      "stratum": "S_high"
+    },
+    {
+      "ci95": [
+        0.5034284678160849,
+        0.6844463560931178
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.5935012867518388,
+      "metric": "ndcg_at_5",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_2",
+      "status": "ok",
+      "std": 0.43342882556006307,
+      "stratum": "S_high"
+    },
+    {
+      "ci95": [
+        0.35483870967741943,
+        0.5215053763440861
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.435483870967742,
+      "metric": "ndcg_at_ceil_10pct",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_2",
+      "status": "ok",
+      "std": 0.41849761343933367,
+      "stratum": "S_high"
+    },
+    {
+      "ci95": [
+        0.1261150692759515,
+        0.3561951674432822
+      ],
+      "ci_excludes_zero": true,
+      "effect_size_label": "small",
+      "gate_pass": true,
+      "mean": 0.2372277185644201,
+      "metric": "spearman_rho",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_2",
+      "status": "ok",
+      "std": 0.5990594066467412,
+      "stratum": "S_high"
+    },
+    {
+      "ci95": [
+        0.4435483870967742,
+        0.5967741935483871
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.5188172043010753,
+      "metric": "auc_high_impact_q10",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_3",
+      "status": "ok",
+      "std": 0.3922422982932361,
+      "stratum": "S_high"
+    },
+    {
+      "ci95": [
+        0.4381720430107527,
+        0.5914650537634408
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.5188172043010753,
+      "metric": "auc_high_impact_q20",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_3",
+      "status": "ok",
+      "std": 0.3922422982932361,
+      "stratum": "S_high"
+    },
+    {
+      "ci95": [
+        0.11825241384020602,
+        0.34588202023541104
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.23349974265047402,
+      "metric": "kendall_tau",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_3",
+      "status": "ok",
+      "std": 0.58603409710869,
+      "stratum": "S_high"
+    },
+    {
+      "ci95": [
+        0.5109365671447967,
+        0.6822350927726065
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.5935012867518388,
+      "metric": "ndcg_at_3",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_3",
+      "status": "ok",
+      "std": 0.43342882556006307,
+      "stratum": "S_high"
+    },
+    {
+      "ci95": [
+        0.5060929755210392,
+        0.6779990387322563
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.5935012867518388,
+      "metric": "ndcg_at_5",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_3",
+      "status": "ok",
+      "std": 0.43342882556006307,
+      "stratum": "S_high"
+    },
+    {
+      "ci95": [
+        0.3547043010752689,
+        0.5215053763440861
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.435483870967742,
+      "metric": "ndcg_at_ceil_10pct",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_3",
+      "status": "ok",
+      "std": 0.41849761343933367,
+      "stratum": "S_high"
+    },
+    {
+      "ci95": [
+        0.12177659363822073,
+        0.3669285554084101
+      ],
+      "ci_excludes_zero": true,
+      "effect_size_label": "small",
+      "gate_pass": true,
+      "mean": 0.2372277185644201,
+      "metric": "spearman_rho",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_3",
+      "status": "ok",
+      "std": 0.5990594066467412,
+      "stratum": "S_high"
+    },
+    {
+      "ci95": [
+        0.4434811827956989,
+        0.5967741935483871
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.5188172043010753,
+      "metric": "auc_high_impact_q10",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_4",
+      "status": "ok",
+      "std": 0.3922422982932361,
+      "stratum": "S_high"
+    },
+    {
+      "ci95": [
+        0.44623655913978494,
+        0.5914650537634408
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.5188172043010753,
+      "metric": "auc_high_impact_q20",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_4",
+      "status": "ok",
+      "std": 0.3922422982932361,
+      "stratum": "S_high"
+    },
+    {
+      "ci95": [
+        0.12306346405705776,
+        0.3566125355836265
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.23349974265047402,
+      "metric": "kendall_tau",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_4",
+      "status": "ok",
+      "std": 0.58603409710869,
+      "stratum": "S_high"
+    },
+    {
+      "ci95": [
+        0.5068275409196878,
+        0.6830356339552992
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.5935012867518388,
+      "metric": "ndcg_at_3",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_4",
+      "status": "ok",
+      "std": 0.43342882556006307,
+      "stratum": "S_high"
+    },
+    {
+      "ci95": [
+        0.5047767616139162,
+        0.677541533068751
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.5935012867518388,
+      "metric": "ndcg_at_5",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_4",
+      "status": "ok",
+      "std": 0.43342882556006307,
+      "stratum": "S_high"
+    },
+    {
+      "ci95": [
+        0.3494623655913979,
+        0.5162634408602151
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.435483870967742,
+      "metric": "ndcg_at_ceil_10pct",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_4",
+      "status": "ok",
+      "std": 0.41849761343933367,
+      "stratum": "S_high"
+    },
+    {
+      "ci95": [
+        0.10462899313878066,
+        0.35333070780060655
+      ],
+      "ci_excludes_zero": true,
+      "effect_size_label": "small",
+      "gate_pass": true,
+      "mean": 0.2372277185644201,
+      "metric": "spearman_rho",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_4",
+      "status": "ok",
+      "std": 0.5990594066467412,
+      "stratum": "S_high"
+    },
+    {
+      "ci95": [
+        0.5052526595744682,
+        0.6702792553191489
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.5877659574468085,
+      "metric": "auc_high_impact_q10",
+      "n_steps": 282,
+      "n_traces": 94,
+      "projection": "pi_1",
+      "status": "ok",
+      "std": 0.4044567689734322,
+      "stratum": "S_low"
+    },
+    {
+      "ci95": [
+        0.5079122340425533,
+        0.6648936170212766
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.5877659574468085,
+      "metric": "auc_high_impact_q20",
+      "n_steps": 282,
+      "n_traces": 94,
+      "projection": "pi_1",
+      "status": "ok",
+      "std": 0.4044567689734322,
+      "stratum": "S_low"
+    },
+    {
+      "ci95": [
+        0.023201892619270564,
+        0.22320704670430838
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.12463272411163918,
+      "metric": "kendall_tau",
+      "n_steps": 282,
+      "n_traces": 94,
+      "projection": "pi_1",
+      "status": "ok",
+      "std": 0.4923049616926324,
+      "stratum": "S_low"
+    },
+    {
+      "ci95": [
+        0.2533344662104449,
+        0.4290113235545511
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.34175714986634237,
+      "metric": "ndcg_at_3",
+      "n_steps": 282,
+      "n_traces": 94,
+      "projection": "pi_1",
+      "status": "ok",
+      "std": 0.4494089822817593,
+      "stratum": "S_low"
+    },
+    {
+      "ci95": [
+        0.2652267938842672,
+        0.4365025872943241
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.34175714986634237,
+      "metric": "ndcg_at_5",
+      "n_steps": 282,
+      "n_traces": 94,
+      "projection": "pi_1",
+      "status": "ok",
+      "std": 0.4494089822817593,
+      "stratum": "S_low"
+    },
+    {
+      "ci95": [
+        0.19680851063829793,
+        0.3510638297872341
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.2712765957446809,
+      "metric": "ndcg_at_ceil_10pct",
+      "n_steps": 282,
+      "n_traces": 94,
+      "projection": "pi_1",
+      "status": "ok",
+      "std": 0.3925714346132535,
+      "stratum": "S_low"
+    },
+    {
+      "ci95": [
+        0.02127659574468085,
+        0.23394022400815512
+      ],
+      "ci_excludes_zero": true,
+      "effect_size_label": "small",
+      "gate_pass": true,
+      "mean": 0.1283210407073518,
+      "metric": "spearman_rho",
+      "n_steps": 282,
+      "n_traces": 94,
+      "projection": "pi_1",
+      "status": "ok",
+      "std": 0.5048386177578442,
+      "stratum": "S_low"
+    },
+    {
+      "ci95": [
+        0.5026595744680851,
+        0.6702792553191489
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.5877659574468085,
+      "metric": "auc_high_impact_q10",
+      "n_steps": 282,
+      "n_traces": 94,
+      "projection": "pi_2",
+      "status": "ok",
+      "std": 0.4044567689734322,
+      "stratum": "S_low"
+    },
+    {
+      "ci95": [
+        0.5079787234042553,
+        0.6649601063829786
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.5877659574468085,
+      "metric": "auc_high_impact_q20",
+      "n_steps": 282,
+      "n_traces": 94,
+      "projection": "pi_2",
+      "status": "ok",
+      "std": 0.4044567689734322,
+      "stratum": "S_low"
+    },
+    {
+      "ci95": [
+        0.029080321660044896,
+        0.2221323603805462
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.12463272411163918,
+      "metric": "kendall_tau",
+      "n_steps": 282,
+      "n_traces": 94,
+      "projection": "pi_2",
+      "status": "ok",
+      "std": 0.4923049616926324,
+      "stratum": "S_low"
+    },
+    {
+      "ci95": [
+        0.25230752629537195,
+        0.42937853444389773
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.34175714986634237,
+      "metric": "ndcg_at_3",
+      "n_steps": 282,
+      "n_traces": 94,
+      "projection": "pi_2",
+      "status": "ok",
+      "std": 0.4494089822817593,
+      "stratum": "S_low"
+    },
+    {
+      "ci95": [
+        0.25779486810613883,
+        0.43590667770123137
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.34175714986634237,
+      "metric": "ndcg_at_5",
+      "n_steps": 282,
+      "n_traces": 94,
+      "projection": "pi_2",
+      "status": "ok",
+      "std": 0.4494089822817593,
+      "stratum": "S_low"
+    },
+    {
+      "ci95": [
+        0.19148936170212774,
+        0.3511968085106382
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.2712765957446809,
+      "metric": "ndcg_at_ceil_10pct",
+      "n_steps": 282,
+      "n_traces": 94,
+      "projection": "pi_2",
+      "status": "ok",
+      "std": 0.3925714346132535,
+      "stratum": "S_low"
+    },
+    {
+      "ci95": [
+        0.030489631955153605,
+        0.22615244945955001
+      ],
+      "ci_excludes_zero": true,
+      "effect_size_label": "small",
+      "gate_pass": true,
+      "mean": 0.1283210407073518,
+      "metric": "spearman_rho",
+      "n_steps": 282,
+      "n_traces": 94,
+      "projection": "pi_2",
+      "status": "ok",
+      "std": 0.5048386177578442,
+      "stratum": "S_low"
+    },
+    {
+      "ci95": [
+        0.5053191489361702,
+        0.6649601063829786
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.5877659574468085,
+      "metric": "auc_high_impact_q10",
+      "n_steps": 282,
+      "n_traces": 94,
+      "projection": "pi_3",
+      "status": "ok",
+      "std": 0.4044567689734322,
+      "stratum": "S_low"
+    },
+    {
+      "ci95": [
+        0.5053191489361702,
+        0.6702127659574468
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.5877659574468085,
+      "metric": "auc_high_impact_q20",
+      "n_steps": 282,
+      "n_traces": 94,
+      "projection": "pi_3",
+      "status": "ok",
+      "std": 0.4044567689734322,
+      "stratum": "S_low"
+    },
+    {
+      "ci95": [
+        0.02127659574468085,
+        0.22320704670430838
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.12463272411163918,
+      "metric": "kendall_tau",
+      "n_steps": 282,
+      "n_traces": 94,
+      "projection": "pi_3",
+      "status": "ok",
+      "std": 0.4923049616926324,
+      "stratum": "S_low"
+    },
+    {
+      "ci95": [
+        0.253736942876139,
+        0.42993458764500353
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.34175714986634237,
+      "metric": "ndcg_at_3",
+      "n_steps": 282,
+      "n_traces": 94,
+      "projection": "pi_3",
+      "status": "ok",
+      "std": 0.4494089822817593,
+      "stratum": "S_low"
+    },
+    {
+      "ci95": [
+        0.25029183276383676,
+        0.433422483541
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.34175714986634237,
+      "metric": "ndcg_at_5",
+      "n_steps": 282,
+      "n_traces": 94,
+      "projection": "pi_3",
+      "status": "ok",
+      "std": 0.4494089822817593,
+      "stratum": "S_low"
+    },
+    {
+      "ci95": [
+        0.1914893617021277,
+        0.3510638297872341
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.2712765957446809,
+      "metric": "ndcg_at_ceil_10pct",
+      "n_steps": 282,
+      "n_traces": 94,
+      "projection": "pi_3",
+      "status": "ok",
+      "std": 0.3925714346132535,
+      "stratum": "S_low"
+    },
+    {
+      "ci95": [
+        0.030454000413606915,
+        0.23828727207685146
+      ],
+      "ci_excludes_zero": true,
+      "effect_size_label": "small",
+      "gate_pass": true,
+      "mean": 0.1283210407073518,
+      "metric": "spearman_rho",
+      "n_steps": 282,
+      "n_traces": 94,
+      "projection": "pi_3",
+      "status": "ok",
+      "std": 0.5048386177578442,
+      "stratum": "S_low"
+    },
+    {
+      "ci95": [
+        0.5079787234042553,
+        0.6702127659574468
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.5877659574468085,
+      "metric": "auc_high_impact_q10",
+      "n_steps": 282,
+      "n_traces": 94,
+      "projection": "pi_4",
+      "status": "ok",
+      "std": 0.4044567689734322,
+      "stratum": "S_low"
+    },
+    {
+      "ci95": [
+        0.5052526595744682,
+        0.6675531914893617
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.5877659574468085,
+      "metric": "auc_high_impact_q20",
+      "n_steps": 282,
+      "n_traces": 94,
+      "projection": "pi_4",
+      "status": "ok",
+      "std": 0.4044567689734322,
+      "stratum": "S_low"
+    },
+    {
+      "ci95": [
+        0.02408430054356318,
+        0.22608549254673083
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.12463272411163918,
+      "metric": "kendall_tau",
+      "n_steps": 282,
+      "n_traces": 94,
+      "projection": "pi_4",
+      "status": "ok",
+      "std": 0.4923049616926324,
+      "stratum": "S_low"
+    },
+    {
+      "ci95": [
+        0.25429604893979985,
+        0.43331711086863534
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.34175714986634237,
+      "metric": "ndcg_at_3",
+      "n_steps": 282,
+      "n_traces": 94,
+      "projection": "pi_4",
+      "status": "ok",
+      "std": 0.4494089822817593,
+      "stratum": "S_low"
+    },
+    {
+      "ci95": [
+        0.26201002412459645,
+        0.4262639519703736
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.34175714986634237,
+      "metric": "ndcg_at_5",
+      "n_steps": 282,
+      "n_traces": 94,
+      "projection": "pi_4",
+      "status": "ok",
+      "std": 0.4494089822817593,
+      "stratum": "S_low"
+    },
+    {
+      "ci95": [
+        0.19680851063829793,
+        0.3510638297872341
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.2712765957446809,
+      "metric": "ndcg_at_ceil_10pct",
+      "n_steps": 282,
+      "n_traces": 94,
+      "projection": "pi_4",
+      "status": "ok",
+      "std": 0.3925714346132535,
+      "stratum": "S_low"
+    },
+    {
+      "ci95": [
+        0.030454000413606915,
+        0.22901950943926705
+      ],
+      "ci_excludes_zero": true,
+      "effect_size_label": "small",
+      "gate_pass": true,
+      "mean": 0.1283210407073518,
+      "metric": "spearman_rho",
+      "n_steps": 282,
+      "n_traces": 94,
+      "projection": "pi_4",
+      "status": "ok",
+      "std": 0.5048386177578442,
+      "stratum": "S_low"
+    },
+    {
+      "ci95": [
+        0.4543010752688172,
+        0.6155913978494624
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.5349462365591398,
+      "metric": "auc_high_impact_q10",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_1",
+      "status": "ok",
+      "std": 0.3893825202523527,
+      "stratum": "S_mid"
+    },
+    {
+      "ci95": [
+        0.46236559139784944,
+        0.6155913978494624
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.5349462365591398,
+      "metric": "auc_high_impact_q20",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_1",
+      "status": "ok",
+      "std": 0.3893825202523527,
+      "stratum": "S_mid"
+    },
+    {
+      "ci95": [
+        -0.0020224839198825853,
+        0.24230643183099623
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.12113963788936458,
+      "metric": "kendall_tau",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_1",
+      "status": "ok",
+      "std": 0.5894781759209513,
+      "stratum": "S_mid"
+    },
+    {
+      "ci95": [
+        0.2811247200136977,
+        0.4708193219002013
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.3717825613726136,
+      "metric": "ndcg_at_3",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_1",
+      "status": "ok",
+      "std": 0.45951914133286015,
+      "stratum": "S_mid"
+    },
+    {
+      "ci95": [
+        0.2805982993391006,
+        0.4664011668818234
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.3717825613726136,
+      "metric": "ndcg_at_5",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_1",
+      "status": "ok",
+      "std": 0.45951914133286015,
+      "stratum": "S_mid"
+    },
+    {
+      "ci95": [
+        0.22580645161290328,
+        0.4032258064516129
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.31182795698924737,
+      "metric": "ndcg_at_ceil_10pct",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_1",
+      "status": "ok",
+      "std": 0.43560289613701453,
+      "stratum": "S_mid"
+    },
+    {
+      "ci95": [
+        0.007871514059880402,
+        0.24942099379254443
+      ],
+      "ci_excludes_zero": true,
+      "effect_size_label": "small",
+      "gate_pass": true,
+      "mean": 0.12326990984019091,
+      "metric": "spearman_rho",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_1",
+      "status": "ok",
+      "std": 0.5951508872208939,
+      "stratum": "S_mid"
+    },
+    {
+      "ci95": [
+        0.45698924731182794,
+        0.6129032258064516
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.5349462365591398,
+      "metric": "auc_high_impact_q10",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_2",
+      "status": "ok",
+      "std": 0.3893825202523527,
+      "stratum": "S_mid"
+    },
+    {
+      "ci95": [
+        0.4543010752688172,
+        0.6129032258064516
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.5349462365591398,
+      "metric": "auc_high_impact_q20",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_2",
+      "status": "ok",
+      "std": 0.3893825202523527,
+      "stratum": "S_mid"
+    },
+    {
+      "ci95": [
+        0.00868087537606573,
+        0.23954003835785456
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.12113963788936458,
+      "metric": "kendall_tau",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_2",
+      "status": "ok",
+      "std": 0.5894781759209513,
+      "stratum": "S_mid"
+    },
+    {
+      "ci95": [
+        0.279897745593661,
+        0.4607140260311064
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.3717825613726136,
+      "metric": "ndcg_at_3",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_2",
+      "status": "ok",
+      "std": 0.45951914133286015,
+      "stratum": "S_mid"
+    },
+    {
+      "ci95": [
+        0.27686025165996364,
+        0.4727937657176456
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.3717825613726136,
+      "metric": "ndcg_at_5",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_2",
+      "status": "ok",
+      "std": 0.45951914133286015,
+      "stratum": "S_mid"
+    },
+    {
+      "ci95": [
+        0.22580645161290328,
+        0.4032258064516129
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.31182795698924737,
+      "metric": "ndcg_at_ceil_10pct",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_2",
+      "status": "ok",
+      "std": 0.43560289613701453,
+      "stratum": "S_mid"
+    },
+    {
+      "ci95": [
+        0.009276086439559676,
+        0.24657583435678385
+      ],
+      "ci_excludes_zero": true,
+      "effect_size_label": "small",
+      "gate_pass": true,
+      "mean": 0.12326990984019091,
+      "metric": "spearman_rho",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_2",
+      "status": "ok",
+      "std": 0.5951508872208939,
+      "stratum": "S_mid"
+    },
+    {
+      "ci95": [
+        0.4649865591397849,
+        0.6075268817204301
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.5349462365591398,
+      "metric": "auc_high_impact_q10",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_3",
+      "status": "ok",
+      "std": 0.3893825202523527,
+      "stratum": "S_mid"
+    },
+    {
+      "ci95": [
+        0.45698924731182794,
+        0.6102150537634409
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.5349462365591398,
+      "metric": "auc_high_impact_q20",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_3",
+      "status": "ok",
+      "std": 0.3893825202523527,
+      "stratum": "S_mid"
+    },
+    {
+      "ci95": [
+        0.00877953312825512,
+        0.24425243082251702
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.12113963788936458,
+      "metric": "kendall_tau",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_3",
+      "status": "ok",
+      "std": 0.5894781759209513,
+      "stratum": "S_mid"
+    },
+    {
+      "ci95": [
+        0.27981747434352405,
+        0.4649847384568724
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.3717825613726136,
+      "metric": "ndcg_at_3",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_3",
+      "status": "ok",
+      "std": 0.45951914133286015,
+      "stratum": "S_mid"
+    },
+    {
+      "ci95": [
+        0.28196083434624947,
+        0.465364102483216
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.3717825613726136,
+      "metric": "ndcg_at_5",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_3",
+      "status": "ok",
+      "std": 0.45951914133286015,
+      "stratum": "S_mid"
+    },
+    {
+      "ci95": [
+        0.22043010752688175,
+        0.3978494623655914
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.31182795698924737,
+      "metric": "ndcg_at_ceil_10pct",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_3",
+      "status": "ok",
+      "std": 0.43560289613701453,
+      "stratum": "S_mid"
+    },
+    {
+      "ci95": [
+        -0.000788722746094269,
+        0.2336946801422705
+      ],
+      "ci_excludes_zero": false,
+      "effect_size_label": "small",
+      "gate_pass": false,
+      "mean": 0.12326990984019091,
+      "metric": "spearman_rho",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_3",
+      "status": "ok",
+      "std": 0.5951508872208939,
+      "stratum": "S_mid"
+    },
+    {
+      "ci95": [
+        0.4543010752688172,
+        0.6155913978494624
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.5349462365591398,
+      "metric": "auc_high_impact_q10",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_4",
+      "status": "ok",
+      "std": 0.3893825202523527,
+      "stratum": "S_mid"
+    },
+    {
+      "ci95": [
+        0.45698924731182794,
+        0.6102150537634409
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.5349462365591398,
+      "metric": "auc_high_impact_q20",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_4",
+      "status": "ok",
+      "std": 0.3893825202523527,
+      "stratum": "S_mid"
+    },
+    {
+      "ci95": [
+        0.00877953312825512,
+        0.23552222657035657
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.12113963788936458,
+      "metric": "kendall_tau",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_4",
+      "status": "ok",
+      "std": 0.5894781759209513,
+      "stratum": "S_mid"
+    },
+    {
+      "ci95": [
+        0.27305512577027796,
+        0.4598375800530432
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.3717825613726136,
+      "metric": "ndcg_at_3",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_4",
+      "status": "ok",
+      "std": 0.45951914133286015,
+      "stratum": "S_mid"
+    },
+    {
+      "ci95": [
+        0.28186581333199623,
+        0.4661756215272008
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.3717825613726136,
+      "metric": "ndcg_at_5",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_4",
+      "status": "ok",
+      "std": 0.45951914133286015,
+      "stratum": "S_mid"
+    },
+    {
+      "ci95": [
+        0.22043010752688175,
+        0.3924731182795699
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.31182795698924737,
+      "metric": "ndcg_at_ceil_10pct",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_4",
+      "status": "ok",
+      "std": 0.43560289613701453,
+      "stratum": "S_mid"
+    },
+    {
+      "ci95": [
+        -0.0014405870560813042,
+        0.23866830562050143
+      ],
+      "ci_excludes_zero": false,
+      "effect_size_label": "small",
+      "gate_pass": false,
+      "mean": 0.12326990984019091,
+      "metric": "spearman_rho",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_4",
+      "status": "ok",
+      "std": 0.5951508872208939,
+      "stratum": "S_mid"
+    },
+    {
+      "ci95": [
+        0.5376344086021505,
+        0.7016129032258065
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.6209677419354839,
+      "metric": "auc_high_impact_q10",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_1",
+      "status": "ok",
+      "std": 0.3841508549813331,
+      "stratum": "S_rand"
+    },
+    {
+      "ci95": [
+        0.543010752688172,
+        0.6936827956989247
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.6209677419354839,
+      "metric": "auc_high_impact_q20",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_1",
+      "status": "ok",
+      "std": 0.3841508549813331,
+      "stratum": "S_rand"
+    },
+    {
+      "ci95": [
+        -0.036005045466124035,
+        0.19361988879669642
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.07043559416362173,
+      "metric": "kendall_tau",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_1",
+      "status": "ok",
+      "std": 0.5569580707616152,
+      "stratum": "S_rand"
+    },
+    {
+      "ci95": [
+        0.36038961580874873,
+        0.5557920685344996
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.45594048856978225,
+      "metric": "ndcg_at_3",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_1",
+      "status": "ok",
+      "std": 0.47773162012334597,
+      "stratum": "S_rand"
+    },
+    {
+      "ci95": [
+        0.3553555484098975,
+        0.554564107521635
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.45594048856978225,
+      "metric": "ndcg_at_5",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_1",
+      "status": "ok",
+      "std": 0.47773162012334597,
+      "stratum": "S_rand"
+    },
+    {
+      "ci95": [
+        0.30107526881720437,
+        0.47862903225806447
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.3870967741935485,
+      "metric": "ndcg_at_ceil_10pct",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_1",
+      "status": "ok",
+      "std": 0.44920843579994013,
+      "stratum": "S_rand"
+    },
+    {
+      "ci95": [
+        -0.04511991852372722,
+        0.17638148639041892
+      ],
+      "ci_excludes_zero": false,
+      "effect_size_label": "negligible",
+      "gate_pass": false,
+      "mean": 0.06883789020050197,
+      "metric": "spearman_rho",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_1",
+      "status": "ok",
+      "std": 0.5692224394539293,
+      "stratum": "S_rand"
+    },
+    {
+      "ci95": [
+        0.5456989247311828,
+        0.7016129032258065
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.6209677419354839,
+      "metric": "auc_high_impact_q10",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_2",
+      "status": "ok",
+      "std": 0.3841508549813331,
+      "stratum": "S_rand"
+    },
+    {
+      "ci95": [
+        0.5456989247311828,
+        0.6908602150537635
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.6209677419354839,
+      "metric": "auc_high_impact_q20",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_2",
+      "status": "ok",
+      "std": 0.3841508549813331,
+      "stratum": "S_rand"
+    },
+    {
+      "ci95": [
+        -0.039951355553699816,
+        0.17889871771325006
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.07043559416362173,
+      "metric": "kendall_tau",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_2",
+      "status": "ok",
+      "std": 0.5569580707616152,
+      "stratum": "S_rand"
+    },
+    {
+      "ci95": [
+        0.3699943502039094,
+        0.5571531904108196
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.45594048856978225,
+      "metric": "ndcg_at_3",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_2",
+      "status": "ok",
+      "std": 0.47773162012334597,
+      "stratum": "S_rand"
+    },
+    {
+      "ci95": [
+        0.36356400363357455,
+        0.5493212314548698
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.45594048856978225,
+      "metric": "ndcg_at_5",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_2",
+      "status": "ok",
+      "std": 0.47773162012334597,
+      "stratum": "S_rand"
+    },
+    {
+      "ci95": [
+        0.2956989247311828,
+        0.47849462365591405
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.3870967741935485,
+      "metric": "ndcg_at_ceil_10pct",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_2",
+      "status": "ok",
+      "std": 0.44920843579994013,
+      "stratum": "S_rand"
+    },
+    {
+      "ci95": [
+        -0.05590862137217227,
+        0.18144385569094068
+      ],
+      "ci_excludes_zero": false,
+      "effect_size_label": "negligible",
+      "gate_pass": false,
+      "mean": 0.06883789020050197,
+      "metric": "spearman_rho",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_2",
+      "status": "ok",
+      "std": 0.5692224394539293,
+      "stratum": "S_rand"
+    },
+    {
+      "ci95": [
+        0.5403225806451613,
+        0.6908602150537635
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.6209677419354839,
+      "metric": "auc_high_impact_q10",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_3",
+      "status": "ok",
+      "std": 0.3841508549813331,
+      "stratum": "S_rand"
+    },
+    {
+      "ci95": [
+        0.5456317204301074,
+        0.6989247311827957
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.6209677419354839,
+      "metric": "auc_high_impact_q20",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_3",
+      "status": "ok",
+      "std": 0.3841508549813331,
+      "stratum": "S_rand"
+    },
+    {
+      "ci95": [
+        -0.03403189042233615,
+        0.17779030279873814
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.07043559416362173,
+      "metric": "kendall_tau",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_3",
+      "status": "ok",
+      "std": 0.5569580707616152,
+      "stratum": "S_rand"
+    },
+    {
+      "ci95": [
+        0.36512148136037254,
+        0.5511797804105453
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.45594048856978225,
+      "metric": "ndcg_at_3",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_3",
+      "status": "ok",
+      "std": 0.47773162012334597,
+      "stratum": "S_rand"
+    },
+    {
+      "ci95": [
+        0.3639259408528769,
+        0.5576183144020348
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.45594048856978225,
+      "metric": "ndcg_at_5",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_3",
+      "status": "ok",
+      "std": 0.47773162012334597,
+      "stratum": "S_rand"
+    },
+    {
+      "ci95": [
+        0.30094086021505384,
+        0.47849462365591405
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.3870967741935485,
+      "metric": "ndcg_at_ceil_10pct",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_3",
+      "status": "ok",
+      "std": 0.44920843579994013,
+      "stratum": "S_rand"
+    },
+    {
+      "ci95": [
+        -0.04223874441156462,
+        0.1921078000406929
+      ],
+      "ci_excludes_zero": false,
+      "effect_size_label": "negligible",
+      "gate_pass": false,
+      "mean": 0.06883789020050197,
+      "metric": "spearman_rho",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_3",
+      "status": "ok",
+      "std": 0.5692224394539293,
+      "stratum": "S_rand"
+    },
+    {
+      "ci95": [
+        0.5402553763440859,
+        0.7043010752688172
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.6209677419354839,
+      "metric": "auc_high_impact_q10",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_4",
+      "status": "ok",
+      "std": 0.3841508549813331,
+      "stratum": "S_rand"
+    },
+    {
+      "ci95": [
+        0.5429435483870968,
+        0.6989247311827957
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.6209677419354839,
+      "metric": "auc_high_impact_q20",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_4",
+      "status": "ok",
+      "std": 0.3841508549813331,
+      "stratum": "S_rand"
+    },
+    {
+      "ci95": [
+        -0.03319430634532728,
+        0.18565576692162264
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.07043559416362173,
+      "metric": "kendall_tau",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_4",
+      "status": "ok",
+      "std": 0.5569580707616152,
+      "stratum": "S_rand"
+    },
+    {
+      "ci95": [
+        0.356997429057545,
+        0.551113694282919
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.45594048856978225,
+      "metric": "ndcg_at_3",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_4",
+      "status": "ok",
+      "std": 0.47773162012334597,
+      "stratum": "S_rand"
+    },
+    {
+      "ci95": [
+        0.36346919054666876,
+        0.5520389675955081
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.45594048856978225,
+      "metric": "ndcg_at_5",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_4",
+      "status": "ok",
+      "std": 0.47773162012334597,
+      "stratum": "S_rand"
+    },
+    {
+      "ci95": [
+        0.30107526881720437,
+        0.47325268817204297
+      ],
+      "ci_excludes_zero": null,
+      "effect_size_label": null,
+      "gate_pass": null,
+      "mean": 0.3870967741935485,
+      "metric": "ndcg_at_ceil_10pct",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_4",
+      "status": "ok",
+      "std": 0.44920843579994013,
+      "stratum": "S_rand"
+    },
+    {
+      "ci95": [
+        -0.05014627314784706,
+        0.18283171360113318
+      ],
+      "ci_excludes_zero": false,
+      "effect_size_label": "negligible",
+      "gate_pass": false,
+      "mean": 0.06883789020050197,
+      "metric": "spearman_rho",
+      "n_steps": 279,
+      "n_traces": 93,
+      "projection": "pi_4",
+      "status": "ok",
+      "std": 0.5692224394539293,
+      "stratum": "S_rand"
+    }
+  ]
+}

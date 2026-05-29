@@ -1,237 +1,104 @@
 # Submission Lock Audit
 
-Audit date: 2026-05-30  
-Repository: `D:\CF`  
-Branch: `main`  
-HEAD: `7e9e10e39ad3c38c5db8d1e6646d08763e6876a1`  
-Scope: read-only submission-readiness audit, with no experiment reruns and no source or artifact mutation.
+Audit date: 2026-05-30
+Repository: `D:\CF`
+Branch: `main`
+Scope: submission consistency pass over stored artifacts and paper text. No experiments were rerun, no datasets or models were added, and missing baseline results were not inferred.
+
+## Status Fields
+
+```text
+stage2_status: completed
+effect_regime: heterogeneous_stratum_dependent
+c1_status: stratum_dependent
+c2_status: stratum_dependent
+c3_status: stratum_dependent
+baseline_status: blocked_missing_baselines
+submission_status: blocked
+```
 
 ## Verdict
 
-Status: **not fully locked for submission**.
+Status: **blocked**.
 
-The repository is close to a submission-lock state for the Phase 5-7 empirical narrative. The main empirical artifacts are present, parseable, and consistent with the manuscript's central claim:
+The Stage 2 held-out validation artifacts are present and internally consistent with the supplied execution summary. They support a small aggregate FMA rank-alignment signal, not global confirmation. C1, C2, and C3 are `stratum_dependent` because the global claim gate requires the full Stage 2 set, all four strata, all projections under sign consistency, and no worst-case projection collapse. `S_mid` and `S_rand` fail that all-strata requirement.
 
-> Reflective reasoning exhibits widespread local utility, but only sparse structural necessity.
+Submission readiness remains blocked because required baseline evidence is unavailable in the unified step-level prediction space. The repository contains baseline mapping and audit artifacts, but random masking, span masking, graph removal, and edge dropout have no independent held-out score vector `s_B(r_i)` and are marked `missing_artifact`.
 
-However, the submission should not be treated as locked until the blocking items below are resolved.
+## Stage 2 Artifact Paths Checked
 
-## Blocking Items
+| Artifact | Status | Use |
+|---|---|---|
+| `outputs/stage2_holdout_validation.json` | read | full Stage 2 metrics and claim labels |
+| `outputs/stage2_projection_audit.json` | read | projection sign consistency and FMA identity projection policy |
+| `outputs/stage2_stratified_metrics.json` | read | required strata, stratum gates, and confidence intervals |
+| `outputs/stage2_claim_gating_summary.md` | read | manuscript-facing claim labels |
+| `outputs/stage2_baseline_results.json` | read | baseline registration and not-evaluated statuses |
+| `outputs/stage2_baseline_leakage_audit.json` | read | target-leakage status values |
+| `outputs/baseline_mapping_table.csv` | read | required baseline step-level mappings |
+| `outputs/structure_degradation_curves.json` | read | specification artifact with empty `results` |
+| `outputs/projection_robustness.json` | read | projection specification artifact with empty `results` |
 
-1. `paper/related_work.md` still contains an explicit `TODO: manual bibliography completion` line and citation placeholders such as `[REFLEXION_PLACEHOLDER]`, `[SELF_REFINE_PLACEHOLDER]`, and `[PRM_PLACEHOLDER]`.
-2. `README.md` still contains a citation placeholder block. This is not necessarily a paper blocker, but it is a package-readiness blocker if the repository README is included with the submission package.
-3. Git status before this audit showed 13 modified paper files:
-   - `paper/abstract.md`
-   - `paper/appendix.md`
-   - `paper/conclusion.md`
-   - `paper/experiments.md`
-   - `paper/figure_inventory.md`
-   - `paper/formalism.md`
-   - `paper/introduction.md`
-   - `paper/limitations.md`
-   - `paper/methodology.md`
-   - `paper/paper_outline.md`
-   - `paper/related_work.md`
-   - `paper/results.md`
-   - `paper/terminology.md`
-4. Tests were not rerun during this audit because the user requested a read-only audit. Running `pytest` may update local cache files, so the latest test state is not freshly verified in this report.
-5. Git reported line-ending warnings for the modified paper files: `LF will be replaced by CRLF the next time Git touches it`. This is not an empirical blocker, but it should be normalized before a final locked submission package if exact diffs matter.
+## Claim Label Table
 
-## Non-Blocking Risks
+| Claim | Verified label | Evidence note |
+|---|---|---|
+| C1 rank generalization | `stratum_dependent` | full Stage 2 rho is positive and small, but only 2/4 strata pass |
+| C2 projection robustness | `stratum_dependent` | signs are positive across `pi_1`-`pi_4`, but the all-strata gate fails |
+| C3 stratified generalization | `stratum_dependent` | `S_mid` and `S_rand` include zero in required confidence-interval checks |
 
-- The paper layer is currently modular Markdown rather than a single compiled manuscript. This is acceptable for drafting, but a venue submission still needs final assembly, formatting, references, and figure numbering.
-- The related-work section is intentionally citation-safe, but placeholder references are not submission-ready.
-- Phase 7 includes adapter notes stating that CASCADE and BYPASS node rows were reconstructed from `reflection_graph.json` where raw per-node rows were absent or incomplete. This is acceptable if reported transparently, and the current methodology/results text does this at a high level.
+## Verified Stage 2 Values
 
-## Evidence Checked
-
-### Paper files
-
-The `paper/` directory contains:
-
-- `abstract.md`
-- `appendix.md`
-- `conclusion.md`
-- `experiments.md`
-- `figure_inventory.md`
-- `formalism.md`
-- `introduction.md`
-- `limitations.md`
-- `methodology.md`
-- `paper_outline.md`
-- `related_work.md`
-- `reproducibility.md`
-- `results.md`
-- `terminology.md`
-
-Approximate section scale from read-only inspection:
-
-| File | Lines | Words |
-|---|---:|---:|
-| `abstract.md` | 2 | 186 |
-| `appendix.md` | 54 | 461 |
-| `conclusion.md` | 6 | 201 |
-| `experiments.md` | 22 | 619 |
-| `figure_inventory.md` | 37 | 626 |
-| `formalism.md` | 88 | 3303 |
-| `introduction.md` | 11 | 763 |
-| `limitations.md` | 9 | 325 |
-| `methodology.md` | 41 | 1159 |
-| `paper_outline.md` | 55 | 592 |
-| `related_work.md` | 14 | 508 |
-| `reproducibility.md` | 28 | 224 |
-| `results.md` | 25 | 802 |
-| `terminology.md` | 34 | 502 |
-
-### Artifact parse checks
-
-The following key artifacts were present and parseable or readable:
-
-| Artifact | Status |
-|---|---|
-| `outputs/counterfactual_summary.json` | JSON parse OK |
-| `outputs/structural_diagnostics.json` | JSON parse OK |
-| `outputs/structural_faithfulness.json` | JSON parse OK |
-| `outputs/phase6_sensitivity.json` | JSON parse OK |
-| `outputs/redundancy_analysis.json` | JSON parse OK |
-| `outputs/redundancy_analysis.md` | present |
-| `outputs/phase6_readme.md` | present |
-| `outputs/structural_diagnostics.md` | present |
-
-### JSONL row counts
-
-| Artifact | Non-empty rows |
+| Item | Verified value |
 |---|---:|
-| `outputs/attribution_records.jsonl` | 800 |
-| `outputs/necessity_scores.jsonl` | 2400 |
-| `outputs/structural_node_necessity.jsonl` | 2400 |
-| `outputs/structural_edge_necessity.jsonl` | 2098 |
-| `outputs/structural_subgraph_necessity.jsonl` | 1618 |
-| `outputs/ciu_results.jsonl` | 12 |
-| `outputs/fma_scores.jsonl` | 3 |
-| `outputs/reflection_traces.jsonl` | 12 |
+| Stage 2 traces | 280 |
+| Stage 2 steps | 840 |
+| Full Stage 2 Spearman rho | 0.1628 |
+| Full Stage 2 rho CI | [0.0916, 0.2347] |
+| Effect-size label | small |
+| Projection signs | positive for `pi_1`, `pi_2`, `pi_3`, `pi_4` |
+| Projection variance across `pi_1`-`pi_4` | 0.0000 |
 
-### Figure inventory
+## Stratum Heterogeneity Note
 
-`outputs/figures/` contains 31 PNG files. All figure files listed in `paper/figure_inventory.md` were present and non-empty during this audit.
+| Stratum | rho | CI summary | Gate |
+|---|---:|---|---|
+| `S_high` | 0.2372 | all projection CIs above zero | pass |
+| `S_low` | 0.1283 | all projection CIs above zero | pass |
+| `S_mid` | 0.1233 | `pi_3` and `pi_4` lower bounds include zero | fail |
+| `S_rand` | 0.0688 | all projection CIs include zero | fail |
 
-Primary paper figures identified by the manuscript layer:
+The artifact downgrade reason is: `Multiple stratum Spearman CIs include zero: S_mid, S_rand`.
 
-- `outputs/figures/structural_diagnostics_attribution_vs_necessity.png`
-- `outputs/figures/redundancy_density_histogram.png`
-- `outputs/figures/resilience_curves.png`
+## Projection Audit Summary
 
-Supplementary Phase 6-7 figures are also present, including compensation, rerouting, bottleneck, distributedness, graph-size, node-necessity, edge-necessity, motif, compression, and structural-influence figures.
+FMA is already represented as a step-level vector. The projection audit therefore materializes `pi_1` through `pi_4` as identity mappings for FMA and checks reporting completeness and sign consistency. It must not be described as nontrivial token-to-step projection robustness. Worst-case projection reporting is present; best-projection selection is not used.
 
-## Claim Consistency Check
+## Baseline Artifact Status
 
-The manuscript's central empirical story is consistent with stored outputs:
+| Baseline / Control | Required role | Mapping status | Stage 2 result status | target_leakage_status | Submission effect |
+|---|---|---|---|---|---|
+| random masking | structural-free perturbation baseline | present | `not_evaluated_no_stage2_step_scores` | `missing_artifact` | blocker |
+| span masking | structural-free perturbation baseline | present | `not_evaluated_no_stage2_step_scores` | `missing_artifact` | blocker |
+| graph removal | structure control | present | `not_evaluated_no_stage2_step_scores` | `missing_artifact` | blocker |
+| edge dropout | structure control | present | `not_evaluated_no_stage2_step_scores` | `missing_artifact` | blocker |
 
-### Phase 5
+`outputs/structure_degradation_curves.json` and `outputs/projection_robustness.json` are protocol/specification artifacts with empty `results` arrays. They do not provide held-out step-level baseline vectors or baseline metrics.
 
-`outputs/counterfactual_summary.json` reports:
+## Target-Leakage Audit Status
 
-- `num_traces`: 800
-- `num_ablations`: 2400
-- `mean_necessity`: 0.0636
-- `mean_necessity_normalized`: 0.1217
-- `faithfulness_pearson`: 0.1583
-- `faithfulness_spearman`: 0.1459
-- `faithfulness_rank_agreement`: 0.5767
-- `redundancy_ratio`: 0.1454
-- `traces_with_redundancy`: 303
+All required baseline rows are `missing_artifact`. No direct target reuse was detected because no baseline prediction vector was available, but no baseline can be marked `clean`. Existing structural necessity or perturbation quantities were not substituted for `s_B(r_i)` because that would risk comparing target-side quantities against `y_i = Delta_U(r_i)`.
 
-### Phase 6
+## Final Blocker List
 
-`outputs/structural_diagnostics.json` reports:
-
-- `num_graphs`: 800
-- `num_phase5_scores`: 2400
-- `num_source_nodes`: 800
-- mean zero structural necessity fraction: 0.6779
-
-Alignment values:
-
-| Mode | Pearson | Spearman | Zero structural necessity fraction |
-|---|---:|---:|---:|
-| PRUNE | 0.0753 | 0.0596 | 0.6779 |
-| CASCADE | 0.0523 | 0.0512 | 0.6779 |
-| BYPASS | 0.0917 | 0.0623 | 0.6779 |
-
-These values match the paper's weak-alignment and zero-inflation narrative.
-
-### Phase 7
-
-`outputs/redundancy_analysis.json` reports:
-
-- graph count: 800
-- node count: 2400
-- edge count: 2098
-- redundancy density / average redundancy degree: 0.3842
-- distributedness global index: 0.2976
-- bottleneck count: 191
-- bottleneck rarity: 0.9204
-- PRUNE compensation mean ratio: 0.0084
-- CASCADE compensation mean ratio: 0.0000
-- BYPASS compensation mean ratio: 0.0152
-- mean rerouting breadth: 0.0100
-- mean rerouting depth: 0.0100
-- mean rerouting entropy: 0.0000
-
-Resilience AUCs:
-
-| Removal order | AUC |
-|---|---:|
-| sequential | 0.4840 |
-| deterministic random | 0.5098 |
-| attribution-first | 0.4761 |
-| necessity-first | 0.1488 |
-
-These values support the manuscript's refined conclusion: moderate redundancy exists, but compensation and distributedness are weak, and sparse bottlenecks carry the stronger topology-sensitive signal.
-
-## Terminology and Framing Audit
-
-The paper layer generally follows the repository's required framing:
-
-- Uses operational/proxy language for `attribution_score`, `structural_necessity`, `compensation_ratio`, and `distributedness_index`.
-- Separates local utility from topology-sensitive necessity.
-- Explicitly states no causal identifiability in `paper/formalism.md`.
-- Avoids presenting Phase 7 compensation as intentional or agentic adaptation.
-- Treats process supervision as future direction, not as a completed PRM contribution.
-
-Important caution:
-
-- Some legacy phrasing around "counterfactual" and "intervention-based" remains, but the current formalism constrains it as operational trace perturbation rather than formal causal identification.
-
-## Reproducibility Audit
-
-`paper/reproducibility.md` identifies these commands:
-
-```powershell
-python -m pytest -q
-python scripts/run_structural_diagnostics.py
-python scripts/run_redundancy_analysis.py
-python scripts/run_counterfactual_attribution.py
-```
-
-This audit did not execute them. The stored artifact set is internally consistent, but a final lock should include a fresh test/run verification if file mutation is permitted.
-
-## Lock Conditions
-
-Recommended conditions before declaring submission lock:
-
-1. Replace all bibliography placeholders in `paper/related_work.md`.
-2. Decide whether `README.md` citation placeholders are allowed in the submitted repository/package; if not, replace them too.
-3. Normalize or accept the CRLF/LF behavior for all modified paper files.
-4. Stage or otherwise freeze the 13 modified paper files after final review.
-5. If permitted, run `python -m pytest -q` and record the result.
-6. If permitted, rerun or dry-verify Phase 6/7 reproduction commands and record that regenerated values match stored artifacts.
-7. Assemble the final manuscript format with numbered figures, final citations, and venue-specific bibliography.
+1. Required baselines are not integrated: random masking, span masking, graph removal, and edge dropout.
+2. Required baseline rows have `target_leakage_status: missing_artifact`, not `clean`.
+3. C1, C2, and C3 are `stratum_dependent`; none can be described as globally confirmed.
+4. Related-work citation placeholders remain outside this consistency pass.
+5. Final venue formatting, figure numbering, bibliography, and git freeze remain incomplete.
 
 ## Final Lock Recommendation
 
-Do **not** mark the manuscript as fully locked today. Mark it as:
+Do **not** mark the manuscript ready for submission. Mark it as:
 
-> Empirical evidence locked; submission package pending bibliography, git freeze, and final verification.
-
-This is a strong near-lock state: the core stored results are coherent and the paper's central claim is appropriately conservative. The remaining blockers are packaging, citation, and final verification issues rather than empirical-result inconsistencies.
+> Stage 2 consistency checked; C1, C2, and C3 remain `stratum_dependent`, required baseline artifacts are missing, and `submission_status` is `blocked`.

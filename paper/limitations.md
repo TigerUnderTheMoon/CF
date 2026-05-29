@@ -10,6 +10,10 @@ Topology approximation is another limitation. Reflection graphs are deterministi
 
 Intervention coverage is sparse relative to the full space of possible reflective operations. Phase 5-7 cover local ablations, graph removal modes, redundancy profiles, compensation ratios, rerouting, resilience, and distributedness. They do not cover learned policies, hidden-state models, discovery-style claims, or semantic reasoning verification.
 
+Stage 2 evidence is also limited. The held-out FMA signal is positive and its aggregate confidence interval excludes zero, but the effect size is small. This supports weak alignment, not a high-magnitude prediction result. Stratified generalization is not globally confirmed: the `S_mid` and `S_rand` confidence intervals include zero, so C1, C2, and C3 must be described as `stratum_dependent` rather than globally confirmed.
+
+Baseline integration remains incomplete. The repository contains `outputs/stage2_baseline_results.json` and `outputs/stage2_baseline_leakage_audit.json`, but those artifacts record no held-out step-level prediction vectors for random masking, span masking, graph removal, or edge dropout. Their leakage statuses are `missing_artifact`, not `clean`. These missing baseline scores block a baseline-integrated journal submission and prevent claims about superiority over required controls.
+
 Observed redistribution should not be interpreted as intentional adaptation. Compensation and rerouting are descriptive structural measurements of post-removal redistribution in a deterministic graph. They are not evidence of deliberate replanning, agentic recovery, or semantic recovery.
 
 Empirical observations are bounded by the stored outputs. Structural interpretations should remain tied to those outputs. A possible interpretation is that future benchmarks could test whether the same local-utility and sparse-necessity pattern holds under larger, non-synthetic, or human-reviewed trace collections.

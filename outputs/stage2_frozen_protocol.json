@@ -1,0 +1,355 @@
+{
+  "auc_high_impact_q": [
+    10,
+    20
+  ],
+  "baseline_list_and_mapping_rules": [
+    {
+      "allowed_use": "primary step-impact predictor",
+      "baseline": "random masking",
+      "class": "Structural-free perturbation",
+      "projection_required": "no",
+      "raw_evidence": "controlled perturbation response",
+      "rejection_rule": "Reject if perturbation changes trace-step alignment or token structure outside the controlled step.",
+      "status": "primary",
+      "step_level_mapping": "Assign each controlled masking response to the perturbed trace step and emit one score per step.",
+      "target_reuse_policy": "Forbidden except explicitly labeled oracle/control rows: s_B(r_i) must come from a frozen baseline-specific scoring rule and must not copy Stage 2 y_i = Delta_U(r_i)."
+    },
+    {
+      "allowed_use": "primary step-impact predictor",
+      "baseline": "token dropout",
+      "class": "Structural-free perturbation",
+      "projection_required": "yes",
+      "raw_evidence": "token dropout sensitivity",
+      "rejection_rule": "Reject raw token-dropout scores that are not projected to step vectors.",
+      "status": "primary",
+      "step_level_mapping": "Aggregate dropout response by original trace-step membership through every projection in Pi.",
+      "target_reuse_policy": "Forbidden except explicitly labeled oracle/control rows: s_B(r_i) must come from a frozen baseline-specific scoring rule and must not copy Stage 2 y_i = Delta_U(r_i)."
+    },
+    {
+      "allowed_use": "primary step-impact predictor",
+      "baseline": "span masking",
+      "class": "Structural-free perturbation",
+      "projection_required": "conditional",
+      "raw_evidence": "span-level masking sensitivity",
+      "rejection_rule": "Reject span scores that cannot be aligned to trace steps.",
+      "status": "primary",
+      "step_level_mapping": "Map each masked span to the owning trace step and preserve one score per trace step.",
+      "target_reuse_policy": "Forbidden except explicitly labeled oracle/control rows: s_B(r_i) must come from a frozen baseline-specific scoring rule and must not copy Stage 2 y_i = Delta_U(r_i)."
+    },
+    {
+      "allowed_use": "white-box step-impact predictor",
+      "baseline": "gradient attribution",
+      "class": "Attribution baselines",
+      "projection_required": "yes",
+      "raw_evidence": "token-level gradient evidence",
+      "rejection_rule": "Reject unprojected gradient vectors.",
+      "status": "primary_if_white_box_access_exists",
+      "step_level_mapping": "Aggregate token evidence to trace steps through all projections in Pi.",
+      "target_reuse_policy": "s_B(r_i) must be projected from token-level or activation-level evidence through Pi; direct Stage 2 target reuse is forbidden."
+    },
+    {
+      "allowed_use": "white-box step-impact predictor",
+      "baseline": "integrated gradients",
+      "class": "Attribution baselines",
+      "projection_required": "yes",
+      "raw_evidence": "token-level path attribution evidence",
+      "rejection_rule": "Reject any result reported for only selected projections.",
+      "status": "primary_if_white_box_access_exists",
+      "step_level_mapping": "Aggregate token evidence to trace steps through all projections in Pi.",
+      "target_reuse_policy": "s_B(r_i) must be projected from token-level or activation-level evidence through Pi; direct Stage 2 target reuse is forbidden."
+    },
+    {
+      "allowed_use": "white-box step-impact predictor",
+      "baseline": "attention rollout",
+      "class": "Attribution baselines",
+      "projection_required": "yes",
+      "raw_evidence": "token-level attention flow evidence",
+      "rejection_rule": "Reject raw attention weights as final method outputs.",
+      "status": "primary_if_white_box_access_exists",
+      "step_level_mapping": "Aggregate token evidence to trace steps through all projections in Pi.",
+      "target_reuse_policy": "s_B(r_i) must be projected from token-level or activation-level evidence through Pi; direct Stage 2 target reuse is forbidden."
+    },
+    {
+      "allowed_use": "white-box step-impact predictor",
+      "baseline": "activation attribution",
+      "class": "Attribution baselines",
+      "projection_required": "yes",
+      "raw_evidence": "activation-level evidence",
+      "rejection_rule": "Reject unprojected activation values.",
+      "status": "primary_if_white_box_access_exists",
+      "step_level_mapping": "Assign activation evidence to token or step spans, then aggregate through all projections in Pi.",
+      "target_reuse_policy": "s_B(r_i) must be projected from token-level or activation-level evidence through Pi; direct Stage 2 target reuse is forbidden."
+    },
+    {
+      "allowed_use": "structural sensitivity diagnostic",
+      "baseline": "graph removal",
+      "class": "Structure controls",
+      "projection_required": "no",
+      "raw_evidence": "node or edge removal response on trace-step dependency graph",
+      "rejection_rule": "Reject if graph corruption is not level-tagged L0-L3.",
+      "status": "primary_diagnostic",
+      "step_level_mapping": "Emit per-step scores from controlled graph-element removal while preserving trace-step identity.",
+      "target_reuse_policy": "Forbidden except explicitly labeled oracle/control rows: s_B(r_i) must come from a frozen baseline-specific scoring rule and must not copy Stage 2 y_i = Delta_U(r_i)."
+    },
+    {
+      "allowed_use": "structural sensitivity diagnostic",
+      "baseline": "edge dropout",
+      "class": "Structure controls",
+      "projection_required": "no",
+      "raw_evidence": "controlled edge dropout response",
+      "rejection_rule": "Reject if dropout fraction is chosen after Stage 2 results.",
+      "status": "primary_diagnostic",
+      "step_level_mapping": "Attribute response to affected incident trace steps and report the induced step-score vector.",
+      "target_reuse_policy": "Forbidden except explicitly labeled oracle/control rows: s_B(r_i) must come from a frozen baseline-specific scoring rule and must not copy Stage 2 y_i = Delta_U(r_i)."
+    },
+    {
+      "allowed_use": "structural sensitivity diagnostic",
+      "baseline": "neighborhood rewiring",
+      "class": "Structure controls",
+      "projection_required": "no",
+      "raw_evidence": "local graph rewiring response",
+      "rejection_rule": "Reject unlabeled rewiring that cannot be reproduced.",
+      "status": "primary_diagnostic",
+      "step_level_mapping": "Assign response to rewired neighborhood steps and emit one score per trace step.",
+      "target_reuse_policy": "Forbidden except explicitly labeled oracle/control rows: s_B(r_i) must come from a frozen baseline-specific scoring rule and must not copy Stage 2 y_i = Delta_U(r_i)."
+    },
+    {
+      "allowed_use": "structural sensitivity diagnostic",
+      "baseline": "full randomization",
+      "class": "Structure controls",
+      "projection_required": "no",
+      "raw_evidence": "fully randomized graph response",
+      "rejection_rule": "Reject if original trace-step ids are not retained.",
+      "status": "primary_diagnostic",
+      "step_level_mapping": "Compute step scores after full dependency randomization with original step ids retained.",
+      "target_reuse_policy": "Forbidden except explicitly labeled oracle/control rows: s_B(r_i) must come from a frozen baseline-specific scoring rule and must not copy Stage 2 y_i = Delta_U(r_i)."
+    },
+    {
+      "allowed_use": "secondary comparator only",
+      "baseline": "self-refine",
+      "class": "Generative feedback systems",
+      "projection_required": "no",
+      "raw_evidence": "localized edits or response deltas",
+      "rejection_rule": "Reject as an attribution baseline.",
+      "status": "secondary_comparator_not_attribution_baseline",
+      "step_level_mapping": "Map via step edit localization, response delta sensitivity, or perturbation recovery distance.",
+      "target_reuse_policy": "s_B(r_i) must be derived from edit localization, response delta sensitivity, or recovery distance; direct Stage 2 target reuse is forbidden."
+    },
+    {
+      "allowed_use": "secondary comparator only",
+      "baseline": "reflexion",
+      "class": "Generative feedback systems",
+      "projection_required": "no",
+      "raw_evidence": "localized feedback or recovery deltas",
+      "rejection_rule": "Reject as an attribution baseline.",
+      "status": "secondary_comparator_not_attribution_baseline",
+      "step_level_mapping": "Map via step edit localization, response delta sensitivity, or perturbation recovery distance.",
+      "target_reuse_policy": "s_B(r_i) must be derived from edit localization, response delta sensitivity, or recovery distance; direct Stage 2 target reuse is forbidden."
+    }
+  ],
+  "bootstrap_settings": {
+    "ci_percentiles": [
+      2.5,
+      97.5
+    ],
+    "minimum_resamples": 1000,
+    "random_seed": 20260532,
+    "resample_unit": "trace"
+  },
+  "claim_gating_rules": {
+    "confirmation_threshold": "mean spearman_rho > 0 and CI lower > 0 for the relevant full, projection, and stratum gates",
+    "confirmed": "passes mean direction and CI-excludes-zero gates for the relevant claim",
+    "confirmed_weak": "final-paper wording when Stage 2 is confirmed and the effect-size label is small",
+    "insufficient_samples": "any required stratum has fewer than minimum_stratum_size traces",
+    "primary_metric": "spearman_rho",
+    "projection_dependent": "effect direction or qualitative result changes across pi_1 through pi_4",
+    "qualified": "mean direction passes but one pre-registered CI gate includes zero",
+    "stratum_dependent": "full set passes but multiple strata fail CI gates or any stratum has systematic mean direction failure",
+    "supported": "Stage 1 exploratory support only; never a Stage 2 or final-paper claim",
+    "unsupported": "full Stage 2 set fails the pre-registered direction"
+  },
+  "effect_size_bins": {
+    "large": "abs(rho) >= 0.50",
+    "medium": "0.30 <= abs(rho) < 0.50",
+    "negligible": "abs(rho) < 0.10",
+    "policy": "Effect size is descriptive only and does not by itself determine confirmation.",
+    "small": "0.10 <= abs(rho) < 0.30"
+  },
+  "fma_projection_policy": {
+    "rule": "FMA outputs are already step-level vectors. All four projections are still materialized in the audit, but they act as identity mappings for FMA rather than as selected token-to-step projections.",
+    "status": "preprojected_step_level_vector"
+  },
+  "fma_version": "v1.2",
+  "method_definition_preserved": true,
+  "metric_definitions": [
+    {
+      "id": "spearman_rho",
+      "required_summary": [
+        "mean",
+        "std",
+        "bootstrap_ci95"
+      ],
+      "target": "rank agreement between s_B(r_i) and Delta_U(r_i)"
+    },
+    {
+      "id": "kendall_tau",
+      "required_summary": [
+        "mean",
+        "std",
+        "bootstrap_ci95"
+      ],
+      "target": "pairwise rank concordance between s_B(r_i) and Delta_U(r_i)"
+    },
+    {
+      "id": "ndcg_at_k",
+      "k_rule": "k must be fixed before Stage 2 validation.",
+      "required_summary": [
+        "mean",
+        "std",
+        "bootstrap_ci95"
+      ],
+      "target": "top-k ranking quality for observed step-impact magnitude"
+    },
+    {
+      "high_impact_q": [
+        10,
+        20
+      ],
+      "id": "auc_high_impact",
+      "required_summary": [
+        "mean",
+        "std",
+        "bootstrap_ci95"
+      ],
+      "target": "classification of high-impact steps."
+    }
+  ],
+  "minimum_stratum_size": 30,
+  "ndcg_k_values": [
+    3,
+    5,
+    "ceil_10pct"
+  ],
+  "no_adaptive_filtering": true,
+  "no_stage2_tuning": true,
+  "projection_family": [
+    {
+      "definition": "For each trace step, sum evidence over tokens or units assigned to that step and divide by total absolute evidence mass in the trace.",
+      "formula": "score_j = sum_{a in step_j} e_a / sum_a abs(e_a)",
+      "id": "pi_1",
+      "name": "sum_normalized_pooling",
+      "output": "step_level_score_vector"
+    },
+    {
+      "definition": "For each trace step, average token-level or activation-level evidence assigned to that step.",
+      "formula": "score_j = mean_{a in step_j} e_a",
+      "id": "pi_2",
+      "name": "mean_pooling",
+      "output": "step_level_score_vector"
+    },
+    {
+      "definition": "For each trace step, compute the L2 norm of token-level or activation-level evidence assigned to that step.",
+      "formula": "score_j = sqrt(sum_{a in step_j} e_a^2)",
+      "id": "pi_3",
+      "name": "l2_norm_pooling",
+      "output": "step_level_score_vector"
+    },
+    {
+      "definition": "For each trace step, sum absolute evidence mass and divide by the number of tokens or units assigned to that step.",
+      "formula": "score_j = sum_{a in step_j} abs(e_a) / max(1, length(step_j))",
+      "id": "pi_4",
+      "name": "length_normalized_attribution_mass",
+      "output": "step_level_score_vector"
+    }
+  ],
+  "protocol_hash": "fa18c407f8359e33a91487c38519d571a0b6821e0200cf8481b05c78f6422402",
+  "protocol_version": "journal_step_impact_v2_3",
+  "purpose": "Confirmatory Structural Generalization Test",
+  "random_seeds": {
+    "bootstrap_seed": 20260532,
+    "split_seed": 20260530,
+    "stratum_seed": 20260531
+  },
+  "registered_stage1_claims": [
+    {
+      "claim": "FMA step-level attribution scores positively rank observed held-out step-level delta_u.",
+      "claim_id": "C1_rank_generalization",
+      "stage1_allowed_label": "supported",
+      "stage1_support_semantics": "exploratory only"
+    },
+    {
+      "claim": "The C1 direction is sign-consistent across pi_1 through pi_4 as a step-level representation audit.",
+      "claim_id": "C2_projection_robustness",
+      "stage1_allowed_label": "supported",
+      "stage1_support_semantics": "exploratory only"
+    },
+    {
+      "claim": "The C1 direction holds across S_high, S_mid, S_low, and S_rand.",
+      "claim_id": "C3_stratified_generalization",
+      "stage1_allowed_label": "supported",
+      "stage1_support_semantics": "exploratory only"
+    }
+  ],
+  "stage1_stage2_separation": {
+    "stage1_allowed_use": "exploration, calibration, and protocol freezing only",
+    "stage1_fraction": 0.65,
+    "stage2_allowed_use": "held-out confirmation only",
+    "stage2_forbidden_use": [
+      "threshold_tuning",
+      "projection_selection",
+      "baseline_selection",
+      "hyperparameter_adjustment",
+      "stratum_definition",
+      "metric_choice"
+    ],
+    "stage2_fraction": 0.35
+  },
+  "stage2_protocol_version": "fma_v1_2_stage2_confirmatory",
+  "stratum_assignment_rule_g_T": {
+    "allowed_inputs": [
+      "trace_length",
+      "number_of_steps",
+      "task_type",
+      "trace_regime",
+      "model_family",
+      "unperturbed_graph_density",
+      "unperturbed_dependency_degree",
+      "unperturbed_redundancy_density",
+      "taxonomy_category_metadata"
+    ],
+    "assignment": "Sort held-out traces by the frozen score plus fixed-seed hash tie breaker; slice into low, mid, and high tertiles. S_high, S_mid, and S_low are a mutually exclusive partition of Stage 2. S_rand is a fixed-seed uniform overlapping audit sample from all Stage 2 traces.",
+    "audit_strata": [
+      "S_rand"
+    ],
+    "density_balance": "1 - min(1, abs(unperturbed_graph_density - 0.5) * 2)",
+    "dependency_balance": "min(1, unperturbed_dependency_degree / max(1, trace_length))",
+    "forbidden_inputs": [
+      "stage2_delta_u",
+      "stage2_spearman_rho",
+      "stage2_kendall_tau",
+      "stage2_ndcg",
+      "stage2_auc",
+      "stage2_projection_performance",
+      "stage2_baseline_performance",
+      "post_perturbation_metric"
+    ],
+    "name": "frozen_structural_stability_quantile_rule",
+    "overlap_allowed": {
+      "S_rand": true
+    },
+    "partition_strata": [
+      "S_low",
+      "S_mid",
+      "S_high"
+    ],
+    "required_strata": [
+      "S_high",
+      "S_mid",
+      "S_low",
+      "S_rand"
+    ],
+    "score_formula": "0.35*density_balance + 0.25*redundancy_density + 0.20*dependency_balance + 0.20*taxonomy_entropy",
+    "taxonomy_entropy": "normalized Shannon entropy over trace taxonomy labels"
+  }
+}
