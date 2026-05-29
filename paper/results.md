@@ -4,46 +4,46 @@ The results consolidate Phase 5-7 into a single hypothesis-refinement narrative.
 
 ## Attribution vs Necessity
 
-The Phase 6 diagnostics show weak alignment between local attribution and topology-sensitive structural necessity. Across 2400 reflective nodes, Pearson alignment is 0.0753 for PRUNE, 0.0523 for CASCADE, and 0.0917 for BYPASS. Spearman alignment remains similarly weak: 0.0596 for PRUNE, 0.0512 for CASCADE, and 0.0623 for BYPASS.
+The Phase 6 diagnostics report weak alignment between local attribution and topology-sensitive structural necessity. Across 2400 reflective nodes, Pearson alignment is 0.0753 for PRUNE, 0.0523 for CASCADE, and 0.0917 for BYPASS. Spearman alignment remains similarly weak: 0.0596 for PRUNE, 0.0512 for CASCADE, and 0.0623 for BYPASS.
 
-Structural necessity is zero-inflated. In every mode, 67.79 percent of structural necessity values are zero, while only 18.25 percent of samples have both zero attribution and zero structural necessity. The positive-attribution zero-necessity fraction is 49.54 percent. This is the attribution inflation phenomenon: local attribution signals are much more common than topology-sensitive necessity.
+Structural necessity is zero-inflated. In every mode, 67.79 percent of structural necessity values are zero, while only 18.25 percent of samples have both zero attribution and zero structural necessity. The positive-attribution zero-necessity fraction is 49.54 percent. Local attribution signals are much more common than topology-sensitive necessity.
 
-The framework reveals that reflective utility signals are substantially more widespread than structural necessity, indicating a mismatch between local utility and topology-level indispensability.
+The framework reports that reflective utility signals are substantially more widespread than structural necessity, indicating a mismatch between local utility and topology-sensitive necessity.
 
-This mismatch does not invalidate reflective utility attribution. It indicates that local utility and structural necessity are different operational proxy quantities. Many reflective steps are locally functional in the Phase 5 scoring layer but structurally inert in the Phase 6 graph layer.
+This mismatch does not invalidate reflective utility attribution. It indicates that local utility and structural necessity are different operational proxy measurements. Many reflective steps are locally functional in the Phase 5 scoring layer but structurally inert in the Phase 6 graph layer.
 
-The primary Phase 6 figure is `outputs/figures/structural_diagnostics_attribution_vs_necessity.png`. It supports the main observation that local utility and structural necessity have weak alignment. Mode-comparison and structural-faithfulness figures are supplementary diagnostics; they support robustness of the same pattern without changing the main interpretation.
+The primary Phase 6 figure `outputs/figures/structural_diagnostics_attribution_vs_necessity.png` plots the weak alignment pattern. Mode-comparison and structural-faithfulness figures summarize supplementary diagnostics without changing the main interpretation.
 
 ## Redundancy
 
 Phase 7 tests whether weak alignment can be explained by redundancy and compensatory redistribution. Redundancy density is moderate at 0.3842, with mean redundancy cluster size 1.1310 and cluster density 0.0983. This means that some reflective steps have substitutable structural profiles, but the graph is not broadly diffuse.
 
-The primary redundancy figure is `outputs/figures/redundancy_density_histogram.png`. It supports a narrower structural interpretation than the initial hypothesis: redundancy exists, but it is not sufficient to justify a final claim of broad compensatory structure. The paper should therefore use moderate redundancy density rather than stronger language.
+The primary redundancy figure `outputs/figures/redundancy_density_histogram.png` reports the redundancy distribution. It is consistent with moderate redundancy density rather than a final claim of broad compensatory structure.
 
-The redundancy finding also explains why low alignment can be informative. If a local utility signal is attached to a node that has similar neighbors or overlapping downstream influence, graph removal may not expose high structural necessity. The possible interpretation is that some reflective operations are locally functional but replaceable within the stored topology.
+The redundancy finding is also consistent with one reason why low alignment can be informative. If a local utility signal is attached to a node that has similar neighbors or overlapping downstream influence, graph removal may not expose high structural necessity. The possible interpretation is that some reflective operations are locally functional but replaceable within the stored topology.
 
 ## Weak Compensation
 
 Compensation is weak across intervention modes. Mean compensation ratio is 0.0084 for PRUNE, 0.0000 for CASCADE, and 0.0152 for BYPASS. Median compensation is 0.0000 in the reported distributions. Rerouting entropy is also 0.0000, and mean rerouting depth is 0.0100.
 
-These values are informative structural findings. They show that observed redistribution is limited in the stored graph topology. They should not be interpreted as intentional adaptation, semantic recovery, or agentic recovery. The measured quantity is post-removal redistribution under deterministic graph operations.
+These values are informative structural findings. They report limited redistribution in the stored graph topology. The measured quantity is post-removal redistribution under deterministic graph operations.
 
 Weak compensation is therefore a result, not a failure. It narrows the paper's claim away from broad redistribution and toward sparse topology-sensitive dependence. The compensation distribution is best treated as an appendix or supplementary diagnostic because the decision-relevant main result is the near-zero ratio summary.
 
 ## Sparse Bottlenecks and Low Distributedness
 
-The bottleneck analysis identifies 191 sparse bottlenecks among 2400 nodes, for a bottleneck frequency of 0.0796 and rarity of 0.9204. These nodes combine high normalized attribution, high normalized necessity, and low redundancy degree. Their rarity supports the final claim that only a small subset of reflective steps is structurally indispensable under the operational proxy.
+The bottleneck analysis identifies 191 sparse bottlenecks among 2400 nodes, for a bottleneck frequency of 0.0796 and rarity of 0.9204. These nodes combine high normalized attribution, high normalized necessity, and low redundancy degree. Their rarity is consistent with the reported interpretation that only a small subset of reflective steps is structurally necessary under the operational proxy.
 
 Distributedness is low. The global distributedness index is 0.2976, indicating concentration rather than broad diffusion of structural influence. Resilience curves reinforce this reading: necessity-first removal has AUC 0.1488, much lower than sequential removal at 0.4840, deterministic random removal at 0.5098, and attribution-first removal at 0.4761. Removing structurally necessary nodes degrades remaining necessity much more sharply than removing nodes by attribution alone.
 
-This result strengthens the attribution-necessity distinction. Attribution-first removal does not degrade the graph as sharply as necessity-first removal, which means local utility ranking is not a substitute for structural necessity ranking. The selected optional primary figure is `outputs/figures/resilience_curves.png`; bottleneck examples and distributedness distributions are supplementary diagnostics.
+This result is consistent with the attribution-necessity distinction. Attribution-first removal does not degrade the graph as sharply as necessity-first removal, which means local utility ranking is not a substitute for structural necessity ranking. The selected optional primary figure `outputs/figures/resilience_curves.png` plots the removal-order curves; bottleneck examples and distributedness distributions are supplementary diagnostics.
 
 ## Hypothesis Refinement
 
-The empirical pattern refines the initial hypothesis rather than rejecting the framework. The initial hypothesis expected reflection to exhibit distributed compensatory organization. The observed results show weak alignment, weak compensation, low distributedness, and sparse bottlenecks. The final interpretation is more conservative and better supported: reflective reasoning exhibits widespread local utility, but only sparse structural necessity.
+The empirical pattern refines the initial hypothesis rather than rejecting the framework. The initial hypothesis expected reflection to exhibit distributed compensatory organization. The reported results record weak alignment, weak compensation, low distributedness, and sparse bottlenecks. The final interpretation is more conservative and more consistent with the reported outputs: reflective reasoning exhibits widespread local utility, but only sparse structural necessity.
 
 Empirical observations: weak Pearson alignment, high zero-necessity rate, moderate redundancy density, low compensation ratios, low distributedness, and sparse bottlenecks.
 
-Structural interpretation: local utility is substantially more widespread than topology-sensitive dependence, so many reflective steps are locally functional without being structurally indispensable.
+Structural interpretation: local utility is substantially more widespread than topology-sensitive dependence, so many reflective steps are locally functional without being structurally necessary under the protocol.
 
-Possible interpretation: future process supervision may benefit from separating local utility scores from sparse bottleneck diagnostics, but this remains a future direction rather than a conclusion established by the current deterministic proxy pipeline.
+Possible interpretation: future process supervision may motivate future work that tests whether separating local utility scores from sparse bottleneck diagnostics is useful, but this remains a future direction rather than a conclusion drawn from the current deterministic proxy pipeline.

@@ -82,4 +82,4 @@ Zero structural necessity is preserved rather than smoothed away. Source-node re
 
 Scores are normalized only when required by the implemented diagnostic. Bottleneck scores combine normalized attribution, normalized necessity, and normalized redundancy degree. Redundancy uses a fixed similarity threshold of 0.75 in the current Phase 7 run. Resilience curves use normalized removal progress before AUC computation.
 
-Claim hierarchy: empirical observations are table values from stored outputs; structural interpretations explain their graph-level meaning; possible interpretation should be reserved for future direction.
+Claim hierarchy: empirical observations are table values from stored outputs; structural interpretations explain their stored trace-topology meaning; possible interpretation should be reserved for future direction.

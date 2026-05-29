@@ -1,22 +1,22 @@
 # Terminology
 
-This paper uses fixed terminology to avoid drift between attribution analysis, structural analysis, and redundancy analysis. The project studies intervention-based functional attribution for reflective cognition dynamics. It does not claim access to latent cognition, semantic understanding, mechanistic decomposition, or full causal identification.
+This paper uses fixed terminology to avoid drift between attribution analysis, structural analysis, and redundancy analysis. The project studies intervention-based functional attribution for reflective cognition dynamics. It does not claim access to hidden reasoning, semantic understanding, internal mechanisms, or strong identification.
 
 ## Canonical Claim
 
 Reflective reasoning exhibits widespread local utility, but only sparse structural necessity.
 
-Weak attribution-necessity alignment does not invalidate reflective utility attribution. Instead, it suggests that many reflective steps are locally functional, few are structurally indispensable, and compensatory redistribution is limited.
+Weak attribution-necessity alignment does not invalidate reflective utility attribution. Instead, it suggests that many reflective steps are locally functional, few are structurally necessary under the protocol, and compensatory redistribution is limited.
 
 ## Core Distinctions
 
 Attribution vs necessity: `attribution_score` measures local functional contribution under deterministic counterfactual scoring. `structural_necessity` measures topology-sensitive dependence after graph intervention. A high `attribution_score` does not imply high `structural_necessity`.
 
-Local vs global: local quantities are defined for an individual reflective step in its observable context. Global summaries aggregate over the fixed task distribution and stored graph topology. No global summary should be read as universal outside that distribution.
+Local vs global: local quantities are defined for an individual reflective step in its observable context. Global summaries aggregate over the fixed task distribution and stored trace topology. No global summary should be read as universal outside that distribution.
 
-Functional vs structural: functional metrics estimate outcome-linked local utility. Structural metrics estimate graph-mediated sensitivity, redundancy, and concentration. The two families are expected to diverge when a locally functional step is structurally replaceable or structurally inert.
+Functional vs structural: functional metrics estimate outcome-linked local utility. Structural metrics estimate topology-sensitive sensitivity, redundancy, and concentration. The two families are expected to diverge when a locally functional step is structurally replaceable or structurally inert.
 
-Non-causal disclaimer: all reported quantities are deterministic operational proxies. They are not identified causal estimates, latent cognitive states, or mechanistic explanations.
+Scope disclaimer: all reported quantities are deterministic operational proxies. They are not protocol-independent effects, hidden reasoning states, internal-process explanations, or universal importance scores.
 
 ## Proxy Ontology
 
@@ -48,6 +48,6 @@ The following names are locked for all `paper/*.md` files. Use these canonical t
 
 Empirical observations are measurements directly reported in `outputs/`, such as Pearson alignment, zero-necessity rates, redundancy density, compensation ratios, distributedness, and resilience AUC.
 
-Structural interpretations explain how those measurements relate to graph topology, for example the mismatch between widespread local utility and sparse structural necessity.
+Structural interpretations explain how those measurements relate to stored trace topology, for example the mismatch between widespread local utility and sparse structural necessity.
 
 Speculative implications must be labeled as possible interpretation, hypothesis, or future direction. They must not be stated as settled conclusions.

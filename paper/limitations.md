@@ -1,14 +1,14 @@
 # Limitations
 
-This repository is a research prototype for deterministic structural analysis of reflective reasoning traces. The framework does not provide full causal identification, mechanistic guarantees, latent cognition access, semantic understanding, or identified causal recovery. Its quantities are operational proxies over observable traces and stored graph topology.
+This repository is a research prototype for deterministic structural analysis of reflective reasoning traces. The framework does not provide strong identification guarantees, mechanism-level guarantees, hidden-reasoning access, semantic understanding, or protocol-independent recovery. Its quantities are operational proxies over observable traces and stored trace topology.
 
-The non-causal framing is central. `attribution_score` is a proxy for local functional contribution, and `structural_necessity` is a proxy for topology-sensitive dependence. A high or low value should not be read as a latent cognitive fact. The framework studies deterministic intervention sensitivity, not mechanistic causal truth.
+The non-causal framing is central. `attribution_score` is a proxy for local functional contribution, and `structural_necessity` is a proxy for topology-sensitive dependence. A high or low value should not be read as a hidden reasoning fact. The framework studies deterministic intervention sensitivity, not internal-process explanation.
 
-The deterministic proxy design also has limits. The benchmark is synthetic, and the current traces are generated under fixed templates and seeds. Determinism improves reproducibility, but it does not guarantee external validity on open-ended reasoning tasks, model-generated reflection under deployment conditions, or human-authored rationales.
+The deterministic proxy design also has limits. The benchmark is synthetic, and the current traces are generated under fixed templates and seeds. Determinism increases reproducibility, but it does not guarantee external validity on open-ended reasoning tasks, model-generated reflection under deployment conditions, or human-authored rationales.
 
 Topology approximation is another limitation. Reflection graphs are deterministic approximations constructed from observable trace structure. Edges, source nodes, influence propagation, PRUNE, CASCADE, and BYPASS modes provide structural diagnostics, but they do not prove semantic dependence or hidden reasoning mechanisms.
 
-Intervention coverage is sparse relative to the full space of possible reflective operations. Phase 5-7 cover local ablations, graph removal modes, redundancy profiles, compensation ratios, rerouting, resilience, and distributedness. They do not cover learned policies, latent embeddings, causal discovery, or semantic reasoning verification.
+Intervention coverage is sparse relative to the full space of possible reflective operations. Phase 5-7 cover local ablations, graph removal modes, redundancy profiles, compensation ratios, rerouting, resilience, and distributedness. They do not cover learned policies, hidden-state models, discovery-style claims, or semantic reasoning verification.
 
 Observed redistribution should not be interpreted as intentional adaptation. Compensation and rerouting are descriptive structural measurements of post-removal redistribution in a deterministic graph. They are not evidence of deliberate replanning, agentic recovery, or semantic recovery.
 
