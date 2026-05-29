@@ -138,15 +138,31 @@ The current Phase 7 run analyzed 2,400 reflective nodes across 800 stored graphs
 - mean compensation ratio: PRUNE `0.0084`, CASCADE `0.0000`, BYPASS `0.0152`
 - resilience AUC: sequential `0.4840`, deterministic random `0.5098`, attribution-first `0.4761`, necessity-first `0.1488`
 
-Weak necessity alignment does not imply attribution invalidity. Instead, it suggests distributed and compensatory reflective organization.
+The original Phase 7 hypothesis was that reflection might exhibit distributed compensatory organization. The observed results refine that hypothesis: reflective reasoning exhibits widespread local utility, but only sparse structural necessity.
 
-The redundancy findings support the interpretation that many locally attributed reflective steps have substitutes or overlapping downstream influence sets. This helps explain why local attribution can be positive even when structural necessity is zero under a given graph intervention.
+### 8.1 Core Finding
 
-The distributedness index should be read as a topology summary. A higher value indicates diffuse reflective organization; a lower value indicates concentration around candidate structural anchors. The current value suggests that necessity is not uniformly diffuse and that sparse bottlenecks remain relevant.
+Reflective reasoning exhibits apparent redundancy without functional compensation. The redundancy density of `0.3842` indicates moderate surface-level similarity or overlap among reflective nodes, but the compensation ratios are effectively zero across PRUNE, CASCADE, and BYPASS. Removed utility is generally not redistributed to other reflective nodes under the measured graph interventions.
 
-The compensation ratios measure structural redistribution and functional displacement after node removal. PRUNE and BYPASS show small but nonzero redistribution, while CASCADE is near zero because descendant removal leaves fewer downstream candidates for redistribution. These values describe stored topology behavior, not adaptive intent.
+This means surface redundancy should not be equated with functional compensation. Many reflective steps may appear locally useful or semantically overlapping while remaining structurally inert or only weakly consequential after node removal.
 
-Here, compensatory behavior means non-agentic functional redistribution in the measured graph, with possible reflective substitution among downstream steps.
+### 8.2 Distributedness vs Bottlenecks
+
+The distributedness index of `0.2976` is low rather than highly diffuse. It suggests that structural necessity is not broadly spread across the reflective graph. At the same time, bottlenecks are sparse but structurally important: the high bottleneck rarity value indicates that only a small subset of reflective nodes occupies concentrated structural positions.
+
+The resulting interpretation is not global redundancy with strong rerouting. It is sparse bottleneck structure embedded within a larger set of structurally inert or weakly consequential reflective steps.
+
+### 8.3 Implication for Weak Alignment
+
+Phase 6 weak alignment can be explained by three jointly observed patterns:
+
+- locally functional but structurally non-essential redundancy
+- weak compensatory redistribution after removal
+- sparse bottleneck concentration
+
+These patterns explain why local attribution can be positive even when structural necessity is zero under a given graph intervention. They also explain why Pearson alignment remains weak: local utility signals are widespread, while topology-sensitive necessity is concentrated.
+
+This is NOT evidence of strong distributed compensatory organization. It is evidence for locally useful but structurally sparse reflective organization, where most reflective steps are neither globally necessary nor strongly compensatory.
 
 Observed redistribution patterns should not be interpreted as intentional or agentic adaptation.
 
