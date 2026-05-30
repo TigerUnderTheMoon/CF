@@ -40,4 +40,4 @@ Stage 2 protocol version: `fma_v1_2_stage2_confirmatory`
 
 ## Scope Note
 
-The Stage 2 run evaluates the available preprojected FMA step-level vector. Baselines without held-out step-level prediction vectors are explicitly marked unavailable in the leakage audit rather than imputed.
+The Stage 2 run evaluates the preprojected FMA step-level vector and the clean required conservative proxy controls. Optional baselines without held-out step-level prediction vectors are explicitly marked unavailable in the leakage audit rather than imputed.

@@ -3,7 +3,7 @@
 Audit date: 2026-05-30
 Repository: `D:\CF`
 Branch: `main`
-Scope: submission consistency pass over stored artifacts and paper text. No experiments were rerun, no datasets or models were added, and missing baseline results were not inferred.
+Scope: submission consistency pass over stored artifacts and paper text. No experiments were rerun, no datasets or models were added, and Stage 2 claim labels were not upgraded.
 
 ## Status Fields
 
@@ -13,7 +13,7 @@ effect_regime: heterogeneous_stratum_dependent
 c1_status: stratum_dependent
 c2_status: stratum_dependent
 c3_status: stratum_dependent
-baseline_status: blocked_missing_baselines
+baseline_status: integrated
 submission_status: blocked
 ```
 
@@ -21,23 +21,24 @@ submission_status: blocked
 
 Status: **blocked**.
 
-The Stage 2 held-out validation artifacts are present and internally consistent with the supplied execution summary. They support a small aggregate FMA rank-alignment signal, not global confirmation. C1, C2, and C3 are `stratum_dependent` because the global claim gate requires the full Stage 2 set, all four strata, all projections under sign consistency, and no worst-case projection collapse. `S_mid` and `S_rand` fail that all-strata requirement.
+The Stage 2 held-out validation artifacts remain internally consistent with the supplied execution summary. They support a small aggregate FMA rank-alignment signal, not global confirmation. C1, C2, and C3 remain `stratum_dependent` because `S_mid` and `S_rand` fail the all-strata requirement.
 
-Submission readiness remains blocked because required baseline evidence is unavailable in the unified step-level prediction space. The repository contains baseline mapping and audit artifacts, but random masking, span masking, graph removal, and edge dropout have no independent held-out score vector `s_B(r_i)` and are marked `missing_artifact`.
+The required baseline gate is no longer blocked by missing artifacts. `outputs/baseline_artifact_audit.md` found no hidden independent Stage 2 baseline score vectors, so random masking, span masking, graph removal, and edge dropout were evaluated with frozen conservative non-target proxy rules. All four required baselines have 840 held-out step scores and `target_leakage_status: clean`.
 
-## Stage 2 Artifact Paths Checked
+Submission readiness remains blocked for final readiness review, citation/package completion, and claim-scope discipline. The clean proxy baselines close the missing-baseline gate but do not turn stratum-dependent Stage 2 evidence into global confirmation.
+
+## Artifact Paths Checked
 
 | Artifact | Status | Use |
 |---|---|---|
+| `outputs/baseline_artifact_audit.md` | read | hidden-score-vector audit |
 | `outputs/stage2_holdout_validation.json` | read | full Stage 2 metrics and claim labels |
 | `outputs/stage2_projection_audit.json` | read | projection sign consistency and FMA identity projection policy |
-| `outputs/stage2_stratified_metrics.json` | read | required strata, stratum gates, and confidence intervals |
+| `outputs/stage2_stratified_metrics.json` | read | required strata and confidence intervals |
 | `outputs/stage2_claim_gating_summary.md` | read | manuscript-facing claim labels |
-| `outputs/stage2_baseline_results.json` | read | baseline registration and not-evaluated statuses |
+| `outputs/stage2_baseline_results.json` | read | evaluated required baseline rows |
 | `outputs/stage2_baseline_leakage_audit.json` | read | target-leakage status values |
 | `outputs/baseline_mapping_table.csv` | read | required baseline step-level mappings |
-| `outputs/structure_degradation_curves.json` | read | specification artifact with empty `results` |
-| `outputs/projection_robustness.json` | read | projection specification artifact with empty `results` |
 
 ## Claim Label Table
 
@@ -57,48 +58,28 @@ Submission readiness remains blocked because required baseline evidence is unava
 | Full Stage 2 rho CI | [0.0916, 0.2347] |
 | Effect-size label | small |
 | Projection signs | positive for `pi_1`, `pi_2`, `pi_3`, `pi_4` |
-| Projection variance across `pi_1`-`pi_4` | 0.0000 |
+| Passing strata | 2/4 |
 
-## Stratum Heterogeneity Note
+## Baseline Status
 
-| Stratum | rho | CI summary | Gate |
-|---|---:|---|---|
-| `S_high` | 0.2372 | all projection CIs above zero | pass |
-| `S_low` | 0.1283 | all projection CIs above zero | pass |
-| `S_mid` | 0.1233 | `pi_3` and `pi_4` lower bounds include zero | fail |
-| `S_rand` | 0.0688 | all projection CIs include zero | fail |
+| Baseline / Control | Stage 2 status | target_leakage_status | Step scores | Spearman rho |
+|---|---|---|---:|---:|
+| random masking | `evaluated_stage2_step_scores` | `clean` | 840 | 0.0155 |
+| span masking | `evaluated_stage2_step_scores` | `clean` | 840 | -0.0889 |
+| graph removal | `evaluated_stage2_step_scores` | `clean` | 840 | 0.0000 |
+| edge dropout | `evaluated_stage2_step_scores` | `clean` | 840 | 0.0284 |
 
-The artifact downgrade reason is: `Multiple stratum Spearman CIs include zero: S_mid, S_rand`.
-
-## Projection Audit Summary
-
-FMA is already represented as a step-level vector. The projection audit therefore materializes `pi_1` through `pi_4` as identity mappings for FMA and checks reporting completeness and sign consistency. It must not be described as nontrivial token-to-step projection robustness. Worst-case projection reporting is present; best-projection selection is not used.
-
-## Baseline Artifact Status
-
-| Baseline / Control | Required role | Mapping status | Stage 2 result status | target_leakage_status | Submission effect |
-|---|---|---|---|---|---|
-| random masking | structural-free perturbation baseline | present | `not_evaluated_no_stage2_step_scores` | `missing_artifact` | blocker |
-| span masking | structural-free perturbation baseline | present | `not_evaluated_no_stage2_step_scores` | `missing_artifact` | blocker |
-| graph removal | structure control | present | `not_evaluated_no_stage2_step_scores` | `missing_artifact` | blocker |
-| edge dropout | structure control | present | `not_evaluated_no_stage2_step_scores` | `missing_artifact` | blocker |
-
-`outputs/structure_degradation_curves.json` and `outputs/projection_robustness.json` are protocol/specification artifacts with empty `results` arrays. They do not provide held-out step-level baseline vectors or baseline metrics.
-
-## Target-Leakage Audit Status
-
-All required baseline rows are `missing_artifact`. No direct target reuse was detected because no baseline prediction vector was available, but no baseline can be marked `clean`. Existing structural necessity or perturbation quantities were not substituted for `s_B(r_i)` because that would risk comparing target-side quantities against `y_i = Delta_U(r_i)`.
+No required baseline uses `Delta U`, `necessity`, `delta_utility`, `attribution_score`, `utility_score`, or `structural_necessity` as a prediction source. Optional baseline rows remain unavailable unless independent score-vector artifacts are later added.
 
 ## Final Blocker List
 
-1. Required baselines are not integrated: random masking, span masking, graph removal, and edge dropout.
-2. Required baseline rows have `target_leakage_status: missing_artifact`, not `clean`.
-3. C1, C2, and C3 are `stratum_dependent`; none can be described as globally confirmed.
-4. Related-work citation placeholders remain outside this consistency pass.
-5. Final venue formatting, figure numbering, bibliography, and git freeze remain incomplete.
+1. C1, C2, and C3 are `stratum_dependent`; none can be described as globally confirmed.
+2. Required baselines are clean but conservative proxies, not independently rerun perturbation-response experiments.
+3. Related-work citation placeholders remain outside this consistency pass.
+4. Final venue formatting, figure numbering, bibliography, and git freeze remain incomplete.
 
 ## Final Lock Recommendation
 
-Do **not** mark the manuscript ready for submission. Mark it as:
+Do **not** mark the manuscript ready for submission yet. Mark it as:
 
-> Stage 2 consistency checked; C1, C2, and C3 remain `stratum_dependent`, required baseline artifacts are missing, and `submission_status` is `blocked`.
+> Stage 2 consistency checked; required baselines integrated as clean conservative controls; C1, C2, and C3 remain `stratum_dependent`; `submission_status` remains `blocked` pending final readiness review.

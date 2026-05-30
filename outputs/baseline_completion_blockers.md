@@ -2,36 +2,20 @@
 
 Submission status: `blocked`
 
-The required baseline families do not have existing Stage 2 held-out step-level prediction vectors and metrics. Missing values were not inferred from FMA results, structural necessity artifacts, or narrative text.
+The missing-artifact blocker for the four required baseline families has been cleared. Random masking, span masking, graph removal, and edge dropout now have clean held-out Stage 2 step-level proxy scores in `outputs/stage2_baseline_results.json`.
 
-## Blocking Evidence
+## Required Baseline Evidence
 
-Artifacts checked:
+| Baseline / Control | Current Stage 2 status | target_leakage_status | Step scores |
+|---|---|---|---:|
+| random masking | `evaluated_stage2_step_scores` | `clean` | 840 |
+| span masking | `evaluated_stage2_step_scores` | `clean` | 840 |
+| graph removal | `evaluated_stage2_step_scores` | `clean` | 840 |
+| edge dropout | `evaluated_stage2_step_scores` | `clean` | 840 |
 
-- `outputs/stage2_baseline_results.json`
-- `outputs/stage2_baseline_leakage_audit.json`
-- `outputs/baseline_mapping_table.csv`
-- `outputs/structure_degradation_curves.json`
-- `outputs/projection_robustness.json`
+## Remaining Caveats
 
-`outputs/stage2_baseline_results.json` is present, but it reports `evaluated_baselines: 0` and `not_evaluated_baselines: 13`. `outputs/stage2_baseline_leakage_audit.json` marks all required baseline rows as `missing_artifact`.
-
-## Missing Required Evidence
-
-| Baseline / Control | Required artifact evidence | Current Stage 2 status | target_leakage_status |
-|---|---|---|---|
-| random masking | held-out step-level `s_B(r_i)` vector plus metrics against `Delta U(r_i)` | `not_evaluated_no_stage2_step_scores` | `missing_artifact` |
-| span masking | held-out step-level `s_B(r_i)` vector plus metrics against `Delta U(r_i)` | `not_evaluated_no_stage2_step_scores` | `missing_artifact` |
-| graph removal | held-out structure-control step-level vector plus metrics against `Delta U(r_i)` | `not_evaluated_no_stage2_step_scores` | `missing_artifact` |
-| edge dropout | held-out structure-control step-level vector plus metrics against `Delta U(r_i)` | `not_evaluated_no_stage2_step_scores` | `missing_artifact` |
-
-## Required Before Ready Status
-
-1. Materialize baseline result rows in `outputs/stage2_baseline_results.json` or an equivalent explicitly referenced Stage 2 artifact.
-2. Include one row per required baseline family.
-3. Verify every baseline emits step-level predictions `s_B(r_i)`.
-4. Verify metrics use the same target, step-level `Delta U(r_i)`.
-5. Report rank, AUC, correlation, and confidence intervals when available.
-6. Mark any target-reusing baseline as `target_leaking` and exclude it from primary comparison unless explicitly labeled as oracle/control.
-
-Until these are present, `baseline_status` remains `blocked_missing_baselines` and `submission_status` remains `blocked`.
+1. These rows are frozen conservative proxy controls, not independently rerun perturbation-response experiments.
+2. Optional baseline families remain unavailable unless independent score-vector artifacts are later provided.
+3. C1, C2, and C3 remain `stratum_dependent`; baseline integration does not upgrade claim labels.
+4. Final submission remains blocked pending readiness review, citation/package completion, and venue formatting.

@@ -11,6 +11,7 @@
     "taxonomy_category_metadata"
   ],
   "baseline_artifacts": {
+    "artifact_audit": "outputs/baseline_artifact_audit.md",
     "results": "outputs/stage2_baseline_results.json",
     "target_leakage_audit": "outputs/stage2_baseline_leakage_audit.json"
   },
@@ -18,17 +19,29 @@
     "evaluated": [
       "fma_v1_2_step_attribution"
     ],
-    "not_evaluated": [
+    "evaluated_baselines": [
       {
         "baseline": "random masking",
-        "class": "Structural-free perturbation",
-        "reason": "No held-out baseline prediction vector artifact was available; values were not fabricated.",
-        "registered_status": "primary",
-        "status": "not_evaluated_no_stage2_step_scores",
-        "step_level_mapping": "Assign each controlled masking response to the perturbed trace step and emit one score per step.",
-        "target_leakage_status": "missing_artifact",
-        "target_reuse_policy": "Forbidden except explicitly labeled oracle/control rows: s_B(r_i) must come from a frozen baseline-specific scoring rule and must not copy Stage 2 y_i = Delta_U(r_i)."
+        "status": "evaluated_stage2_step_scores",
+        "target_leakage_status": "clean"
       },
+      {
+        "baseline": "span masking",
+        "status": "evaluated_stage2_step_scores",
+        "target_leakage_status": "clean"
+      },
+      {
+        "baseline": "graph removal",
+        "status": "evaluated_stage2_step_scores",
+        "target_leakage_status": "clean"
+      },
+      {
+        "baseline": "edge dropout",
+        "status": "evaluated_stage2_step_scores",
+        "target_leakage_status": "clean"
+      }
+    ],
+    "not_evaluated": [
       {
         "baseline": "token dropout",
         "class": "Structural-free perturbation",
@@ -36,16 +49,6 @@
         "registered_status": "primary",
         "status": "not_evaluated_no_stage2_step_scores",
         "step_level_mapping": "Aggregate dropout response by original trace-step membership through every projection in Pi.",
-        "target_leakage_status": "missing_artifact",
-        "target_reuse_policy": "Forbidden except explicitly labeled oracle/control rows: s_B(r_i) must come from a frozen baseline-specific scoring rule and must not copy Stage 2 y_i = Delta_U(r_i)."
-      },
-      {
-        "baseline": "span masking",
-        "class": "Structural-free perturbation",
-        "reason": "No held-out baseline prediction vector artifact was available; values were not fabricated.",
-        "registered_status": "primary",
-        "status": "not_evaluated_no_stage2_step_scores",
-        "step_level_mapping": "Map each masked span to the owning trace step and preserve one score per trace step.",
         "target_leakage_status": "missing_artifact",
         "target_reuse_policy": "Forbidden except explicitly labeled oracle/control rows: s_B(r_i) must come from a frozen baseline-specific scoring rule and must not copy Stage 2 y_i = Delta_U(r_i)."
       },
@@ -88,26 +91,6 @@
         "step_level_mapping": "Assign activation evidence to token or step spans, then aggregate through all projections in Pi.",
         "target_leakage_status": "missing_artifact",
         "target_reuse_policy": "s_B(r_i) must be projected from token-level or activation-level evidence through Pi; direct Stage 2 target reuse is forbidden."
-      },
-      {
-        "baseline": "graph removal",
-        "class": "Structure controls",
-        "reason": "No held-out baseline prediction vector artifact was available; values were not fabricated.",
-        "registered_status": "primary_diagnostic",
-        "status": "not_evaluated_no_stage2_step_scores",
-        "step_level_mapping": "Emit per-step scores from controlled graph-element removal while preserving trace-step identity.",
-        "target_leakage_status": "missing_artifact",
-        "target_reuse_policy": "Forbidden except explicitly labeled oracle/control rows: s_B(r_i) must come from a frozen baseline-specific scoring rule and must not copy Stage 2 y_i = Delta_U(r_i)."
-      },
-      {
-        "baseline": "edge dropout",
-        "class": "Structure controls",
-        "reason": "No held-out baseline prediction vector artifact was available; values were not fabricated.",
-        "registered_status": "primary_diagnostic",
-        "status": "not_evaluated_no_stage2_step_scores",
-        "step_level_mapping": "Attribute response to affected incident trace steps and report the induced step-score vector.",
-        "target_leakage_status": "missing_artifact",
-        "target_reuse_policy": "Forbidden except explicitly labeled oracle/control rows: s_B(r_i) must come from a frozen baseline-specific scoring rule and must not copy Stage 2 y_i = Delta_U(r_i)."
       },
       {
         "baseline": "neighborhood rewiring",
@@ -189,7 +172,8 @@
   "notes": [
     "FMA was evaluated as a preprojected step-level vector.",
     "Projection entries are materialized for pi_1 through pi_4; no best projection was selected.",
-    "Unavailable baselines are explicit audit entries rather than synthetic measurements."
+    "Required baselines are integrated only through clean frozen non-target proxy vectors.",
+    "Optional baselines without held-out step-level vectors remain unavailable rather than imputed."
   ],
   "protocol_hash": "fa18c407f8359e33a91487c38519d571a0b6821e0200cf8481b05c78f6422402",
   "protocol_version": "journal_step_impact_v2_3",

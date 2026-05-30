@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import json
+from pathlib import Path
 
 from fma.eval.journal_protocol import (
     BASELINE_MAPPING_ROWS,
@@ -14,9 +15,12 @@ from fma.eval.journal_protocol import (
     write_journal_protocol_outputs,
 )
 from fma.eval.stage2_validation import (
+    BASELINE_FORBIDDEN_SOURCE_FIELDS,
+    REQUIRED_BASELINE_IDS,
     _build_claim_gating,
     _build_projection_audit,
     _effect_size_label,
+    build_stage2_baseline_score_vectors,
     build_stage2_claim_gating_summary_markdown,
     write_stage2_validation_outputs,
 )
@@ -113,6 +117,7 @@ def test_stage2_writer_materializes_required_holdout_files(tmp_path) -> None:
         nodes = [
             {
                 "node_id": f"{trace_id}::r{step:03d}",
+                "content": " ".join(["reflect"] * (step + 1)),
                 "step_index": step,
                 "taxonomy_label": ["VERIFICATION", "PLANNING", "DECOMPOSITION"][step],
             }
@@ -158,6 +163,7 @@ def test_stage2_writer_materializes_required_holdout_files(tmp_path) -> None:
         "stage2_stratified_metrics",
         "stage2_baseline_results",
         "stage2_baseline_leakage_audit",
+        "baseline_artifact_audit",
         "stage2_claim_gating_summary",
         "stage2_leakage_audit",
     }
@@ -167,6 +173,7 @@ def test_stage2_writer_materializes_required_holdout_files(tmp_path) -> None:
     protocol = json.loads(paths["stage2_frozen_protocol"].read_text(encoding="utf-8"))
     split = json.loads(paths["stage2_split_manifest"].read_text(encoding="utf-8"))
     leakage = json.loads(paths["stage2_leakage_audit"].read_text(encoding="utf-8"))
+    projection_audit = json.loads(paths["stage2_projection_audit"].read_text(encoding="utf-8"))
     baseline_results = json.loads(paths["stage2_baseline_results"].read_text(encoding="utf-8"))
     baseline_leakage = json.loads(
         paths["stage2_baseline_leakage_audit"].read_text(encoding="utf-8")
@@ -189,15 +196,117 @@ def test_stage2_writer_materializes_required_holdout_files(tmp_path) -> None:
     assert semantics["total_stratum_memberships"] >= semantics["unique_stage2_trace_count"]
     assert leakage["checklist"]["stage2_metrics_used_for_strata"] is False
     assert leakage["checklist"]["stage2_target_y_i_reused_as_baseline_prediction"] is False
-    assert leakage["baseline_evaluation_scope"]["not_evaluated"][0]["status"] == "not_evaluated_no_stage2_step_scores"
+    assert len(leakage["baseline_evaluation_scope"]["evaluated_baselines"]) == 4
+    evaluated_projection_baselines = {
+        row["baseline"]
+        for row in projection_audit["baseline_projection_status"]["evaluated"]
+        if "baseline" in row
+    }
+    not_evaluated_projection_baselines = {
+        row["baseline"]
+        for row in projection_audit["baseline_projection_status"]["not_evaluated"]
+    }
+    assert evaluated_projection_baselines == set(REQUIRED_BASELINE_IDS)
+    assert set(REQUIRED_BASELINE_IDS).isdisjoint(not_evaluated_projection_baselines)
     assert baseline_results["summary"]["fabricated_baseline_scores"] is False
-    assert baseline_results["summary"]["evaluated_baselines"] == 0
-    assert baseline_results["baselines"][0]["target_leakage_status"] == "missing_artifact"
+    assert baseline_results["summary"]["evaluated_baselines"] == 4
+    assert baseline_results["summary"]["required_baselines_evaluated"] == 4
+    required_rows = {
+        row["baseline"]: row
+        for row in baseline_results["baselines"]
+        if row["baseline"] in REQUIRED_BASELINE_IDS
+    }
+    assert set(required_rows) == set(REQUIRED_BASELINE_IDS)
+    for row in required_rows.values():
+        assert row["status"] == "evaluated_stage2_step_scores"
+        assert row["target_leakage_status"] == "clean"
+        assert row["score_vector_summary"]["n_traces"] == len(split["stage2_trace_ids"])
+        assert row["score_vector_summary"]["n_steps"] == len(split["stage2_trace_ids"]) * 3
+        assert set(row["full_stage2"]) == {"pi_1", "pi_2", "pi_3", "pi_4"}
+        assert set(row["strata"]) == {"S_high", "S_mid", "S_low", "S_rand"}
+        forbidden = set(BASELINE_FORBIDDEN_SOURCE_FIELDS)
+        assert forbidden.isdisjoint(row["source_fields_used"])
+        assert set(row["forbidden_fields_not_used"]) == forbidden
     assert baseline_leakage["checklist"]["stage2_target_y_i_reused_as_prediction"] is False
-    assert baseline_leakage["baseline_checks"][0]["target_leakage_status"] == "missing_artifact"
+    required_leakage = {
+        check["baseline"]: check
+        for check in baseline_leakage["baseline_checks"]
+        if check["baseline"] in REQUIRED_BASELINE_IDS
+    }
+    assert set(required_leakage) == set(REQUIRED_BASELINE_IDS)
+    assert all(
+        check["target_leakage_status"] == "clean"
+        and check["stage2_prediction_vector_available"] is True
+        for check in required_leakage.values()
+    )
     assert all(
         check["direct_target_reuse_detected"] is False
         for check in baseline_leakage["baseline_checks"]
+    )
+
+
+def test_required_baseline_score_vectors_are_step_keyed_and_clean() -> None:
+    records = [
+        {
+            "trace_id": "trace_a",
+            "step_idx": 0,
+            "span_token_count_norm": 0.25,
+            "incident_degree_norm": 0.5,
+            "edge_dropout_incident_weight_norm": 0.75,
+        },
+        {
+            "trace_id": "trace_a",
+            "step_idx": 1,
+            "span_token_count_norm": 1.0,
+            "incident_degree_norm": 0.0,
+            "edge_dropout_incident_weight_norm": 0.25,
+        },
+    ]
+
+    vectors = build_stage2_baseline_score_vectors(records)
+
+    assert set(vectors) == set(REQUIRED_BASELINE_IDS)
+    for vector in vectors.values():
+        assert set(vector) == {("trace_a", 0), ("trace_a", 1)}
+        assert all(0.0 <= score <= 1.0 for score in vector.values())
+
+
+def test_current_required_baselines_cover_full_stage2_outputs() -> None:
+    baseline_results = json.loads(
+        Path("outputs/stage2_baseline_results.json").read_text(encoding="utf-8")
+    )
+    baseline_leakage = json.loads(
+        Path("outputs/stage2_baseline_leakage_audit.json").read_text(encoding="utf-8")
+    )
+    required_rows = {
+        row["baseline"]: row
+        for row in baseline_results["baselines"]
+        if row["baseline"] in REQUIRED_BASELINE_IDS
+    }
+
+    assert baseline_results["summary"]["evaluated_baselines"] == 4
+    assert baseline_results["summary"]["required_baselines_evaluated"] == 4
+    assert set(required_rows) == set(REQUIRED_BASELINE_IDS)
+    for row in required_rows.values():
+        assert row["status"] == "evaluated_stage2_step_scores"
+        assert row["target_leakage_status"] == "clean"
+        assert row["score_vector_summary"]["n_traces"] == 280
+        assert row["score_vector_summary"]["n_steps"] == 840
+        assert set(row["full_stage2"]) == {"pi_1", "pi_2", "pi_3", "pi_4"}
+        assert set(row["strata"]) == {"S_high", "S_mid", "S_low", "S_rand"}
+        assert set(BASELINE_FORBIDDEN_SOURCE_FIELDS).isdisjoint(row["source_fields_used"])
+
+    required_leakage = {
+        check["baseline"]: check
+        for check in baseline_leakage["baseline_checks"]
+        if check["baseline"] in REQUIRED_BASELINE_IDS
+    }
+    assert set(required_leakage) == set(REQUIRED_BASELINE_IDS)
+    assert all(
+        check["stage2_prediction_vector_available"] is True
+        and check["direct_target_reuse_detected"] is False
+        and check["target_leakage_status"] == "clean"
+        for check in required_leakage.values()
     )
 
 

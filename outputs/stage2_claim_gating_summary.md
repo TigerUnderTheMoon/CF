@@ -18,4 +18,5 @@ Stage 2 is confirmatory. Labels are assigned without Stage 2 threshold tuning, p
 - S_high, S_mid, and S_low are a mutually exclusive partition; S_rand is an overlapping non-adaptive audit layer.
 - Effect-size labels are descriptive only: rho in [0.10, 0.30) is `small`.
 - Underfilled strata are labeled `insufficient_samples` rather than dropped.
-- Baselines without held-out step-level vectors are marked unavailable, not imputed.
+- The baseline artifact audit first searches for hidden independent vectors; required proxy controls are integrated only when their frozen non-target score vectors are clean.
+- Optional baselines without held-out step-level vectors remain unavailable, not imputed.

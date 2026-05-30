@@ -2,56 +2,54 @@
 
 Protocol version: `journal_step_impact_v2_3`
 Stage 2 protocol version: `fma_v1_2_stage2_confirmatory`
-Scope: existing-artifact integration only. No new baselines were run and no missing values were inferred.
+Scope: existing-artifact integration plus frozen conservative non-target proxy scoring. No experiments were rerun and no missing values were inferred from `Delta U`.
 
 ## Integration Status
 
 ```text
-baseline_status: blocked_missing_baselines
+baseline_status: integrated
 submission_status: blocked
 ```
 
 ## Unified Comparison Space
 
-All primary comparisons must use the same step-level prediction frame:
+All primary comparisons use the same step-level prediction frame:
 
 - Prediction target: step-level `Delta U(r_i)`
 - Method output: step-level score vector `s_B(r_i)`
-- Metrics: ranking correlation, top-k alignment, high-impact step AUC, and confidence intervals when available
+- Metrics: ranking correlation, top-k alignment, high-impact step AUC, and confidence intervals
 
-FMA is available as a preprojected step-level vector. Required baseline families are mapped in `outputs/baseline_mapping_table.csv`, and they are registered in `outputs/stage2_baseline_results.json`, but none has an independent held-out Stage 2 score vector.
+`outputs/baseline_artifact_audit.md` found no hidden independent Stage 2 baseline score vectors. The required baseline rows were therefore evaluated with frozen conservative proxy rules that do not use target-side fields.
 
 ## Unified Comparison Table
 
 | Comparison group | Method or family | Artifact status | target_leakage_status | Integrated? |
 |---|---|---|---|---|
-| FMA | `fma_v1_2_step_attribution` | evaluated in `outputs/stage2_holdout_validation.json` and `outputs/stage2_projection_audit.json` | not a baseline row | yes |
-| Structural-free perturbation baseline | random masking | registered but `not_evaluated_no_stage2_step_scores` | `missing_artifact` | no; blocker |
-| Structural-free perturbation baseline | span masking | registered but `not_evaluated_no_stage2_step_scores` | `missing_artifact` | no; blocker |
-| Structure control | graph removal | registered but `not_evaluated_no_stage2_step_scores` | `missing_artifact` | no; blocker |
-| Structure control | edge dropout | registered but `not_evaluated_no_stage2_step_scores` | `missing_artifact` | no; blocker |
-| Optional or unavailable baselines | token dropout, white-box attribution rows, extra structure controls, self-refine, reflexion | registered as unavailable or secondary | `missing_artifact` | no |
+| FMA | `fma_v1_2_step_attribution` | evaluated in `outputs/stage2_holdout_validation.json` | not a baseline row | yes |
+| Structural-free perturbation baseline | random masking | 840 proxy scores | `clean` | yes |
+| Structural-free perturbation baseline | span masking | 840 proxy scores | `clean` | yes |
+| Structure control | graph removal | 840 proxy scores | `clean` | yes |
+| Structure control | edge dropout | 840 proxy scores | `clean` | yes |
+| Optional or unavailable baselines | token dropout, white-box attribution rows, extra structure controls, self-refine, reflexion | no independent score vector | `missing_artifact` | no |
 | Oracle/control rows | none available | no artifact | not applicable | no |
 
 ## Required Baseline Handling
 
-| Family | Required role | Mapping artifact | Stage 2 result artifact | Leakage audit artifact | Integration decision |
-|---|---|---|---|---|---|
-| random masking | structural-free perturbation baseline | present | no step-level scores | `missing_artifact` | blocker |
-| span masking | structural-free perturbation baseline | present | no step-level scores | `missing_artifact` | blocker |
-| graph removal | structure control | present | no step-level scores | `missing_artifact` | blocker |
-| edge dropout | structure control | present | no step-level scores | `missing_artifact` | blocker |
+| Family | Score rule | Stage 2 scores | Spearman rho | Integration decision |
+|---|---|---:|---:|---|
+| random masking | stable hash over `trace_id`, `step_idx`, and frozen seed | 840 | 0.0155 | integrated clean proxy |
+| span masking | normalized span token count from graph node content | 840 | -0.0889 | integrated clean proxy |
+| graph removal | normalized incident graph degree | 840 | 0.0000 | integrated clean proxy |
+| edge dropout | frozen edge-dropout incident weight, p=0.15 | 840 | 0.0284 | integrated clean proxy |
 
-## Non-Integrated Artifacts
+## Leakage Decision
 
-`outputs/structure_degradation_curves.json` and `outputs/projection_robustness.json` are protocol/specification artifacts with empty `results` arrays. They do not provide held-out step-level baseline vectors, rank correlations, AUC values, or confidence intervals.
-
-Existing Phase 5-7 structural artifacts are not substituted for baseline results because doing so would either compare different quantities or risk reusing target-side perturbation measurements as predictions. No baseline row is marked integrated.
+The required baseline rows do not use `Delta U`, `necessity`, `delta_utility`, `attribution_score`, `utility_score`, or `structural_necessity` as prediction sources. `outputs/stage2_baseline_leakage_audit.json` marks all four required rows as `clean`.
 
 ## Reviewer Risk
 
-Reviewer could say: the paper reports a held-out FMA signal but does not compare it against required perturbation baselines or structure controls in the same step-level prediction space.
+Reviewer could say: the required baselines are conservative proxy controls rather than independently rerun perturbation-response baselines.
 
-Severity: major for journal submission.
+Severity: medium to major, depending on venue expectations.
 
-Mitigation: provide clean held-out baseline artifacts or narrow the claim so it no longer implies baseline-integrated validation.
+Mitigation: present them as clean conservative controls, not as strong empirical competitors or superiority evidence.

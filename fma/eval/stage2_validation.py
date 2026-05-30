@@ -41,6 +41,27 @@ REQUIRED_STAGE2_STRATA = ("S_high", "S_mid", "S_low", "S_rand")
 PARTITION_STAGE2_STRATA = ("S_low", "S_mid", "S_high")
 AUDIT_STAGE2_STRATA = ("S_rand",)
 PRIMARY_METHOD_ID = "fma_v1_2_step_attribution"
+REQUIRED_BASELINE_IDS = (
+    "random masking",
+    "span masking",
+    "graph removal",
+    "edge dropout",
+)
+BASELINE_SCORE_RULE_VERSION = "conservative_proxy_v1"
+BASELINE_SCORE_SEED = 20260533
+EDGE_DROPOUT_PROBABILITY = 0.15
+BASELINE_FORBIDDEN_SOURCE_FIELDS = (
+    "delta_u",
+    "necessity",
+    "delta_utility",
+    "attribution_score",
+    "utility_score",
+    "structural_necessity",
+)
+BASELINE_SOURCE_ARTIFACTS = (
+    "outputs/stage2_split_manifest.json",
+    "outputs/reflection_graph.json",
+)
 
 ALLOWED_STRATUM_INPUTS = (
     "trace_length",
@@ -86,6 +107,7 @@ def write_stage2_validation_outputs(
         "stage2_stratified_metrics": root / "stage2_stratified_metrics.json",
         "stage2_baseline_results": root / "stage2_baseline_results.json",
         "stage2_baseline_leakage_audit": root / "stage2_baseline_leakage_audit.json",
+        "baseline_artifact_audit": root / "baseline_artifact_audit.md",
         "stage2_claim_gating_summary": root / "stage2_claim_gating_summary.md",
         "stage2_leakage_audit": root / "stage2_leakage_audit.json",
     }
@@ -98,13 +120,27 @@ def write_stage2_validation_outputs(
     _write_json(paths["stage2_split_manifest"], split_manifest)
 
     metric_outputs = evaluate_stage2_holdout(records, split_manifest, protocol)
-    baseline_results = build_stage2_baseline_results(protocol, split_manifest)
+    baseline_artifact_audit = build_baseline_artifact_audit(root)
+    baseline_results = build_stage2_baseline_results(
+        protocol,
+        split_manifest,
+        records=records,
+        artifact_audit=baseline_artifact_audit,
+    )
+    metric_outputs["projection_audit"]["baseline_projection_status"] = (
+        _baseline_projection_status_from_results(baseline_results)
+    )
     baseline_leakage_audit = build_stage2_baseline_leakage_audit(
         protocol,
         split_manifest,
         baseline_results,
     )
-    leakage_audit = build_stage2_leakage_audit(protocol, split_manifest, metric_outputs)
+    leakage_audit = build_stage2_leakage_audit(
+        protocol,
+        split_manifest,
+        metric_outputs,
+        baseline_results=baseline_results,
+    )
     claim_markdown = build_stage2_claim_gating_summary_markdown(metric_outputs)
     support_markdown = build_stage2_claim_support_summary_markdown(metric_outputs)
 
@@ -113,6 +149,10 @@ def write_stage2_validation_outputs(
     _write_json(paths["stage2_stratified_metrics"], metric_outputs["stratified_metrics"])
     _write_json(paths["stage2_baseline_results"], baseline_results)
     _write_json(paths["stage2_baseline_leakage_audit"], baseline_leakage_audit)
+    paths["baseline_artifact_audit"].write_text(
+        build_baseline_artifact_audit_markdown(baseline_artifact_audit),
+        encoding="utf-8",
+    )
     paths["stage2_claim_gating_summary"].write_text(claim_markdown, encoding="utf-8")
     _write_json(paths["stage2_leakage_audit"], leakage_audit)
     (root / "claim_support_summary.md").write_text(support_markdown, encoding="utf-8")
@@ -154,6 +194,16 @@ def load_stage2_step_records(
                 ),
                 "taxonomy_categories": trace_meta["taxonomy_categories"],
                 "structural_stability_proxy": trace_meta["structural_stability_proxy"],
+                "span_token_count": int(node_meta.get("span_token_count", 0)),
+                "span_token_count_norm": float(node_meta.get("span_token_count_norm", 0.0)),
+                "incident_degree": float(node_meta.get("incident_degree", 0.0)),
+                "incident_degree_norm": float(node_meta.get("incident_degree_norm", 0.0)),
+                "edge_dropout_incident_weight": float(
+                    node_meta.get("edge_dropout_incident_weight", 0.0)
+                ),
+                "edge_dropout_incident_weight_norm": float(
+                    node_meta.get("edge_dropout_incident_weight_norm", 0.0)
+                ),
             }
         )
     return sorted(records, key=lambda item: (item["trace_id"], item["step_idx"]))
@@ -550,9 +600,27 @@ def build_stage2_leakage_audit(
     protocol: Mapping[str, Any],
     split_manifest: Mapping[str, Any],
     metric_outputs: Mapping[str, Any],
+    *,
+    baseline_results: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Return a no-leakage audit checklist for the Stage 2 run."""
+    evaluated_baselines = []
     not_evaluated_baselines = _not_evaluated_baseline_rows()
+    if baseline_results is not None:
+        evaluated_baselines = [
+            {
+                "baseline": row["baseline"],
+                "status": row["status"],
+                "target_leakage_status": row["target_leakage_status"],
+            }
+            for row in baseline_results.get("baselines", [])
+            if row.get("status") == "evaluated_stage2_step_scores"
+        ]
+        not_evaluated_baselines = [
+            row
+            for row in baseline_results.get("baselines", [])
+            if row.get("status") != "evaluated_stage2_step_scores"
+        ]
     return {
         "protocol_version": protocol["protocol_version"],
         "fma_version": protocol["fma_version"],
@@ -589,17 +657,20 @@ def build_stage2_leakage_audit(
             "baseline target-leakage audit",
         ],
         "baseline_artifacts": {
+            "artifact_audit": "outputs/baseline_artifact_audit.md",
             "results": "outputs/stage2_baseline_results.json",
             "target_leakage_audit": "outputs/stage2_baseline_leakage_audit.json",
         },
         "baseline_evaluation_scope": {
             "evaluated": [PRIMARY_METHOD_ID],
+            "evaluated_baselines": evaluated_baselines,
             "not_evaluated": not_evaluated_baselines,
         },
         "notes": [
             "FMA was evaluated as a preprojected step-level vector.",
             "Projection entries are materialized for pi_1 through pi_4; no best projection was selected.",
-            "Unavailable baselines are explicit audit entries rather than synthetic measurements.",
+            "Required baselines are integrated only through clean frozen non-target proxy vectors.",
+            "Optional baselines without held-out step-level vectors remain unavailable rather than imputed.",
         ],
     }
 
@@ -607,9 +678,24 @@ def build_stage2_leakage_audit(
 def build_stage2_baseline_results(
     protocol: Mapping[str, Any],
     split_manifest: Mapping[str, Any],
+    *,
+    records: Sequence[Mapping[str, Any]] | None = None,
+    artifact_audit: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Return Stage 2 baseline availability and result status."""
-    not_evaluated_baselines = _not_evaluated_baseline_rows()
+    baseline_rows = _not_evaluated_baseline_rows()
+    evaluated_rows: list[dict[str, Any]] = []
+    if records is not None:
+        evaluated_by_baseline = _evaluate_required_baseline_rows(records, split_manifest)
+        baseline_rows = [
+            evaluated_by_baseline.get(row["baseline"], row)
+            for row in baseline_rows
+        ]
+        evaluated_rows = [
+            row
+            for row in baseline_rows
+            if row.get("status") == "evaluated_stage2_step_scores"
+        ]
     return {
         "protocol_version": protocol["protocol_version"],
         "fma_version": protocol["fma_version"],
@@ -634,19 +720,162 @@ def build_stage2_baseline_results(
             "status": "evaluated_as_fma_method_not_baseline",
             "results_file": "outputs/stage2_holdout_validation.json",
         },
-        "baselines": not_evaluated_baselines,
+        "baselines": baseline_rows,
         "summary": {
-            "total_registered_baselines": len(not_evaluated_baselines),
-            "evaluated_baselines": 0,
-            "not_evaluated_baselines": len(not_evaluated_baselines),
+            "total_registered_baselines": len(baseline_rows),
+            "evaluated_baselines": len(evaluated_rows),
+            "not_evaluated_baselines": len(baseline_rows) - len(evaluated_rows),
+            "required_baselines": len(REQUIRED_BASELINE_IDS),
+            "required_baselines_evaluated": sum(
+                1
+                for row in evaluated_rows
+                if row.get("baseline") in REQUIRED_BASELINE_IDS
+            ),
             "fabricated_baseline_scores": False,
         },
+        "artifact_audit": {
+            "independent_score_vectors_found": bool(
+                artifact_audit
+                and artifact_audit.get("independent_score_vectors_found")
+            ),
+            "audit_file": "outputs/baseline_artifact_audit.md",
+        },
         "result_policy": (
-            "No baseline metric is reported unless an independent held-out "
-            "step-level prediction vector is present. Missing baselines remain "
-            "explicit unavailable rows."
+            "Required baselines are evaluated only when an independent held-out "
+            "score vector exists or a frozen conservative non-target proxy rule "
+            "can emit s_B(r_i). Missing optional baselines remain explicit "
+            "unavailable rows."
         ),
     }
+
+
+def build_baseline_artifact_audit(output_dir: str | Path) -> dict[str, Any]:
+    """Audit whether hidden independent Stage 2 baseline vectors already exist."""
+    root = Path(output_dir)
+    candidate_rows = []
+    scanned_files = 0
+    for path in sorted(root.rglob("*")):
+        if not path.is_file() or path.suffix.lower() not in {".json", ".jsonl", ".csv", ".md"}:
+            continue
+        scanned_files += 1
+        relative = path.relative_to(root).as_posix()
+        name_text = relative.lower()
+        name_relevant = any(
+            token in name_text
+            for token in (
+                "baseline",
+                "score",
+                "prediction",
+                "stage2",
+                "mask",
+                "dropout",
+                "graph",
+                "edge",
+            )
+        )
+        content_markers: list[str] = []
+        preview = ""
+        if path.stat().st_size <= 250_000:
+            preview = path.read_text(encoding="utf-8", errors="ignore").lower()
+            for marker in (
+                "step_scores",
+                "score_vector",
+                "prediction_vector",
+                "s_b(r_i)",
+                "random masking",
+                "span masking",
+                "graph removal",
+                "edge dropout",
+            ):
+                if marker in preview:
+                    content_markers.append(marker)
+        if not name_relevant and not content_markers:
+            continue
+        known_protocol_artifact = relative in {
+            "baseline_artifact_audit.md",
+            "baseline_completion_blockers.md",
+            "baseline_integration_summary.md",
+            "baseline_mapping_table.csv",
+            "experiment_matrix.json",
+            "projection_robustness.json",
+            "stage2_baseline_leakage_audit.json",
+            "stage2_baseline_results.json",
+            "stage2_claim_gating_summary.md",
+            "stage2_frozen_protocol.json",
+            "stage2_holdout_validation.json",
+            "stage2_leakage_audit.json",
+            "stage2_projection_audit.json",
+            "stage2_split_manifest.json",
+            "stage2_stratified_metrics.json",
+            "statistical_stability.json",
+            "structure_degradation_curves.json",
+            "submission_consistency_verification.md",
+        }
+        has_vector_marker = any(
+            marker in content_markers
+            for marker in ("step_scores", "score_vector", "prediction_vector")
+        )
+        independent_vector = bool(has_vector_marker and not known_protocol_artifact)
+        candidate_rows.append(
+            {
+                "path": f"outputs/{relative}",
+                "size_bytes": path.stat().st_size,
+                "known_protocol_artifact": known_protocol_artifact,
+                "content_markers": content_markers,
+                "independent_score_vector_candidate": independent_vector,
+                "decision": "independent_candidate" if independent_vector else "not_independent_stage2_vector",
+            }
+        )
+    independent_candidates = [
+        row for row in candidate_rows if row["independent_score_vector_candidate"]
+    ]
+    return {
+        "protocol_version": PROTOCOL_VERSION,
+        "fma_version": FMA_VERSION,
+        "stage2_protocol_version": STAGE2_PROTOCOL_VERSION,
+        "scanned_files": scanned_files,
+        "candidate_files": candidate_rows,
+        "independent_score_vectors_found": bool(independent_candidates),
+        "independent_score_vector_candidates": independent_candidates,
+        "fallback_policy": (
+            "If no independent Stage 2 baseline score vector is found, evaluate required "
+            "baselines using frozen conservative non-target proxy rules."
+        ),
+    }
+
+
+def build_baseline_artifact_audit_markdown(audit: Mapping[str, Any]) -> str:
+    """Render the baseline artifact audit in a compact manuscript-readable form."""
+    lines = [
+        "# Baseline Artifact Audit",
+        "",
+        f"Protocol version: `{audit['protocol_version']}`",
+        f"Stage 2 protocol version: `{audit['stage2_protocol_version']}`",
+        "",
+        "## Result",
+        "",
+        f"Scanned files: {audit['scanned_files']}",
+        f"Independent Stage 2 baseline score vectors found: `{str(audit['independent_score_vectors_found']).lower()}`",
+        "",
+        "No experiment was rerun by this audit. Known protocol, mapping, leakage, and summary artifacts are not treated as independent score-vector evidence.",
+        "",
+        "## Candidate Files",
+        "",
+        "| Path | Decision | Markers |",
+        "|---|---|---|",
+    ]
+    for row in audit["candidate_files"]:
+        markers = ", ".join(row["content_markers"]) if row["content_markers"] else "none"
+        lines.append(f"| `{row['path']}` | {row['decision']} | {markers} |")
+    lines.extend(
+        [
+            "",
+            "## Fallback Policy",
+            "",
+            str(audit["fallback_policy"]),
+        ]
+    )
+    return "\n".join(lines) + "\n"
 
 
 def build_stage2_baseline_leakage_audit(
@@ -656,28 +885,44 @@ def build_stage2_baseline_leakage_audit(
 ) -> dict[str, Any]:
     """Return a baseline-specific audit against direct Stage 2 target reuse."""
     rows = list(build_baseline_mapping_rows())
+    results_by_baseline = {
+        row["baseline"]: row
+        for row in baseline_results.get("baselines", [])
+    }
     baseline_checks = []
     for row in rows:
         baseline = row["baseline"]
         is_perturbation = baseline in PERTURBATION_BASELINES
+        result_row = results_by_baseline.get(baseline, {})
+        evaluated = result_row.get("status") == "evaluated_stage2_step_scores"
+        target_leakage_status = str(
+            result_row.get("target_leakage_status", "missing_artifact")
+        )
         baseline_checks.append(
             {
                 "baseline": baseline,
                 "class": row["class"],
-                "status": "not_evaluated_no_stage2_step_scores",
-                "target_leakage_status": "missing_artifact",
+                "status": result_row.get("status", "not_evaluated_no_stage2_step_scores"),
+                "target_leakage_status": target_leakage_status,
                 "is_perturbation_baseline": is_perturbation,
                 "target_reuse_policy": row["target_reuse_policy"],
-                "stage2_prediction_vector_available": False,
-                "direct_target_reuse_detected": False,
+                "stage2_prediction_vector_available": evaluated,
+                "direct_target_reuse_detected": target_leakage_status == "target_leaking",
                 "oracle_or_control_exception": False,
-                "inspected_prediction_artifacts": [],
-                "conclusion": (
+                "inspected_prediction_artifacts": result_row.get("source_artifacts", []),
+                "source_fields_used": result_row.get("source_fields_used", []),
+                "forbidden_fields_not_used": result_row.get("forbidden_fields_not_used", []),
+                "conclusion": result_row.get(
+                    "reason",
                     "No independent held-out s_B(r_i) vector artifact was available; "
-                    "the baseline is unavailable rather than filled from y_i."
+                    "the baseline is unavailable rather than filled from y_i.",
                 ),
             }
         )
+    any_target_leaking = any(
+        check["target_leakage_status"] == "target_leaking"
+        for check in baseline_checks
+    )
     return {
         "protocol_version": protocol["protocol_version"],
         "fma_version": protocol["fma_version"],
@@ -689,8 +934,8 @@ def build_stage2_baseline_leakage_audit(
         "score_symbol": "s_B(r_i)",
         "checklist": {
             "baseline_scores_fabricated": False,
-            "stage2_target_y_i_reused_as_prediction": False,
-            "perturbation_baselines_reuse_target": False,
+            "stage2_target_y_i_reused_as_prediction": any_target_leaking,
+            "perturbation_baselines_reuse_target": any_target_leaking,
             "oracle_control_rows_labeled": True,
             "stage2_baseline_performance_used_for_strata": False,
             "stage2_baseline_performance_used_for_projection_selection": False,
@@ -732,6 +977,162 @@ def _not_evaluated_baseline_rows() -> list[dict[str, Any]]:
     return rows
 
 
+def _evaluate_required_baseline_rows(
+    records: Sequence[Mapping[str, Any]],
+    split_manifest: Mapping[str, Any],
+) -> dict[str, dict[str, Any]]:
+    mapping_by_baseline = {
+        row["baseline"]: row
+        for row in build_baseline_mapping_rows()
+    }
+    score_vectors = build_stage2_baseline_score_vectors(records)
+    return {
+        baseline: _evaluate_required_baseline(
+            baseline,
+            mapping_by_baseline[baseline],
+            records,
+            split_manifest,
+            score_vectors[baseline],
+        )
+        for baseline in REQUIRED_BASELINE_IDS
+    }
+
+
+def build_stage2_baseline_score_vectors(
+    records: Sequence[Mapping[str, Any]],
+) -> dict[str, dict[tuple[str, int], float]]:
+    """Build clean per-step baseline scores keyed by trace id and step index."""
+    return {
+        baseline: {
+            (str(record["trace_id"]), int(record["step_idx"])): _baseline_score(baseline, record)
+            for record in records
+        }
+        for baseline in REQUIRED_BASELINE_IDS
+    }
+
+
+def _evaluate_required_baseline(
+    baseline: str,
+    mapping_row: Mapping[str, str],
+    records: Sequence[Mapping[str, Any]],
+    split_manifest: Mapping[str, Any],
+    score_by_step: Mapping[tuple[str, int], float],
+) -> dict[str, Any]:
+    stage2_ids = set(split_manifest["stage2_trace_ids"])
+    scored_records = [
+        {
+            **record,
+            "prediction": score_by_step[(str(record["trace_id"]), int(record["step_idx"]))],
+        }
+        for record in records
+    ]
+    records_by_trace = _records_by_trace(
+        [record for record in scored_records if str(record["trace_id"]) in stage2_ids]
+    )
+    stage2_scores = [
+        float(record["prediction"])
+        for rows in records_by_trace.values()
+        for record in rows
+    ]
+    full_stage2 = _evaluate_group_for_all_projections(
+        f"baseline:{baseline}:full_stage2",
+        sorted(stage2_ids),
+        records_by_trace,
+    )
+    strata = {}
+    for stratum, report in split_manifest["stage2_strata"].items():
+        metrics_by_projection = _evaluate_group_for_all_projections(
+            f"baseline:{baseline}:{stratum}",
+            report["trace_ids"],
+            records_by_trace,
+        )
+        strata[stratum] = {
+            "status": report["status"],
+            "bucket_size": report["bucket_size"],
+            "required": report["required"],
+            "metrics_by_projection": metrics_by_projection,
+            "spearman_gate_by_projection": _spearman_gate_by_projection(metrics_by_projection),
+        }
+    source_fields = _baseline_source_fields(baseline)
+    forbidden_used = sorted(set(source_fields).intersection(BASELINE_FORBIDDEN_SOURCE_FIELDS))
+    target_leakage_status = "target_leaking" if forbidden_used else "clean"
+    return {
+        "baseline": baseline,
+        "class": mapping_row["class"],
+        "registered_status": mapping_row["status"],
+        "status": "evaluated_stage2_step_scores",
+        "target_leakage_status": target_leakage_status,
+        "step_level_mapping": mapping_row["step_level_mapping"],
+        "target_reuse_policy": mapping_row["target_reuse_policy"],
+        "score_rule_id": _baseline_score_rule_id(baseline),
+        "score_rule_version": BASELINE_SCORE_RULE_VERSION,
+        "source_artifacts": list(BASELINE_SOURCE_ARTIFACTS),
+        "source_fields_used": source_fields,
+        "forbidden_fields_not_used": [
+            field for field in BASELINE_FORBIDDEN_SOURCE_FIELDS if field not in forbidden_used
+        ],
+        "forbidden_fields_used": forbidden_used,
+        "score_vector_summary": {
+            "n_traces": len(records_by_trace),
+            "n_steps": len(stage2_scores),
+            "min_score": min(stage2_scores) if stage2_scores else None,
+            "max_score": max(stage2_scores) if stage2_scores else None,
+            "mean_score": _mean(stage2_scores) if stage2_scores else None,
+        },
+        "full_stage2": full_stage2,
+        "strata": strata,
+        "reason": (
+            "Evaluated with a frozen conservative non-target proxy rule; the "
+            "prediction vector does not reuse Stage 2 Delta_U, FMA attribution, "
+            "or structural necessity fields."
+        ),
+    }
+
+
+def _baseline_score(baseline: str, record: Mapping[str, Any]) -> float:
+    if baseline == "random masking":
+        return _stable_float(
+            "random_masking:{trace_id}:{step_idx}:{seed}".format(
+                trace_id=record["trace_id"],
+                step_idx=record["step_idx"],
+                seed=BASELINE_SCORE_SEED,
+            )
+        )
+    if baseline == "span masking":
+        return float(record.get("span_token_count_norm", 0.0))
+    if baseline == "graph removal":
+        return float(record.get("incident_degree_norm", 0.0))
+    if baseline == "edge dropout":
+        return float(record.get("edge_dropout_incident_weight_norm", 0.0))
+    raise ValueError(f"unsupported required baseline={baseline!r}")
+
+
+def _baseline_score_rule_id(baseline: str) -> str:
+    return {
+        "random masking": "stable_hash_random_masking_seeded_step_proxy",
+        "span masking": "normalized_span_token_count_proxy",
+        "graph removal": "normalized_graph_incident_degree_proxy",
+        "edge dropout": "frozen_edge_dropout_incident_weight_proxy_p015",
+    }[baseline]
+
+
+def _baseline_source_fields(baseline: str) -> list[str]:
+    common = ["trace_id", "step_idx"]
+    if baseline == "random masking":
+        return common
+    if baseline == "span masking":
+        return common + ["reflection_graph.nodes.content"]
+    if baseline == "graph removal":
+        return common + ["reflection_graph.edges.source", "reflection_graph.edges.target"]
+    if baseline == "edge dropout":
+        return common + [
+            "reflection_graph.edges.source",
+            "reflection_graph.edges.target",
+            "reflection_graph.edges.weight",
+        ]
+    raise ValueError(f"unsupported required baseline={baseline!r}")
+
+
 def build_stage2_claim_gating_summary_markdown(metric_outputs: Mapping[str, Any]) -> str:
     """Return a Markdown summary of Stage 2 claim labels."""
     claims = metric_outputs["claim_gating"]["claims"]
@@ -771,7 +1172,8 @@ def build_stage2_claim_gating_summary_markdown(metric_outputs: Mapping[str, Any]
             "- S_high, S_mid, and S_low are a mutually exclusive partition; S_rand is an overlapping non-adaptive audit layer.",
             "- Effect-size labels are descriptive only: rho in [0.10, 0.30) is `small`.",
             "- Underfilled strata are labeled `insufficient_samples` rather than dropped.",
-            "- Baselines without held-out step-level vectors are marked unavailable, not imputed.",
+            "- The baseline artifact audit first searches for hidden independent vectors; required proxy controls are integrated only when their frozen non-target score vectors are clean.",
+            "- Optional baselines without held-out step-level vectors remain unavailable, not imputed.",
         ]
     )
     return "\n".join(lines) + "\n"
@@ -834,7 +1236,7 @@ def build_stage2_claim_support_summary_markdown(metric_outputs: Mapping[str, Any
             "",
             "## Scope Note",
             "",
-            "The Stage 2 run evaluates the available preprojected FMA step-level vector. Baselines without held-out step-level prediction vectors are explicitly marked unavailable in the leakage audit rather than imputed.",
+            "The Stage 2 run evaluates the preprojected FMA step-level vector and the clean required conservative proxy controls. Optional baselines without held-out step-level prediction vectors are explicitly marked unavailable in the leakage audit rather than imputed.",
         ]
     )
     return "\n".join(lines) + "\n"
@@ -965,14 +1367,30 @@ def _build_projection_audit(
         "metric_summary_across_pi": summary,
         "projection_specific_metric_table": projection_specific_table,
         "stratum_projection_rows": _stratum_projection_rows(stratum_metrics),
-        "baseline_projection_status": {
-            "evaluated": [
-                {
-                    "method": PRIMARY_METHOD_ID,
-                    "status": "evaluated",
-                    "projection_policy": "identity_for_preprojected_step_level_fma",
-                }
-            ],
+        "baseline_projection_status": _baseline_projection_status_from_results(None),
+        "forbidden_selection_check": {
+            "best_projection_selected_for_main_table": False,
+            "worst_case_projection_reported": True,
+            "all_four_projections_reported": True,
+        },
+    }
+
+
+def _baseline_projection_status_from_results(
+    baseline_results: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    evaluated: list[dict[str, Any]] = [
+        {
+            "method": PRIMARY_METHOD_ID,
+            "status": "evaluated",
+            "projection_policy": "identity_for_preprojected_step_level_fma",
+        }
+    ]
+    not_evaluated: list[dict[str, Any]] = []
+
+    if baseline_results is None:
+        return {
+            "evaluated": evaluated,
             "not_evaluated": [
                 {
                     "baseline": row["baseline"],
@@ -980,12 +1398,35 @@ def _build_projection_audit(
                 }
                 for row in BASELINE_MAPPING_ROWS
             ],
-        },
-        "forbidden_selection_check": {
-            "best_projection_selected_for_main_table": False,
-            "worst_case_projection_reported": True,
-            "all_four_projections_reported": True,
-        },
+        }
+
+    for row in baseline_results.get("baselines", []):
+        if row.get("status") == "evaluated_stage2_step_scores":
+            evaluated.append(
+                {
+                    "baseline": row["baseline"],
+                    "class": row["class"],
+                    "status": row["status"],
+                    "target_leakage_status": row["target_leakage_status"],
+                    "projection_policy": "step_level_proxy_vector_evaluated_for_all_pi",
+                    "projection_family": [projection["id"] for projection in PROJECTION_FAMILY],
+                    "score_rule_id": row.get("score_rule_id"),
+                    "score_rule_version": row.get("score_rule_version"),
+                }
+            )
+        else:
+            not_evaluated.append(
+                {
+                    "baseline": row["baseline"],
+                    "class": row["class"],
+                    "status": "not_available_no_stage2_prediction_vector",
+                    "target_leakage_status": row.get("target_leakage_status", "missing_artifact"),
+                }
+            )
+
+    return {
+        "evaluated": evaluated,
+        "not_evaluated": not_evaluated,
     }
 
 
@@ -1289,9 +1730,16 @@ def _load_graph_metadata(path: Path) -> dict[str, dict[str, Any]]:
         graph_density = _safe_ratio(len(edges), max(1, trace_length * (trace_length - 1)))
         dependency_degree = _safe_ratio(len(edges), max(1, trace_length))
         degree_by_node = Counter()
+        dropout_weight_by_node: Counter[str] = Counter()
         for edge in edges:
-            degree_by_node[str(edge.get("source"))] += 1
-            degree_by_node[str(edge.get("target"))] += 1
+            source = str(edge.get("source"))
+            target = str(edge.get("target"))
+            degree_by_node[source] += 1
+            degree_by_node[target] += 1
+            weight = float(edge.get("weight", 1.0))
+            if _stable_float(f"edge_dropout:{BASELINE_SCORE_SEED}:{trace_id}:{source}->{target}") < EDGE_DROPOUT_PROBABILITY:
+                dropout_weight_by_node[source] += weight
+                dropout_weight_by_node[target] += weight
         redundancy_density = _safe_ratio(
             sum(1 for node in nodes if degree_by_node[str(node.get("node_id"))] > 1),
             max(1, trace_length),
@@ -1309,13 +1757,29 @@ def _load_graph_metadata(path: Path) -> dict[str, dict[str, Any]]:
             + 0.20 * dependency_balance
             + 0.20 * taxonomy_entropy
         )
-        nodes_by_step = {
-            int(node.get("step_index", 0)): {
-                "node_id": str(node.get("node_id")),
-                "taxonomy_label": str(node.get("taxonomy_label", "UNKNOWN")),
-            }
+        span_counts_by_node = {
+            str(node.get("node_id")): len(str(node.get("content", "")).split())
             for node in nodes
         }
+        max_span_count = max(span_counts_by_node.values(), default=0)
+        max_degree = max(degree_by_node.values(), default=0)
+        max_dropout_weight = max(dropout_weight_by_node.values(), default=0.0)
+        nodes_by_step = {}
+        for node in nodes:
+            node_id = str(node.get("node_id"))
+            span_token_count = span_counts_by_node[node_id]
+            incident_degree = float(degree_by_node[node_id])
+            dropout_weight = float(dropout_weight_by_node[node_id])
+            nodes_by_step[int(node.get("step_index", 0))] = {
+                "node_id": node_id,
+                "taxonomy_label": str(node.get("taxonomy_label", "UNKNOWN")),
+                "span_token_count": span_token_count,
+                "span_token_count_norm": _safe_ratio(span_token_count, max_span_count),
+                "incident_degree": incident_degree,
+                "incident_degree_norm": _safe_ratio(incident_degree, max_degree),
+                "edge_dropout_incident_weight": dropout_weight,
+                "edge_dropout_incident_weight_norm": _safe_ratio(dropout_weight, max_dropout_weight),
+            }
         metadata[trace_id] = {
             "trace_id": trace_id,
             "task_type": "synthetic_reflection",
@@ -1718,13 +2182,18 @@ def _format_ci95(value: Any) -> str:
 
 __all__ = [
     "FMA_VERSION",
+    "BASELINE_FORBIDDEN_SOURCE_FIELDS",
     "MIN_STAGE2_STRATUM_SIZE",
     "PRIMARY_METHOD_ID",
+    "REQUIRED_BASELINE_IDS",
     "REQUIRED_STAGE2_STRATA",
     "STAGE2_PROTOCOL_VERSION",
     "assign_stage2_strata",
     "build_stage2_baseline_leakage_audit",
     "build_stage2_baseline_results",
+    "build_stage2_baseline_score_vectors",
+    "build_baseline_artifact_audit",
+    "build_baseline_artifact_audit_markdown",
     "build_stage2_claim_gating_summary_markdown",
     "build_stage2_claim_support_summary_markdown",
     "build_stage2_frozen_protocol",

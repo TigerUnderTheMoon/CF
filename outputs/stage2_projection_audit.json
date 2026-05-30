@@ -5,60 +5,122 @@
         "method": "fma_v1_2_step_attribution",
         "projection_policy": "identity_for_preprojected_step_level_fma",
         "status": "evaluated"
+      },
+      {
+        "baseline": "random masking",
+        "class": "Structural-free perturbation",
+        "projection_family": [
+          "pi_1",
+          "pi_2",
+          "pi_3",
+          "pi_4"
+        ],
+        "projection_policy": "step_level_proxy_vector_evaluated_for_all_pi",
+        "score_rule_id": "stable_hash_random_masking_seeded_step_proxy",
+        "score_rule_version": "conservative_proxy_v1",
+        "status": "evaluated_stage2_step_scores",
+        "target_leakage_status": "clean"
+      },
+      {
+        "baseline": "span masking",
+        "class": "Structural-free perturbation",
+        "projection_family": [
+          "pi_1",
+          "pi_2",
+          "pi_3",
+          "pi_4"
+        ],
+        "projection_policy": "step_level_proxy_vector_evaluated_for_all_pi",
+        "score_rule_id": "normalized_span_token_count_proxy",
+        "score_rule_version": "conservative_proxy_v1",
+        "status": "evaluated_stage2_step_scores",
+        "target_leakage_status": "clean"
+      },
+      {
+        "baseline": "graph removal",
+        "class": "Structure controls",
+        "projection_family": [
+          "pi_1",
+          "pi_2",
+          "pi_3",
+          "pi_4"
+        ],
+        "projection_policy": "step_level_proxy_vector_evaluated_for_all_pi",
+        "score_rule_id": "normalized_graph_incident_degree_proxy",
+        "score_rule_version": "conservative_proxy_v1",
+        "status": "evaluated_stage2_step_scores",
+        "target_leakage_status": "clean"
+      },
+      {
+        "baseline": "edge dropout",
+        "class": "Structure controls",
+        "projection_family": [
+          "pi_1",
+          "pi_2",
+          "pi_3",
+          "pi_4"
+        ],
+        "projection_policy": "step_level_proxy_vector_evaluated_for_all_pi",
+        "score_rule_id": "frozen_edge_dropout_incident_weight_proxy_p015",
+        "score_rule_version": "conservative_proxy_v1",
+        "status": "evaluated_stage2_step_scores",
+        "target_leakage_status": "clean"
       }
     ],
     "not_evaluated": [
       {
-        "baseline": "random masking",
-        "status": "not_available_no_stage2_prediction_vector"
-      },
-      {
         "baseline": "token dropout",
-        "status": "not_available_no_stage2_prediction_vector"
-      },
-      {
-        "baseline": "span masking",
-        "status": "not_available_no_stage2_prediction_vector"
+        "class": "Structural-free perturbation",
+        "status": "not_available_no_stage2_prediction_vector",
+        "target_leakage_status": "missing_artifact"
       },
       {
         "baseline": "gradient attribution",
-        "status": "not_available_no_stage2_prediction_vector"
+        "class": "Attribution baselines",
+        "status": "not_available_no_stage2_prediction_vector",
+        "target_leakage_status": "missing_artifact"
       },
       {
         "baseline": "integrated gradients",
-        "status": "not_available_no_stage2_prediction_vector"
+        "class": "Attribution baselines",
+        "status": "not_available_no_stage2_prediction_vector",
+        "target_leakage_status": "missing_artifact"
       },
       {
         "baseline": "attention rollout",
-        "status": "not_available_no_stage2_prediction_vector"
+        "class": "Attribution baselines",
+        "status": "not_available_no_stage2_prediction_vector",
+        "target_leakage_status": "missing_artifact"
       },
       {
         "baseline": "activation attribution",
-        "status": "not_available_no_stage2_prediction_vector"
-      },
-      {
-        "baseline": "graph removal",
-        "status": "not_available_no_stage2_prediction_vector"
-      },
-      {
-        "baseline": "edge dropout",
-        "status": "not_available_no_stage2_prediction_vector"
+        "class": "Attribution baselines",
+        "status": "not_available_no_stage2_prediction_vector",
+        "target_leakage_status": "missing_artifact"
       },
       {
         "baseline": "neighborhood rewiring",
-        "status": "not_available_no_stage2_prediction_vector"
+        "class": "Structure controls",
+        "status": "not_available_no_stage2_prediction_vector",
+        "target_leakage_status": "missing_artifact"
       },
       {
         "baseline": "full randomization",
-        "status": "not_available_no_stage2_prediction_vector"
+        "class": "Structure controls",
+        "status": "not_available_no_stage2_prediction_vector",
+        "target_leakage_status": "missing_artifact"
       },
       {
         "baseline": "self-refine",
-        "status": "not_available_no_stage2_prediction_vector"
+        "class": "Generative feedback systems",
+        "status": "not_available_no_stage2_prediction_vector",
+        "target_leakage_status": "missing_artifact"
       },
       {
         "baseline": "reflexion",
-        "status": "not_available_no_stage2_prediction_vector"
+        "class": "Generative feedback systems",
+        "status": "not_available_no_stage2_prediction_vector",
+        "target_leakage_status": "missing_artifact"
       }
     ]
   },

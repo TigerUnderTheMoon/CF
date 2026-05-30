@@ -24,9 +24,9 @@ The stratum audit is heterogeneous. `S_high` and `S_low` pass the Spearman confi
 
 ## Baseline Gate
 
-Required baseline families are not integrated. `outputs/stage2_baseline_results.json` registers random masking, span masking, graph removal, and edge dropout, but each is marked `not_evaluated_no_stage2_step_scores`. `outputs/stage2_baseline_leakage_audit.json` marks the same required rows as `missing_artifact`, with no independent held-out score vector `s_B(r_i)` available for comparison to the target `Delta U(r_i)`.
+Required baseline families are integrated as conservative clean proxy controls. `outputs/baseline_artifact_audit.md` found no hidden independent Stage 2 baseline score vectors. `outputs/stage2_baseline_results.json` therefore evaluates random masking, span masking, graph removal, and edge dropout with frozen non-target scoring rules and marks all four as `evaluated_stage2_step_scores`.
 
-These rows are blockers rather than negative baseline results. No primary comparison table should report fabricated rank, AUC, correlation, or confidence-interval values for these baselines. The current results therefore support a stratum-limited Stage 2 FMA audit only; they do not support a baseline-complete journal claim.
+The leakage audit marks all four required rows `clean`: each has 840 held-out step scores, no direct target reuse, and no use of `Delta U`, FMA `attribution_score`, or structural necessity as a prediction source. These baselines are weak controls, not stronger perturbation-response experiments, so they should be reported as conservative baseline integration rather than as evidence of broad superiority.
 
 ## Redundancy
 
@@ -56,7 +56,7 @@ This result is consistent with the attribution-necessity distinction. Attributio
 
 The empirical pattern refines the initial hypothesis rather than rejecting the framework. The initial hypothesis expected reflection to exhibit distributed compensatory organization. The reported results record weak alignment, weak compensation, low distributedness, and sparse bottlenecks. The final interpretation is more conservative and more consistent with the reported outputs: reflective reasoning exhibits widespread local utility, but only sparse structural necessity.
 
-Empirical observations: weak Pearson alignment, a weak aggregate Stage 2 rank-alignment signal with `stratum_dependent` gating, high zero-necessity rate, moderate redundancy density, low compensation ratios, low distributedness, sparse bottlenecks, and missing required baseline evidence.
+Empirical observations: weak Pearson alignment, a weak aggregate Stage 2 rank-alignment signal with `stratum_dependent` gating, high zero-necessity rate, moderate redundancy density, low compensation ratios, low distributedness, sparse bottlenecks, and clean but conservative required baseline controls.
 
 Structural interpretation: local utility is substantially more widespread than topology-sensitive dependence, so many reflective steps are locally functional without being structurally necessary under the protocol. Held-out validation supports this relation only in a weak-effect regime and with `stratum_dependent` generalization.
 

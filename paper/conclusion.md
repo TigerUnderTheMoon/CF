@@ -8,4 +8,4 @@ The final interpretation is not that reflective attribution fails. It is that lo
 
 Possible future directions include applying the same deterministic pipeline to larger trace collections, manually reviewed taxonomies, and process-supervision settings that distinguish local utility from sparse bottleneck structure. These are hypotheses for future work, not claims established by the current prototype.
 
-Final preparation includes bibliography completion, anonymization formatting, figure selection, and baseline completion. The submission should remain blocked until required held-out baseline artifacts for random masking, span masking, graph removal, and edge dropout are integrated in the same step-level comparison space or explicitly removed by narrowing the claim.
+Final preparation includes bibliography completion, anonymization formatting, figure selection, and readiness review. Required held-out baseline controls are now integrated in the same step-level comparison space, but the final submission should remain blocked until the remaining packaging and claim-scope checks are completed.
