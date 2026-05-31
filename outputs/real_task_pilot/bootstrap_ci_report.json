@@ -1,7 +1,7 @@
 {
   "baseline_diagnostics": {
     "question_difficulty_proxy": {
-      "n": 6,
+      "n": 22,
       "spearman_ci95": [
         0.0,
         0.0
@@ -11,7 +11,7 @@
       "used_as_primary_signal": false
     },
     "random": {
-      "n": 6,
+      "n": 22,
       "spearman_ci95": [
         0.0,
         0.0
@@ -21,7 +21,7 @@
       "used_as_primary_signal": false
     },
     "relative_position": {
-      "n": 6,
+      "n": 22,
       "spearman_ci95": [
         0.0,
         0.0
@@ -31,7 +31,7 @@
       "used_as_primary_signal": false
     },
     "span_length": {
-      "n": 6,
+      "n": 22,
       "spearman_ci95": [
         0.0,
         0.0
@@ -41,7 +41,7 @@
       "used_as_primary_signal": false
     },
     "taxonomy_prior": {
-      "n": 6,
+      "n": 22,
       "spearman_ci95": [
         0.0,
         0.0
@@ -51,7 +51,7 @@
       "used_as_primary_signal": false
     },
     "uniform_reflection_weight": {
-      "n": 6,
+      "n": 22,
       "spearman_ci95": [
         0.0,
         0.0
