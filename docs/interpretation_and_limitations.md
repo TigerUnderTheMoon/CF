@@ -6,6 +6,8 @@ This repository studies intervention-based functional attribution for reflective
 
 The framework does NOT claim true causal identification. Its claims are operational and framework-relative: given observable reflection traces, deterministic graph construction, and structure-sensitive interventions, SRA estimates topology-sensitive necessity.
 
+For the top-tier manuscript storyline, FMA is the reflection utility learning layer and SRA/Phase 7 diagnostics are the structural calibration layer. The current repository supports the diagnostic distinction; it does not yet support completed PRM/filtering improvement claims.
+
 ## Local Attribution vs Structural Necessity
 
 Phase 5 `attribution_score` is a local reflective attribution signal. It summarizes step-level reflective contribution using local annotation and attribution evidence.
@@ -20,6 +22,18 @@ These signals can disagree for principled reasons:
 - A later verification step can have high local attribution but little structural effect if no downstream dependency relies on it.
 
 The intended interpretation is weak structural alignment or local-to-structural mismatch, not close correspondence.
+
+## Local Utility vs Supervision Weight
+
+Local utility is a candidate signal for process supervision, not a validated supervision weight. A direct rule such as `w_k = Normalize(FMA(m_k; D))` would over-read the current evidence because Phase 6-7 show that many locally attributed reflective steps have zero measured structural necessity.
+
+The claim-safe downstream object is a structurally calibrated supervision weight:
+
+```text
+w_k = Normalize(Calibrate(FMA, structural necessity, bottleneck status, redundancy, compensation))
+```
+
+This object remains a target for PRM/filtering validation. It is not a completed model artifact in the current repository.
 
 ## Why Pearson Is Low
 
@@ -122,8 +136,11 @@ Future work can extend this layer without changing the current deterministic Pha
 - evaluate bridge-node and source-node sensitivity
 - compare PRUNE, CASCADE, and BYPASS against external task outcomes
 - study whether structural necessity improves downstream process supervision
+- test downstream PRM/filtering benefit from structurally calibrated FMA against vanilla PRM, length-calibrated PRM, token attribution, and heuristic reflection scoring
 
 These directions should preserve the distinction between local reflective attribution and structural reflective necessity.
+
+Current readiness caveat: real-task evidence remains guarded pilot evidence while `readiness_audit.json` reports `PILOT_BLOCKED` and API preflight reports `PREFLIGHT_FAIL_DRIFT`.
 
 ## Section 8 - Phase 7: Redundancy and Compensation
 

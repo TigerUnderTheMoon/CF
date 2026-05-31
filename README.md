@@ -1,6 +1,6 @@
 # Functional Metacognitive Attribution
 
-This repository is a research prototype for deterministic structural analysis of reflective reasoning traces.
+This repository is a research prototype for Functional Metacognitive Attribution (FMA): an intervention-based framework for learning reflection utility signals that may later support attribution-aware process supervision and PRM/filtering.
 
 It is NOT:
 - a production reasoning benchmark
@@ -9,22 +9,36 @@ It is NOT:
 
 ## Current Manuscript Status
 
-The repository includes a Phase 8 paperization layer under `paper/` for workshop-style manuscript preparation. The canonical research claim is:
+The repository includes a Phase 8 paperization layer under `paper/`. The target journal storyline follows the Chinese framework in `D:/Desktop/论文框架_中文版.pdf`: FMA is proposed as a reflection utility learning framework for process supervision, while the current repository evidence supplies the diagnostic core that prevents naive supervision weighting.
+
+Current completed evidence supports this claim:
 
 Reflective reasoning exhibits widespread local utility, but only sparse structural necessity.
 
-Most reflective steps are neither globally necessary nor strongly compensatory. Weak attribution-necessity alignment does not invalidate reflective utility attribution; it indicates a mismatch between local utility and topology-level indispensability.
+The key manuscript turn is that local FMA-style utility cannot be used directly as a PRM supervision weight. Phase 5-7 show that many locally useful reflective steps are structurally redundant or structurally inert, so downstream supervision/filtering must be constrained by structural necessity, sparse bottlenecks, redundancy, and weak compensation diagnostics.
+
+The current state is not a completed top-tier PRM/filtering result. Real-task replay is still pilot evidence, readiness is `PILOT_BLOCKED`, and attribution-aware PRM/filtering remains a required downstream validation experiment.
 
 ## Phase 5-7 Core Findings
 
-The empirical contributions are concentrated in Phase 5-7. Phase 1-4 established conceptual and infrastructural foundations.
+The empirical contributions currently completed are concentrated in Phase 5-7. Phase 1-4 established conceptual and infrastructural foundations.
 
 - Phase 5 produces deterministic counterfactual functional attribution over 800 traces and 2400 reflective steps.
 - Phase 6 reports weak alignment between `attribution_score` and `structural_necessity`: PRUNE 0.0753, CASCADE 0.0523, BYPASS 0.0917.
 - Phase 6 also reports a 67.79 percent zero structural necessity rate.
 - Phase 7 reports redundancy density 0.3842, distributedness index 0.2976, bottleneck count 191, and weak mean compensation ratios.
 
-The framework evaluates structural properties of reflective reasoning traces, not downstream benchmark performance.
+These diagnostics explain why the target architecture must distinguish local utility from structural necessity. They do not establish downstream task gains for attribution-aware PRM/filtering.
+
+## Target Storyline
+
+The intended journal narrative has three layers:
+
+1. FMA proposes a structure-preserving, distribution-conditioned way to estimate reflection utility from observable reasoning traces.
+2. Phase 5-7 reveal the central diagnostic finding: local utility is widespread, but sparse structural necessity is the safer constraint for supervision and filtering.
+3. A top-tier version must add real PRM/filtering validation testing structurally calibrated attribution signals against vanilla PRM, length-calibrated PRM, token attribution, and heuristic reflection scoring baselines.
+
+Until that final layer exists as real artifacts, PRM/filtering claims remain future validation requirements rather than completed evidence.
 
 ## Paper Directory
 
@@ -91,7 +105,7 @@ python scripts/run_redundancy_analysis.py
 
 Primary outputs are stored in `outputs/`, with figures under `outputs/figures/`. The main paper evidence comes from `outputs/counterfactual_summary.json`, `outputs/structural_diagnostics.json`, `outputs/structural_diagnostics.md`, `outputs/redundancy_analysis.json`, and `outputs/redundancy_analysis.md`.
 
-The new pilot-only artifacts are stored under `outputs/real_task_pilot/`. They do not rewrite historical synthetic outputs.
+The new pilot-only artifacts are stored under `outputs/real_task_pilot/`. They do not rewrite historical synthetic outputs. As of the current readiness audit, `outputs/real_task_pilot/readiness_audit.json` reports `PILOT_BLOCKED`, and `outputs/real_task_pilot/api_preflight_report.json` reports `PREFLIGHT_FAIL_DRIFT`.
 
 ## Citation Placeholder
 
@@ -99,9 +113,9 @@ TODO: manual bibliography completion
 
 ```bibtex
 @misc{fma_placeholder,
-  title = {Functional Metacognitive Attribution: Deterministic Structural Analysis of Reflective Reasoning Traces},
+  title = {Functional Metacognitive Attribution: Reflection Utility Learning with Structural Necessity Diagnostics},
   author = {Anonymous},
   year = {2026},
-  note = {Workshop submission placeholder}
+  note = {Manuscript placeholder; downstream PRM/filtering validation pending}
 }
 ```

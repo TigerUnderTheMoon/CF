@@ -1,6 +1,6 @@
 # Results
 
-The results consolidate Phase 5-7 into a single hypothesis-refinement narrative. Initial hypothesis: reflection may exhibit distributed compensatory organization. Observed results: compensation and distributedness were weaker than expected. Final interpretation: reflective reasoning contains widespread local utility, but sparse structural necessity. Weak alignment, weak compensation, and low distributedness are informative structural findings, not experimental failure.
+The results consolidate Phase 5-7 into the diagnostic core of the FMA reflection utility learning story. Initial hypothesis: reflection may exhibit distributed compensatory organization. Observed results: compensation and distributedness were weaker than expected. Final current interpretation: reflective reasoning contains widespread local utility, but sparse structural necessity. Weak alignment, weak compensation, and low distributedness are informative structural findings because they explain why raw local utility should not be used directly as a process-supervision or filtering weight.
 
 ## Attribution vs Necessity
 
@@ -10,7 +10,7 @@ Structural necessity is zero-inflated. In every mode, 67.79 percent of structura
 
 The framework reports that reflective utility signals are substantially more widespread than structural necessity, indicating a mismatch between local utility and topology-sensitive necessity.
 
-This mismatch does not invalidate reflective utility attribution. It indicates that local utility and structural necessity are different operational proxy measurements. Many reflective steps are locally functional in the Phase 5 scoring layer but structurally inert in the Phase 6 graph layer.
+This mismatch does not invalidate reflective utility attribution. It indicates that local utility and structural necessity are different operational proxy measurements. Many reflective steps are locally functional in the Phase 5 scoring layer but structurally inert in the Phase 6 graph layer. For PRM/filtering, this means a raw local utility label can overstate the supervision value of redundant reflection.
 
 The primary Phase 6 figure `outputs/figures/structural_diagnostics_attribution_vs_necessity.png` plots the weak alignment pattern. Mode-comparison and structural-faithfulness figures summarize supplementary diagnostics without changing the main interpretation.
 
@@ -52,6 +52,24 @@ Distributedness is low. The global distributedness index is 0.2976, indicating c
 
 This result is consistent with the attribution-necessity distinction. Attribution-first removal does not degrade the graph as sharply as necessity-first removal, which means local utility ranking is not a substitute for structural necessity ranking. The selected optional primary figure `outputs/figures/resilience_curves.png` plots the removal-order curves; bottleneck examples and distributedness distributions are supplementary diagnostics.
 
+## Downstream Validation Boundary
+
+The results explain why structurally calibrated supervision is needed, but they do not show that a PRM/filtering system has improved downstream task performance. No current artifact trains a PRM, filters live reflective trajectories, or compares against vanilla PRM, length-calibrated PRM, token attribution, and heuristic reflection scoring on downstream tasks.
+
+The claim-safe implication is:
+
+```text
+local utility alone is not enough for supervision weighting
+```
+
+The claim that remains to be validated is:
+
+```text
+structurally calibrated FMA benefits PRM/filtering behavior
+```
+
+The latter requires real training or filtering artifacts and downstream comparison metrics before it can be stated as a result.
+
 ## Hypothesis Refinement
 
 The empirical pattern refines the initial hypothesis rather than rejecting the framework. The initial hypothesis expected reflection to exhibit distributed compensatory organization. The reported results record weak alignment, weak compensation, low distributedness, and sparse bottlenecks. The final interpretation is more conservative and more consistent with the reported outputs: reflective reasoning exhibits widespread local utility, but only sparse structural necessity.
@@ -60,4 +78,4 @@ Empirical observations: weak Pearson alignment, a weak aggregate Stage 2 rank-al
 
 Structural interpretation: local utility is substantially more widespread than topology-sensitive dependence, so many reflective steps are locally functional without being structurally necessary under the protocol. Held-out validation supports this relation only in a weak-effect regime and with `stratum_dependent` generalization.
 
-Possible interpretation: future process supervision may motivate future work that tests whether separating local utility scores from sparse bottleneck diagnostics is useful, but this remains a future direction rather than a conclusion drawn from the current deterministic proxy pipeline.
+Process-supervision implication: future work should test whether separating local utility scores from sparse bottleneck diagnostics benefits PRM/filtering. This remains a validation target rather than a conclusion drawn from the current deterministic proxy pipeline.

@@ -1,8 +1,8 @@
 # PLANS.md — Functional Metacognitive Attribution (FMA)
 
-> **Version**: 2.0  
+> **Version**: 2.1  
 > **Status**: Research Proposal / Living Document  
-> **Last Updated**: 2026-05-29
+> **Last Updated**: 2026-05-31
 
 ---
 
@@ -17,25 +17,53 @@
 | Phase 5 | Completed | Counterfactual Functional Attribution |
 | Phase 6 | Completed | Structural Reflection Attribution |
 | Phase 7 | Completed | Redundancy and compensation analysis |
-| Real-task pilot | Planned | GSM8K/HotpotQA API preflight, replay, baselines, controls, readiness audit |
+| Real-task pilot | Guarded / blocked | GSM8K/HotpotQA API preflight, replay, baselines, controls, readiness audit |
+| PRM/filtering validation | Required future work | Structurally calibrated supervision/filtering experiment |
 
 Phase 7 is implemented as a deterministic structural interpretation layer over stored Phase 6 outputs. The initial hypothesis was that reflection may exhibit distributed compensatory organization, but the observed results refine this into locally useful but structurally sparse reflective organization: moderate redundancy, weak compensation, low distributedness, sparse bottlenecks, and weak alignment between attribution and necessity.
 
-The real-task pilot layer is implemented as a guarded extension rather than a replacement for historical Phase 5-7 artifacts. It uses `configs/real_task_pilot.yaml`, `schemas/real_task_trace.schema.json`, and `scripts/run_real_task_pilot.py`. Live API execution requires `--allow-api`; without an explicit `user_approved_budget_usd`, the cost gate blocks full pilot execution.
+The real-task pilot layer is implemented as a guarded extension rather than a replacement for historical Phase 5-7 artifacts. It uses `configs/real_task_pilot.yaml`, `schemas/real_task_trace.schema.json`, and `scripts/run_real_task_pilot.py`. Live API execution requires `--allow-api`; without an explicit `user_approved_budget_usd`, the cost gate blocks full pilot execution. The current readiness state is `PILOT_BLOCKED`, with `PREFLIGHT_FAIL_DRIFT` still present in the API preflight report.
+
+### 0.1 Top-Tier Mainline and Evidence Contract
+
+The journal-version mainline is:
+
+```text
+FMA reflection utility learning
+-> structural necessity diagnostic
+-> attribution-aware PRM/filtering validation
+```
+
+The Chinese framework positions FMA as a process-supervision framework: structure-preserving intervention, Conditional Interventional Utility, counterfactual matching, doubly robust estimation, and distribution-conditioned aggregation can produce reflection utility signals for PRM/filtering. The current repository evidence adds the core diagnostic finding needed to make that story credible: local utility is too broad to serve directly as a supervision weight, because structural necessity is sparse and weakly aligned with local attribution.
+
+Current must-satisfy contract:
+
+- Phase 5-7 are completed diagnostic evidence.
+- Historical `outputs/` artifacts remain provenance evidence and are not rewritten.
+- Real-task generation/replay is pilot evidence only until readiness gates pass.
+- PRM/filtering is a required top-tier downstream validation, not a completed result.
+- Any candidate supervision weight must be structurally calibrated rather than `Normalize(FMA)` alone.
+
+Target architecture:
+
+- A future PRM/filtering experiment may train or apply reflection weights derived from FMA.
+- That weight must incorporate structural necessity, bottleneck rarity, redundancy, and compensation diagnostics.
+- The experiment must compare against vanilla PRM, length-calibrated PRM, token attribution, and heuristic reflection scoring before claiming downstream value.
 
 ---
 
 ## 1. Research Objective
 
-Develop a lightweight, intervention-based framework for the **functional attribution of reflective cognition dynamics** in LLM agents.
+Develop a lightweight, intervention-based framework for **reflection utility learning** in LLM agents, with Functional Metacognitive Attribution (FMA) as the attribution layer and structural necessity diagnostics as the constraint that prevents naive process supervision.
 
 **Core Question**:  
-> Which reflective operations measurably improve downstream task performance under controlled perturbation, and which are redundant or harmful?
+> Which reflective operations measurably improve downstream task performance under controlled perturbation, which are structurally necessary, and which are too redundant to receive direct supervision weight?
 
 This project integrates:
 
 - Counterfactual attribution,
 - Reflection utility estimation,
+- Structural necessity diagnostics,
 - Process-level reward modeling,
 - Lightweight intervention-sensitive analysis,
 
@@ -69,7 +97,7 @@ Reflective operations exhibit **heterogeneous functional utility**. Specific ref
 | Stabilize long-horizon reasoning | Create unnecessary computational overhead |
 
 **Implication**:  
-Reflection should be treated as an **observable intervention target** rather than a monolithic capability. The relevant question is not *whether* to reflect, but *which* reflections to retain, modify, or suppress.
+Reflection should be treated as an **observable intervention target** rather than a monolithic capability. The relevant question is not *whether* to reflect, but *which* reflections to retain, modify, suppress, or use as structurally calibrated process-supervision signals.
 
 ---
 
@@ -104,8 +132,9 @@ This Project:         "Which reflection step helps, harms, or does nothing under
 
 1. **Counterfactual reflection attribution**: Estimating the functional influence of single reflection operations via deterministic replay,
 2. **Intervention-level utility estimation**: Per-step utility scores rather than aggregate metrics,
-3. **Reflection-specific reward modeling**: PRMs trained to predict reflection utility, not just step correctness,
-4. **Replay analysis for metacognition**: A lightweight perturbation testbed for reflective cognition.
+3. **Structural necessity calibration**: separating widespread local utility from sparse bottlenecks and redundancy before constructing supervision weights,
+4. **Replay analysis for metacognition**: a lightweight perturbation testbed for reflective cognition,
+5. **Required downstream validation**: future PRM/filtering experiments must test structurally calibrated FMA signals against vanilla and heuristic alternatives.
 
 ---
 
@@ -170,13 +199,13 @@ Utility(rho_t) = Reward(tau_with rho_t) - Reward(tau_without rho_t)
 
 ### Direction B — Reflection PRM (Process Reward Modeling)
 
-**Goal**: Train a lightweight reward model that scores reflection quality *in situ*, enabling online filtering or generation guidance.
+**Goal**: Design a lightweight reward-modeling validation that scores reflection quality *in situ*, enabling online filtering or generation guidance only after the diagnostic signal is structurally calibrated.
 
 **Standard PRM Limitation**:  
 Scores only final answer correctness or terminal state value.
 
 **Our Extension**:  
-Scores the **functional utility of intermediate reflective cognition**.
+Scores the **functional utility of intermediate reflective cognition**, but does not treat local utility as a sufficient supervision weight.
 
 **Input**:  
 `(reasoning trace, reflection segment rho_t, local state s_t)`
@@ -184,13 +213,24 @@ Scores the **functional utility of intermediate reflective cognition**.
 **Output**:  
 `u_hat_t = f_theta(s_t, rho_t)` — predicted reflection utility.
 
+For top-tier validation, the downstream filtering signal should be:
+
+```text
+w_t = g(local utility, structural necessity, bottleneck status, redundancy, compensation)
+```
+
+not `Normalize(FMA)` alone.
+
 **Formulations**:
 - Scalar regression against counterfactual utility labels,
 - Pairwise ranking of reflections by estimated utility,
 - Binary utility classification (helpful vs. neutral vs. harmful).
 
 **Novel Supervision Signal**:  
-Counterfactual utility labels derived from Direction A's intervention engine, yielding **intervention-derived process rewards** rather than heuristic or human preference labels.
+Counterfactual utility labels derived from Direction A's intervention engine, yielding **intervention-derived process rewards** rather than heuristic or human preference labels. The Phase 5-7 finding adds a constraint: labels must be calibrated against sparse structural necessity so that redundant local utility is not over-supervised.
+
+**Current Status**:  
+No trained PRM, filtering run, or downstream comparison artifact is currently present. This direction is a required validation layer, not completed evidence.
 
 ---
 
@@ -320,18 +360,32 @@ Under the deterministic replay protocol, the intervened outcome is measured by s
 
 ## 8. Reflection PRM
 
+This section is the target downstream validation design. It is not a completed repository result. The current completed evidence stops at diagnostic attribution, structural necessity, redundancy, and guarded real-task pilot preparation.
+
 ### 8.1 Objective
 
-Train a model to predict reflection utility from local context:
+Train or evaluate a model to predict structurally calibrated reflection utility from local context:
 
 ```
-f_theta(s_t, rho_t) -> U_hat(rho_t)
+f_theta(s_t, rho_t) -> U_hat_struct(rho_t)
 ```
 
 where:
 - s_t = local reasoning state (preceding context),
 - rho_t = reflection segment,
-- U_hat(rho_t) = estimated utility.
+- U_hat_struct(rho_t) = estimated utility after accounting for structural necessity, bottleneck status, redundancy, and compensation diagnostics.
+
+The Phase 5-7 diagnostic result changes the supervision rule. The candidate training weight is not raw local FMA:
+
+```text
+not: w_t = Normalize(FMA(rho_t; D))
+```
+
+The target validation should instead test a structurally calibrated signal:
+
+```text
+w_t = Normalize(Calibrate(FMA, structural_necessity, bottleneck, redundancy, compensation))
+```
 
 ### 8.2 Training Objectives
 
@@ -344,6 +398,8 @@ L_MSE = || f_theta(s_t, rho_t) - U(rho_t) ||^2
 - **Ranking Loss**: `L_rank = max(0, 1 - (f_theta(s, rho^+) - f_theta(s, rho^-)) * sign(U^+ - U^-))`
 - **Binary Classification**: Harmful vs. non-harmful reflection detection,
 - **Focal Loss**: For imbalanced harmful-reflection detection.
+
+These objectives remain proposed validation designs until real training, filtering, and downstream comparison artifacts exist.
 
 ### 8.3 Model Configuration
 
@@ -487,25 +543,27 @@ delta = evaluate(modified) - evaluate(original)
 
 ### Phase 4 — Reflection PRM
 
-**Training Set**: 3K-5K (s_t, rho_t, U(rho_t)) triples from Phase 3.
+**Training Set**: 3K-5K (s_t, rho_t, U_struct(rho_t)) triples from Phase 3 plus structural calibration features from the Phase 6-7 diagnostic layer.
 
 **Training**: LoRA on Qwen2.5-7B or DeepSeek-R1-Distill-7B.
 
-**Deliverable**: `fma/prm/` — Trained checkpoint + inference pipeline.
+**Deliverable**: `fma/prm/` — trained checkpoint, inference pipeline, and a documented distinction between raw local utility labels and structurally calibrated supervision weights. This deliverable is not present in the current repository.
 
 ---
 
 ### Phase 5 — Evaluation
 
 **Research Questions**:
-1. Does utility-aware reflection filtering improve aggregate performance?
-2. Can the PRM reduce unnecessary reflection (token efficiency)?
+1. Does structurally calibrated utility-aware reflection filtering improve aggregate performance?
+2. Can the PRM reduce unnecessary or redundant reflection (token efficiency)?
 3. Does harmful reflection suppression prevent error amplification?
 
 **Protocol**:
 - Baseline: Unfiltered reflection generation,
-- Treatment: PRM-filtered reflection (retain predicted-positive reflections),
+- Treatment: PRM-filtered reflection (retain structurally calibrated predicted-positive reflections),
 - Metrics: Accuracy, token count, F1 on utility prediction.
+
+This phase is required for the top-tier version and must not be described as completed until real downstream comparison artifacts exist.
 
 ---
 
@@ -543,20 +601,20 @@ delta = evaluate(modified) - evaluate(original)
 
 | Day | Task | Deliverable |
 |-----|------|-------------|
-| 1 | Construct training set of 3K+ (s, rho, U) triples | Training data |
+| 1 | Construct training set of 3K+ (s, rho, U_struct) triples | Training data |
 | 2 | Train Reflection PRM with LoRA (1 GPU, ~4 hours) | Model checkpoint |
 | 3 | Evaluate PRM on held-out GSM8K subset | PRM metrics |
-| 4-5 | End-to-end evaluation: baseline vs. PRM-filtered | Comparison report |
+| 4-5 | End-to-end evaluation: baseline vs. structurally calibrated PRM-filtered | Comparison report |
 | 6 | Measure accuracy gain and token efficiency | Efficiency analysis |
 | 7 | Document and package | Final report |
 
-**Deliverable**: `fma/prm/checkpoint/` + evaluation report.
+**Deliverable**: `fma/prm/checkpoint/` + evaluation report. Current status: required future validation, not completed evidence.
 
 ---
 
 ## 14. Publication Strategy
 
-### 14.1 Fast-Track Route (Recommended for MVP)
+### 14.1 Diagnostic Route
 
 **Targets**:  
 - NeurIPS / ICLR / ICML Workshop on Agent Learning or Reasoning,
@@ -564,22 +622,24 @@ delta = evaluate(modified) - evaluate(original)
 - AAAI Symposium on Cognitive Systems.
 
 **Focus**:  
-Empirical intervention-sensitive analysis of reflection utility; lightweight intervention framework; case studies of harmful reflection.
+Empirical intervention-sensitive analysis of reflection utility, structural necessity diagnostics, and case studies of harmful or redundant reflection.
 
 **Suggested Title**:  
 *"Functional Metacognitive Attribution: Which Reflections Improve LLM Reasoning Under Perturbation?"*
 
-### 14.2 Strong Follow-Up (Post-MVP)
+### 14.2 Journal / Top-Tier Route
 
 **Extensions**:  
-- Utility-aware adaptive reflection policies (reflect only when predicted utility > threshold),
-- Online RL with reflection PRM as reward shaping,
+- Structurally calibrated utility-aware adaptive reflection policies,
+- Real PRM/filtering validation against vanilla PRM, length-calibrated PRM, token attribution, and heuristic reflection scoring,
 - Cross-lingual / cross-domain generalization of reflection utility,
 - Reflection scheduling: optimal timing and frequency.
 
 **Targets**:  
 - ACL / EMNLP Main Conference,
 - ICLR / NeurIPS Main Conference (with substantial empirical and theoretical extension).
+
+The top-tier route requires downstream evidence. Phase 5-7 explain why the distinction is necessary; they do not by themselves show downstream robustness or generalization gains for a PRM/filtering system.
 
 ---
 
@@ -588,13 +648,13 @@ Empirical intervention-sensitive analysis of reflection utility; lightweight int
 | Work | Focus | Our Differentiation |
 |------|-------|-------------------|
 | DeepSeek-R1 / o1-style reasoning | Long-chain deliberation | We attribute utility *per reflection*, not aggregate chain quality |
-| Process Reward Models (PRM) | Step-level correctness | We score *reflection functional utility*, not just step correctness |
+| Process Reward Models (PRM) | Step-level correctness | We separate reflection local utility from structural necessity before proposing supervision weights |
 | Self-Correction literature | Iterative refinement | We use structure-preserving perturbation to estimate functional influence, not just correlation |
 | Reflexion / Self-Refine | Global reflection optimization | We operate at the intervention level with replay contrasts |
 | Cognitive architectures | Agent metacognition | We remain lightweight (7B, offline) rather than system-level |
 
 **Positioning Statement**:  
-We are not proposing "better reflection generation." We are proposing **better reflection selection and attribution**—a complementary layer that can be applied to any existing reflection-producing model.
+We are not proposing "better reflection generation." We are proposing **better reflection selection and attribution** as a complementary layer that can be applied to any existing reflection-producing model. The current repository validates the diagnostic layer; the PRM/filtering application still requires a real downstream experiment.
 
 ---
 
@@ -617,11 +677,11 @@ We are not proposing "better reflection generation." We are proposing **better r
 
 **Best balance of novelty, feasibility, publication speed, and low compute cost**:
 
-> **Reflection Utility Attribution + Counterfactual Intervention Analysis**
+> **FMA Reflection Utility Learning + Structural Necessity Diagnostics**
 
-with optional extension into:
+with required top-tier extension into:
 
-> **Reflection PRM for Online Filtering**
+> **Structurally Calibrated Reflection PRM / Filtering Validation**
 
 **Avoid initially**:
 - Full RL systems (PPO, GRPO at scale),
@@ -630,7 +690,7 @@ with optional extension into:
 - Giant benchmark ecosystems (full SWE-bench, WebShop at scale).
 
 **Closing Argument**:  
-The lightweight intervention-analysis framing is already sufficiently novel for a strong first paper. The core insight-that reflection utility is heterogeneous and measurable through controlled perturbation-challenges the implicit "more is better" assumption in current reasoning models and opens a principled path toward token-efficient, error-aware metacognition.
+The lightweight intervention-analysis framing is already sufficient for a diagnostic paper. The journal claim becomes stronger when paired with downstream PRM/filtering evidence: FMA proposes reflection utility learning, and Phase 5-7 explain why raw local utility must be structurally calibrated before it becomes a supervision or filtering signal.
 
 ---
 
@@ -668,6 +728,8 @@ This layer tests whether the framework can move beyond stored synthetic traces w
 
 `PILOT_PASS` requires preflight pass, at least 300 valid traces, span validity at least 90 percent, replay success at least 85 percent, clean baseline leakage audit, complete cost report, passing tests, and clean hygiene scan. Expansion toward top-tier scale requires task-level Spearman CI lower bound above zero, or pooled CI lower bound above zero plus at least one independently passing task.
 
+Current status: `outputs/real_task_pilot/readiness_audit.json` reports `PILOT_BLOCKED`, with failure codes `PILOT_FAIL_SIGNAL`, `PILOT_FAIL_SPAN`, and `PREFLIGHT_FAIL_DRIFT`. `outputs/real_task_pilot/api_preflight_report.json` reports `status: fail`, so any ongoing generated traces remain guarded pilot evidence only.
+
 ---
 
 ## Appendix A: Glossary
@@ -681,3 +743,5 @@ This layer tests whether the framework can move beyond stored synthetic traces w
 | **Functional contrast** | Expected outcome difference between original and intervened observable traces under a fixed task distribution. |
 | **Marginal utility** | Utility relative to a minimal-reflection baseline, used on tasks where reflection is necessary. |
 | **Coherence collapse** | Failure of the model to produce syntactically or semantically valid output after reflection masking or replacement. |
+| **Structurally calibrated supervision weight** | A proposed downstream weight that combines local utility with structural necessity, bottleneck, redundancy, and compensation diagnostics rather than using raw FMA alone. |
+| **PRM/filtering validation** | Required future experiment testing downstream process-supervision or reflection-filtering benefit against explicit baselines. |

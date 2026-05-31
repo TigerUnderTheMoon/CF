@@ -10,6 +10,7 @@ from fma.real_task_pilot.baselines import (
     question_difficulty_proxy,
     score_independent_baselines,
 )
+from fma.real_task_pilot.coverage import audit_key_coverage, expected_span_keys
 from fma.real_task_pilot.hygiene import scan_hygiene
 from fma.real_task_pilot.metrics import exact_match, normalized_token_f1, score_answer
 from fma.real_task_pilot.generation import (
@@ -28,13 +29,19 @@ from fma.real_task_pilot.protocol import (
     protocol_allows_generation,
 )
 from fma.real_task_pilot.readiness import build_readiness_audit
-from fma.real_task_pilot.replay import build_replay_prefix, compute_delta_u
+from fma.real_task_pilot.replay import (
+    aggregate_delta_u_by_span,
+    build_replay_prefix,
+    compute_delta_u,
+    missing_replay_jobs,
+)
 from fma.real_task_pilot.schema import structured_output_text_format, validate_trace_record
 from fma.real_task_pilot.sampling import (
     build_sample_manifest,
     normalize_real_task_source_row,
     validate_manifest_for_live_api,
 )
+from fma.real_task_pilot.signal import build_rank_signal_report
 
 
 @dataclass
@@ -298,6 +305,22 @@ def test_delta_u_uses_task_exact_match() -> None:
     assert delta["delta_u"] == 1.0
 
 
+def test_delta_u_aggregates_repeated_replay_by_span() -> None:
+    original = valid_record("gsm8k-00001")
+    replay_rows = [
+        {**original, "final_answer": "4", "span_index": 0, "repeat_index": 0, "status": "success"},
+        {**original, "final_answer": "5", "span_index": 0, "repeat_index": 1, "status": "success"},
+    ]
+
+    deltas = aggregate_delta_u_by_span([original], replay_rows)
+
+    assert len(deltas) == 1
+    assert deltas[0]["repeat_count"] == 2
+    assert deltas[0]["original_score"] == 1.0
+    assert deltas[0]["intervened_mean_score"] == 0.5
+    assert deltas[0]["delta_u"] == 0.5
+
+
 def test_independent_baselines_use_no_target_like_fields() -> None:
     record = valid_record()
     rows = score_independent_baselines([record])
@@ -333,6 +356,121 @@ def test_readiness_requires_clean_gates_and_positive_rank_signal() -> None:
 
     assert audit["status"] == "PILOT_PASS"
     assert audit["gates"]["expand_to_top_tier_scale"] is True
+
+
+def test_readiness_blocks_stale_two_row_artifacts_by_span_coverage() -> None:
+    records = [valid_record(f"gsm8k-{index:05d}") for index in range(3)]
+    expected_keys = expected_span_keys(records, max_spans_per_trace=3)
+    stale_rows = [{"sample_id": "gsm8k-old", "span_index": 0, "status": "success"}]
+    artifact_coverage = {
+        name: audit_key_coverage(expected_keys, stale_rows, artifact_name=name)
+        for name in ("replay", "delta", "baseline", "rank_signal")
+    }
+
+    audit = build_readiness_audit(
+        preflight_report={"status": "pass", "failure_codes": []},
+        valid_trace_count=300,
+        span_validity_rate=1.0,
+        replay_success_rate=1.0,
+        baseline_leakage_clean=True,
+        cost_report_complete=True,
+        tests_passed=True,
+        hygiene_clean=True,
+        signal_report={
+            "per_task": {"gsm8k": {"spearman_ci_lower_gt_zero": True}},
+            "pooled": {"spearman_ci_lower_gt_zero": True},
+        },
+        artifact_coverage=artifact_coverage,
+    )
+
+    assert audit["status"] == "PILOT_BLOCKED"
+    assert "PILOT_FAIL_COVERAGE" in audit["failure_codes"]
+    assert audit["gates"]["replay_coverage"] is False
+    assert audit["gates"]["delta_coverage"] is False
+    assert audit["gates"]["baseline_coverage"] is False
+    assert audit["gates"]["rank_signal_coverage"] is False
+
+
+def test_readiness_keeps_signal_blocked_when_candidate_score_is_missing() -> None:
+    records = [valid_record(f"gsm8k-{index:05d}") for index in range(3)]
+    expected_keys = expected_span_keys(records, max_spans_per_trace=3)
+    covered_rows = [
+        {"sample_id": key["sample_id"], "span_index": key["span_index"], "status": "success"}
+        for key in expected_keys
+    ]
+    artifact_coverage = {
+        name: audit_key_coverage(expected_keys, covered_rows, artifact_name=name)
+        for name in ("replay", "delta", "baseline", "rank_signal")
+    }
+
+    audit = build_readiness_audit(
+        preflight_report={"status": "pass", "failure_codes": []},
+        valid_trace_count=300,
+        span_validity_rate=1.0,
+        replay_success_rate=1.0,
+        baseline_leakage_clean=True,
+        cost_report_complete=True,
+        tests_passed=True,
+        hygiene_clean=True,
+        signal_report={
+            "primary_signal": {
+                "name": "structurally_calibrated_fma",
+                "available": False,
+            },
+            "per_task": {"gsm8k": {"spearman_ci_lower_gt_zero": False}},
+            "pooled": {"spearman_ci_lower_gt_zero": False},
+        },
+        artifact_coverage=artifact_coverage,
+    )
+
+    assert audit["status"] == "PILOT_BLOCKED"
+    assert "PILOT_FAIL_COVERAGE" not in audit["failure_codes"]
+    assert "PILOT_FAIL_SIGNAL" in audit["failure_codes"]
+    assert audit["gates"]["rank_signal_coverage"] is True
+    assert audit["gates"]["expand_to_top_tier_scale"] is False
+
+
+def test_rank_signal_reports_baseline_diagnostics_without_primary_candidate() -> None:
+    records = [valid_record(f"gsm8k-{index:05d}") for index in range(3)]
+    delta_rows = [
+        {"sample_id": record["sample_id"], "span_index": 0, "delta_u": float(index % 2), "task_type": "gsm8k"}
+        for index, record in enumerate(records)
+    ]
+    baseline_rows = score_independent_baselines(records)
+
+    report = build_rank_signal_report(
+        records,
+        delta_rows=delta_rows,
+        baseline_rows=baseline_rows,
+        config={
+            "replay": {"max_spans_per_trace": 3},
+            "nondeterministic_protocol": {
+                "bootstrap": {"resamples": 50, "confidence_level": 0.95, "random_seed": 7}
+            },
+        },
+    )
+
+    assert report["coverage"]["coverage_pass"] is True
+    assert report["primary_signal"]["name"] == "structurally_calibrated_fma"
+    assert report["primary_signal"]["available"] is False
+    assert report["pooled"]["spearman_ci_lower_gt_zero"] is False
+    assert "taxonomy_prior" in report["baseline_diagnostics"]
+
+
+def test_repeated_replay_resume_skips_completed_repeat_jobs() -> None:
+    prefix = build_replay_prefix(valid_record("gsm8k-00001"), span_index=0)
+    existing_rows = [
+        {
+            "sample_id": "gsm8k-00001",
+            "span_index": 0,
+            "repeat_index": 0,
+            "status": "success",
+        }
+    ]
+
+    jobs = missing_replay_jobs([prefix], existing_rows, repeats=3)
+
+    assert [job["repeat_index"] for job in jobs] == [1, 2]
 
 
 def test_hygiene_scan_reports_forbidden_phrases(tmp_path) -> None:

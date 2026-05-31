@@ -1,12 +1,12 @@
 # Paper Outline
 
-Target format: 6-8 page workshop-style manuscript, with a concise appendix and reproducibility notes. Primary target venues are NeurIPS, ICLR, and ICML workshops; fallback venues are ACL or EMNLP Findings.
+Target format: claim-safe journal/top-tier manuscript outline, with a diagnostic-paper fallback. The mainline is FMA reflection utility learning, Phase 5-7 structural necessity diagnostics, and required downstream PRM/filtering validation.
 
 ## 1. Introduction
 
-Section purpose: motivate the question of whether reflective reasoning steps that show local utility also exhibit structural necessity.
+Section purpose: motivate FMA as a reflection utility learning framework and introduce the diagnostic question of whether reflective reasoning steps that show local utility also exhibit structural necessity.
 
-Key claim: reflective reasoning exhibits widespread local utility, but only sparse structural necessity.
+Key claim: reflective reasoning exhibits widespread local utility, but only sparse structural necessity, so raw local utility should not be used directly as a process-supervision weight.
 
 Required figures: none in the first page unless layout permits a small framework schematic generated later.
 
@@ -14,9 +14,9 @@ Referenced outputs: `outputs/counterfactual_summary.json`, `outputs/structural_d
 
 ## 2. Related Work
 
-Section purpose: position the framework against Reflexion or Self-Refine style methods, Process Reward Models, and counterfactual or intervention-based analysis.
+Section purpose: position the framework against Reflexion or Self-Refine style methods, vanilla PRM, length-calibrated PRM, token attribution, heuristic reflection scoring, and counterfactual or intervention-based analysis.
 
-Key claim: prior work usually evaluates trajectory-level improvement, step labels, or local perturbation results, while this paper separates local utility from topology-sensitive structural necessity.
+Key claim: prior work usually evaluates trajectory-level improvement, step labels, or local perturbation results, while this paper separates local utility from topology-sensitive structural necessity before proposing process-supervision signals.
 
 Required figures: none.
 
@@ -24,9 +24,9 @@ Referenced outputs: none; citation placeholders remain until manual bibliography
 
 ## 3. Framework Overview
 
-Section purpose: define reflective traces, step-level attribution records, graph construction, and the operational proxy stance.
+Section purpose: define reflective traces, step-level attribution records, graph construction, the FMA target architecture, and the operational proxy stance.
 
-Key claim: the framework estimates local utility and topology-sensitive dependence proxies, not internal-process explanations.
+Key claim: the framework estimates local utility and topology-sensitive dependence proxies, not internal-process explanations; PRM/filtering remains a downstream validation target.
 
 Required figures: `outputs/figures/graph_size_distribution.png`, `outputs/figures/taxonomy_distribution.png`.
 
@@ -68,9 +68,9 @@ Referenced outputs: `outputs/redundancy_analysis.json`, `outputs/redundancy_anal
 
 ## 7. Results
 
-Section purpose: consolidate the Phase 5-7 empirical pattern into the final narrative.
+Section purpose: consolidate the Phase 5-7 empirical pattern into the final diagnostic narrative and spell out why downstream PRM/filtering must use structural calibration.
 
-Key claim: weak alignment, weak compensation, and low distributedness are informative structural findings, not experimental failure.
+Key claim: weak alignment, weak compensation, and low distributedness are informative structural findings, not experimental failure and not completed downstream PRM/filtering evidence.
 
 Figures should summarize measured outputs rather than structural explanation.
 
@@ -82,7 +82,7 @@ Referenced outputs: `outputs/structural_diagnostics.json`, `outputs/redundancy_a
 
 Section purpose: bound the claims and prevent over-interpretation.
 
-Key claim: observed redistribution should not be interpreted as intentional adaptation, and deterministic proxy measurements do not provide internal-process guarantees.
+Key claim: observed redistribution should not be interpreted as intentional adaptation, deterministic proxy measurements do not provide internal-process guarantees, and attribution-aware PRM/filtering has not yet been validated.
 
 Required figures: none.
 
@@ -100,9 +100,9 @@ Referenced outputs: `outputs/phase6_readme.md`, `outputs/phase6_sensitivity.json
 
 ## 10. Conclusion
 
-Section purpose: state the final paper claim compactly and identify future directions.
+Section purpose: state the final current paper claim compactly and identify required validation.
 
-Key claim: reflective reasoning contains widespread local utility, but sparse structural necessity; possible interpretation should focus on better structural diagnostics, not broader explanatory claims.
+Key claim: reflective reasoning contains widespread local utility, but sparse structural necessity; the top-tier version must add real PRM/filtering validation before claiming downstream process-supervision gains.
 
 Required figures: none.
 

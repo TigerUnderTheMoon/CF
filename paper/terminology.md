@@ -8,6 +8,8 @@ Reflective reasoning exhibits widespread local utility, but only sparse structur
 
 Weak attribution-necessity alignment does not invalidate reflective utility attribution. Instead, it suggests that many reflective steps are locally functional, few are structurally necessary under the protocol, and compensatory redistribution is limited.
 
+For the top-tier storyline, FMA is a reflection utility learning framework for attribution-aware process supervision. The completed Phase 5-7 evidence supplies the diagnostic constraint: raw local utility is not itself a supervision weight.
+
 ## Core Distinctions
 
 Attribution vs necessity: `attribution_score` measures local functional contribution under deterministic counterfactual scoring. `structural_necessity` measures topology-sensitive dependence after graph intervention. A high `attribution_score` does not imply high `structural_necessity`.
@@ -15,6 +17,8 @@ Attribution vs necessity: `attribution_score` measures local functional contribu
 Local vs global: local quantities are defined for an individual reflective step in its observable context. Global summaries aggregate over the fixed task distribution and stored trace topology. No global summary should be read as universal outside that distribution.
 
 Functional vs structural: functional metrics estimate outcome-linked local utility. Structural metrics estimate topology-sensitive sensitivity, redundancy, and concentration. The two families are expected to diverge when a locally functional step is structurally replaceable or structurally inert.
+
+Diagnostic vs downstream validation: Phase 5-7 diagnose why structural calibration is needed. PRM/filtering validation is a separate downstream experiment and is not completed in the current repository.
 
 Scope disclaimer: all reported quantities are deterministic operational proxies. They are not protocol-independent effects, hidden reasoning states, internal-process explanations, or universal importance scores.
 
@@ -42,6 +46,9 @@ The following names are locked for all `paper/*.md` files. Use these canonical t
 | structurally inert | Locally present step with zero measured structural necessity. | fake reasoning |
 | intervention-sensitive utility | Utility estimated from controlled deterministic interventions. | heuristic reflection score |
 | topology-sensitive dependence | Dependence measured through graph removal modes and downstream structure. | mechanistic dependence |
+| structurally calibrated supervision weight | Candidate downstream weight combining local utility with structural necessity, bottleneck status, redundancy, and compensation diagnostics. | raw FMA weight |
+| PRM/filtering validation | Required future experiment testing downstream process-supervision or reflection-filtering benefit from structurally calibrated FMA. | completed PRM result |
+| diagnostic evidence | Phase 5-7 evidence that local utility and structural necessity diverge. | downstream proof |
 | hypothesis refinement | Revision from expected distributed compensation to observed sparse structural necessity. | experimental failure |
 
 ## Claim Hierarchy
@@ -51,3 +58,9 @@ Empirical observations are measurements directly reported in `outputs/`, such as
 Structural interpretations explain how those measurements relate to stored trace topology, for example the mismatch between widespread local utility and sparse structural necessity.
 
 Speculative implications must be labeled as possible interpretation, hypothesis, or future direction. They must not be stated as settled conclusions.
+
+## Forbidden Overclaims
+
+Do not write downstream robustness or generalization claims for attribution-aware PRM/filtering unless real downstream training or filtering artifacts exist. Current wording should use `required validation`, `target application`, `candidate signal`, or `future experiment`.
+
+Do not describe `local utility` as interchangeable with `structural necessity`. Do not describe `Normalize(FMA)` as the current validated supervision weight. The claim-safe term is `structurally calibrated supervision weight`.

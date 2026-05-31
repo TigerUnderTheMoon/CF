@@ -1,8 +1,8 @@
 # Methodology
 
-The framework studies intervention-based functional attribution for reflective cognition dynamics. It estimates local utility and topology-sensitive dependence over observable reasoning traces, then consolidates those estimates into topology-sensitive diagnostics. The framework estimates local utility and topology-sensitive dependence proxies, not internal-process explanations.
+The framework studies intervention-based functional attribution for reflective cognition dynamics. In the target journal architecture, FMA is a reflection utility learning framework that can supply candidate signals for process supervision and reflection filtering. In the current repository, the implemented evidence estimates local utility and topology-sensitive dependence over observable reasoning traces, then consolidates those estimates into structural diagnostics. The framework estimates operational proxies, not internal-process explanations.
 
-The empirical contributions and deterministic validation presented in this paper are concentrated in Phase 5-7, for which complete implementations, deterministic tests, and reproducible outputs are available in the repository.
+The empirical contributions and deterministic validation presented in this paper are concentrated in Phase 5-7, for which complete implementations, deterministic tests, and reproducible outputs are available in the repository. PRM/filtering validation is part of the target architecture, but it is not a completed experiment in the current artifact set.
 
 Phase 1-4 established the conceptual framework and pipeline architecture.
 
@@ -37,6 +37,30 @@ For manuscript writing, the same contract controls terminology. Tables should re
 
 All manuscript claims should remain traceable to these files.
 
+## FMA Target Architecture
+
+The target architecture follows the Chinese framework. Given an observable reflective trace, structure-preserving interventions estimate Conditional Interventional Utility for a metacognitive span in its local context. FMA then aggregates those local utilities under a task distribution. Counterfactual matching and doubly robust estimation are the intended controls for trajectory length, task difficulty, reasoning depth, reflection density, and step index.
+
+In manuscript terms, this architecture supports a reflection utility learning story:
+
+```text
+observable reflection span
+-> structure-preserving intervention
+-> local utility estimate
+-> distribution-conditioned FMA
+-> candidate process-supervision or filtering signal
+```
+
+The implemented Phase 5-7 evidence adds a necessary diagnostic layer:
+
+```text
+candidate local utility signal
+-> structural necessity, redundancy, bottleneck, compensation diagnostics
+-> structurally calibrated supervision/filtering signal
+```
+
+This second arrow is central. The current results show that local utility alone is too broad for direct supervision weighting.
+
 ## Phase 5: Counterfactual Functional Attribution
 
 Phase 5 estimates local utility for reflective steps using deterministic counterfactual ablation over stored traces and annotations. The runner `scripts/run_counterfactual_attribution.py` reads `data/traces/synthetic_100x8.json` and `outputs/utility_annotations.jsonl`, computes necessity scores, runs single-step ablations, and writes summary reports. The ablation strategies are `ATTRIBUTION_TOP_K`, `ATTRIBUTION_BOTTOM_K`, `CATEGORY_MATCHED_RANDOM`, `POSITIONAL_FIRST_K`, `POSITIONAL_LAST_K`, and `RANDOM_K`.
@@ -65,10 +89,28 @@ These metrics are linked but not interchangeable. Redundancy asks whether nodes 
 
 The initial hypothesis was that reflection may exhibit distributed compensatory organization. The observed results refine this hypothesis: compensation and distributedness were weaker than expected. This is an empirical hypothesis refinement, not experimental failure.
 
+## Supervision Implication
+
+The methodology distinguishes three signals that should not be collapsed:
+
+| Signal | Current status | Supervision implication |
+|---|---|---|
+| Local attribution signal | Implemented in Phase 5 as `attribution_score` | Candidate evidence that a reflection is locally functional |
+| Structural necessity signal | Implemented in Phase 6-7 as `structural_necessity`, bottlenecks, redundancy, compensation, and distributedness | Constraint on whether local utility should receive high supervision or filtering weight |
+| PRM/filtering weight | Required future validation | Must be learned or computed from structurally calibrated attribution, not raw FMA alone |
+
+The direct rule `w_k = Normalize(FMA(m_k; D))` is therefore only a target-architecture starting point from the original framework, not a claim supported by the current diagnostics. The claim-safe formulation is:
+
+```text
+w_k = Normalize(Calibrate(FMA, structural_necessity, bottleneck, redundancy, compensation))
+```
+
+The repository has not yet trained a PRM, run a filtering comparison, or produced downstream task-success evidence for this calibrated signal. The current methodology explains why such validation is needed.
+
 ## Pipeline Overview
 
-The deterministic pipeline can be read as a sequence of progressively stricter questions. Phase 1-4 establish trace schemas, taxonomy coverage, locality diagnostics, and functional-validity infrastructure. Phase 5 asks which reflective steps have local utility. Phase 6 asks whether those steps are topology-sensitive. Phase 7 asks whether low alignment can be explained by redundancy, compensation, bottlenecks, resilience, and distributedness.
+The deterministic pipeline can be read as a sequence of progressively stricter questions. Phase 1-4 establish trace schemas, taxonomy coverage, locality diagnostics, and functional-validity infrastructure. Phase 5 asks which reflective steps have local utility. Phase 6 asks whether those steps are topology-sensitive. Phase 7 asks whether low alignment can be explained by redundancy, compensation, bottlenecks, resilience, and distributedness. The next required validation asks whether structurally calibrated signals benefit PRM/filtering behavior on real downstream tasks.
 
-The claim hierarchy is fixed. Empirical observations are values stored in JSON, JSONL, Markdown reports, and PNG figures. Structural interpretations describe how local utility and structural necessity diverge. Speculative implications, such as future process supervision or reflection pruning, must be labeled as possible interpretation, hypothesis, or future direction.
+The claim hierarchy is fixed. Empirical observations are values stored in JSON, JSONL, Markdown reports, and PNG figures. Structural interpretations describe how local utility and structural necessity diverge. Process supervision and reflection filtering are target applications that require downstream validation, not settled conclusions.
 
-The methodology therefore fits a compact manuscript structure. Phase 5 supplies local attribution evidence. Phase 6 supplies topology-sensitive necessity evidence. Phase 7 supplies the refinement that compensation and distributedness are limited. The final claim is not that reflection is absent or that local utility is invalid. The final claim is that reflective reasoning exhibits widespread local utility, but only sparse structural necessity.
+The methodology therefore fits a compact manuscript structure. FMA supplies the reflection utility learning architecture. Phase 5 supplies local attribution evidence. Phase 6 supplies topology-sensitive necessity evidence. Phase 7 supplies the refinement that compensation and distributedness are limited. The final current claim is not that reflection is absent or that local utility is invalid. The final current claim is that reflective reasoning exhibits widespread local utility, but only sparse structural necessity; the top-tier claim still requires real PRM/filtering validation.

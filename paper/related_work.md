@@ -12,11 +12,13 @@ A possible interpretation is that reflection methods and this framework answer c
 
 ## Process Reward Models
 
-Process Reward Models (PRMs) [PRM_PLACEHOLDER] provide step-level supervision for reasoning processes. They are relevant because both PRMs and this framework operate below the final-answer level. The distinction is that PRM-style work usually trains or evaluates a reward signal for intermediate steps, while this paper analyzes deterministic intervention outputs and topology-sensitive dependence.
+Process Reward Models (PRMs) [PRM_PLACEHOLDER] provide step-level supervision for reasoning processes. They are relevant because both PRMs and this framework operate below the final-answer level. The Chinese framework positions FMA as a way to derive reflection utility signals for process supervision, but the current repository adds an important constraint: local utility should not be treated as a direct supervision weight without structural calibration.
 
-The comparison has three dimensions. Supervision target: PRMs often score step correctness or process quality, while this framework reports `attribution_score` and `structural_necessity` proxies. Training status: this paper does not introduce a learned model. Claim scope: PRM scores can guide downstream systems, but they do not by themselves establish sparse bottlenecks, weak compensation, or topology-sensitive dependence.
+The comparison has three dimensions. Supervision target: vanilla PRMs often score step correctness or process quality, while this framework distinguishes `attribution_score` from `structural_necessity`. Bias control: length-calibrated PRM variants address length or process-bias effects, while FMA focuses on reflection-level intervention sensitivity and topology-sensitive dependence. Granularity: token-attribution methods operate at token or activation level, while FMA treats explicit metacognitive spans as semantic intervention units.
 
-This distinction also keeps the paper from being framed as a reward-model tuning exercise. The empirical observations are stored deterministic outputs, not labels for a new reward model. A future direction could use the proxy quantities as supervision signals, but that would be a separate modeling contribution.
+This distinction also keeps the paper from being framed as a completed reward-model tuning exercise. The empirical observations are stored deterministic outputs, not evidence that a learned PRM has improved downstream performance. A future validation should compare structurally calibrated FMA against vanilla PRM, length-calibrated PRM, token attribution, and heuristic reflection scoring.
+
+The central claim-safe position is therefore narrow: Phase 5-7 explain why attribution-aware process supervision should distinguish local utility from sparse structural necessity. They do not yet establish a downstream advantage for attribution-aware PRM/filtering.
 
 ## Counterfactual and Intervention-Based Analysis
 

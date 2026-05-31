@@ -1,0 +1,14 @@
+D:\DevelopTools\anaconda3\Lib\site-packages\pydantic\main.py:475: UserWarning: Pydantic serializer warnings:
+  PydanticSerializationUnexpectedValue(Expected `FunctionTool` - serialized value may not be as expected [field_name='tools', input_value=ImageGeneration(type='ima...auto', size='auto', n=1), input_type=ImageGeneration])
+  PydanticSerializationUnexpectedValue(Expected `FileSearchTool` - serialized value may not be as expected [field_name='tools', input_value=ImageGeneration(type='ima...auto', size='auto', n=1), input_type=ImageGeneration])
+  PydanticSerializationUnexpectedValue(Expected `ComputerTool` - serialized value may not be as expected [field_name='tools', input_value=ImageGeneration(type='ima...auto', size='auto', n=1), input_type=ImageGeneration])
+  PydanticSerializationUnexpectedValue(Expected `WebSearchTool` - serialized value may not be as expected [field_name='tools', input_value=ImageGeneration(type='ima...auto', size='auto', n=1), input_type=ImageGeneration])
+  PydanticSerializationUnexpectedValue(Expected `Mcp` - serialized value may not be as expected [field_name='tools', input_value=ImageGeneration(type='ima...auto', size='auto', n=1), input_type=ImageGeneration])
+  PydanticSerializationUnexpectedValue(Expected `CodeInterpreter` - serialized value may not be as expected [field_name='tools', input_value=ImageGeneration(type='ima...auto', size='auto', n=1), input_type=ImageGeneration])
+  PydanticSerializationUnexpectedValue(Expected `literal['gpt-image-1','gpt-image-1-mini']` - serialized value may not be as expected [field_name='model', input_value='gpt-image-2', input_type=str])
+  PydanticSerializationUnexpectedValue(Expected `LocalShell` - serialized value may not be as expected [field_name='tools', input_value=ImageGeneration(type='ima...auto', size='auto', n=1), input_type=ImageGeneration])
+  PydanticSerializationUnexpectedValue(Expected `FunctionShellTool` - serialized value may not be as expected [field_name='tools', input_value=ImageGeneration(type='ima...auto', size='auto', n=1), input_type=ImageGeneration])
+  PydanticSerializationUnexpectedValue(Expected `CustomTool` - serialized value may not be as expected [field_name='tools', input_value=ImageGeneration(type='ima...auto', size='auto', n=1), input_type=ImageGeneration])
+  PydanticSerializationUnexpectedValue(Expected `WebSearchPreviewTool` - serialized value may not be as expected [field_name='tools', input_value=ImageGeneration(type='ima...auto', size='auto', n=1), input_type=ImageGeneration])
+  PydanticSerializationUnexpectedValue(Expected `ApplyPatchTool` - serialized value may not be as expected [field_name='tools', input_value=ImageGeneration(type='ima...auto', size='auto', n=1), input_type=ImageGeneration])
+  return self.__pydantic_serializer__.to_python(

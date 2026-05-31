@@ -18,6 +18,7 @@ from fma.real_task_pilot.config import load_pilot_config, output_dir
 from fma.real_task_pilot.controls import control_report_skeleton
 from fma.real_task_pilot.hygiene import candidate_files, render_hygiene_markdown, scan_hygiene
 from fma.real_task_pilot.generation import (
+    GeneratedTraceResult,
     build_generation_summary,
     generate_trace_with_fallback,
     load_prompt_template,
@@ -240,19 +241,68 @@ def main() -> None:
         pilot_n = int(config.get("experiment", {}).get("pilot_generation_requests", 400))
         if len(records) < pilot_n:
             raise RuntimeError(f"stage 'api-pilot' requires at least {pilot_n} manifest rows.")
-        results = []
-        for index, sample in enumerate(records[:pilot_n], start=1):
-            results.append(generate_trace_with_fallback(
+        existing_attempts = _load_existing_records(root / "pilot_attempts.jsonl")
+        valid_records = _load_existing_records(root / "pilot_traces.jsonl")
+        existing_summary = _read_json(root / "pilot_generation_fallback_report.json", default={})
+        if len(existing_attempts) > pilot_n:
+            raise RuntimeError(
+                f"existing pilot_attempts.jsonl has {len(existing_attempts)} rows, "
+                f"which exceeds target {pilot_n}."
+            )
+        results: list[GeneratedTraceResult] = []
+        for index, sample in enumerate(records[len(existing_attempts):pilot_n], start=len(existing_attempts) + 1):
+            write_json(
+                root / "pilot_progress.json",
+                {
+                    "status": "running",
+                    "current_index": index,
+                    "completed_attempts": len(existing_attempts) + len(results),
+                    "target_attempts": pilot_n,
+                    "current_sample_id": sample.get("sample_id"),
+                },
+            )
+            result = generate_trace_with_fallback(
                 sample,
                 adapter=adapter,
                 config=config,
                 prompt_template=prompt_template,
-            ))
-            if index % 10 == 0:
-                _write_generation_checkpoint(root, "pilot", results)
-        valid_records = [result.record for result in results if result.record is not None]
-        write_records(valid_records, root / "pilot_traces.jsonl")
-        write_json(root / "pilot_generation_fallback_report.json", build_generation_summary(results))
+            )
+            results.append(result)
+            if result.record is not None:
+                valid_records.append(result.record)
+            attempts = existing_attempts + _preflight_attempt_payloads(results)
+            _write_pilot_checkpoint(
+                root,
+                attempts=attempts,
+                valid_records=valid_records,
+                summary=_merge_generation_summary(
+                    existing_summary,
+                    new_results=results,
+                    attempts=attempts,
+                    valid_records=valid_records,
+                ),
+            )
+        attempts = existing_attempts + _preflight_attempt_payloads(results)
+        _write_pilot_checkpoint(
+            root,
+            attempts=attempts,
+            valid_records=valid_records,
+            summary=_merge_generation_summary(
+                existing_summary,
+                new_results=results,
+                attempts=attempts,
+                valid_records=valid_records,
+            ),
+        )
+        write_json(
+            root / "pilot_progress.json",
+            {
+                "status": "complete",
+                "completed_attempts": len(attempts),
+                "valid_records": len(valid_records),
+                "target_attempts": pilot_n,
+            },
+        )
         print(f"Wrote {len(valid_records)} live pilot traces to {root / 'pilot_traces.jsonl'}")
         return
 
@@ -554,6 +604,48 @@ def _write_generation_checkpoint(root: Path, prefix: str, results: list[Any]) ->
     write_records(valid_records, root / f"{prefix}_traces.jsonl")
     write_records(_preflight_attempt_payloads(results), root / f"{prefix}_attempts.jsonl")
     write_json(root / f"{prefix}_generation_fallback_report.json", build_generation_summary(results))
+
+
+def _load_existing_records(path: Path) -> list[dict[str, Any]]:
+    if not path.exists():
+        return []
+    return load_records(path)
+
+
+def _write_pilot_checkpoint(
+    root: Path,
+    *,
+    attempts: list[dict[str, Any]],
+    valid_records: list[dict[str, Any]],
+    summary: dict[str, Any],
+) -> None:
+    write_records(valid_records, root / "pilot_traces.jsonl")
+    write_records(attempts, root / "pilot_attempts.jsonl")
+    write_json(root / "pilot_generation_fallback_report.json", summary)
+
+
+def _merge_generation_summary(
+    existing_summary: dict[str, Any],
+    *,
+    new_results: list[GeneratedTraceResult],
+    attempts: list[dict[str, Any]],
+    valid_records: list[dict[str, Any]],
+) -> dict[str, Any]:
+    new_summary = build_generation_summary(new_results)
+    lower_confidence = sum(
+        1
+        for record in valid_records
+        if record.get("generation_config", {}).get("structured_output_mode") == "json_object"
+    )
+    return {
+        "records_requested": len(attempts),
+        "valid_records": len(valid_records),
+        "invalid_records": len(attempts) - len(valid_records),
+        "valid_rate": len(valid_records) / len(attempts) if attempts else 0.0,
+        "lower_confidence_records": lower_confidence,
+        "fallback_events": list(existing_summary.get("fallback_events", []))
+        + list(new_summary.get("fallback_events", [])),
+    }
 
 
 def _seed_transport_report(results: list[Any]) -> dict[str, Any]:

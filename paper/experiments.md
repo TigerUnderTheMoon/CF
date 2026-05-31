@@ -1,8 +1,20 @@
 # Experiments
 
-The experiments use a deterministic synthetic reflection benchmark and stored repository artifacts. The empirical scope is Phase 5-7. Phase 1-4 supply conceptual and infrastructural foundations, including trace schemas, taxonomy coverage, locality checks, and functional-validity diagnostics, but they are not treated as independent experimental chapters.
+The completed experiments use a deterministic synthetic reflection benchmark and stored repository artifacts. The current empirical scope is Phase 5-7. Phase 1-4 supply conceptual and infrastructural foundations, including trace schemas, taxonomy coverage, locality checks, and functional-validity diagnostics, but they are not treated as independent experimental chapters.
 
-The framework evaluates structural properties of reflective reasoning traces, not downstream benchmark performance. It is analysis-oriented, topology-oriented, and diagnostic-oriented; it is not a leaderboard benchmark, model ranking framework, or general evaluation suite.
+The target journal architecture connects FMA to process supervision and reflection filtering, but the current experiments evaluate diagnostic properties of reflective reasoning traces, not completed downstream PRM/filtering performance. It is analysis-oriented, topology-oriented, and diagnostic-oriented; it is not a leaderboard benchmark, model ranking framework, or general evaluation suite.
+
+## Evidence Layers
+
+The experimental story has three layers:
+
+| Layer | Status | Role in the paper |
+|---|---|---|
+| Diagnostic evidence | Completed Phase 5-7 | Shows why local utility and structural necessity must be separated |
+| Real-task replay/pilot | Guarded pilot evidence | Tests whether the pipeline can move beyond stored synthetic traces under preflight and readiness gates |
+| PRM/filtering validation | Required future experiment | Must evaluate downstream benefit from structurally calibrated FMA in process supervision or reflection filtering |
+
+Only the first layer is currently complete. The second layer is blocked by readiness gates, and the third layer is not yet present as a repository artifact.
 
 ## Data Scale
 
@@ -56,12 +68,32 @@ The full Stage 2 FMA alignment is positive but low magnitude: Spearman rho is 0.
 
 Stratified generalization is not globally confirmed. C3 is `stratum_dependent` because the Stage 2 stratum audit reports confidence intervals including zero in `S_mid` and `S_rand`. This heterogeneity is reported as variation across unseen distributions, not as evidence that FMA is stronger than the low-magnitude aggregate suggests.
 
+## Real-Task Pilot Status
+
+The real-task pilot is a guarded extension rather than a replacement for historical Phase 5-7 evidence. The current readiness audit reports `PILOT_BLOCKED`, with failure codes `PILOT_FAIL_SIGNAL`, `PILOT_FAIL_SPAN`, and `PREFLIGHT_FAIL_DRIFT`. The API preflight report has `status: fail` due to drift. Any generated GSM8K/HotpotQA pilot traces should therefore be treated as pilot evidence only, not as validated real-task support for utility claims.
+
+The nondeterministic protocol permits trace generation only under guarded pilot framing. It requires repeated replay and bootstrap confidence intervals before any utility claim is upgraded. No manuscript section should describe the real-task pilot as top-tier-ready while these gates remain unresolved.
+
+## Required PRM/Filtering Validation
+
+The top-tier version must add a downstream experiment that tests whether structurally calibrated FMA signals improve process supervision or reflection filtering. The key comparison should separate:
+
+| Method family | Required role |
+|---|---|
+| Vanilla PRM | Uniform or standard step-supervision baseline |
+| Length-calibrated PRM | Control for length and process-bias effects |
+| Token attribution | Tests whether semantic reflection-level attribution adds value beyond token-level signals |
+| Heuristic reflection scoring | Tests against length, confidence, or self-consistency heuristics |
+| Structurally calibrated FMA | Candidate method combining local utility with structural necessity diagnostics |
+
+This validation is not completed in the current repository. Phase 5-7 justify the need for the experiment by showing that raw local utility can overrepresent redundant reflection.
+
 ## Figure Set
 
 The primary paper-level result figures are `outputs/figures/structural_diagnostics_attribution_vs_necessity.png`, `outputs/figures/redundancy_density_histogram.png`, and the optional selected primary figure `outputs/figures/resilience_curves.png`. Other generated figures summarize supplementary diagnostics and are catalogued in `paper/figure_inventory.md`.
 
-Empirical observations are the stored report values. The structural interpretation is that local utility is more widespread than structural necessity. A possible interpretation for future work is that process supervision may motivate future work that tests whether different formulations separate local utility from sparse bottleneck structure rather than treating all reflective steps as equally necessary under the protocol.
+Empirical observations are the stored report values. The structural interpretation is that local utility is more widespread than structural necessity. The process-supervision implication is a required validation hypothesis: future PRM/filtering work should compare structurally calibrated attribution signals against raw local utility and heuristic reflection scores.
 
-Human evaluation, semantic reasoning verification, benchmark superiority, external baseline comparison, and statistical significance testing are not evaluated in the current framework.
+Human evaluation, semantic reasoning verification, benchmark superiority, external PRM/filtering comparison, and downstream statistical significance testing are not evaluated in the current framework.
 
 No experiment in this phase modifies JSON outputs, regenerates figures as part of writing, or introduces learned models.
