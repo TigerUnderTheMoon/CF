@@ -1,0 +1,2 @@
+{"delta_u": 1.0, "intervened_score": 0.0, "metric": "exact_match", "original_score": 1.0, "sample_id": "gsm8k-00001", "span_index": 0, "task_type": "gsm8k"}
+{"delta_u": 0.0, "intervened_score": 1.0, "metric": "exact_match", "original_score": 1.0, "sample_id": "hotpotqa-00001", "span_index": 0, "task_type": "hotpotqa"}

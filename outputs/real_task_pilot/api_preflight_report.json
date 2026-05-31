@@ -1,0 +1,11 @@
+{
+  "determinism_drift_max": null,
+  "failure_codes": [
+    "PREFLIGHT_FAIL_DRIFT"
+  ],
+  "json_parse_success_rate": 1.0,
+  "records_evaluated": 20,
+  "schema_success_rate": 1.0,
+  "status": "fail",
+  "tag_extraction_success_rate": 1.0
+}

@@ -1,0 +1,49 @@
+{
+  "bootstrap": {
+    "confidence_level": 0.95,
+    "random_seed": 20260530,
+    "resamples": 10000,
+    "unit": "sample_id"
+  },
+  "created_at": "2026-05-31",
+  "disclosure": {
+    "required": true,
+    "text": "OpenAI API seed transport was not available in preflight; repeated sampling and bootstrap confidence intervals replace deterministic replay claims."
+  },
+  "gates": {
+    "effect_gate": "bootstrap_ci_lower_gt_zero_by_task_or_pooled_with_task_pass",
+    "maximum_projected_cost_usd": 150,
+    "minimum_replay_success_rate": 0.85,
+    "minimum_schema_success_rate": 0.95,
+    "minimum_span_validity_rate": 0.9,
+    "minimum_tag_success_rate": 0.95,
+    "minimum_valid_traces": 300
+  },
+  "repeats": {
+    "key_sample_replay_per_span": 5,
+    "original_generation_per_sample": 1,
+    "replay_per_span": 3
+  },
+  "required_artifacts": [
+    "api_determinism_blocker.json",
+    "nondeterministic_protocol.json",
+    "sample_manifest.json",
+    "pilot_traces.jsonl",
+    "repeated_replay_results.jsonl",
+    "bootstrap_ci_report.json",
+    "readiness_audit.json"
+  ],
+  "run_policy": {
+    "allow_400_trace_generation": true,
+    "allow_top_tier_scale_up": false,
+    "claim_level": "pilot_only_until_repeated_replay_ci_passes",
+    "forbidden_claims": [
+      "deterministic replay effect",
+      "globally identifiable causal effect",
+      "single-run intervention estimate"
+    ]
+  },
+  "scope": "real_task_pilot_under_api_nondeterminism",
+  "status": "NONDETERMINISTIC_PROTOCOL_PREREGISTERED",
+  "supersedes_route": "deterministic_seed_controlled_api_pilot"
+}

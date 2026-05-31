@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RealTaskReflectionTrace",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "sample_id",
+    "task_id",
+    "task_type",
+    "question",
+    "observable_trace",
+    "reflection_spans",
+    "final_answer",
+    "reference_answer",
+    "correctness",
+    "model_name",
+    "generation_config",
+    "system_fingerprint",
+    "usage"
+  ],
+  "properties": {
+    "sample_id": {"type": "string", "minLength": 1},
+    "task_id": {"type": "string", "minLength": 1},
+    "task_type": {"type": "string", "enum": ["gsm8k", "hotpotqa"]},
+    "question": {"type": "string", "minLength": 1},
+    "observable_trace": {"type": "string", "minLength": 1},
+    "reflection_spans": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "span_index",
+          "start_char",
+          "end_char",
+          "content_start_char",
+          "content_end_char",
+          "start_token",
+          "end_token",
+          "operation_type",
+          "content"
+        ],
+        "properties": {
+          "span_index": {"type": "integer", "minimum": 0},
+          "start_char": {"type": "integer", "minimum": 0},
+          "end_char": {"type": "integer", "minimum": 0},
+          "content_start_char": {"type": "integer", "minimum": 0},
+          "content_end_char": {"type": "integer", "minimum": 0},
+          "start_token": {"type": "integer", "minimum": 0},
+          "end_token": {"type": "integer", "minimum": 0},
+          "operation_type": {
+            "type": "string",
+            "enum": [
+              "self-reflection",
+              "self-evaluation",
+              "error_diagnosis",
+              "plan_revision",
+              "strategy_critique",
+              "verification",
+              "planning",
+              "uncertainty_monitoring",
+              "other"
+            ]
+          },
+          "content": {"type": "string"}
+        }
+      }
+    },
+    "final_answer": {"type": "string"},
+    "reference_answer": {"type": "string"},
+    "aliases": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "correctness": {"type": "boolean"},
+    "model_name": {"type": "string", "minLength": 1},
+    "generation_config": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "system_fingerprint": {
+      "type": ["string", "null"]
+    },
+    "usage": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}

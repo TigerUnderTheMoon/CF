@@ -37,6 +37,8 @@ The exact implementation uses the repository functions in `fma/eval/redundancy/`
 
 Trace records follow `schemas/reflection_trace.schema.json` and include `sample_id`, `task_id`, `task_type`, `question`, `reasoning_trace`, `reflection_spans`, `final_answer`, `reference_answer`, `correctness`, `model_name`, and `generation_config`.
 
+The real-task pilot uses `schemas/real_task_trace.schema.json` and the field `observable_trace` to make clear that the analyzed text is visible model output rather than hidden cognition.
+
 Paper-level output records should use fields such as `sample_id`, `task`, `task_type`, `ciu`, `fma`, `matched`, `propensity`, `intervention_type`, `operation_type`, `context_length`, and `trajectory_length` when running the earlier CIU/FMA pipeline.
 
 ## Intervention Examples

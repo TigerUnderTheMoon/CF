@@ -1,0 +1,2 @@
+{"aliases":[],"final_answer":"4","observable_trace":"We compute 2 + 3 after masking.\nFinal Answer: 4","question":"What is 2 + 3?","reference_answer":"#### 5","sample_id":"gsm8k-00001","span_index":0,"task_id":"gsm8k-00001","task_type":"gsm8k"}
+{"aliases":["Shakespeare"],"final_answer":"Shakespeare","observable_trace":"The masked prefix still supports the answer.\nFinal Answer: Shakespeare","question":"Who wrote Hamlet?","reference_answer":"William Shakespeare","sample_id":"hotpotqa-00001","span_index":0,"task_id":"hotpotqa-00001","task_type":"hotpotqa"}

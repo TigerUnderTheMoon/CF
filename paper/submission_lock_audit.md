@@ -21,11 +21,11 @@ submission_status: blocked
 
 Status: **blocked**.
 
-The Stage 2 held-out validation artifacts remain internally consistent with the supplied execution summary. They support a small aggregate FMA rank-alignment signal, not global confirmation. C1, C2, and C3 remain `stratum_dependent` because `S_mid` and `S_rand` fail the all-strata requirement.
+The Stage 2 held-out validation artifacts remain internally consistent with the supplied execution summary. They support a small aggregate FMA rank-alignment signal, not protocol-independent confirmation. C1, C2, and C3 remain `stratum_dependent` because `S_mid` and `S_rand` fail the all-strata requirement.
 
 The required baseline gate is no longer blocked by missing artifacts. `outputs/baseline_artifact_audit.md` found no hidden independent Stage 2 baseline score vectors, so random masking, span masking, graph removal, and edge dropout were evaluated with frozen conservative non-target proxy rules. All four required baselines have 840 held-out step scores and `target_leakage_status: clean`.
 
-Submission readiness remains blocked for final readiness review, citation/package completion, and claim-scope discipline. The clean proxy baselines close the missing-baseline gate but do not turn stratum-dependent Stage 2 evidence into global confirmation.
+Submission readiness remains blocked for final readiness review, citation/package completion, and claim-scope discipline. The clean proxy baselines close the missing-baseline gate but do not turn stratum-dependent Stage 2 evidence into protocol-independent confirmation.
 
 ## Artifact Paths Checked
 

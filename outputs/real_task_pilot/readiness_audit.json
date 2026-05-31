@@ -1,0 +1,23 @@
+{
+  "failure_codes": [
+    "PILOT_FAIL_SIGNAL",
+    "PILOT_FAIL_SPAN",
+    "PREFLIGHT_FAIL_DRIFT"
+  ],
+  "gates": {
+    "all_task_ci_lower_gt_zero": false,
+    "at_least_one_task_pass": false,
+    "baseline_leakage_clean": true,
+    "cost_report_complete": true,
+    "expand_to_top_tier_scale": false,
+    "hygiene_clean": true,
+    "pooled_ci_lower_gt_zero": false,
+    "preflight": false,
+    "replay_success_rate": true,
+    "span_validity_rate": true,
+    "tests_passed": true,
+    "valid_trace_count": false
+  },
+  "pilot_pass": false,
+  "status": "PILOT_BLOCKED"
+}

@@ -1,0 +1,29 @@
+{
+  "baseline_family": "independent_scorer_baselines",
+  "checks": [
+    {
+      "forbidden_fields_used": [],
+      "sample_id": "gsm8k-00001",
+      "span_index": 0,
+      "target_leakage_status": "clean"
+    },
+    {
+      "forbidden_fields_used": [],
+      "sample_id": "hotpotqa-00001",
+      "span_index": 0,
+      "target_leakage_status": "clean"
+    }
+  ],
+  "forbidden_source_fields": [
+    "attribution_score",
+    "correctness",
+    "delta_u",
+    "intervened_score",
+    "necessity",
+    "original_score",
+    "replay_outcome",
+    "structural_necessity"
+  ],
+  "target_leakage_detected": false,
+  "target_leakage_status": "clean"
+}

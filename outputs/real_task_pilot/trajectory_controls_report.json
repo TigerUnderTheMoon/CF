@@ -1,0 +1,46 @@
+{
+  "no_reflection": {
+    "definition": "Answer directly without visible reflection tags.",
+    "metrics": {
+      "accuracy": null,
+      "cost": null,
+      "reflection_count": null,
+      "tokens": null,
+      "validity": null
+    },
+    "mix_with_span_attribution": false
+  },
+  "reflexion_style": {
+    "definition": "Visible verbal reflection after failure or uncertainty, then retry.",
+    "metrics": {
+      "accuracy": null,
+      "cost": null,
+      "reflection_count": null,
+      "tokens": null,
+      "validity": null
+    },
+    "mix_with_span_attribution": false
+  },
+  "self_refine_style": {
+    "definition": "Visible draft, feedback, and revision for the same question.",
+    "metrics": {
+      "accuracy": null,
+      "cost": null,
+      "reflection_count": null,
+      "tokens": null,
+      "validity": null
+    },
+    "mix_with_span_attribution": false
+  },
+  "tagged_reflection": {
+    "definition": "Use one or more visible <reflection> tags in a single-pass solution.",
+    "metrics": {
+      "accuracy": null,
+      "cost": null,
+      "reflection_count": null,
+      "tokens": null,
+      "validity": null
+    },
+    "mix_with_span_attribution": false
+  }
+}

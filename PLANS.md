@@ -17,24 +17,27 @@
 | Phase 5 | Completed | Counterfactual Functional Attribution |
 | Phase 6 | Completed | Structural Reflection Attribution |
 | Phase 7 | Completed | Redundancy and compensation analysis |
+| Real-task pilot | Planned | GSM8K/HotpotQA API preflight, replay, baselines, controls, readiness audit |
 
 Phase 7 is implemented as a deterministic structural interpretation layer over stored Phase 6 outputs. The initial hypothesis was that reflection may exhibit distributed compensatory organization, but the observed results refine this into locally useful but structurally sparse reflective organization: moderate redundancy, weak compensation, low distributedness, sparse bottlenecks, and weak alignment between attribution and necessity.
+
+The real-task pilot layer is implemented as a guarded extension rather than a replacement for historical Phase 5-7 artifacts. It uses `configs/real_task_pilot.yaml`, `schemas/real_task_trace.schema.json`, and `scripts/run_real_task_pilot.py`. Live API execution requires `--allow-api`; without an explicit `user_approved_budget_usd`, the cost gate blocks full pilot execution.
 
 ---
 
 ## 1. Research Objective
 
-Develop a lightweight, intervention-based framework for the **causal attribution of reflective cognition** in LLM agents.
+Develop a lightweight, intervention-based framework for the **functional attribution of reflective cognition dynamics** in LLM agents.
 
 **Core Question**:  
-> Which reflective operations causally improve downstream task performance, and which are redundant or harmful?
+> Which reflective operations measurably improve downstream task performance under controlled perturbation, and which are redundant or harmful?
 
 This project integrates:
 
 - Counterfactual attribution,
 - Reflection utility estimation,
 - Process-level reward modeling,
-- Lightweight causal intervention analysis,
+- Lightweight intervention-sensitive analysis,
 
 **without requiring**:
 
@@ -53,10 +56,10 @@ We define a *reflection* as any self-directed cognitive operation **explicitly d
 > More reflection leads to better reasoning.
 
 **Our Framing**:  
-> Reflection is a heterogeneous intervention variable; its utility is context-dependent and must be attributed causally, not correlationally.
+> Reflection is a heterogeneous intervention variable; its utility is context-dependent and must be estimated through controlled perturbation, not correlation alone.
 
 **Key Hypothesis**:  
-Reflective operations exhibit **heterogeneous causal utility**. Specific reflection types may:
+Reflective operations exhibit **heterogeneous functional utility**. Specific reflection types may:
 
 | Positive Effects | Negative Effects |
 |-----------------|------------------|
@@ -66,7 +69,7 @@ Reflective operations exhibit **heterogeneous causal utility**. Specific reflect
 | Stabilize long-horizon reasoning | Create unnecessary computational overhead |
 
 **Implication**:  
-Reflection should be treated as a **causal intervention** $do(R=r)$ rather than a monolithic capability. The relevant question is not *whether* to reflect, but *which* reflections to retain, modify, or suppress.
+Reflection should be treated as an **observable intervention target** rather than a monolithic capability. The relevant question is not *whether* to reflect, but *which* reflections to retain, modify, or suppress.
 
 ---
 
@@ -88,21 +91,21 @@ Current reflection methods mainly optimize reflection **globally**:
 - Trajectory success,
 - Aggregate reasoning quality,
 
-but **not** the causal utility of *individual* reflection steps.
+but **not** the intervention-sensitive utility of *individual* reflection steps.
 
 ### 3.2 Our Core Distinction
 
 ```text
 Existing Work:          "Does reflection help overall?"
-This Project:         "Which reflection step causally helps, harms, or does nothing?"
+This Project:         "Which reflection step helps, harms, or does nothing under controlled perturbation?"
 ```
 
 ### 3.3 Primary Novelty
 
-1. **Counterfactual reflection attribution**: Isolating the causal effect of single reflection operations via deterministic replay,
+1. **Counterfactual reflection attribution**: Estimating the functional influence of single reflection operations via deterministic replay,
 2. **Intervention-level utility estimation**: Per-step utility scores rather than aggregate metrics,
 3. **Reflection-specific reward modeling**: PRMs trained to predict reflection utility, not just step correctness,
-4. **Causal replay analysis for metacognition**: A lightweight simulator for reflective cognition.
+4. **Replay analysis for metacognition**: A lightweight perturbation testbed for reflective cognition.
 
 ---
 
@@ -124,7 +127,7 @@ We treat reflection as **heterogeneous** rather than uniform. This taxonomy serv
 
 ### 4.2 Research Questions
 
-- Which reflection type has the highest average causal utility?
+- Which reflection type has the highest average functional utility?
 - Which types are most token-efficient (utility per token)?
 - Which types become harmful under high uncertainty or low model capability?
 - Which tasks benefit from which reflection categories?
@@ -135,9 +138,9 @@ We treat reflection as **heterogeneous** rather than uniform. This taxonomy serv
 
 ### Direction A — Reflection Utility Attribution (Primary)
 
-**Goal**: Estimate the causal contribution of individual reflective steps to downstream task success.
+**Goal**: Estimate the local functional contribution of individual reflective steps to downstream task success.
 
-**Causal Setup**:  
+**Observable Setup**:
 For a trajectory segment:
 ```
 s_t -> a_t -> o_t
@@ -153,7 +156,7 @@ Utility(rho_t) = Reward(tau_with rho_t) - Reward(tau_without rho_t)
 ```
 
 **Methodology**:
-- **Counterfactual deletion**: Excise the reflection span and re-generate the continuation under **deterministic decoding** (greedy or fixed seed) to isolate the reflection effect from sampling variance.
+- **Structure-preserving masking**: Replace the reflection span payload with length-matched mask content and re-generate the continuation under **deterministic decoding** (greedy or fixed seed) to estimate intervention-sensitive influence while preserving layout.
 - **Reflection masking**: Ablation of specific reflection sub-spans.
 - **Trajectory replay with fixed randomness**: Ensure outcome differences are attributable to the reflection intervention, not stochasticity.
 - **Intervention-based evaluation**: Compare outcome distributions across intervention conditions.
@@ -193,13 +196,13 @@ Counterfactual utility labels derived from Direction A's intervention engine, yi
 
 ### Direction C — Counterfactual Reflection Replay
 
-**Goal**: Construct a lightweight causal simulator for reflective cognition by replaying trajectories under modified reflection conditions.
+**Goal**: Construct a lightweight replay testbed for reflective cognition by replaying trajectories under modified reflection conditions.
 
 **Intervention Types**:
 
 | Intervention | Description | Purpose |
 |--------------|-------------|---------|
-| **Removal** | Excise reflection and regenerate continuation | Baseline utility estimation |
+| **Masking** | Replace reflection payload with length-matched masks and regenerate continuation | Baseline utility estimation |
 | **Replacement** | Substitute with alternative reflection content | Test content sensitivity |
 | **Injection** | Insert reflection where none occurred | Test necessity of reflection timing |
 | **Reordering** | Permute sequence of multiple reflections | Test ordering effects |
@@ -212,7 +215,7 @@ Counterfactual utility labels derived from Direction A's intervention engine, yi
 - Trajectory divergence (structural similarity of continuations).
 
 **Value**:  
-This becomes a **causal testbed** for reflective cognition, enabling offline evaluation of reflection policies without online RL risks.
+This becomes an **intervention-sensitive testbed** for reflective cognition, enabling offline evaluation of reflection policies without online RL risks.
 
 ---
 
@@ -241,9 +244,9 @@ Reflection can be:
 CoT -> Reflection -> Continue -> Final Answer
 ```
 
-**Counterfactual (Deletion)**:
+**Counterfactual (Masking)**:
 ```
-CoT -> [EXCISE REFLECTION] -> Continue Generation -> Final Answer
+CoT -> [MASK REFLECTION PAYLOAD] -> Continue Generation -> Final Answer
 ```
 
 **Alternative Interventions**:
@@ -300,18 +303,18 @@ For tasks where reflection is necessary (e.g., hard MATH problems), define **rel
 U_rel(rho_t) = R(tau_with rho_t) - R(tau_with rho_minimal)
 ```
 
-### 7.3 Average Treatment Effect (ATE)
+### 7.3 Task-Conditioned Functional Contrast
 
-Reflection as a binary intervention variable:
+Reflection as an observable intervention target:
 
 ```
-ATE_R = E[Y | do(R=1), X] - E[Y | do(R=0), X]
+C_R(D) = E[Y | masked or replaced reflection, X in D] - E[Y | original reflection, X in D]
 ```
 
-**Interpretation**: Average causal effect of reflection, conditional on task context X.
+**Interpretation**: Distribution-conditioned functional contrast for a specified task distribution D and replay protocol.
 
-**Identification Strategy**:  
-Under the deterministic replay protocol, the counterfactual Y_{do(R=0)} is observed directly by excision and regeneration, yielding a **direct causal contrast** without requiring ignorability assumptions—provided the reflection span is well-defined and excision preserves syntactic coherence.
+**Estimation Strategy**:
+Under the deterministic replay protocol, the intervened outcome is measured by structure-preserving masking or replacement and regeneration. This yields an intervention-sensitive contrast, not an identified effect in a formal causal model.
 
 ---
 
@@ -362,7 +365,7 @@ We explicitly study **harmful reflection behavior** as a first-class research ob
 
 ### 9.1 Taxonomy of Harmful Reflection
 
-| Failure Mode | Description | Causal Signature |
+| Failure Mode | Description | Functional Signature |
 |--------------|-------------|----------------|
 | **Reflection Amplification** | Reflection strengthens existing hallucinations | U(rho) << 0 with high confidence in incorrect answer |
 | **False Confidence** | Incorrect reasoning becomes more confident after reflection | Confidence increase paired with accuracy decrease |
@@ -392,7 +395,7 @@ This project intentionally prioritizes:
 | Small-model compatibility | 7B-14B parameter models |
 | Lightweight iteration | 2-3 week milestones, rapid hypothesis testing |
 
-**This is a deliberate research choice**, not a resource limitation. We trade scale for causal rigor and interpretability.
+**This is a deliberate research choice**, not a resource limitation. We trade scale for operational rigor and interpretability.
 
 ---
 
@@ -415,7 +418,7 @@ This project intentionally prioritizes:
 |--------|--------|---------|-------------|
 | Accuracy Gain | Delta Acc | Task improvement | Correctness rate delta |
 | Token Efficiency | U / Tok | Utility per token | U(rho) / len(rho) |
-| Reflection Utility | U(rho) | Causal contribution | Counterfactual reward difference |
+| Reflection Utility | U(rho) | Local functional contribution | Counterfactual reward difference |
 | Stability | sigma_replay | Rerun consistency | Std. dev. of outcomes across fixed seeds |
 | Recovery Rate | P(repair) | Failure correction | P(correct_post | incorrect_pre) |
 | Harmful Reflection Rate | P(U < -epsilon) | Negative utility frequency | Proportion of harmful reflections |
@@ -526,7 +529,7 @@ delta = evaluate(modified) - evaluate(original)
 
 | Day | Task | Deliverable |
 |-----|------|-------------|
-| 1-2 | Implement deterministic excision protocol (greedy decoding, fixed seed) | Intervention engine |
+| 1-2 | Implement deterministic masking protocol (greedy decoding, fixed seed) | Intervention engine |
 | 3-4 | Run counterfactual deletion on 1K trajectories | Utility scores |
 | 5 | Compute utility distributions by type and domain | Statistics tables |
 | 6 | Generate case studies (5 positive, 5 harmful, 5 neutral) | Qualitative analysis |
@@ -561,10 +564,10 @@ delta = evaluate(modified) - evaluate(original)
 - AAAI Symposium on Cognitive Systems.
 
 **Focus**:  
-Empirical causal analysis of reflection utility; lightweight intervention framework; case studies of harmful reflection.
+Empirical intervention-sensitive analysis of reflection utility; lightweight intervention framework; case studies of harmful reflection.
 
 **Suggested Title**:  
-*"Functional Metacognitive Attribution: Which Reflections Causally Improve LLM Reasoning?"*
+*"Functional Metacognitive Attribution: Which Reflections Improve LLM Reasoning Under Perturbation?"*
 
 ### 14.2 Strong Follow-Up (Post-MVP)
 
@@ -586,8 +589,8 @@ Empirical causal analysis of reflection utility; lightweight intervention framew
 |------|-------|-------------------|
 | DeepSeek-R1 / o1-style reasoning | Long-chain deliberation | We attribute utility *per reflection*, not aggregate chain quality |
 | Process Reward Models (PRM) | Step-level correctness | We score *reflection functional utility*, not just step correctness |
-| Self-Correction literature | Iterative refinement | We use counterfactual deletion to establish causality, not just correlation |
-| Reflexion / Self-Refine | Global reflection optimization | We operate at the intervention level with causal contrast |
+| Self-Correction literature | Iterative refinement | We use structure-preserving perturbation to estimate functional influence, not just correlation |
+| Reflexion / Self-Refine | Global reflection optimization | We operate at the intervention level with replay contrasts |
 | Cognitive architectures | Agent metacognition | We remain lightweight (7B, offline) rather than system-level |
 
 **Positioning Statement**:  
@@ -603,7 +606,7 @@ We are not proposing "better reflection generation." We are proposing **better r
 | **Low** | Utility estimation pipeline | Modular Python; deterministic decoding ensures reproducibility. |
 | **Medium** | Reflection span boundary detection | Rule-based segmentation (tag-based) + classifier validation; manual audit on 200-sample subset. |
 | **Medium** | Excision-induced coherence collapse | Fallback to "replacement" intervention if removal breaks syntax; report coherence-break rate. |
-| **Medium** | Causal interpretation stability | Report effect sizes across multiple fixed seeds; permutation test for significance. |
+| **Medium** | Interpretation stability | Report effect sizes across multiple fixed seeds; permutation test for significance. |
 | **Medium** | Reflection PRM generalization | Train on diverse task mix; evaluate zero-shot on held-out domains. |
 | **High** | Full online RL integration | **Avoid in MVP**. Stay offline and intervention-based. |
 | **High** | "Any reflection helps" degeneracy | Use marginal utility U_rel against minimal baseline on hard tasks. |
@@ -622,12 +625,48 @@ with optional extension into:
 
 **Avoid initially**:
 - Full RL systems (PPO, GRPO at scale),
-- Complex causal graph theory (latent variable models),
+- Complex latent-variable graph theory,
 - Multi-agent reflection coordination,
 - Giant benchmark ecosystems (full SWE-bench, WebShop at scale).
 
 **Closing Argument**:  
-The lightweight intervention-analysis framing is already sufficiently novel for a strong first paper. The core insight—that reflection utility is heterogeneous and attributable via causal intervention—challenges the implicit "more is better" assumption in current reasoning models and opens a principled path toward token-efficient, error-aware metacognition.
+The lightweight intervention-analysis framing is already sufficiently novel for a strong first paper. The core insight-that reflection utility is heterogeneous and measurable through controlled perturbation-challenges the implicit "more is better" assumption in current reasoning models and opens a principled path toward token-efficient, error-aware metacognition.
+
+---
+
+## 18. Real-Task Pilot Readiness Layer
+
+This layer tests whether the framework can move beyond stored synthetic traces without weakening provenance.
+
+### 18.1 Guarded Preflight
+
+- Primary model: `gpt-5.5`, selected only after live Responses API preflight confirms access.
+- Fallback order and JSON mode fallback are configured in `configs/real_task_pilot.yaml`.
+- Required API metadata: endpoint, structured output mode, reasoning effort, seed, `system_fingerprint`, SDK version, API date, service tier, and usage tokens.
+- Schema gate: first 20 traces must have JSON parse success and `<reflection>` tag extraction success at or above 95 percent.
+- Drift gate: the same prompt and seed called three times must have token-level output difference below 5 percent; otherwise non-full determinism is disclosed.
+- Cost gate: full pilot cannot run while `user_approved_budget_usd` is unset.
+
+### 18.2 Real-Task Pilot Artifacts
+
+- `outputs/real_task_pilot/api_preflight_report.json`
+- `outputs/real_task_pilot/schema_compliance_report.json`
+- `outputs/real_task_pilot/determinism_drift_report.json`
+- `outputs/real_task_pilot/cost_and_rate_limit_report.json`
+- `outputs/real_task_pilot/sample_manifest.json`
+- `outputs/real_task_pilot/preflight_traces.jsonl`
+- `outputs/real_task_pilot/generation_fallback_report.json`
+- `outputs/real_task_pilot/replay_prefixes.jsonl`
+- `outputs/real_task_pilot/real_task_delta_u.jsonl`
+- `outputs/real_task_pilot/independent_baseline_scores.jsonl`
+- `outputs/real_task_pilot/baseline_leakage_audit.json`
+- `outputs/real_task_pilot/trajectory_controls_report.json`
+- `outputs/real_task_pilot/hygiene_audit.md`
+- `outputs/real_task_pilot/readiness_audit.json`
+
+### 18.3 Readiness Rule
+
+`PILOT_PASS` requires preflight pass, at least 300 valid traces, span validity at least 90 percent, replay success at least 85 percent, clean baseline leakage audit, complete cost report, passing tests, and clean hygiene scan. Expansion toward top-tier scale requires task-level Spearman CI lower bound above zero, or pooled CI lower bound above zero plus at least one independently passing task.
 
 ---
 
@@ -637,8 +676,8 @@ The lightweight intervention-analysis framing is already sufficiently novel for 
 |------|------------|
 | **Reflection span** | A contiguous token sequence explicitly performing self-critique, verification, or reconsideration. |
 | **Deterministic replay** | Regeneration under identical conditions (fixed seed, greedy decoding) after structural modification. |
-| **Harmful reflection** | A reflection whose excision improves downstream reward (U(rho) < -epsilon). |
+| **Harmful reflection** | A reflection whose masking or replacement improves downstream reward (U(rho) < -epsilon). |
 | **Reflection PRM** | A process reward model trained to predict the functional utility of a reflection given local context. |
-| **ATE** | Average Treatment Effect; expected outcome difference between intervention and control. |
+| **Functional contrast** | Expected outcome difference between original and intervened observable traces under a fixed task distribution. |
 | **Marginal utility** | Utility relative to a minimal-reflection baseline, used on tasks where reflection is necessary. |
-| **Coherence collapse** | Failure of the model to produce syntactically or semantically valid output after reflection excision. |
+| **Coherence collapse** | Failure of the model to produce syntactically or semantically valid output after reflection masking or replacement. |

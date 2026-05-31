@@ -10,3 +10,6 @@ matplotlib
 scikit-learn
 pydantic
 jsonlines
+jsonschema
+openai
+PyYAML

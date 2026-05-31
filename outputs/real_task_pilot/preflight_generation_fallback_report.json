@@ -1,0 +1,8 @@
+{
+  "fallback_events": [],
+  "invalid_records": 0,
+  "lower_confidence_records": 0,
+  "records_requested": 20,
+  "valid_rate": 1.0,
+  "valid_records": 20
+}

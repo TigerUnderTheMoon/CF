@@ -16,7 +16,7 @@ Process Reward Models (PRMs) [PRM_PLACEHOLDER] provide step-level supervision fo
 
 The comparison has three dimensions. Supervision target: PRMs often score step correctness or process quality, while this framework reports `attribution_score` and `structural_necessity` proxies. Training status: this paper does not introduce a learned model. Claim scope: PRM scores can guide downstream systems, but they do not by themselves establish sparse bottlenecks, weak compensation, or topology-sensitive dependence.
 
-This distinction also keeps the paper from being framed as generic PRM tuning. The empirical observations are stored deterministic outputs, not labels for a new reward model. A future direction could use the proxy quantities as supervision signals, but that would be a separate modeling contribution.
+This distinction also keeps the paper from being framed as a reward-model tuning exercise. The empirical observations are stored deterministic outputs, not labels for a new reward model. A future direction could use the proxy quantities as supervision signals, but that would be a separate modeling contribution.
 
 ## Counterfactual and Intervention-Based Analysis
 

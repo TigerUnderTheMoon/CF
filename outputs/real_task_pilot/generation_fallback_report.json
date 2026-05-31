@@ -1,0 +1,17 @@
+{
+  "fallback_events": [
+    {
+      "model_name": "gpt-5.5",
+      "status": "invalid_output",
+      "structured_output_mode": "json_schema",
+      "validation_errors": [
+        "<root>: response is not a JSON object"
+      ]
+    }
+  ],
+  "invalid_records": 0,
+  "lower_confidence_records": 0,
+  "records_requested": 20,
+  "valid_rate": 1.0,
+  "valid_records": 20
+}

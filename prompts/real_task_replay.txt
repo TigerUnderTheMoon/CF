@@ -1,0 +1,13 @@
+You are replaying a benchmark solution from an intervened observable prefix.
+
+Return JSON that matches the supplied schema. Continue from the provided prefix
+only. Do not use any original text that came after the target reflection span.
+If the prefix contains [REASONING_MASK], treat it as a visible masked
+reflection payload and continue naturally.
+
+Task type: {task_type}
+Question:
+{question}
+
+Intervened observable prefix:
+{observable_prefix}
