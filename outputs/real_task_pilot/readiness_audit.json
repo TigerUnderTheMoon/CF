@@ -1,22 +1,211 @@
 {
+  "artifact_coverage": {
+    "baseline": {
+      "artifact": "baseline",
+      "coverage_pass": true,
+      "expected_count": 382,
+      "extra_count": 0,
+      "extra_preview": [],
+      "missing_count": 0,
+      "missing_preview": [],
+      "observed_count": 382
+    },
+    "delta": {
+      "artifact": "delta",
+      "coverage_pass": false,
+      "expected_count": 382,
+      "extra_count": 2,
+      "extra_preview": [
+        {
+          "sample_id": "gsm8k-00001",
+          "span_index": 0
+        },
+        {
+          "sample_id": "hotpotqa-00001",
+          "span_index": 0
+        }
+      ],
+      "missing_count": 382,
+      "missing_preview": [
+        {
+          "sample_id": "gsm8k-00000",
+          "span_index": 0
+        },
+        {
+          "sample_id": "gsm8k-00008",
+          "span_index": 0
+        },
+        {
+          "sample_id": "gsm8k-00015",
+          "span_index": 0
+        },
+        {
+          "sample_id": "gsm8k-00023",
+          "span_index": 0
+        },
+        {
+          "sample_id": "gsm8k-00031",
+          "span_index": 0
+        },
+        {
+          "sample_id": "gsm8k-00040",
+          "span_index": 0
+        },
+        {
+          "sample_id": "gsm8k-00041",
+          "span_index": 0
+        },
+        {
+          "sample_id": "gsm8k-00048",
+          "span_index": 0
+        },
+        {
+          "sample_id": "gsm8k-00050",
+          "span_index": 0
+        },
+        {
+          "sample_id": "gsm8k-00054",
+          "span_index": 0
+        }
+      ],
+      "observed_count": 2
+    },
+    "rank_signal": {
+      "artifact": "rank_signal",
+      "coverage_pass": false,
+      "expected_count": 382,
+      "extra_count": 0,
+      "extra_preview": [],
+      "missing_count": 382,
+      "missing_preview": [
+        {
+          "sample_id": "gsm8k-00000",
+          "span_index": 0,
+          "task_type": "gsm8k"
+        },
+        {
+          "sample_id": "gsm8k-00008",
+          "span_index": 0,
+          "task_type": "gsm8k"
+        },
+        {
+          "sample_id": "gsm8k-00015",
+          "span_index": 0,
+          "task_type": "gsm8k"
+        },
+        {
+          "sample_id": "gsm8k-00023",
+          "span_index": 0,
+          "task_type": "gsm8k"
+        },
+        {
+          "sample_id": "gsm8k-00031",
+          "span_index": 0,
+          "task_type": "gsm8k"
+        },
+        {
+          "sample_id": "gsm8k-00040",
+          "span_index": 0,
+          "task_type": "gsm8k"
+        },
+        {
+          "sample_id": "gsm8k-00041",
+          "span_index": 0,
+          "task_type": "gsm8k"
+        },
+        {
+          "sample_id": "gsm8k-00048",
+          "span_index": 0,
+          "task_type": "gsm8k"
+        },
+        {
+          "sample_id": "gsm8k-00050",
+          "span_index": 0,
+          "task_type": "gsm8k"
+        },
+        {
+          "sample_id": "gsm8k-00054",
+          "span_index": 0,
+          "task_type": "gsm8k"
+        }
+      ],
+      "observed_count": 0
+    },
+    "replay": {
+      "artifact": "replay",
+      "coverage_pass": false,
+      "expected_count": 382,
+      "extra_count": 0,
+      "extra_preview": [],
+      "missing_count": 382,
+      "missing_preview": [
+        {
+          "sample_id": "gsm8k-00000",
+          "span_index": 0
+        },
+        {
+          "sample_id": "gsm8k-00008",
+          "span_index": 0
+        },
+        {
+          "sample_id": "gsm8k-00015",
+          "span_index": 0
+        },
+        {
+          "sample_id": "gsm8k-00023",
+          "span_index": 0
+        },
+        {
+          "sample_id": "gsm8k-00031",
+          "span_index": 0
+        },
+        {
+          "sample_id": "gsm8k-00040",
+          "span_index": 0
+        },
+        {
+          "sample_id": "gsm8k-00041",
+          "span_index": 0
+        },
+        {
+          "sample_id": "gsm8k-00048",
+          "span_index": 0
+        },
+        {
+          "sample_id": "gsm8k-00050",
+          "span_index": 0
+        },
+        {
+          "sample_id": "gsm8k-00054",
+          "span_index": 0
+        }
+      ],
+      "observed_count": 0
+    }
+  },
   "failure_codes": [
+    "PILOT_FAIL_COVERAGE",
+    "PILOT_FAIL_REPLAY",
     "PILOT_FAIL_SIGNAL",
-    "PILOT_FAIL_SPAN",
     "PREFLIGHT_FAIL_DRIFT"
   ],
   "gates": {
     "all_task_ci_lower_gt_zero": false,
     "at_least_one_task_pass": false,
+    "baseline_coverage": true,
     "baseline_leakage_clean": true,
     "cost_report_complete": true,
+    "delta_coverage": false,
     "expand_to_top_tier_scale": false,
     "hygiene_clean": true,
     "pooled_ci_lower_gt_zero": false,
     "preflight": false,
-    "replay_success_rate": true,
+    "rank_signal_coverage": false,
+    "replay_coverage": false,
+    "replay_success_rate": false,
     "span_validity_rate": true,
     "tests_passed": true,
-    "valid_trace_count": false
+    "valid_trace_count": true
   },
   "pilot_pass": false,
   "status": "PILOT_BLOCKED"

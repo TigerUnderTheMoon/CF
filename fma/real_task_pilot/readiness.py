@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
+from .coverage import all_coverage_passes, coverage_gates
+
 
 FAILURE_CODES = (
     "PREFLIGHT_FAIL_MODEL",
@@ -11,6 +13,7 @@ FAILURE_CODES = (
     "PREFLIGHT_FAIL_TAG",
     "PREFLIGHT_FAIL_DRIFT",
     "PREFLIGHT_FAIL_COST",
+    "PILOT_FAIL_COVERAGE",
     "PILOT_FAIL_SPAN",
     "PILOT_FAIL_REPLAY",
     "PILOT_FAIL_SIGNAL",
@@ -28,11 +31,16 @@ def build_readiness_audit(
     tests_passed: bool,
     hygiene_clean: bool,
     signal_report: Mapping[str, Any] | None = None,
+    artifact_coverage: Mapping[str, Mapping[str, Any]] | None = None,
 ) -> dict[str, Any]:
     codes = list(preflight_report.get("failure_codes", []))
     if valid_trace_count < 300 or span_validity_rate < 0.90:
         codes.append("PILOT_FAIL_SPAN")
-    if replay_success_rate < 0.85:
+    coverage_gate = coverage_gates(artifact_coverage)
+    coverage_pass = all_coverage_passes(artifact_coverage)
+    if artifact_coverage is not None and not coverage_pass:
+        codes.append("PILOT_FAIL_COVERAGE")
+    if replay_success_rate < 0.85 or not coverage_gate["replay_coverage"]:
         codes.append("PILOT_FAIL_REPLAY")
     signal_gate = _signal_gate(signal_report or {})
     if not signal_gate["expand_to_top_tier_scale"]:
@@ -51,15 +59,17 @@ def build_readiness_audit(
         "status": "PILOT_PASS" if pilot_pass else "PILOT_BLOCKED",
         "pilot_pass": pilot_pass,
         "failure_codes": unique_codes,
+        "artifact_coverage": dict(artifact_coverage or {}),
         "gates": {
             "preflight": preflight_report.get("status") == "pass",
             "valid_trace_count": valid_trace_count >= 300,
             "span_validity_rate": span_validity_rate >= 0.90,
-            "replay_success_rate": replay_success_rate >= 0.85,
+            "replay_success_rate": replay_success_rate >= 0.85 and coverage_gate["replay_coverage"],
             "baseline_leakage_clean": baseline_leakage_clean,
             "cost_report_complete": cost_report_complete,
             "tests_passed": tests_passed,
             "hygiene_clean": hygiene_clean,
+            **coverage_gate,
             **signal_gate,
         },
     }

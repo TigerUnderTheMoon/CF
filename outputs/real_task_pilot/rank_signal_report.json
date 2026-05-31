@@ -1,0 +1,139 @@
+{
+  "baseline_diagnostics": {
+    "question_difficulty_proxy": {
+      "n": 0,
+      "spearman_ci95": [
+        0.0,
+        0.0
+      ],
+      "spearman_ci_lower_gt_zero": false,
+      "spearman_rho": 0.0,
+      "used_as_primary_signal": false
+    },
+    "random": {
+      "n": 0,
+      "spearman_ci95": [
+        0.0,
+        0.0
+      ],
+      "spearman_ci_lower_gt_zero": false,
+      "spearman_rho": 0.0,
+      "used_as_primary_signal": false
+    },
+    "relative_position": {
+      "n": 0,
+      "spearman_ci95": [
+        0.0,
+        0.0
+      ],
+      "spearman_ci_lower_gt_zero": false,
+      "spearman_rho": 0.0,
+      "used_as_primary_signal": false
+    },
+    "span_length": {
+      "n": 0,
+      "spearman_ci95": [
+        0.0,
+        0.0
+      ],
+      "spearman_ci_lower_gt_zero": false,
+      "spearman_rho": 0.0,
+      "used_as_primary_signal": false
+    },
+    "taxonomy_prior": {
+      "n": 0,
+      "spearman_ci95": [
+        0.0,
+        0.0
+      ],
+      "spearman_ci_lower_gt_zero": false,
+      "spearman_rho": 0.0,
+      "used_as_primary_signal": false
+    },
+    "uniform_reflection_weight": {
+      "n": 0,
+      "spearman_ci95": [
+        0.0,
+        0.0
+      ],
+      "spearman_ci_lower_gt_zero": false,
+      "spearman_rho": 0.0,
+      "used_as_primary_signal": false
+    }
+  },
+  "bootstrap": {
+    "confidence_level": 0.95,
+    "random_seed": 20260530,
+    "resamples": 10000
+  },
+  "coverage": {
+    "artifact": "rank_signal",
+    "coverage_pass": false,
+    "expected_count": 382,
+    "extra_count": 0,
+    "extra_preview": [],
+    "missing_count": 382,
+    "missing_preview": [
+      {
+        "sample_id": "gsm8k-00000",
+        "span_index": 0
+      },
+      {
+        "sample_id": "gsm8k-00008",
+        "span_index": 0
+      },
+      {
+        "sample_id": "gsm8k-00015",
+        "span_index": 0
+      },
+      {
+        "sample_id": "gsm8k-00023",
+        "span_index": 0
+      },
+      {
+        "sample_id": "gsm8k-00031",
+        "span_index": 0
+      },
+      {
+        "sample_id": "gsm8k-00040",
+        "span_index": 0
+      },
+      {
+        "sample_id": "gsm8k-00041",
+        "span_index": 0
+      },
+      {
+        "sample_id": "gsm8k-00048",
+        "span_index": 0
+      },
+      {
+        "sample_id": "gsm8k-00050",
+        "span_index": 0
+      },
+      {
+        "sample_id": "gsm8k-00054",
+        "span_index": 0
+      }
+    ],
+    "observed_count": 0
+  },
+  "per_task": {
+    "gsm8k": {
+      "reason": "primary candidate score missing",
+      "spearman_ci_lower_gt_zero": false
+    },
+    "hotpotqa": {
+      "reason": "primary candidate score missing",
+      "spearman_ci_lower_gt_zero": false
+    }
+  },
+  "pooled": {
+    "reason": "primary candidate score missing",
+    "spearman_ci_lower_gt_zero": false
+  },
+  "primary_signal": {
+    "available": false,
+    "name": "structurally_calibrated_fma",
+    "reason": "no structurally calibrated real-task candidate score artifact is present"
+  }
+}

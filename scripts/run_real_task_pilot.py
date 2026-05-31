@@ -14,6 +14,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from fma.io import load_records, write_records
 from fma.real_task_pilot.baselines import build_baseline_leakage_audit, score_independent_baselines
+from fma.real_task_pilot.coverage import audit_key_coverage, expected_span_keys
 from fma.real_task_pilot.config import load_pilot_config, output_dir
 from fma.real_task_pilot.controls import control_report_skeleton
 from fma.real_task_pilot.hygiene import candidate_files, render_hygiene_markdown, scan_hygiene
@@ -31,7 +32,12 @@ from fma.real_task_pilot.protocol import (
     protocol_allows_generation,
 )
 from fma.real_task_pilot.readiness import build_readiness_audit
-from fma.real_task_pilot.replay import build_replay_prefix, compute_delta_u
+from fma.real_task_pilot.replay import (
+    aggregate_delta_u_by_span,
+    build_replay_prefix,
+    missing_replay_jobs,
+)
+from fma.real_task_pilot.signal import build_bootstrap_ci_report, build_rank_signal_report
 from fma.real_task_pilot.sampling import (
     build_sample_manifest,
     normalize_real_task_source_row,
@@ -50,7 +56,9 @@ STAGES = (
     "api-pilot",
     "preflight-eval",
     "replay-prefixes",
+    "repeated-replay",
     "delta-u",
+    "rank-signal",
     "baselines",
     "controls",
     "readiness",
@@ -327,20 +335,43 @@ def main() -> None:
         print(f"Wrote {len(prefixes)} replay prefixes to {root / 'replay_prefixes.jsonl'}")
         return
 
+    if args.stage == "repeated-replay":
+        if not args.allow_api:
+            raise RuntimeError("stage 'repeated-replay' requires --allow-api to prevent accidental API spend.")
+        adapter = OpenAIResponsesAdapter()
+        prompt_template = load_prompt_template(config["replay"]["prompt_file"])
+        repeats = int(
+            config.get("nondeterministic_protocol", {})
+            .get("repeats", {})
+            .get("replay_per_span", 3)
+        )
+        existing_attempts = _load_existing_records(root / "repeated_replay_attempts.jsonl")
+        existing_results = _load_existing_records(root / "real_task_replay_results.jsonl")
+        jobs = missing_replay_jobs(records, existing_attempts + existing_results, repeats=repeats)
+        for job in jobs:
+            result = generate_trace_with_fallback(
+                job,
+                adapter=adapter,
+                config=config,
+                prompt_template=prompt_template,
+            )
+            attempt = _replay_attempt_payload(job, result)
+            existing_attempts.append(attempt)
+            if result.record is not None:
+                existing_results.append(_replay_result_payload(job, result))
+                existing_results = _dedupe_replay_rows(existing_results)
+            write_records(existing_attempts, root / "repeated_replay_attempts.jsonl")
+            write_records(existing_results, root / "real_task_replay_results.jsonl")
+        print(
+            f"Wrote {len(existing_results)} replay results and {len(existing_attempts)} replay attempts to {root}"
+        )
+        return
+
     if args.stage == "delta-u":
         if args.intervened_input is None:
             raise ValueError("--intervened-input is required for stage 'delta-u'.")
         intervened_records = load_records(args.intervened_input)
-        original_by_id = {str(record.get("sample_id")): record for record in records}
-        deltas = []
-        for intervened in intervened_records:
-            sample_id = str(intervened.get("sample_id"))
-            if sample_id not in original_by_id:
-                continue
-            delta = compute_delta_u(original_by_id[sample_id], intervened)
-            if "span_index" in intervened:
-                delta["span_index"] = intervened["span_index"]
-            deltas.append(delta)
+        deltas = aggregate_delta_u_by_span(records, intervened_records)
         write_records(deltas, root / "real_task_delta_u.jsonl")
         print(f"Wrote {len(deltas)} Delta U rows to {root / 'real_task_delta_u.jsonl'}")
         return
@@ -351,6 +382,20 @@ def main() -> None:
         write_records(rows, root / "independent_baseline_scores.jsonl")
         write_json(root / "baseline_leakage_audit.json", audit)
         print(f"Wrote {len(rows)} baseline scores to {root}")
+        return
+
+    if args.stage == "rank-signal":
+        delta_rows = _load_existing_records(root / "real_task_delta_u.jsonl")
+        baseline_rows = _load_existing_records(root / "independent_baseline_scores.jsonl")
+        report = build_rank_signal_report(
+            records,
+            delta_rows=delta_rows,
+            baseline_rows=baseline_rows,
+            config=config,
+        )
+        write_json(root / "rank_signal_report.json", report)
+        write_json(root / "bootstrap_ci_report.json", build_bootstrap_ci_report(report))
+        print(f"Wrote rank-signal diagnostics to {root / 'rank_signal_report.json'}")
         return
 
     if args.stage == "controls":
@@ -364,9 +409,25 @@ def main() -> None:
         baseline_audit = _read_json(root / "baseline_leakage_audit.json", default={"target_leakage_status": "missing"})
         cost_report = _read_json(root / "cost_and_rate_limit_report.json", default={})
         signal_report = _read_json(root / "rank_signal_report.json", default={})
+        max_spans = int(config.get("replay", {}).get("max_spans_per_trace", 3))
+        expected_keys = expected_span_keys(records, max_spans_per_trace=max_spans)
+        replay_rows = _load_existing_records(root / "real_task_replay_results.jsonl")
+        delta_rows = _load_existing_records(root / "real_task_delta_u.jsonl")
+        baseline_rows = _load_existing_records(root / "independent_baseline_scores.jsonl")
+        artifact_coverage = {
+            "replay": audit_key_coverage(
+                expected_keys,
+                replay_rows,
+                artifact_name="replay",
+                success_statuses={"success", "replayed"},
+            ),
+            "delta": audit_key_coverage(expected_keys, delta_rows, artifact_name="delta"),
+            "baseline": audit_key_coverage(expected_keys, baseline_rows, artifact_name="baseline"),
+            "rank_signal": _rank_signal_coverage(expected_keys, signal_report),
+        }
         valid_trace_count = len(records)
         span_validity_rate = _span_validity_rate(records)
-        replay_success_rate = _replay_success_rate(root)
+        replay_success_rate = _replay_success_rate(replay_rows, expected_keys)
         audit = build_readiness_audit(
             preflight_report=preflight_report,
             valid_trace_count=valid_trace_count,
@@ -377,6 +438,7 @@ def main() -> None:
             tests_passed=args.tests_passed,
             hygiene_clean=bool(hygiene_report.get("hygiene_clean")),
             signal_report=signal_report,
+            artifact_coverage=artifact_coverage,
         )
         write_json(root / "readiness_audit.json", audit)
         print(f"Wrote readiness audit to {root / 'readiness_audit.json'}; status={audit['status']}")
@@ -648,6 +710,57 @@ def _merge_generation_summary(
     }
 
 
+def _replay_attempt_payload(
+    job: dict[str, Any],
+    result: GeneratedTraceResult,
+) -> dict[str, Any]:
+    status = "success" if result.record is not None else "failed"
+    return {
+        "sample_id": job.get("sample_id"),
+        "task_type": job.get("task_type"),
+        "span_index": int(job.get("span_index", 0) or 0),
+        "repeat_index": int(job.get("repeat_index", 0) or 0),
+        "status": status,
+        "record": result.record,
+        "raw_output": result.raw_output,
+        "usage": result.usage,
+        "model_name": result.model_name,
+        "system_fingerprint": result.system_fingerprint,
+        "validation_errors": list(result.validation_errors),
+    }
+
+
+def _replay_result_payload(
+    job: dict[str, Any],
+    result: GeneratedTraceResult,
+) -> dict[str, Any]:
+    record = dict(result.record or {})
+    record.update(
+        {
+            "sample_id": job.get("sample_id"),
+            "task_type": job.get("task_type"),
+            "span_index": int(job.get("span_index", 0) or 0),
+            "repeat_index": int(job.get("repeat_index", 0) or 0),
+            "status": "success",
+            "intervention_type": job.get("intervention_type", "api_length_preserving_masked_prefix"),
+            "target_span": job.get("target_span"),
+        }
+    )
+    return record
+
+
+def _dedupe_replay_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    by_key: dict[tuple[str, int, int], dict[str, Any]] = {}
+    for row in rows:
+        key = (
+            str(row.get("sample_id") or ""),
+            int(row.get("span_index", 0) or 0),
+            int(row.get("repeat_index", 0) or 0),
+        )
+        by_key[key] = row
+    return [by_key[key] for key in sorted(by_key)]
+
+
 def _seed_transport_report(results: list[Any]) -> dict[str, Any]:
     metadata = [
         result.record.get("generation_config", {}).get("api_request_metadata", {})
@@ -689,21 +802,45 @@ def _span_validity_rate(records: list[dict[str, Any]]) -> float:
     return valid / len(records)
 
 
-def _replay_success_rate(root: Path) -> float:
-    replay_path = root / "real_task_replay_results.jsonl"
-    delta_path = root / "real_task_delta_u.jsonl"
-    if replay_path.exists():
-        rows = load_records(replay_path)
-        if not rows:
-            return 0.0
-        successes = sum(1 for row in rows if row.get("status") in {"success", "replayed"})
-        return successes / len(rows)
-    if not delta_path.exists():
+def _rank_signal_coverage(
+    expected_keys: list[dict[str, Any]],
+    signal_report: dict[str, Any],
+) -> dict[str, Any]:
+    coverage = dict(signal_report.get("coverage") or {})
+    if (
+        coverage.get("coverage_pass") is True
+        and int(coverage.get("expected_count", -1)) == len(expected_keys)
+    ):
+        coverage["artifact"] = "rank_signal"
+        return coverage
+    return {
+        "artifact": "rank_signal",
+        "coverage_pass": False,
+        "expected_count": len(expected_keys),
+        "observed_count": int(coverage.get("observed_count", 0) or 0),
+        "missing_count": len(expected_keys),
+        "extra_count": 0,
+        "missing_preview": expected_keys[:10],
+        "extra_preview": [],
+    }
+
+
+def _replay_success_rate(
+    replay_rows: list[dict[str, Any]],
+    expected_keys: list[dict[str, Any]],
+) -> float:
+    if not expected_keys:
         return 0.0
-    rows = load_records(delta_path)
-    if not rows:
-        return 0.0
-    return 1.0
+    expected = {
+        (str(row.get("sample_id") or ""), int(row.get("span_index", 0) or 0))
+        for row in expected_keys
+    }
+    successes = {
+        (str(row.get("sample_id") or ""), int(row.get("span_index", 0) or 0))
+        for row in replay_rows
+        if row.get("status") in {"success", "replayed"}
+    }
+    return len(expected.intersection(successes)) / len(expected)
 
 
 if __name__ == "__main__":

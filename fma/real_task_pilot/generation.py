@@ -40,8 +40,11 @@ class GeneratedTraceResult:
 
 def build_generation_prompt(template: str, sample: Mapping[str, Any]) -> str:
     return template.format(
+        sample_id=sample.get("sample_id", ""),
         task_type=sample.get("task_type", ""),
         question=sample.get("question", ""),
+        reference_answer=sample.get("reference_answer", ""),
+        observable_prefix=sample.get("observable_prefix", ""),
     )
 
 
