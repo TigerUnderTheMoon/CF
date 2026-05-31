@@ -1,2 +1,6 @@
-{"delta_u": 1.0, "intervened_score": 0.0, "metric": "exact_match", "original_score": 1.0, "sample_id": "gsm8k-00001", "span_index": 0, "task_type": "gsm8k"}
-{"delta_u": 0.0, "intervened_score": 1.0, "metric": "exact_match", "original_score": 1.0, "sample_id": "hotpotqa-00001", "span_index": 0, "task_type": "hotpotqa"}
+{"delta_u": 0.0, "intervened_mean_score": 1.0, "metric": "exact_match", "original_score": 1.0, "repeat_count": 3, "sample_id": "gsm8k-00000", "span_index": 0, "successful_repeats": 3, "task_type": "gsm8k"}
+{"delta_u": 0.0, "intervened_mean_score": 1.0, "metric": "exact_match", "original_score": 1.0, "repeat_count": 3, "sample_id": "gsm8k-00008", "span_index": 0, "successful_repeats": 3, "task_type": "gsm8k"}
+{"delta_u": 0.0, "intervened_mean_score": 1.0, "metric": "exact_match", "original_score": 1.0, "repeat_count": 3, "sample_id": "gsm8k-00015", "span_index": 0, "successful_repeats": 3, "task_type": "gsm8k"}
+{"delta_u": 0.0, "intervened_mean_score": 1.0, "metric": "exact_match", "original_score": 1.0, "repeat_count": 3, "sample_id": "gsm8k-00023", "span_index": 0, "successful_repeats": 3, "task_type": "gsm8k"}
+{"delta_u": 0.0, "intervened_mean_score": 1.0, "metric": "exact_match", "original_score": 1.0, "repeat_count": 3, "sample_id": "gsm8k-00031", "span_index": 0, "successful_repeats": 3, "task_type": "gsm8k"}
+{"delta_u": 0.0, "intervened_mean_score": 1.0, "metric": "exact_match", "original_score": 1.0, "repeat_count": 2, "sample_id": "gsm8k-00040", "span_index": 0, "successful_repeats": 2, "task_type": "gsm8k"}

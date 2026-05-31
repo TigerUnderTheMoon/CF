@@ -14,43 +14,10 @@
       "artifact": "delta",
       "coverage_pass": false,
       "expected_count": 382,
-      "extra_count": 2,
-      "extra_preview": [
-        {
-          "sample_id": "gsm8k-00001",
-          "span_index": 0
-        },
-        {
-          "sample_id": "hotpotqa-00001",
-          "span_index": 0
-        }
-      ],
-      "missing_count": 382,
+      "extra_count": 0,
+      "extra_preview": [],
+      "missing_count": 376,
       "missing_preview": [
-        {
-          "sample_id": "gsm8k-00000",
-          "span_index": 0
-        },
-        {
-          "sample_id": "gsm8k-00008",
-          "span_index": 0
-        },
-        {
-          "sample_id": "gsm8k-00015",
-          "span_index": 0
-        },
-        {
-          "sample_id": "gsm8k-00023",
-          "span_index": 0
-        },
-        {
-          "sample_id": "gsm8k-00031",
-          "span_index": 0
-        },
-        {
-          "sample_id": "gsm8k-00040",
-          "span_index": 0
-        },
         {
           "sample_id": "gsm8k-00041",
           "span_index": 0
@@ -66,9 +33,33 @@
         {
           "sample_id": "gsm8k-00054",
           "span_index": 0
+        },
+        {
+          "sample_id": "gsm8k-00058",
+          "span_index": 0
+        },
+        {
+          "sample_id": "gsm8k-00065",
+          "span_index": 0
+        },
+        {
+          "sample_id": "gsm8k-00068",
+          "span_index": 0
+        },
+        {
+          "sample_id": "gsm8k-00069",
+          "span_index": 0
+        },
+        {
+          "sample_id": "gsm8k-00073",
+          "span_index": 0
+        },
+        {
+          "sample_id": "gsm8k-00077",
+          "span_index": 0
         }
       ],
-      "observed_count": 2
+      "observed_count": 6
     },
     "rank_signal": {
       "artifact": "rank_signal",
@@ -76,60 +67,50 @@
       "expected_count": 382,
       "extra_count": 0,
       "extra_preview": [],
-      "missing_count": 382,
+      "missing_count": 376,
       "missing_preview": [
         {
-          "sample_id": "gsm8k-00000",
-          "span_index": 0,
-          "task_type": "gsm8k"
-        },
-        {
-          "sample_id": "gsm8k-00008",
-          "span_index": 0,
-          "task_type": "gsm8k"
-        },
-        {
-          "sample_id": "gsm8k-00015",
-          "span_index": 0,
-          "task_type": "gsm8k"
-        },
-        {
-          "sample_id": "gsm8k-00023",
-          "span_index": 0,
-          "task_type": "gsm8k"
-        },
-        {
-          "sample_id": "gsm8k-00031",
-          "span_index": 0,
-          "task_type": "gsm8k"
-        },
-        {
-          "sample_id": "gsm8k-00040",
-          "span_index": 0,
-          "task_type": "gsm8k"
-        },
-        {
           "sample_id": "gsm8k-00041",
-          "span_index": 0,
-          "task_type": "gsm8k"
+          "span_index": 0
         },
         {
           "sample_id": "gsm8k-00048",
-          "span_index": 0,
-          "task_type": "gsm8k"
+          "span_index": 0
         },
         {
           "sample_id": "gsm8k-00050",
-          "span_index": 0,
-          "task_type": "gsm8k"
+          "span_index": 0
         },
         {
           "sample_id": "gsm8k-00054",
-          "span_index": 0,
-          "task_type": "gsm8k"
+          "span_index": 0
+        },
+        {
+          "sample_id": "gsm8k-00058",
+          "span_index": 0
+        },
+        {
+          "sample_id": "gsm8k-00065",
+          "span_index": 0
+        },
+        {
+          "sample_id": "gsm8k-00068",
+          "span_index": 0
+        },
+        {
+          "sample_id": "gsm8k-00069",
+          "span_index": 0
+        },
+        {
+          "sample_id": "gsm8k-00073",
+          "span_index": 0
+        },
+        {
+          "sample_id": "gsm8k-00077",
+          "span_index": 0
         }
       ],
-      "observed_count": 0
+      "observed_count": 6
     },
     "replay": {
       "artifact": "replay",
@@ -137,32 +118,8 @@
       "expected_count": 382,
       "extra_count": 0,
       "extra_preview": [],
-      "missing_count": 382,
+      "missing_count": 376,
       "missing_preview": [
-        {
-          "sample_id": "gsm8k-00000",
-          "span_index": 0
-        },
-        {
-          "sample_id": "gsm8k-00008",
-          "span_index": 0
-        },
-        {
-          "sample_id": "gsm8k-00015",
-          "span_index": 0
-        },
-        {
-          "sample_id": "gsm8k-00023",
-          "span_index": 0
-        },
-        {
-          "sample_id": "gsm8k-00031",
-          "span_index": 0
-        },
-        {
-          "sample_id": "gsm8k-00040",
-          "span_index": 0
-        },
         {
           "sample_id": "gsm8k-00041",
           "span_index": 0
@@ -178,9 +135,33 @@
         {
           "sample_id": "gsm8k-00054",
           "span_index": 0
+        },
+        {
+          "sample_id": "gsm8k-00058",
+          "span_index": 0
+        },
+        {
+          "sample_id": "gsm8k-00065",
+          "span_index": 0
+        },
+        {
+          "sample_id": "gsm8k-00068",
+          "span_index": 0
+        },
+        {
+          "sample_id": "gsm8k-00069",
+          "span_index": 0
+        },
+        {
+          "sample_id": "gsm8k-00073",
+          "span_index": 0
+        },
+        {
+          "sample_id": "gsm8k-00077",
+          "span_index": 0
         }
       ],
-      "observed_count": 0
+      "observed_count": 6
     }
   },
   "failure_codes": [

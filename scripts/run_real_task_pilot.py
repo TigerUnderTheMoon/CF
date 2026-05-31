@@ -75,8 +75,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--hotpotqa-input", type=Path, default=None)
     parser.add_argument("--output-dir", type=Path, default=None)
     parser.add_argument("--allow-api", action="store_true", help="Reserved guard for future live API calls.")
+    parser.add_argument("--max-jobs", type=int, default=None, help="Limit new repeated replay jobs for canary runs.")
     parser.add_argument("--tests-passed", action="store_true", help="Mark the local test suite as passed for readiness audit.")
     return parser.parse_args()
+
+
+def _limit_replay_jobs(jobs: list[dict[str, Any]], max_jobs: int | None) -> list[dict[str, Any]]:
+    if max_jobs is None:
+        return jobs
+    if max_jobs <= 0:
+        raise ValueError("--max-jobs must be positive.")
+    return jobs[:max_jobs]
 
 
 def write_json(path: Path, payload: Any) -> None:
@@ -347,7 +356,12 @@ def main() -> None:
         )
         existing_attempts = _load_existing_records(root / "repeated_replay_attempts.jsonl")
         existing_results = _load_existing_records(root / "real_task_replay_results.jsonl")
-        jobs = missing_replay_jobs(records, existing_attempts + existing_results, repeats=repeats)
+        missing_jobs = missing_replay_jobs(records, existing_attempts + existing_results, repeats=repeats)
+        jobs = _limit_replay_jobs(missing_jobs, args.max_jobs)
+        print(
+            f"Selected {len(jobs)} replay jobs from {len(missing_jobs)} missing jobs "
+            f"(max_jobs={args.max_jobs})."
+        )
         for job in jobs:
             result = generate_trace_with_fallback(
                 job,
@@ -807,10 +821,7 @@ def _rank_signal_coverage(
     signal_report: dict[str, Any],
 ) -> dict[str, Any]:
     coverage = dict(signal_report.get("coverage") or {})
-    if (
-        coverage.get("coverage_pass") is True
-        and int(coverage.get("expected_count", -1)) == len(expected_keys)
-    ):
+    if coverage and int(coverage.get("expected_count", -1)) == len(expected_keys):
         coverage["artifact"] = "rank_signal"
         return coverage
     return {

@@ -1,9 +1,16 @@
 You are replaying a benchmark solution from an intervened observable prefix.
 
-Return JSON that matches the supplied schema. Continue from the provided prefix
-only. Do not use any original text that came after the target reflection span.
-If the prefix contains [REASONING_MASK], treat it as a visible masked
-reflection payload and continue naturally.
+Return exactly one JSON object with these keys:
+- "observable_trace": a complete visible solution trace after the intervention.
+- "final_answer": the concise final answer string.
+
+Do not return an answer-only object such as {{"answer": "..."}}.
+The "observable_trace" value must start with the intervened observable prefix
+exactly as supplied below, then continue naturally to a final answer. It must
+include at least one <reflection type="...">...</reflection> tag. If the prefix
+contains [REASONING_MASK], keep those mask tokens visible inside the reflection
+payload; do not delete or replace them. Do not use any original text that came
+after the target reflection span.
 
 Task type: {task_type}
 Question:

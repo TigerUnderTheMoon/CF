@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 from fma.real_task_pilot.baselines import (
@@ -14,6 +15,7 @@ from fma.real_task_pilot.coverage import audit_key_coverage, expected_span_keys
 from fma.real_task_pilot.hygiene import scan_hygiene
 from fma.real_task_pilot.metrics import exact_match, normalized_token_f1, score_answer
 from fma.real_task_pilot.generation import (
+    build_generation_prompt,
     build_generation_summary,
     generate_trace_with_fallback,
     normalize_trace_record,
@@ -42,6 +44,7 @@ from fma.real_task_pilot.sampling import (
     validate_manifest_for_live_api,
 )
 from fma.real_task_pilot.signal import build_rank_signal_report
+from scripts import run_real_task_pilot as real_task_pilot_runner
 
 
 @dataclass
@@ -294,6 +297,32 @@ def test_replay_prefix_masks_target_span_without_post_target_leakage() -> None:
     assert "The sum is still 5" not in prefix["observable_prefix"]
 
 
+def test_replay_prompt_rejects_answer_only_outputs() -> None:
+    prompt = Path("prompts/real_task_replay.txt").read_text(encoding="utf-8")
+
+    assert '"observable_trace"' in prompt
+    assert '"final_answer"' in prompt
+    assert "Do not return an answer-only object" in prompt
+    assert "must start with the intervened observable prefix" in prompt
+    assert "<reflection" in prompt
+
+
+def test_replay_prompt_formats_literal_json_examples() -> None:
+    prompt = Path("prompts/real_task_replay.txt").read_text(encoding="utf-8")
+
+    rendered = build_generation_prompt(
+        prompt,
+        {
+            "task_type": "gsm8k",
+            "question": "What is 2 + 3?",
+            "observable_prefix": '<reflection type="verification">[REASONING_MASK]</reflection>',
+        },
+    )
+
+    assert '{"answer": "..."}' in rendered
+    assert "What is 2 + 3?" in rendered
+
+
 def test_delta_u_uses_task_exact_match() -> None:
     original = valid_record()
     intervened = {**original, "final_answer": "4"}
@@ -471,6 +500,51 @@ def test_repeated_replay_resume_skips_completed_repeat_jobs() -> None:
     jobs = missing_replay_jobs([prefix], existing_rows, repeats=3)
 
     assert [job["repeat_index"] for job in jobs] == [1, 2]
+
+
+def test_repeated_replay_max_jobs_limits_missing_jobs_only() -> None:
+    jobs = [{"job_id": index} for index in range(5)]
+
+    assert real_task_pilot_runner._limit_replay_jobs(jobs, None) == jobs
+    assert real_task_pilot_runner._limit_replay_jobs(jobs, 2) == jobs[:2]
+
+
+def test_repeated_replay_max_jobs_must_be_positive() -> None:
+    jobs = [{"job_id": 0}]
+
+    try:
+        real_task_pilot_runner._limit_replay_jobs(jobs, 0)
+    except ValueError as exc:
+        assert "--max-jobs must be positive" in str(exc)
+    else:
+        raise AssertionError("expected ValueError for non-positive --max-jobs")
+
+
+def test_rank_signal_coverage_preserves_partial_report_counts() -> None:
+    expected_keys = [
+        {"sample_id": "sample-1", "span_index": 0},
+        {"sample_id": "sample-2", "span_index": 0},
+        {"sample_id": "sample-3", "span_index": 0},
+    ]
+    signal_report = {
+        "coverage": {
+            "artifact": "rank_signal",
+            "coverage_pass": False,
+            "expected_count": 3,
+            "observed_count": 1,
+            "missing_count": 2,
+            "extra_count": 0,
+            "missing_preview": [{"sample_id": "sample-2", "span_index": 0}],
+            "extra_preview": [],
+        }
+    }
+
+    coverage = real_task_pilot_runner._rank_signal_coverage(expected_keys, signal_report)
+
+    assert coverage["coverage_pass"] is False
+    assert coverage["observed_count"] == 1
+    assert coverage["missing_count"] == 2
+    assert coverage["missing_preview"] == [{"sample_id": "sample-2", "span_index": 0}]
 
 
 def test_hygiene_scan_reports_forbidden_phrases(tmp_path) -> None:
