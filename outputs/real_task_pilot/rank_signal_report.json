@@ -78,21 +78,39 @@
   },
   "per_task": {
     "gsm8k": {
-      "reason": "primary candidate score missing",
-      "spearman_ci_lower_gt_zero": false
+      "n": 200,
+      "spearman_ci95": [
+        -0.16909445967868603,
+        0.13752868899468892
+      ],
+      "spearman_ci_lower_gt_zero": false,
+      "spearman_rho": -0.019906023369921488
     },
     "hotpotqa": {
-      "reason": "primary candidate score missing",
-      "spearman_ci_lower_gt_zero": false
+      "n": 182,
+      "spearman_ci95": [
+        -0.3432890546296381,
+        -0.10585825497287295
+      ],
+      "spearman_ci_lower_gt_zero": false,
+      "spearman_rho": -0.2321838256495022
     }
   },
   "pooled": {
-    "reason": "primary candidate score missing",
-    "spearman_ci_lower_gt_zero": false
+    "n": 382,
+    "spearman_ci95": [
+      -0.1180224277616114,
+      0.07767905034947328
+    ],
+    "spearman_ci_lower_gt_zero": false,
+    "spearman_rho": -0.018247837573184874
   },
   "primary_signal": {
-    "available": false,
+    "available": true,
+    "candidate_artifact": "structurally_calibrated_fma_scores.jsonl",
+    "n": 382,
     "name": "structurally_calibrated_fma",
-    "reason": "no structurally calibrated real-task candidate score artifact is present"
+    "score_field": "score",
+    "target_leakage_status": "clean"
   }
 }

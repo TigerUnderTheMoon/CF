@@ -94,6 +94,12 @@ def build_readiness_audit(
 
 
 def _signal_gate(signal_report: Mapping[str, Any]) -> dict[str, bool]:
+    primary_signal = signal_report.get("primary_signal", {})
+    primary_available = (
+        isinstance(primary_signal, Mapping)
+        and primary_signal.get("name") == "structurally_calibrated_fma"
+        and bool(primary_signal.get("available"))
+    )
     per_task = signal_report.get("per_task", {})
     task_passes = [
         bool(metrics.get("spearman_ci_lower_gt_zero"))
@@ -105,10 +111,12 @@ def _signal_gate(signal_report: Mapping[str, Any]) -> dict[str, bool]:
     at_least_one_task = any(task_passes)
     all_tasks = bool(task_passes) and all(task_passes)
     return {
+        "primary_signal_available": primary_available,
         "all_task_ci_lower_gt_zero": all_tasks,
         "pooled_ci_lower_gt_zero": pooled_pass,
         "at_least_one_task_pass": at_least_one_task,
-        "expand_to_top_tier_scale": all_tasks or (pooled_pass and at_least_one_task),
+        "expand_to_top_tier_scale": primary_available
+        and (all_tasks or (pooled_pass and at_least_one_task)),
     }
 
 

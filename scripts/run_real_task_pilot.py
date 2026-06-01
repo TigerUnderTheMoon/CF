@@ -14,6 +14,10 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from fma.io import load_records, write_records
 from fma.real_task_pilot.baselines import build_baseline_leakage_audit, score_independent_baselines
+from fma.real_task_pilot.candidate_score import (
+    build_candidate_score_leakage_audit,
+    build_structurally_calibrated_fma_scores,
+)
 from fma.real_task_pilot.coverage import audit_key_coverage, expected_span_keys
 from fma.real_task_pilot.config import load_pilot_config, output_dir
 from fma.real_task_pilot.controls import (
@@ -51,6 +55,8 @@ from fma.real_task_pilot.sampling import (
     write_manifest,
 )
 
+DEFAULT_STRUCTURAL_DIAGNOSTICS = PROJECT_ROOT / "outputs" / "structural_diagnostics.json"
+DEFAULT_REDUNDANCY_ANALYSIS = PROJECT_ROOT / "outputs" / "redundancy_analysis.json"
 
 STAGES = (
     "hygiene",
@@ -64,6 +70,7 @@ STAGES = (
     "replay-prefixes",
     "repeated-replay",
     "delta-u",
+    "candidate-score",
     "rank-signal",
     "baselines",
     "controls",
@@ -80,6 +87,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--gsm8k-input", type=Path, default=None)
     parser.add_argument("--hotpotqa-input", type=Path, default=None)
     parser.add_argument("--output-dir", type=Path, default=None)
+    parser.add_argument("--structural-diagnostics", type=Path, default=DEFAULT_STRUCTURAL_DIAGNOSTICS)
+    parser.add_argument("--redundancy-analysis", type=Path, default=DEFAULT_REDUNDANCY_ANALYSIS)
     parser.add_argument("--allow-api", action="store_true", help="Reserved guard for future live API calls.")
     parser.add_argument("--max-jobs", type=int, default=None, help="Limit new repeated replay jobs for canary runs.")
     parser.add_argument("--tests-passed", action="store_true", help="Mark the local test suite as passed for readiness audit.")
@@ -404,13 +413,33 @@ def main() -> None:
         print(f"Wrote {len(rows)} baseline scores to {root}")
         return
 
+    if args.stage == "candidate-score":
+        structural_diagnostics = _read_json(args.structural_diagnostics, default={})
+        redundancy_analysis = _read_json(args.redundancy_analysis, default={})
+        rows = build_structurally_calibrated_fma_scores(
+            records,
+            config=config,
+            structural_diagnostics=structural_diagnostics,
+            redundancy_analysis=redundancy_analysis,
+        )
+        write_records(rows, root / "structurally_calibrated_fma_scores.jsonl")
+        write_json(
+            root / "structurally_calibrated_fma_leakage_audit.json",
+            build_candidate_score_leakage_audit(rows),
+        )
+        print(f"Wrote {len(rows)} structurally calibrated FMA candidate scores to {root}")
+        return
+
     if args.stage == "rank-signal":
         delta_rows = _load_existing_records(root / "real_task_delta_u.jsonl")
         baseline_rows = _load_existing_records(root / "independent_baseline_scores.jsonl")
+        candidate_path = root / "structurally_calibrated_fma_scores.jsonl"
+        candidate_rows = _load_existing_records(candidate_path) if candidate_path.exists() else None
         report = build_rank_signal_report(
             records,
             delta_rows=delta_rows,
             baseline_rows=baseline_rows,
+            candidate_rows=candidate_rows,
             config=config,
         )
         write_json(root / "rank_signal_report.json", report)

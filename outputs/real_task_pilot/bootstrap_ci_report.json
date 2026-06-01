@@ -67,8 +67,11 @@
     "resamples": 10000
   },
   "primary_signal": {
-    "available": false,
+    "available": true,
+    "candidate_artifact": "structurally_calibrated_fma_scores.jsonl",
+    "n": 382,
     "name": "structurally_calibrated_fma",
-    "reason": "no structurally calibrated real-task candidate score artifact is present"
+    "score_field": "score",
+    "target_leakage_status": "clean"
   }
 }

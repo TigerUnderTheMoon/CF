@@ -1,0 +1,1110 @@
+{
+  "artifact": "primary_signal_failure_audit",
+  "generated_from": [
+    "outputs/real_task_pilot/readiness_audit.json",
+    "outputs/real_task_pilot/rank_signal_report.json",
+    "outputs/real_task_pilot/bootstrap_ci_report.json",
+    "outputs/real_task_pilot/structurally_calibrated_fma_scores.jsonl",
+    "outputs/real_task_pilot/real_task_delta_u.jsonl",
+    "outputs/real_task_pilot/pilot_traces.jsonl",
+    "outputs/real_task_pilot/real_task_replay_results.jsonl",
+    "outputs/real_task_pilot/trajectory_controls_report.json",
+    "outputs/real_task_pilot/api_preflight_report.json",
+    "outputs/real_task_pilot/structurally_calibrated_fma_leakage_audit.json"
+  ],
+  "status_from_artifacts": {
+    "pilot_pass": false,
+    "status": "PILOT_BLOCKED",
+    "evidence_completion_status": "PILOT_EVIDENCE_COMPLETE",
+    "failure_codes": [
+      "PILOT_FAIL_SIGNAL",
+      "PREFLIGHT_FAIL_DRIFT"
+    ],
+    "primary_signal": {
+      "available": true,
+      "candidate_artifact": "structurally_calibrated_fma_scores.jsonl",
+      "n": 382,
+      "name": "structurally_calibrated_fma",
+      "score_field": "score",
+      "target_leakage_status": "clean"
+    },
+    "api_preflight_status": "fail",
+    "api_preflight_failure_codes": [
+      "PREFLIGHT_FAIL_DRIFT"
+    ]
+  },
+  "diagnosis": {
+    "failure_type": "evidence_complete_but_signal_failed",
+    "primary_signal_missing": false,
+    "primary_signal_available_but_failed_rank_signal_gate": true,
+    "scale_up_allowed": false,
+    "prm_superiority_allowed": false,
+    "summary": "structurally_calibrated_fma is leakage-clean and non-constant, but it does not rank the sparse exact-match Delta-U signal. Delta-U is heavily zero-inflated, HotpotQA exact-match introduces near-miss noise, all retained spans are verification spans, and API preflight drift blocks deterministic replay claims.",
+    "fresh_holdout_rule": "Any s_FMA_v2 proposal must be preregistered and validated on a fresh holdout; current pilot rows cannot upgrade the claim."
+  },
+  "delta_u_distribution": {
+    "pooled": {
+      "n": 382,
+      "zero_count": 362,
+      "zero_rate": 0.947644,
+      "positive_count": 8,
+      "positive_rate": 0.020942,
+      "negative_count": 12,
+      "negative_rate": 0.031414,
+      "mean": -0.007853,
+      "median": 0.0,
+      "nonzero_rate": 0.052356,
+      "min": -1.0,
+      "max": 1.0
+    },
+    "gsm8k": {
+      "n": 200,
+      "zero_count": 197,
+      "zero_rate": 0.985,
+      "positive_count": 2,
+      "positive_rate": 0.01,
+      "negative_count": 1,
+      "negative_rate": 0.005,
+      "mean": 0.001667,
+      "median": 0.0,
+      "nonzero_rate": 0.015,
+      "min": -1.0,
+      "max": 1.0
+    },
+    "hotpotqa": {
+      "n": 182,
+      "zero_count": 165,
+      "zero_rate": 0.906593,
+      "positive_count": 6,
+      "positive_rate": 0.032967,
+      "negative_count": 11,
+      "negative_rate": 0.06044,
+      "mean": -0.018315,
+      "median": 0.0,
+      "nonzero_rate": 0.093407,
+      "min": -1.0,
+      "max": 1.0
+    }
+  },
+  "score_distribution": {
+    "pooled": {
+      "n": 382,
+      "min": 0.0,
+      "p05": 0.178562,
+      "q1": 0.291172,
+      "median": 0.525643,
+      "mean": 0.539957,
+      "q3": 0.807907,
+      "p95": 0.953223,
+      "max": 1.0,
+      "std": 0.270668,
+      "unique_count": 378,
+      "range": 1.0,
+      "iqr": 0.516735,
+      "cv": 0.501277,
+      "skewness": 0.161454
+    },
+    "gsm8k": {
+      "n": 200,
+      "min": 0.382607,
+      "p05": 0.488813,
+      "q1": 0.601143,
+      "median": 0.78901,
+      "mean": 0.756294,
+      "q3": 0.906315,
+      "p95": 0.97034,
+      "max": 1.0,
+      "std": 0.166106,
+      "unique_count": 197,
+      "range": 0.617393,
+      "iqr": 0.305172,
+      "cv": 0.219632,
+      "skewness": -0.367089
+    },
+    "hotpotqa": {
+      "n": 182,
+      "min": 0.0,
+      "p05": 0.155592,
+      "q1": 0.206871,
+      "median": 0.283122,
+      "mean": 0.302224,
+      "q3": 0.35705,
+      "p95": 0.527073,
+      "max": 0.875424,
+      "std": 0.124501,
+      "unique_count": 181,
+      "range": 0.875424,
+      "iqr": 0.15018,
+      "cv": 0.41195,
+      "skewness": 1.168551
+    }
+  },
+  "rank_alignment": {
+    "pooled": {
+      "spearman_recomputed": -0.018248,
+      "n": 382,
+      "spearman_ci95": [
+        -0.118022,
+        0.077679
+      ],
+      "spearman_ci_lower_gt_zero": false,
+      "spearman_rho": -0.018248
+    },
+    "per_task": {
+      "gsm8k": {
+        "spearman_recomputed": -0.019906,
+        "n": 200,
+        "spearman_ci95": [
+          -0.169094,
+          0.137529
+        ],
+        "spearman_ci_lower_gt_zero": false,
+        "spearman_rho": -0.019906
+      },
+      "hotpotqa": {
+        "spearman_recomputed": -0.232184,
+        "n": 182,
+        "spearman_ci95": [
+          -0.343289,
+          -0.105858
+        ],
+        "spearman_ci_lower_gt_zero": false,
+        "spearman_rho": -0.232184
+      }
+    },
+    "deciles": {
+      "pooled": {
+        "n": 382,
+        "decile_n": 39,
+        "bottom_decile_mean_delta_u": 0.051282,
+        "top_decile_mean_delta_u": 0.025641,
+        "bottom_decile_positive_count": 4,
+        "bottom_decile_nonpositive_count": 35,
+        "top_decile_positive_count": 1,
+        "top_decile_nonpositive_count": 38
+      },
+      "gsm8k": {
+        "n": 200,
+        "decile_n": 20,
+        "bottom_decile_mean_delta_u": 0.016667,
+        "top_decile_mean_delta_u": 0.0,
+        "bottom_decile_positive_count": 1,
+        "bottom_decile_nonpositive_count": 19,
+        "top_decile_positive_count": 0,
+        "top_decile_nonpositive_count": 20
+      },
+      "hotpotqa": {
+        "n": 182,
+        "decile_n": 19,
+        "bottom_decile_mean_delta_u": 0.017544,
+        "top_decile_mean_delta_u": -0.105263,
+        "bottom_decile_positive_count": 1,
+        "bottom_decile_nonpositive_count": 18,
+        "top_decile_positive_count": 0,
+        "top_decile_nonpositive_count": 19
+      }
+    },
+    "examples": {
+      "high_score_false_positives": [
+        {
+          "sample_id": "gsm8k-00534",
+          "task_type": "gsm8k",
+          "span_index": 0,
+          "operation_type": "verification",
+          "score": 1.0,
+          "delta_u": 0.0,
+          "original_score": 1.0,
+          "intervened_mean_score": 1.0,
+          "relative_position": 0.473333,
+          "span_token_length": 68,
+          "final_answer": "300",
+          "reference_answer": "When they divided, each group had 20/2 = <<20/2=10>>10 students. The total number of seashells brought by the boys is 10*60 = <<10*60=600>>..."
+        },
+        {
+          "sample_id": "gsm8k-00353",
+          "task_type": "gsm8k",
+          "span_index": 0,
+          "operation_type": "verification",
+          "score": 0.986241,
+          "delta_u": 0.0,
+          "original_score": 1.0,
+          "intervened_mean_score": 1.0,
+          "relative_position": 0.57931,
+          "span_token_length": 48,
+          "final_answer": "20 hours",
+          "reference_answer": "He spent 6/2=<<6/2=3>>3 hours swimming He spent 3*2=<<3*2=6>>6 hours watching shows So he spent 6+3+6=<<6+3+6=15>>15 hours on these activit..."
+        },
+        {
+          "sample_id": "gsm8k-00450",
+          "task_type": "gsm8k",
+          "span_index": 0,
+          "operation_type": "verification",
+          "score": 0.980985,
+          "delta_u": 0.0,
+          "original_score": 1.0,
+          "intervened_mean_score": 1.0,
+          "relative_position": 0.506849,
+          "span_token_length": 58,
+          "final_answer": "$4",
+          "reference_answer": "The super ticket costs $20 and for $1 extra I can get a popcorn and a soda, there I'd pay in total $20+$1 = $<<20+1=21>>21 If I didn't buy ..."
+        },
+        {
+          "sample_id": "gsm8k-00395",
+          "task_type": "gsm8k",
+          "span_index": 0,
+          "operation_type": "verification",
+          "score": 0.976914,
+          "delta_u": 0.0,
+          "original_score": 1.0,
+          "intervened_mean_score": 1.0,
+          "relative_position": 0.553957,
+          "span_token_length": 48,
+          "final_answer": "38",
+          "reference_answer": "Her dad gave her 2 boxes of 15 cards so 2*15 = <<2*15=30>>30 She made 20, was given 30 and received 17 so 20+30+17 = <<20+30+17=67>>67 card..."
+        },
+        {
+          "sample_id": "gsm8k-00675",
+          "task_type": "gsm8k",
+          "span_index": 0,
+          "operation_type": "verification",
+          "score": 0.975674,
+          "delta_u": 0.0,
+          "original_score": 1.0,
+          "intervened_mean_score": 1.0,
+          "relative_position": 0.613139,
+          "span_token_length": 39,
+          "final_answer": "33",
+          "reference_answer": "James has 4+8=<<4+8=12>>12 toys. There were 12*2=<<12*2=24>>24 dogs. James needed to buy 24-12=<<24-12=12>>12 more toys. There are 36 total..."
+        },
+        {
+          "sample_id": "gsm8k-00920",
+          "task_type": "gsm8k",
+          "span_index": 0,
+          "operation_type": "verification",
+          "score": 0.975359,
+          "delta_u": 0.0,
+          "original_score": 1.0,
+          "intervened_mean_score": 1.0,
+          "relative_position": 0.410256,
+          "span_token_length": 57,
+          "final_answer": "47",
+          "reference_answer": "Larry has 3 cats and 3 times as many dogs as cats, for 3*3=<<3*3=9>>9 dogs Larry has 2 fewer rabbits than his 9 dogs, for 9-2=7 rabbits Lar..."
+        },
+        {
+          "sample_id": "gsm8k-00298",
+          "task_type": "gsm8k",
+          "span_index": 0,
+          "operation_type": "verification",
+          "score": 0.973855,
+          "delta_u": 0.0,
+          "original_score": 1.0,
+          "intervened_mean_score": 1.0,
+          "relative_position": 0.556522,
+          "span_token_length": 39,
+          "final_answer": "500",
+          "reference_answer": "3 other people are bidding on the desk so there are 3 bids * $50 per bid = $<<3*50=150>>150 added to the cost of the desk by other people. ..."
+        },
+        {
+          "sample_id": "gsm8k-01295",
+          "task_type": "gsm8k",
+          "span_index": 0,
+          "operation_type": "verification",
+          "score": 0.97125,
+          "delta_u": 0.0,
+          "original_score": 1.0,
+          "intervened_mean_score": 1.0,
+          "relative_position": 0.570248,
+          "span_token_length": 39,
+          "final_answer": "2",
+          "reference_answer": "Ryan earned $6 x 3 weeks of chores = $<<6*3=18>>18. He bought 1 for himself + 3 for his friends = <<1+3=4>>4 ice creams. The ice cream cost..."
+        },
+        {
+          "sample_id": "gsm8k-00783",
+          "task_type": "gsm8k",
+          "span_index": 0,
+          "operation_type": "verification",
+          "score": 0.970849,
+          "delta_u": 0.0,
+          "original_score": 1.0,
+          "intervened_mean_score": 1.0,
+          "relative_position": 0.618705,
+          "span_token_length": 38,
+          "final_answer": "4",
+          "reference_answer": "Bob started with 7 fish and bought seventeen, so he had 7 + 17 = <<7+17=24>>24 fish. Let x = the number of white fish. Bob has twice as man..."
+        },
+        {
+          "sample_id": "gsm8k-00315",
+          "task_type": "gsm8k",
+          "span_index": 0,
+          "operation_type": "verification",
+          "score": 0.970495,
+          "delta_u": 0.0,
+          "original_score": 1.0,
+          "intervened_mean_score": 1.0,
+          "relative_position": 0.508333,
+          "span_token_length": 46,
+          "final_answer": "14",
+          "reference_answer": "First find the total number of people from 6-person families: 2 families * 6 people/family = <<2*6=12>>12 people Then find the total number..."
+        }
+      ],
+      "low_score_false_negatives": [
+        {
+          "sample_id": "hotpotqa-00114",
+          "task_type": "hotpotqa",
+          "span_index": 0,
+          "operation_type": "verification",
+          "score": 0.162716,
+          "delta_u": 0.333333,
+          "original_score": 1.0,
+          "intervened_mean_score": 0.666667,
+          "relative_position": 0.419355,
+          "span_token_length": 32,
+          "final_answer": "Picric acid",
+          "reference_answer": "picric acid"
+        },
+        {
+          "sample_id": "hotpotqa-01777",
+          "task_type": "hotpotqa",
+          "span_index": 0,
+          "operation_type": "verification",
+          "score": 0.191379,
+          "delta_u": 0.666667,
+          "original_score": 1.0,
+          "intervened_mean_score": 0.333333,
+          "relative_position": 0.348837,
+          "span_token_length": 36,
+          "final_answer": "Tremblement de Terre",
+          "reference_answer": "The Tremblement de Terre"
+        },
+        {
+          "sample_id": "hotpotqa-03765",
+          "task_type": "hotpotqa",
+          "span_index": 0,
+          "operation_type": "verification",
+          "score": 0.19548,
+          "delta_u": 0.333333,
+          "original_score": 1.0,
+          "intervened_mean_score": 0.666667,
+          "relative_position": 0.394231,
+          "span_token_length": 31,
+          "final_answer": "other individuals, teams, or entire organizations",
+          "reference_answer": "other individuals, teams, or entire organizations"
+        },
+        {
+          "sample_id": "hotpotqa-05258",
+          "task_type": "hotpotqa",
+          "span_index": 0,
+          "operation_type": "verification",
+          "score": 0.202984,
+          "delta_u": 0.666667,
+          "original_score": 1.0,
+          "intervened_mean_score": 0.333333,
+          "relative_position": 0.472527,
+          "span_token_length": 29,
+          "final_answer": "London",
+          "reference_answer": "London"
+        },
+        {
+          "sample_id": "hotpotqa-00776",
+          "task_type": "hotpotqa",
+          "span_index": 0,
+          "operation_type": "verification",
+          "score": 0.241779,
+          "delta_u": 0.333333,
+          "original_score": 1.0,
+          "intervened_mean_score": 0.666667,
+          "relative_position": 0.421687,
+          "span_token_length": 32,
+          "final_answer": "Mossad",
+          "reference_answer": "Mossad"
+        },
+        {
+          "sample_id": "hotpotqa-04420",
+          "task_type": "hotpotqa",
+          "span_index": 0,
+          "operation_type": "verification",
+          "score": 0.326626,
+          "delta_u": 1.0,
+          "original_score": 1.0,
+          "intervened_mean_score": 0.0,
+          "relative_position": 0.434343,
+          "span_token_length": 35,
+          "final_answer": "John M. Dowd",
+          "reference_answer": "John M. Dowd"
+        },
+        {
+          "sample_id": "gsm8k-01074",
+          "task_type": "gsm8k",
+          "span_index": 0,
+          "operation_type": "verification",
+          "score": 0.499212,
+          "delta_u": 0.333333,
+          "original_score": 1.0,
+          "intervened_mean_score": 0.666667,
+          "relative_position": 0.445652,
+          "span_token_length": 31,
+          "final_answer": "750",
+          "reference_answer": "Teddy did 1/2 * 500 pieces = <<500/2=250>>250 pieces. Teddy completed 250 pieces + 500 pieces = <<250+500=750>>750 pieces. #### 750"
+        },
+        {
+          "sample_id": "gsm8k-00671",
+          "task_type": "gsm8k",
+          "span_index": 0,
+          "operation_type": "verification",
+          "score": 0.94942,
+          "delta_u": 1.0,
+          "original_score": 1.0,
+          "intervened_mean_score": 0.0,
+          "relative_position": 0.588889,
+          "span_token_length": 25,
+          "final_answer": "$4",
+          "reference_answer": "For type A candies Adam needed to pay 7 * 0.5 = $<<7*0.5=3.5>>3.5. For the other type of candies, Adam needed to pay 10 * 0.75 = $<<10*0.75..."
+        }
+      ]
+    }
+  },
+  "group_diagnostics": {
+    "task_type": {
+      "gsm8k": {
+        "n": 200,
+        "mean_score": 0.756294,
+        "mean_delta_u": 0.001667,
+        "median_delta_u": 0.0,
+        "nonzero_rate": 0.015,
+        "positive_rate": 0.01,
+        "negative_rate": 0.005,
+        "spearman": -0.019906
+      },
+      "hotpotqa": {
+        "n": 182,
+        "mean_score": 0.302224,
+        "mean_delta_u": -0.018315,
+        "median_delta_u": 0.0,
+        "nonzero_rate": 0.093407,
+        "positive_rate": 0.032967,
+        "negative_rate": 0.06044,
+        "spearman": -0.232184
+      }
+    },
+    "reflection_type": {
+      "verification": {
+        "n": 382,
+        "mean_score": 0.539957,
+        "mean_delta_u": -0.007853,
+        "median_delta_u": 0.0,
+        "nonzero_rate": 0.052356,
+        "positive_rate": 0.020942,
+        "negative_rate": 0.031414,
+        "spearman": -0.018248
+      }
+    },
+    "relative_position_bin": {
+      "[.25,.5)": {
+        "n": 304,
+        "mean_score": 0.487233,
+        "mean_delta_u": -0.009868,
+        "median_delta_u": 0.0,
+        "nonzero_rate": 0.059211,
+        "positive_rate": 0.023026,
+        "negative_rate": 0.036184,
+        "spearman": -0.052266
+      },
+      "[.5,.75)": {
+        "n": 77,
+        "mean_score": 0.755129,
+        "mean_delta_u": 0.0,
+        "median_delta_u": 0.0,
+        "nonzero_rate": 0.025974,
+        "positive_rate": 0.012987,
+        "negative_rate": 0.012987,
+        "spearman": 0.074325
+      },
+      "[0,.25)": {
+        "n": 1,
+        "mean_score": 0.0,
+        "mean_delta_u": 0.0,
+        "median_delta_u": 0.0,
+        "nonzero_rate": 0.0,
+        "positive_rate": 0.0,
+        "negative_rate": 0.0,
+        "spearman": null
+      }
+    },
+    "span_length_bin": {
+      "<50 tokens": {
+        "n": 352,
+        "mean_score": 0.526984,
+        "mean_delta_u": -0.004735,
+        "median_delta_u": 0.0,
+        "nonzero_rate": 0.051136,
+        "positive_rate": 0.022727,
+        "negative_rate": 0.028409,
+        "spearman": -0.035213
+      },
+      "50-74 tokens": {
+        "n": 30,
+        "mean_score": 0.692181,
+        "mean_delta_u": -0.044444,
+        "median_delta_u": 0.0,
+        "nonzero_rate": 0.066667,
+        "positive_rate": 0.0,
+        "negative_rate": 0.066667,
+        "spearman": 0.277221
+      }
+    }
+  },
+  "hotpotqa_exact_match_diagnostic": {
+    "n": 182,
+    "aliases_nonempty_count": 0,
+    "aliases_nonempty_rate": 0.0,
+    "original_exact_false_with_positive_token_f1_count": 63,
+    "original_exact_false_with_positive_token_f1_rate": 0.346154,
+    "original_exact_false_but_normalized_exact_count": 0,
+    "negative_delta_count": 11,
+    "negative_delta_with_original_positive_token_f1_count": 6,
+    "negative_delta_with_original_positive_token_f1_rate": 0.545455,
+    "replay_unique_final_answer_gt1_count": 47,
+    "replay_unique_final_answer_gt1_rate": 0.258242,
+    "replay_correctness_varies_count": 13,
+    "replay_correctness_varies_rate": 0.071429,
+    "negative_delta_examples": [
+      {
+        "sample_id": "hotpotqa-00927",
+        "task_type": "hotpotqa",
+        "span_index": 0,
+        "operation_type": "verification",
+        "score": 0.563197,
+        "delta_u": -1.0,
+        "original_score": 0.0,
+        "intervened_mean_score": 1.0,
+        "relative_position": 0.478723,
+        "span_token_length": 31,
+        "final_answer": "EA-18G Growler",
+        "reference_answer": "Boeing EA-18G Growler",
+        "original_token_f1": 0.857143,
+        "replay_final_answers": [
+          "Boeing EA-18G Growler",
+          "Boeing EA-18G Growler",
+          "Boeing EA-18G Growler"
+        ],
+        "replay_correctness": [
+          true,
+          true,
+          true
+        ],
+        "replay_mean_token_f1": 1.0
+      },
+      {
+        "sample_id": "hotpotqa-02044",
+        "task_type": "hotpotqa",
+        "span_index": 0,
+        "operation_type": "verification",
+        "score": 0.474533,
+        "delta_u": -0.333333,
+        "original_score": 0.0,
+        "intervened_mean_score": 0.333333,
+        "relative_position": 0.390476,
+        "span_token_length": 36,
+        "final_answer": "Duval County, Florida",
+        "reference_answer": "Duval County",
+        "original_token_f1": 0.8,
+        "replay_final_answers": [
+          "Duval County",
+          "Duval County, Florida",
+          "Duval County, Florida"
+        ],
+        "replay_correctness": [
+          true,
+          false,
+          false
+        ],
+        "replay_mean_token_f1": 0.866667
+      },
+      {
+        "sample_id": "hotpotqa-00209",
+        "task_type": "hotpotqa",
+        "span_index": 0,
+        "operation_type": "verification",
+        "score": 0.466103,
+        "delta_u": -0.666667,
+        "original_score": 0.0,
+        "intervened_mean_score": 0.666667,
+        "relative_position": 0.37963,
+        "span_token_length": 49,
+        "final_answer": "Amber Heard",
+        "reference_answer": "Gal Gadot",
+        "original_token_f1": 0.0,
+        "replay_final_answers": [
+          "Gal Gadot",
+          "Diane Lane",
+          "Gal Gadot"
+        ],
+        "replay_correctness": [
+          true,
+          false,
+          true
+        ],
+        "replay_mean_token_f1": 0.666667
+      },
+      {
+        "sample_id": "hotpotqa-06167",
+        "task_type": "hotpotqa",
+        "span_index": 0,
+        "operation_type": "verification",
+        "score": 0.443896,
+        "delta_u": -0.666667,
+        "original_score": 0.0,
+        "intervened_mean_score": 0.666667,
+        "relative_position": 0.407767,
+        "span_token_length": 37,
+        "final_answer": "Taylor Swift, Max Martin, and Shellback",
+        "reference_answer": "Max Martin and Shellback",
+        "original_token_f1": 0.8,
+        "replay_final_answers": [
+          "Max Martin and Shellback",
+          "Taylor Swift, Max Martin, and Shellback",
+          "Max Martin and Shellback"
+        ],
+        "replay_correctness": [
+          true,
+          false,
+          true
+        ],
+        "replay_mean_token_f1": 0.933333
+      },
+      {
+        "sample_id": "hotpotqa-06880",
+        "task_type": "hotpotqa",
+        "span_index": 0,
+        "operation_type": "verification",
+        "score": 0.412312,
+        "delta_u": -0.333333,
+        "original_score": 0.0,
+        "intervened_mean_score": 0.333333,
+        "relative_position": 0.409524,
+        "span_token_length": 42,
+        "final_answer": "Hurricane Gerda",
+        "reference_answer": "Hurricane Faith",
+        "original_token_f1": 0.5,
+        "replay_final_answers": [
+          "Hurricane Faith",
+          "Hurricane Gerda",
+          "Hazel"
+        ],
+        "replay_correctness": [
+          true,
+          false,
+          false
+        ],
+        "replay_mean_token_f1": 0.5
+      },
+      {
+        "sample_id": "hotpotqa-02911",
+        "task_type": "hotpotqa",
+        "span_index": 0,
+        "operation_type": "verification",
+        "score": 0.373629,
+        "delta_u": -1.0,
+        "original_score": 0.0,
+        "intervened_mean_score": 1.0,
+        "relative_position": 0.281818,
+        "span_token_length": 53,
+        "final_answer": "Swansea City",
+        "reference_answer": "Newport County",
+        "original_token_f1": 0.0,
+        "replay_final_answers": [
+          "Newport County",
+          "Newport County",
+          "Newport County"
+        ],
+        "replay_correctness": [
+          true,
+          true,
+          true
+        ],
+        "replay_mean_token_f1": 1.0
+      },
+      {
+        "sample_id": "hotpotqa-04195",
+        "task_type": "hotpotqa",
+        "span_index": 0,
+        "operation_type": "verification",
+        "score": 0.350977,
+        "delta_u": -0.333333,
+        "original_score": 0.0,
+        "intervened_mean_score": 0.333333,
+        "relative_position": 0.352941,
+        "span_token_length": 59,
+        "final_answer": "Inside the Mind of Bill Cosby",
+        "reference_answer": "Fat Albert",
+        "original_token_f1": 0.0,
+        "replay_final_answers": [
+          "Inside the Mind of Bill Cosby",
+          "Fat Albert",
+          "Inside the Mind of Bill Cosby"
+        ],
+        "replay_correctness": [
+          false,
+          true,
+          false
+        ],
+        "replay_mean_token_f1": 0.333333
+      },
+      {
+        "sample_id": "hotpotqa-05844",
+        "task_type": "hotpotqa",
+        "span_index": 0,
+        "operation_type": "verification",
+        "score": 0.34407,
+        "delta_u": -1.0,
+        "original_score": 0.0,
+        "intervened_mean_score": 1.0,
+        "relative_position": 0.361905,
+        "span_token_length": 49,
+        "final_answer": "8",
+        "reference_answer": "eight Tony Awards",
+        "original_token_f1": 0.0,
+        "replay_final_answers": [
+          "Eight Tony Awards",
+          "Eight Tony Awards",
+          "eight Tony Awards"
+        ],
+        "replay_correctness": [
+          true,
+          true,
+          true
+        ],
+        "replay_mean_token_f1": 1.0
+      },
+      {
+        "sample_id": "hotpotqa-03033",
+        "task_type": "hotpotqa",
+        "span_index": 0,
+        "operation_type": "verification",
+        "score": 0.27407,
+        "delta_u": -0.666667,
+        "original_score": 0.0,
+        "intervened_mean_score": 0.666667,
+        "relative_position": 0.436893,
+        "span_token_length": 39,
+        "final_answer": "ribosome",
+        "reference_answer": "Ribosomes",
+        "original_token_f1": 0.0,
+        "replay_final_answers": [
+          "ribosome",
+          "ribosomes",
+          "ribosomes"
+        ],
+        "replay_correctness": [
+          false,
+          true,
+          true
+        ],
+        "replay_mean_token_f1": 0.666667
+      },
+      {
+        "sample_id": "hotpotqa-03206",
+        "task_type": "hotpotqa",
+        "span_index": 0,
+        "operation_type": "verification",
+        "score": 0.265118,
+        "delta_u": -0.333333,
+        "original_score": 0.0,
+        "intervened_mean_score": 0.333333,
+        "relative_position": 0.40678,
+        "span_token_length": 34,
+        "final_answer": "Prime Minister of Denmark / President of the Council",
+        "reference_answer": "Prime Minister of Denmark",
+        "original_token_f1": 0.727273,
+        "replay_final_answers": [
+          "Council President of Denmark (Prime Minister).",
+          "President of the Council of Denmark (Prime Minister).",
+          "Prime Minister of Denmark"
+        ],
+        "replay_correctness": [
+          false,
+          false,
+          true
+        ],
+        "replay_mean_token_f1": 0.842424
+      }
+    ],
+    "exact_false_positive_token_f1_examples": [
+      {
+        "sample_id": "hotpotqa-04693",
+        "task_type": "hotpotqa",
+        "span_index": 0,
+        "operation_type": "verification",
+        "score": 0.120169,
+        "delta_u": 0.0,
+        "original_score": 0.0,
+        "intervened_mean_score": 0.0,
+        "relative_position": 0.326733,
+        "span_token_length": 38,
+        "final_answer": "Attorney General and Lord Chancellor of England",
+        "reference_answer": "Attorney General and as Lord Chancellor of England",
+        "original_token_f1": 0.933333
+      },
+      {
+        "sample_id": "hotpotqa-00168",
+        "task_type": "hotpotqa",
+        "span_index": 0,
+        "operation_type": "verification",
+        "score": 0.357112,
+        "delta_u": 0.0,
+        "original_score": 0.0,
+        "intervened_mean_score": 0.0,
+        "relative_position": 0.361702,
+        "span_token_length": 35,
+        "final_answer": "2016 United States presidential election",
+        "reference_answer": "United States presidential election of 2016",
+        "original_token_f1": 0.909091
+      },
+      {
+        "sample_id": "hotpotqa-00927",
+        "task_type": "hotpotqa",
+        "span_index": 0,
+        "operation_type": "verification",
+        "score": 0.563197,
+        "delta_u": -1.0,
+        "original_score": 0.0,
+        "intervened_mean_score": 1.0,
+        "relative_position": 0.478723,
+        "span_token_length": 31,
+        "final_answer": "EA-18G Growler",
+        "reference_answer": "Boeing EA-18G Growler",
+        "original_token_f1": 0.857143
+      },
+      {
+        "sample_id": "hotpotqa-03170",
+        "task_type": "hotpotqa",
+        "span_index": 0,
+        "operation_type": "verification",
+        "score": 0.298194,
+        "delta_u": 0.0,
+        "original_score": 0.0,
+        "intervened_mean_score": 0.0,
+        "relative_position": 0.481132,
+        "span_token_length": 30,
+        "final_answer": "Sir Nicholas Winterton",
+        "reference_answer": "Sir Nicholas Raymond Winterton",
+        "original_token_f1": 0.857143
+      },
+      {
+        "sample_id": "hotpotqa-06188",
+        "task_type": "hotpotqa",
+        "span_index": 0,
+        "operation_type": "verification",
+        "score": 0.580163,
+        "delta_u": 0.0,
+        "original_score": 0.0,
+        "intervened_mean_score": 0.0,
+        "relative_position": 0.340909,
+        "span_token_length": 35,
+        "final_answer": "National Hockey League",
+        "reference_answer": "National Hockey League (NHL)",
+        "original_token_f1": 0.857143
+      },
+      {
+        "sample_id": "hotpotqa-00273",
+        "task_type": "hotpotqa",
+        "span_index": 0,
+        "operation_type": "verification",
+        "score": 0.381247,
+        "delta_u": 0.0,
+        "original_score": 0.0,
+        "intervened_mean_score": 0.0,
+        "relative_position": 0.336634,
+        "span_token_length": 40,
+        "final_answer": "about 7 miles",
+        "reference_answer": "7 miles",
+        "original_token_f1": 0.8
+      },
+      {
+        "sample_id": "hotpotqa-01071",
+        "task_type": "hotpotqa",
+        "span_index": 0,
+        "operation_type": "verification",
+        "score": 0.317659,
+        "delta_u": 0.0,
+        "original_score": 0.0,
+        "intervened_mean_score": 0.0,
+        "relative_position": 0.422414,
+        "span_token_length": 40,
+        "final_answer": "John Lasseter",
+        "reference_answer": "John Alan Lasseter",
+        "original_token_f1": 0.8
+      },
+      {
+        "sample_id": "hotpotqa-02044",
+        "task_type": "hotpotqa",
+        "span_index": 0,
+        "operation_type": "verification",
+        "score": 0.474533,
+        "delta_u": -0.333333,
+        "original_score": 0.0,
+        "intervened_mean_score": 0.333333,
+        "relative_position": 0.390476,
+        "span_token_length": 36,
+        "final_answer": "Duval County, Florida",
+        "reference_answer": "Duval County",
+        "original_token_f1": 0.8
+      },
+      {
+        "sample_id": "hotpotqa-02174",
+        "task_type": "hotpotqa",
+        "span_index": 0,
+        "operation_type": "verification",
+        "score": 0.297504,
+        "delta_u": 0.0,
+        "original_score": 0.0,
+        "intervened_mean_score": 0.0,
+        "relative_position": 0.477778,
+        "span_token_length": 32,
+        "final_answer": "Todd Field",
+        "reference_answer": "William Todd Field",
+        "original_token_f1": 0.8
+      },
+      {
+        "sample_id": "hotpotqa-02267",
+        "task_type": "hotpotqa",
+        "span_index": 0,
+        "operation_type": "verification",
+        "score": 0.324282,
+        "delta_u": 0.0,
+        "original_score": 0.0,
+        "intervened_mean_score": 0.0,
+        "relative_position": 0.343137,
+        "span_token_length": 41,
+        "final_answer": "Oliver Reed",
+        "reference_answer": "Robert Oliver Reed",
+        "original_token_f1": 0.8
+      }
+    ]
+  },
+  "leakage_audit": {
+    "target_leakage_status": "clean",
+    "target_leakage_detected": false,
+    "forbidden_source_fields": [
+      "aliases",
+      "attribution_score",
+      "correctness",
+      "delta_u",
+      "final_answer",
+      "intervened_score",
+      "necessity",
+      "original_score",
+      "reference_answer",
+      "replay_outcome",
+      "structural_necessity"
+    ],
+    "unique_forbidden_fields_used": [],
+    "checks_count": 382,
+    "source_fields_used_union": [
+      "entity_count",
+      "number_count",
+      "observable_trace",
+      "question",
+      "question_length",
+      "reflection_spans",
+      "sample_id",
+      "supporting_fact_count",
+      "task_type"
+    ]
+  },
+  "api_drift_diagnostic": {
+    "api_preflight_report": {
+      "determinism_drift_max": null,
+      "failure_codes": [
+        "PREFLIGHT_FAIL_DRIFT"
+      ],
+      "json_parse_success_rate": 1.0,
+      "records_evaluated": 20,
+      "schema_success_rate": 1.0,
+      "status": "fail",
+      "tag_extraction_success_rate": 1.0
+    },
+    "replay_rows_with_unique_final_answer_gt1": 68,
+    "replay_rows_with_unique_final_answer_gt1_rate": 0.17801,
+    "replay_rows_with_correctness_variation": 14,
+    "replay_rows_with_correctness_variation_rate": 0.036649
+  },
+  "trajectory_controls": {
+    "no_reflection": {
+      "attempted_count": 25,
+      "definition": "Answer directly without visible reflection tags.",
+      "expected_count": 382,
+      "failed_count": 0,
+      "failure_reasons": [
+        "missing_control_jobs"
+      ],
+      "metrics": {
+        "accuracy": 0.8,
+        "cost": null,
+        "reflection_count": 0.0,
+        "tokens": 14523,
+        "validity": 0.065445
+      },
+      "mix_with_span_attribution": false,
+      "status": "partial",
+      "successful_count": 25
+    },
+    "reflexion_style": {
+      "attempted_count": 25,
+      "definition": "Visible verbal reflection after failure or uncertainty, then retry.",
+      "expected_count": 382,
+      "failed_count": 0,
+      "failure_reasons": [
+        "missing_control_jobs"
+      ],
+      "metrics": {
+        "accuracy": 0.84,
+        "cost": null,
+        "reflection_count": 1.0,
+        "tokens": 18496,
+        "validity": 0.065445
+      },
+      "mix_with_span_attribution": false,
+      "status": "partial",
+      "successful_count": 25
+    },
+    "self_refine_style": {
+      "attempted_count": 25,
+      "definition": "Visible draft, feedback, and revision for the same question.",
+      "expected_count": 382,
+      "failed_count": 0,
+      "failure_reasons": [
+        "missing_control_jobs"
+      ],
+      "metrics": {
+        "accuracy": 0.88,
+        "cost": null,
+        "reflection_count": 1.0,
+        "tokens": 19039,
+        "validity": 0.065445
+      },
+      "mix_with_span_attribution": false,
+      "status": "partial",
+      "successful_count": 25
+    },
+    "tagged_reflection": {
+      "attempted_count": 25,
+      "definition": "Use one or more visible <reflection> tags in a single-pass solution.",
+      "expected_count": 382,
+      "failed_count": 0,
+      "failure_reasons": [
+        "missing_control_jobs"
+      ],
+      "metrics": {
+        "accuracy": 0.8,
+        "cost": null,
+        "reflection_count": 1.16,
+        "tokens": 16597,
+        "validity": 0.065445
+      },
+      "mix_with_span_attribution": false,
+      "status": "partial",
+      "successful_count": 25
+    }
+  }
+}

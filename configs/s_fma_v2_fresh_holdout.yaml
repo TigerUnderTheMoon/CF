@@ -1,0 +1,385 @@
+experiment:
+  name: s_fma_v2_fresh_holdout
+  status: planned
+  seed: 20260601
+  output_dir: outputs/s_fma_v2_fresh_holdout
+  plan_file: paper/s_fma_v2_fresh_holdout_plan.md
+  no_api_execution_without_user_approval: true
+  no_manifest_generation_in_current_task: true
+  user_approved_budget_usd: null
+  cost_ceiling_usd: 150
+
+frozen_boundary:
+  current_pilot_role: development_failure_audit
+  current_pilot_status: PILOT_BLOCKED
+  current_pilot_pass: false
+  current_failure_type: evidence_complete_but_signal_failed
+  frozen_failure_audit:
+    markdown: outputs/real_task_pilot/primary_signal_failure_audit.md
+    json: outputs/real_task_pilot/primary_signal_failure_audit.json
+  exclude_from_final_validation:
+    - outputs/real_task_pilot/pilot_traces.jsonl
+    - outputs/real_task_pilot/real_task_delta_u.jsonl
+    - outputs/real_task_pilot/real_task_replay_results.jsonl
+    - outputs/real_task_pilot/structurally_calibrated_fma_scores.jsonl
+    - outputs/real_task_pilot/independent_baseline_scores.jsonl
+  allowed_development_uses:
+    - diagnose_delta_u_sparsity
+    - identify_metric_limitations
+    - motivate_v2_design
+  forbidden_uses:
+    - fit_v2_weights
+    - tune_thresholds_on_current_pilot_rank_signal
+    - claim_current_pilot_pass_after_redesign
+    - reuse_current_382_pilot_traces_for_final_validation
+
+scorer:
+  score_name: structurally_calibrated_fma_v2
+  score_rule_id: s_fma_v2_rule_pre_registered_2026_06_01
+  formula_hash: "sha256:6971b23562be690e5fd58dc4dfbbcf972d2137c719b1b68a440d9ec4a216b628"
+  formula_hash_scope: canonical_json_sorted_keys_compact_separators_excluding_formula_hash
+  type: frozen_preregistered_rule
+  fitting_policy: no_current_pilot_label_fitting
+  formula: "score = round(clip01(sum(weight_i * feature_i)), 6)"
+  clip:
+    function: clip01
+    min: 0.0
+    max: 1.0
+  normalization:
+    cross_sample_normalization: none
+    rounding_decimals: 6
+    text_normalization:
+      - nfkc
+      - remove_xml_tags
+      - lowercase
+      - collapse_whitespace
+    operation_type_normalization:
+      - lowercase
+      - replace_hyphen_and_space_with_underscore
+  permitted_weight_sources:
+    - theory
+    - fma_taxonomy
+    - historical_synthetic_diagnostics
+    - frozen_preregistered_rationale
+  allowed_source_fields:
+    - observable_trace
+    - reflection_spans
+    - reflection_type
+    - operation_type
+    - span_content
+    - span_token_offsets
+    - task_type
+    - non_target_structural_proxy_features
+  forbidden_source_fields:
+    - delta_u
+    - original_score
+    - intervened_score
+    - correctness
+    - replay_outcome
+    - attribution_score
+    - structural_necessity
+    - necessity
+    - final_answer
+    - reference_answer
+    - aliases
+    - post_intervention_outcome
+  features:
+    - id: type_prior
+      weight: 0.22
+      definition: lookup_normalized_operation_type
+      values:
+        verification: 0.90
+        error_diagnosis: 0.85
+        plan_revision: 0.80
+        self_evaluation: 0.75
+        strategy_critique: 0.70
+        uncertainty_monitoring: 0.65
+        planning: 0.60
+        self_reflection: 0.55
+        other: 0.35
+      unknown_policy: other
+    - id: answer_check_marker
+      weight: 0.16
+      definition: 1_if_normalized_span_contains_any_term_else_0
+      terms:
+        - answer
+        - arithmetic
+        - calculate
+        - calculation
+        - check
+        - confirm
+        - evidence
+        - final
+        - support
+        - verify
+    - id: error_diagnosis_marker
+      weight: 0.16
+      definition: 1_if_normalized_span_contains_any_term_else_0
+      terms:
+        - contradiction
+        - error
+        - fix
+        - inconsistent
+        - incorrect
+        - mistake
+        - not sure
+        - problem
+        - reconsider
+        - wrong
+    - id: plan_revision_marker
+      weight: 0.14
+      definition: 1_if_normalized_span_contains_any_term_else_0
+      terms:
+        - adjust
+        - alternative approach
+        - backtrack
+        - instead
+        - new plan
+        - redo
+        - revise
+        - switch
+        - try another
+    - id: alternative_comparison_marker
+      weight: 0.10
+      definition: 1_if_normalized_span_contains_any_term_else_0
+      terms:
+        - alternative
+        - another
+        - candidate
+        - compare
+        - either
+        - option
+        - or
+        - versus
+    - id: uncertainty_marker
+      weight: 0.08
+      definition: 1_if_normalized_span_contains_any_term_else_0
+      terms:
+        - could
+        - confidence
+        - likely
+        - maybe
+        - might
+        - need to check
+        - uncertain
+    - id: span_length_window
+      weight: 0.08
+      definition: "span_tokens < 4 -> 0; 4-11 -> (span_tokens - 4) / 8; 12-48 -> 1; 49-96 -> 1 - (span_tokens - 48) / 48; >96 -> 0; then clip01"
+    - id: relative_position_window
+      weight: 0.06
+      definition: "relative_position = clip01(start_token / max(trace_tokens, 1)); value = clip01(1 - abs(relative_position - 0.60) / 0.40)"
+  weights_sum: 1.0
+  missing_value_policy:
+    missing_or_empty_reflection_spans: invalid_sample_no_score_counts_against_coverage
+    missing_observable_trace: invalid_sample_no_score_counts_against_coverage
+    missing_operation_type: other
+    missing_span_content: content_markers_0_and_span_length_window_0
+    missing_token_offsets: derive_span_tokens_from_content_trace_tokens_from_observable_trace_start_token_0_if_missing
+  tie_handling:
+    spearman: average_ranks_for_tied_scores_and_tied_targets
+    kendall: kendall_tau_b
+    ndcg: sort_score_desc_then_task_type_sample_id_span_index_for_display_only_no_target_tiebreak
+    auc: score_ties_count_as_0_5
+  output_fields:
+    - sample_id
+    - task_type
+    - span_index
+    - score_name
+    - score
+    - score_rule_id
+    - formula_hash
+    - source_fields_used
+    - leakage_status
+
+fresh_holdout:
+  output_root: outputs/s_fma_v2_fresh_holdout
+  manifest_path: outputs/s_fma_v2_fresh_holdout/fresh_manifest.json
+  manifest_lock_required: true
+  exclude_current_pilot_rows: true
+  overlap_with_current_pilot_is_hard_stop: true
+  current_pilot_overlap_sources:
+    - outputs/real_task_pilot/sample_manifest.json
+    - outputs/real_task_pilot/pilot_traces.jsonl
+    - outputs/real_task_pilot/real_task_replay_results.jsonl
+    - outputs/real_task_pilot/real_task_delta_u.jsonl
+    - outputs/real_task_pilot/structurally_calibrated_fma_scores.jsonl
+    - outputs/real_task_pilot/independent_baseline_scores.jsonl
+  required_non_overlap_keys:
+    - sample_id
+    - task_id
+    - dataset_config_split_source_index
+    - normalized_question_hash
+    - reference_answer_hash
+    - alias_hash
+  overlap_policy:
+    any_key_overlap: hard_stop
+    hard_stop_before:
+      - scoring
+      - replay
+      - reporting
+  hash_policy:
+    normalized_question_hash: sha256_nfkc_lowercase_collapse_whitespace_question
+    reference_answer_hash: sha256_nfkc_lowercase_collapse_whitespace_reference_answer
+    alias_hash: sha256_sorted_nfkc_lowercase_collapse_whitespace_aliases_joined_by_newline_empty_list_hashes_empty_string
+  tasks:
+    gsm8k:
+      dataset: gsm8k
+      config: main
+      split: test
+      metric: exact_match
+      sample_count: 200
+      min_valid_traces: 190
+      min_eligible_spans: 150
+      min_nonzero_delta_u: 20
+      insufficient_target_variation_policy: hard_stop_no_task_specific_pass
+      relation_to_current_pilot: fresh_non_overlapping_holdout
+    hotpotqa:
+      dataset: hotpot_qa
+      config: distractor
+      split: validation
+      metric: exact_match
+      appendix_metrics:
+        - normalized_token_f1
+        - alias_match
+      sample_count: 200
+      min_valid_traces: 190
+      min_eligible_spans: 150
+      min_nonzero_delta_u: 20
+      insufficient_target_variation_policy: hard_stop_no_task_specific_pass
+      relation_to_current_pilot: fresh_non_overlapping_holdout
+  prompt_policy:
+    prompt_snapshot_required: true
+    prompt_version_lock_required: true
+    prompt_edits_after_manifest_lock_invalidate_route: true
+
+api_policy:
+  api_logging:
+    required_fields:
+      - api_date
+      - endpoint
+      - model
+      - fallback_model
+      - service_tier
+      - request_parameters
+      - response_id
+      - system_fingerprint
+      - sdk_or_transport_version
+    api_drift_disclosure_required: true
+  preflight_drift_policy:
+    if_preflight_still_fails: stochastic_repeated_replay_estimand_only
+    deterministic_replay_claim_forbidden_if_preflight_fails: true
+    repeated_replay_bootstrap_required_if_preflight_fails: true
+  replay_repeat_policy:
+    original_generation_per_sample: 1
+    replay_per_span_min: 3
+    key_row_replay_per_span_min: 5
+    replay_failures_count_against_coverage: true
+
+metrics:
+  rank:
+    - spearman
+    - kendall_tau_b
+  ranking_quality:
+    - ndcg_at_3
+    - ndcg_at_5
+    - top_10_percent_high_impact_auc
+  reports:
+    - per_task
+    - pooled
+  uncertainty:
+    bootstrap_ci: true
+    bootstrap_unit: sample_id
+  operations:
+    - valid_trace_count
+    - eligible_span_count
+    - nonzero_delta_u_count
+    - replay_success_rate
+    - leakage_audit
+    - api_drift_disclosure
+    - trajectory_controls_reported_separately
+
+required_baselines:
+  reporting_contract: v2_and_all_baselines_in_same_table
+  metrics_required_for_each:
+    - spearman
+    - kendall_tau_b
+    - ndcg_at_3
+    - ndcg_at_5
+    - top_10_percent_high_impact_auc
+  baselines:
+    - id: s_FMA_v1
+      source: structurally_calibrated_fma_v1_rule
+    - id: random
+      source: seeded_random_span_score
+    - id: span_length
+      source: span_length_divided_by_trace_tokens
+    - id: relative_position
+      source: start_token_divided_by_trace_tokens
+    - id: taxonomy_prior
+      source: frozen_taxonomy_prior
+    - id: uniform_reflection_weight
+      source: constant_1_for_each_reflection_span
+    - id: question_difficulty_proxy
+      source: frozen_question_metadata_proxy
+
+gates:
+  stop_conditions:
+    any_manifest_overlap: hard_stop
+    target_leakage: hard_stop
+    post_hoc_weight_or_threshold_change: hard_stop
+    schema_success_rate_below: 0.95
+    tag_success_rate_below: 0.95
+    replay_success_rate_below: 0.85
+    valid_trace_count_below_per_task: 190
+    eligible_span_count_below_per_task: 150
+    nonzero_delta_u_count_below_per_task: insufficient_target_variation
+    api_drift_not_logged: hard_stop
+  task_specific:
+    label: TASK_SPECIFIC_S_FMA_V2_PASS
+    claim_scope: task_specific_or_heterogeneous_only
+    full_coverage_required: true
+    leakage_clean_required: true
+    no_target_leakage: true
+    no_post_hoc_threshold_tuning: true
+    task_rank_signal_ci_lower_gt_zero: true
+    min_valid_traces: 190
+    min_eligible_spans: 150
+    min_nonzero_delta_u: 20
+    deterministic_claim_forbidden_if_preflight_drift: true
+    does_not_unlock:
+      - cross_task_scale_expansion
+      - prm_filtering_design
+      - prm_filtering_superiority_claim
+  global:
+    label: GLOBAL_S_FMA_V2_PASS
+    requires:
+      - gsm8k_TASK_SPECIFIC_S_FMA_V2_PASS
+      - hotpotqa_TASK_SPECIFIC_S_FMA_V2_PASS
+      - both_tasks_meet_preregistered_rank_signal_standard
+      - pooled_rank_signal_not_negative
+      - same_table_v2_and_required_baselines
+      - no_active_stop_condition
+    unlocks:
+      - larger_real_task_expansion_design
+    does_not_establish:
+      - prm_filtering_superiority
+  downstream_prm_filtering:
+    label: DOWNSTREAM_PRM_FILTERING_VALIDATION_PASS
+    status: future_validation
+    can_be_designed_only_after:
+      - GLOBAL_S_FMA_V2_PASS
+    single_task_pass_is_sufficient: false
+  hotpotqa_negative_policy: heterogeneous_task_dependent_no_global_confirmation
+  fail_all_rank_signals_policy: stop_top_tier_route_move_to_diagnostic_or_workshop
+
+claim_policy:
+  C_REAL_TASK_PILOT: pilot_blocked
+  C_S_FMA_V2_FRESH_HOLDOUT: planned
+  C_PRM_FILTERING: future_validation
+  current_status_must_remain:
+    - PILOT_BLOCKED
+    - v2_planned_only
+    - no_prm_claim_yet
+  prm_filtering_allowed_only_after:
+    - GLOBAL_S_FMA_V2_PASS
+    - DOWNSTREAM_PRM_FILTERING_VALIDATION_PASS

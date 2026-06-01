@@ -74,6 +74,7 @@
     "hygiene_clean": true,
     "pooled_ci_lower_gt_zero": false,
     "preflight": false,
+    "primary_signal_available": true,
     "rank_signal_coverage": true,
     "replay_coverage": true,
     "replay_success_rate": true,

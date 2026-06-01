@@ -5,6 +5,10 @@ from .baselines import (
     build_baseline_leakage_audit,
     score_independent_baselines,
 )
+from .candidate_score import (
+    build_candidate_score_leakage_audit,
+    build_structurally_calibrated_fma_scores,
+)
 from .config import load_pilot_config
 from .coverage import audit_key_coverage, expected_span_keys
 from .generation import generate_trace_with_fallback, normalize_trace_record
@@ -22,9 +26,11 @@ __all__ = [
     "aggregate_delta_u_by_span",
     "audit_key_coverage",
     "build_baseline_leakage_audit",
+    "build_candidate_score_leakage_audit",
     "build_rank_signal_report",
     "build_readiness_audit",
     "build_replay_prefix",
+    "build_structurally_calibrated_fma_scores",
     "compute_delta_u",
     "evaluate_preflight",
     "exact_match",

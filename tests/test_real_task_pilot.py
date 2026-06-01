@@ -11,6 +11,10 @@ from fma.real_task_pilot.baselines import (
     question_difficulty_proxy,
     score_independent_baselines,
 )
+from fma.real_task_pilot.candidate_score import (
+    build_candidate_score_leakage_audit,
+    build_structurally_calibrated_fma_scores,
+)
 from fma.real_task_pilot.coverage import audit_key_coverage, expected_span_keys
 from fma.real_task_pilot.controls import (
     build_control_report,
@@ -372,6 +376,114 @@ def test_independent_baselines_use_no_target_like_fields() -> None:
     }
 
 
+def test_structurally_calibrated_candidate_scores_are_clean_and_cover_spans() -> None:
+    records = [valid_record(f"gsm8k-{index:05d}") for index in range(3)]
+    structural = {
+        "modes": {
+            "PRUNE": {"stratified": {"taxonomy_label": {"VERIFICATION": {"spearman": 0.12, "num_samples": 10}}}},
+            "CASCADE": {"stratified": {"taxonomy_label": {"VERIFICATION": {"spearman": 0.08, "num_samples": 10}}}},
+            "BYPASS": {"stratified": {"taxonomy_label": {"VERIFICATION": {"spearman": -0.04, "num_samples": 10}}}},
+        }
+    }
+    redundancy = {
+        "compensation": {
+            "prune": {"stratified_by_taxonomy": {"VERIFICATION": {"mean_ratio": 0.02}}},
+            "cascade": {"stratified_by_taxonomy": {"VERIFICATION": {"mean_ratio": 0.0}}},
+            "bypass": {"stratified_by_taxonomy": {"VERIFICATION": {"mean_ratio": 0.04}}},
+        },
+        "redundancy": {"density": 0.25},
+        "bottleneck": {"taxonomy_distribution": {"VERIFICATION": 2}},
+    }
+
+    rows = build_structurally_calibrated_fma_scores(
+        records,
+        config={"replay": {"max_spans_per_trace": 3}},
+        structural_diagnostics=structural,
+        redundancy_analysis=redundancy,
+    )
+
+    assert [(row["sample_id"], row["span_index"]) for row in rows] == [
+        ("gsm8k-00000", 0),
+        ("gsm8k-00001", 0),
+        ("gsm8k-00002", 0),
+    ]
+    assert all(row["target_leakage_status"] == "clean" for row in rows)
+    assert all(row["leakage_status"] == "clean" for row in rows)
+    assert all(row["score_name"] == "structurally_calibrated_fma" for row in rows)
+    assert all(row["score_rule_id"] == "structurally_calibrated_fma_v1" for row in rows)
+    assert all(row["score"] == row["candidate_score"] for row in rows)
+    assert all(row["forbidden_fields_used"] == [] for row in rows)
+    assert all(row["operation_type"] == "verification" for row in rows)
+    assert all(0.0 <= row["candidate_score"] <= 1.0 for row in rows)
+    assert all("delta_u" not in row["source_fields_used"] for row in rows)
+    assert all("correctness" not in row["source_fields_used"] for row in rows)
+    assert {"observable_local_proxy", "alignment_prior", "bottleneck_prior"}.issubset(
+        rows[0]["components"]
+    )
+
+
+def test_structurally_calibrated_candidate_leakage_audit_rejects_forbidden_sources() -> None:
+    rows = [
+        {
+            "sample_id": "gsm8k-00001",
+            "span_index": 0,
+            "score_name": "structurally_calibrated_fma",
+            "source_fields_used": ["observable_trace", "delta_u"],
+            "forbidden_fields_used": [],
+        }
+    ]
+
+    audit = build_candidate_score_leakage_audit(rows)
+
+    assert audit["candidate_family"] == "structurally_calibrated_fma"
+    assert audit["target_leakage_status"] == "target_leaking"
+    assert audit["target_leakage_detected"] is True
+    assert audit["checks"][0]["forbidden_fields_used"] == ["delta_u"]
+
+
+def test_structurally_calibrated_candidate_scores_ignore_target_fields() -> None:
+    record = valid_record("gsm8k-00001")
+    changed = {
+        **record,
+        "correctness": False,
+        "delta_u": 1.0,
+        "original_score": 0.0,
+        "intervened_score": 1.0,
+        "replay_outcome": "target-like",
+        "reference_answer": "#### 999",
+        "final_answer": "999",
+    }
+    structural = {"modes": {"PRUNE": {"stratified": {"taxonomy_label": {"VERIFICATION": {"spearman": 0.1}}}}}}
+    redundancy = {"compensation": {}, "redundancy": {"density": 0.0}, "bottleneck": {"taxonomy_distribution": {}}}
+
+    original_rows = build_structurally_calibrated_fma_scores(
+        [record],
+        config={"replay": {"max_spans_per_trace": 3}},
+        structural_diagnostics=structural,
+        redundancy_analysis=redundancy,
+    )
+    changed_rows = build_structurally_calibrated_fma_scores(
+        [changed],
+        config={"replay": {"max_spans_per_trace": 3}},
+        structural_diagnostics=structural,
+        redundancy_analysis=redundancy,
+    )
+
+    assert changed_rows[0]["raw_score"] == original_rows[0]["raw_score"]
+    assert changed_rows[0]["candidate_score"] == original_rows[0]["candidate_score"]
+    assert not set(changed_rows[0]["source_fields_used"]).intersection(
+        {
+            "correctness",
+            "delta_u",
+            "original_score",
+            "intervened_score",
+            "replay_outcome",
+            "reference_answer",
+            "final_answer",
+        }
+    )
+
+
 def test_readiness_requires_clean_gates_and_positive_rank_signal() -> None:
     audit = build_readiness_audit(
         preflight_report={"status": "pass", "failure_codes": []},
@@ -383,6 +495,7 @@ def test_readiness_requires_clean_gates_and_positive_rank_signal() -> None:
         tests_passed=True,
         hygiene_clean=True,
         signal_report={
+            "primary_signal": {"name": "structurally_calibrated_fma", "available": True},
             "per_task": {"gsm8k": {"spearman_ci_lower_gt_zero": True}},
             "pooled": {"spearman_ci_lower_gt_zero": True},
         },
@@ -464,6 +577,51 @@ def test_readiness_keeps_signal_blocked_when_candidate_score_is_missing() -> Non
     assert audit["gates"]["expand_to_top_tier_scale"] is False
 
 
+def test_readiness_keeps_signal_blocked_when_primary_ci_lower_is_not_positive() -> None:
+    audit = build_readiness_audit(
+        preflight_report={"status": "pass", "failure_codes": []},
+        valid_trace_count=300,
+        span_validity_rate=1.0,
+        replay_success_rate=1.0,
+        baseline_leakage_clean=True,
+        cost_report_complete=True,
+        tests_passed=True,
+        hygiene_clean=True,
+        signal_report={
+            "primary_signal": {"name": "structurally_calibrated_fma", "available": True},
+            "per_task": {"gsm8k": {"spearman_ci_lower_gt_zero": False}},
+            "pooled": {"spearman_ci_lower_gt_zero": False},
+        },
+    )
+
+    assert audit["status"] == "PILOT_BLOCKED"
+    assert "PILOT_FAIL_SIGNAL" in audit["failure_codes"]
+    assert audit["gates"]["expand_to_top_tier_scale"] is False
+
+
+def test_readiness_blocks_positive_metrics_without_available_primary_signal() -> None:
+    audit = build_readiness_audit(
+        preflight_report={"status": "pass", "failure_codes": []},
+        valid_trace_count=300,
+        span_validity_rate=1.0,
+        replay_success_rate=1.0,
+        baseline_leakage_clean=True,
+        cost_report_complete=True,
+        tests_passed=True,
+        hygiene_clean=True,
+        signal_report={
+            "primary_signal": {"name": "structurally_calibrated_fma", "available": False},
+            "per_task": {"gsm8k": {"spearman_ci_lower_gt_zero": True}},
+            "pooled": {"spearman_ci_lower_gt_zero": True},
+        },
+    )
+
+    assert audit["status"] == "PILOT_BLOCKED"
+    assert "PILOT_FAIL_SIGNAL" in audit["failure_codes"]
+    assert audit["gates"]["primary_signal_available"] is False
+    assert audit["gates"]["expand_to_top_tier_scale"] is False
+
+
 def test_readiness_separates_completed_evidence_from_scale_readiness() -> None:
     records = [valid_record(f"gsm8k-{index:05d}") for index in range(3)]
     expected_keys = expected_span_keys(records, max_spans_per_trace=3)
@@ -540,6 +698,112 @@ def test_rank_signal_reports_baseline_diagnostics_without_primary_candidate() ->
     assert report["primary_signal"]["available"] is False
     assert report["pooled"]["spearman_ci_lower_gt_zero"] is False
     assert "taxonomy_prior" in report["baseline_diagnostics"]
+
+
+def test_rank_signal_marks_clean_complete_primary_candidate_available() -> None:
+    records = [valid_record(f"gsm8k-{index:05d}") for index in range(6)]
+    delta_rows = [
+        {"sample_id": record["sample_id"], "span_index": 0, "delta_u": float(index), "task_type": "gsm8k"}
+        for index, record in enumerate(records)
+    ]
+    candidate_rows = [
+        {
+            "sample_id": record["sample_id"],
+            "span_index": 0,
+            "task_type": "gsm8k",
+            "candidate_score": float(index),
+            "target_leakage_status": "clean",
+        }
+        for index, record in enumerate(records)
+    ]
+
+    report = build_rank_signal_report(
+        records,
+        delta_rows=delta_rows,
+        baseline_rows=score_independent_baselines(records),
+        candidate_rows=candidate_rows,
+        config={
+            "replay": {"max_spans_per_trace": 3},
+            "nondeterministic_protocol": {
+                "bootstrap": {"resamples": 50, "confidence_level": 0.95, "random_seed": 7}
+            },
+        },
+    )
+
+    assert report["primary_signal"]["available"] is True
+    assert report["primary_signal"]["n"] == 6
+    assert report["pooled"]["spearman_ci_lower_gt_zero"] is True
+    assert report["per_task"]["gsm8k"]["spearman_ci_lower_gt_zero"] is True
+    assert report["baseline_diagnostics"]["random"]["used_as_primary_signal"] is False
+
+
+def test_rank_signal_accepts_required_score_artifact_fields() -> None:
+    records = [valid_record(f"gsm8k-{index:05d}") for index in range(6)]
+    delta_rows = [
+        {"sample_id": record["sample_id"], "span_index": 0, "delta_u": float(index), "task_type": "gsm8k"}
+        for index, record in enumerate(records)
+    ]
+    candidate_rows = [
+        {
+            "sample_id": record["sample_id"],
+            "span_index": 0,
+            "task_type": "gsm8k",
+            "score_name": "structurally_calibrated_fma",
+            "score": float(index),
+            "leakage_status": "clean",
+            "source_fields_used": ["observable_trace", "reflection_spans"],
+        }
+        for index, record in enumerate(records)
+    ]
+
+    report = build_rank_signal_report(
+        records,
+        delta_rows=delta_rows,
+        baseline_rows=score_independent_baselines(records),
+        candidate_rows=candidate_rows,
+        config={
+            "replay": {"max_spans_per_trace": 3},
+            "nondeterministic_protocol": {
+                "bootstrap": {"resamples": 50, "confidence_level": 0.95, "random_seed": 7}
+            },
+        },
+    )
+
+    assert report["primary_signal"]["available"] is True
+    assert report["primary_signal"]["score_field"] == "score"
+    assert report["pooled"]["spearman_ci_lower_gt_zero"] is True
+
+
+def test_rank_signal_blocks_incomplete_or_leaking_primary_candidate() -> None:
+    records = [valid_record(f"gsm8k-{index:05d}") for index in range(2)]
+    delta_rows = [
+        {"sample_id": record["sample_id"], "span_index": 0, "delta_u": float(index), "task_type": "gsm8k"}
+        for index, record in enumerate(records)
+    ]
+
+    report = build_rank_signal_report(
+        records,
+        delta_rows=delta_rows,
+        baseline_rows=score_independent_baselines(records),
+        candidate_rows=[
+            {
+                "sample_id": "gsm8k-00000",
+                "span_index": 0,
+                "candidate_score": 1.0,
+                "target_leakage_status": "target_leaking",
+            }
+        ],
+        config={
+            "replay": {"max_spans_per_trace": 3},
+            "nondeterministic_protocol": {
+                "bootstrap": {"resamples": 50, "confidence_level": 0.95, "random_seed": 7}
+            },
+        },
+    )
+
+    assert report["primary_signal"]["available"] is False
+    assert report["pooled"]["spearman_ci_lower_gt_zero"] is False
+    assert "candidate score" in report["primary_signal"]["reason"]
 
 
 def test_trajectory_control_report_marks_metrics_as_unmeasured() -> None:

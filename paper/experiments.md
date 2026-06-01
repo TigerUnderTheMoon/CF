@@ -66,13 +66,13 @@ Stage 2 is a confirmatory consistency check over stored artifacts, not a new exp
 
 The full Stage 2 FMA alignment is positive but low magnitude: Spearman rho is 0.1628 with a 95 percent bootstrap interval of [0.0916, 0.2347]. The effect-size label is `small`. Projection signs are positive for `pi_1` through `pi_4`, but the global claim gate requires all four strata; C1 and C2 are therefore `stratum_dependent`, not confirmed across all required strata.
 
-Stratified generalization is not globally confirmed. C3 is `stratum_dependent` because the Stage 2 stratum audit reports confidence intervals including zero in `S_mid` and `S_rand`. This heterogeneity is reported as variation across unseen distributions, not as evidence that FMA is stronger than the low-magnitude aggregate suggests.
+Stratified generalization lacks global confirmation. C3 is `stratum_dependent` because the Stage 2 stratum audit reports confidence intervals including zero in `S_mid` and `S_rand`. This heterogeneity is reported as variation across unseen distributions, not as evidence that FMA is stronger than the low-magnitude aggregate suggests.
 
 ## Real-Task Pilot Status
 
-The real-task pilot is a guarded extension rather than a replacement for historical Phase 5-7 evidence. The current readiness audit reports `PILOT_BLOCKED`, with failure codes `PILOT_FAIL_CONTROLS`, `PILOT_FAIL_COVERAGE`, `PILOT_FAIL_REPLAY`, `PILOT_FAIL_SIGNAL`, and `PREFLIGHT_FAIL_DRIFT`. The API preflight report has `status: fail` due to drift. Any generated GSM8K/HotpotQA pilot traces should therefore be treated as pilot evidence only, not as validated real-task support for utility claims.
+The real-task pilot is a guarded extension rather than a replacement for historical Phase 5-7 evidence. The current readiness audit reports `PILOT_BLOCKED`, with failure codes `PILOT_FAIL_SIGNAL` and `PREFLIGHT_FAIL_DRIFT`. Replay, Delta-U, rank-signal coverage, baseline leakage, and readiness-level trajectory-control gates are complete for the configured pilot artifacts, but the available leakage-clean `structurally_calibrated_fma` score failed the rank-signal gate. Any generated GSM8K/HotpotQA pilot traces should therefore be treated as pilot evidence only, not as validated real-task support for utility claims.
 
-The nondeterministic protocol permits trace generation only under guarded pilot framing. It requires repeated replay and bootstrap confidence intervals before any utility claim is upgraded. The trajectory-control artifact is currently marked as unmeasured skeleton output, not a completed control experiment. No manuscript section should describe the real-task pilot as top-tier-ready while these gates remain unresolved.
+The nondeterministic protocol permits trace generation only under guarded pilot framing. It requires repeated replay and bootstrap confidence intervals before any utility claim is upgraded. The trajectory-control artifact is readiness-complete as a partial pilot control report, not a completed downstream control validation. No manuscript section should describe the real-task pilot as scale-ready while these gates remain unresolved.
 
 ## Required PRM/Filtering Validation
 

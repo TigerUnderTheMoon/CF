@@ -10,7 +10,7 @@ Topology approximation is another limitation. Reflection graphs are deterministi
 
 Intervention coverage is sparse relative to the full space of possible reflective operations. Phase 5-7 cover local ablations, graph removal modes, redundancy profiles, compensation ratios, rerouting, resilience, and distributedness. They do not cover learned policies, hidden-state models, discovery-style claims, or semantic reasoning verification.
 
-Stage 2 evidence is also limited. The held-out FMA signal is positive and its aggregate confidence interval excludes zero, but the effect size is small. This supports weak alignment, not a high-magnitude prediction result. Stratified generalization is not globally confirmed: the `S_mid` and `S_rand` confidence intervals include zero, so C1, C2, and C3 must be described as `stratum_dependent` rather than globally confirmed.
+Stage 2 evidence is also limited. The held-out FMA signal is positive and its aggregate confidence interval excludes zero, but the effect size is small. This supports weak alignment, not a high-magnitude prediction result. Stratified generalization lacks global confirmation: the `S_mid` and `S_rand` confidence intervals include zero, so C1, C2, and C3 must be described as `stratum_dependent` rather than broad confirmation.
 
 Baseline integration is conservative. The repository contains clean held-out step-level proxy scores for random masking, span masking, graph removal, and edge dropout, but these are frozen non-target controls rather than independently rerun perturbation-response experiments. They close the missing-artifact gate without supporting high-magnitude or superiority claims.
 
