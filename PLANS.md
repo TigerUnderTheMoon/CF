@@ -6,6 +6,16 @@
 
 ---
 
+## 0. Planning Boundary
+
+This document separates three layers:
+
+- Vision: long-term target architecture and possible top-tier extensions.
+- Contract: current required artifacts, gates, and allowed claim wording.
+- Evidence: generated artifacts and tests that have actually passed.
+
+Proposal text is not evidence. Current claim status is governed by `paper/claim_registry.md`; current pilot readiness is governed by `outputs/real_task_pilot/readiness_audit.json` and summarized in `paper/submission_readiness_audit.md`.
+
 ## 0. Implementation Status
 
 | Phase | Status | Artifact |
@@ -728,7 +738,7 @@ This layer tests whether the framework can move beyond stored synthetic traces w
 
 `PILOT_PASS` requires preflight pass, at least 300 valid traces, span validity at least 90 percent, replay success at least 85 percent, clean baseline leakage audit, complete cost report, passing tests, and clean hygiene scan. Expansion toward top-tier scale requires task-level Spearman CI lower bound above zero, or pooled CI lower bound above zero plus at least one independently passing task.
 
-Current status: `outputs/real_task_pilot/readiness_audit.json` reports `PILOT_BLOCKED`, with failure codes `PILOT_FAIL_SIGNAL`, `PILOT_FAIL_SPAN`, and `PREFLIGHT_FAIL_DRIFT`. `outputs/real_task_pilot/api_preflight_report.json` reports `status: fail`, so any ongoing generated traces remain guarded pilot evidence only.
+Current status: `outputs/real_task_pilot/readiness_audit.json` reports `PILOT_BLOCKED`, with failure codes `PILOT_FAIL_CONTROLS`, `PILOT_FAIL_COVERAGE`, `PILOT_FAIL_REPLAY`, `PILOT_FAIL_SIGNAL`, and `PREFLIGHT_FAIL_DRIFT`. `outputs/real_task_pilot/api_preflight_report.json` reports `status: fail`, so any ongoing generated traces remain guarded pilot evidence only. The trajectory-controls artifact is currently a schema/skeleton report with unmeasured metrics, not a completed control experiment.
 
 ---
 

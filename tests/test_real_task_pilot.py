@@ -12,6 +12,11 @@ from fma.real_task_pilot.baselines import (
     score_independent_baselines,
 )
 from fma.real_task_pilot.coverage import audit_key_coverage, expected_span_keys
+from fma.real_task_pilot.controls import (
+    build_control_report,
+    control_report_skeleton,
+    missing_control_jobs,
+)
 from fma.real_task_pilot.hygiene import scan_hygiene
 from fma.real_task_pilot.metrics import exact_match, normalized_token_f1, score_answer
 from fma.real_task_pilot.generation import (
@@ -235,7 +240,7 @@ def test_preflight_attempt_denominator_includes_invalid_outputs() -> None:
     assert "PREFLIGHT_FAIL_SCHEMA" in report["api_preflight_report"]["failure_codes"]
 
 
-def test_cost_projection_uses_pilot_generation_requests_and_budget() -> None:
+def test_cost_projection_uses_full_configured_workload_and_budget() -> None:
     config = {
         "experiment": {
             "user_approved_budget_usd": 150,
@@ -248,9 +253,9 @@ def test_cost_projection_uses_pilot_generation_requests_and_budget() -> None:
 
     report = evaluate_preflight(outputs, config=config)
 
-    assert report["cost_and_rate_limit_report"]["projected_requests"] == 400
+    assert report["cost_and_rate_limit_report"]["projected_requests"] == 3600
     assert report["cost_and_rate_limit_report"]["budget_gate_pass"] is True
-    assert report["cost_and_rate_limit_report"]["projected_cost_usd"] == 0.26
+    assert report["cost_and_rate_limit_report"]["projected_cost_usd"] == 2.34
 
 
 def test_preflight_triggers_fallback_on_invalid_schema() -> None:
@@ -459,6 +464,57 @@ def test_readiness_keeps_signal_blocked_when_candidate_score_is_missing() -> Non
     assert audit["gates"]["expand_to_top_tier_scale"] is False
 
 
+def test_readiness_separates_completed_evidence_from_scale_readiness() -> None:
+    records = [valid_record(f"gsm8k-{index:05d}") for index in range(3)]
+    expected_keys = expected_span_keys(records, max_spans_per_trace=3)
+    covered_rows = [
+        {"sample_id": key["sample_id"], "span_index": key["span_index"], "status": "success"}
+        for key in expected_keys
+    ]
+    artifact_coverage = {
+        name: audit_key_coverage(expected_keys, covered_rows, artifact_name=name)
+        for name in ("replay", "delta", "baseline", "rank_signal")
+    }
+    control_report = build_control_report(
+        [
+            {
+                "variant": variant,
+                "status": "success",
+                "correctness": True,
+                "valid": True,
+                "reflection_count": 0,
+                "usage": {"input_tokens": 1, "output_tokens": 2, "total_tokens": 3},
+            }
+            for variant in ("no_reflection", "tagged_reflection", "self_refine_style", "reflexion_style")
+        ],
+        expected_per_variant=1,
+    )
+
+    audit = build_readiness_audit(
+        preflight_report={"status": "fail", "failure_codes": ["PREFLIGHT_FAIL_DRIFT"]},
+        valid_trace_count=300,
+        span_validity_rate=1.0,
+        replay_success_rate=1.0,
+        baseline_leakage_clean=True,
+        cost_report_complete=True,
+        tests_passed=True,
+        hygiene_clean=True,
+        signal_report={
+            "primary_signal": {"name": "structurally_calibrated_fma", "available": False},
+            "per_task": {"gsm8k": {"spearman_ci_lower_gt_zero": False}},
+            "pooled": {"spearman_ci_lower_gt_zero": False},
+        },
+        artifact_coverage=artifact_coverage,
+        control_report=control_report,
+    )
+
+    assert audit["status"] == "PILOT_BLOCKED"
+    assert audit["evidence_completion"]["status"] == "PILOT_EVIDENCE_COMPLETE"
+    assert audit["evidence_completion"]["complete"] is True
+    assert "PREFLIGHT_FAIL_DRIFT" in audit["failure_codes"]
+    assert "PILOT_FAIL_SIGNAL" in audit["failure_codes"]
+
+
 def test_rank_signal_reports_baseline_diagnostics_without_primary_candidate() -> None:
     records = [valid_record(f"gsm8k-{index:05d}") for index in range(3)]
     delta_rows = [
@@ -484,6 +540,70 @@ def test_rank_signal_reports_baseline_diagnostics_without_primary_candidate() ->
     assert report["primary_signal"]["available"] is False
     assert report["pooled"]["spearman_ci_lower_gt_zero"] is False
     assert "taxonomy_prior" in report["baseline_diagnostics"]
+
+
+def test_trajectory_control_report_marks_metrics_as_unmeasured() -> None:
+    report = control_report_skeleton()
+
+    assert report["self_refine_style"]["status"] == "skeleton_unmeasured"
+    assert report["self_refine_style"]["metrics"]["accuracy"] is None
+
+
+def test_trajectory_control_report_marks_measured_and_partial_variants() -> None:
+    report = build_control_report(
+        [
+            {
+                "variant": "no_reflection",
+                "status": "success",
+                "correctness": True,
+                "valid": True,
+                "reflection_count": 0,
+                "usage": {"input_tokens": 10, "output_tokens": 20, "total_tokens": 30},
+            },
+            {
+                "variant": "tagged_reflection",
+                "status": "success",
+                "correctness": False,
+                "valid": True,
+                "reflection_count": 1,
+                "usage": {"input_tokens": 8, "output_tokens": 12, "total_tokens": 20},
+            },
+            {
+                "variant": "self_refine_style",
+                "status": "failed",
+                "valid": False,
+                "validation_errors": ["api_error"],
+                "usage": {"input_tokens": 3, "output_tokens": 0, "total_tokens": 3},
+            },
+        ],
+        expected_per_variant=1,
+    )
+
+    assert report["no_reflection"]["status"] == "measured"
+    assert report["no_reflection"]["metrics"]["accuracy"] == 1.0
+    assert report["no_reflection"]["metrics"]["reflection_count"] == 0.0
+    assert report["tagged_reflection"]["status"] == "measured"
+    assert report["tagged_reflection"]["metrics"]["accuracy"] == 0.0
+    assert report["self_refine_style"]["status"] == "partial"
+    assert report["self_refine_style"]["failure_reasons"] == ["api_error"]
+    assert report["reflexion_style"]["status"] == "skeleton_unmeasured"
+
+
+def test_trajectory_control_jobs_resume_by_variant_and_sample() -> None:
+    records = [valid_record("gsm8k-00001")]
+    existing_rows = [
+        {"sample_id": "gsm8k-00001", "variant": "no_reflection", "status": "success"}
+    ]
+
+    jobs = missing_control_jobs(
+        records,
+        existing_rows,
+        variants=("no_reflection", "tagged_reflection"),
+    )
+
+    assert len(jobs) == 1
+    assert jobs[0]["sample_id"] == "gsm8k-00001"
+    assert jobs[0]["variant"] == "tagged_reflection"
 
 
 def test_repeated_replay_resume_skips_completed_repeat_jobs() -> None:
@@ -555,6 +675,34 @@ def test_hygiene_scan_reports_forbidden_phrases(tmp_path) -> None:
 
     assert report["hygiene_clean"] is False
     assert report["forbidden_findings"][0]["pattern"] == "true causal effect"
+
+
+def test_hygiene_scan_blocks_citation_placeholders(tmp_path) -> None:
+    path = tmp_path / "related_work.md"
+    path.write_text(
+        "TODO: manual bibliography completion\n"
+        "Reflexion [REFLEXION_PLACEHOLDER]\n",
+        encoding="utf-8",
+    )
+
+    report = scan_hygiene([path])
+
+    assert report["hygiene_clean"] is False
+    assert len(report["citation_placeholders_retained"]) == 2
+
+
+def test_hygiene_scan_allows_baseline_comparison_terms(tmp_path) -> None:
+    path = tmp_path / "experiments.md"
+    path.write_text(
+        "Future validation should compare against token attribution "
+        "and heuristic reflection scoring baselines.\n",
+        encoding="utf-8",
+    )
+
+    report = scan_hygiene([path])
+
+    assert report["hygiene_clean"] is True
+    assert report["forbidden_findings"] == []
 
 
 def test_sample_manifest_is_task_balanced_and_deterministic() -> None:

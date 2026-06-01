@@ -102,7 +102,7 @@ def _cost_report(
     config: Mapping[str, Any],
 ) -> dict[str, Any]:
     experiment = config.get("experiment", {}) if isinstance(config, Mapping) else {}
-    max_requests = int(experiment.get("pilot_generation_requests") or experiment.get("max_api_requests_pilot") or 0)
+    max_requests = int(experiment.get("max_api_requests_pilot") or 0)
     budget = experiment.get("user_approved_budget_usd")
     planned_requests = max_requests or _planned_request_count(config)
     multiplier = planned_requests / max(1, observed_requests)
@@ -129,11 +129,29 @@ def _cost_report(
 
 
 def _planned_request_count(config: Mapping[str, Any]) -> int:
+    experiment = config.get("experiment", {}) if isinstance(config, Mapping) else {}
+    pilot_requests = int(experiment.get("pilot_generation_requests") or 0)
     data_tasks = _nested(config, "data", "tasks", default={})
-    total = sum(int(task.get("count", 0)) for task in data_tasks.values()) if isinstance(data_tasks, Mapping) else 400
+    data_total = (
+        sum(int(task.get("count", 0)) for task in data_tasks.values())
+        if isinstance(data_tasks, Mapping)
+        else 0
+    )
+    total = pilot_requests or data_total or 400
+    if "replay" not in config and "trajectory_controls" not in config:
+        return total
     replay_max = int(_nested(config, "replay", "max_spans_per_trace", default=3))
+    replay_repeats = int(
+        _nested(
+            config,
+            "nondeterministic_protocol",
+            "repeats",
+            "replay_per_span",
+            default=1,
+        )
+    )
     control_count = len(_nested(config, "trajectory_controls", "variants", default=[]))
-    return total + total * replay_max + total * control_count
+    return total + total * replay_max * replay_repeats + total * control_count
 
 
 def _projected_cost(projected_tokens: Mapping[str, int], price: Mapping[str, Any]) -> float | None:

@@ -70,9 +70,9 @@ Stratified generalization is not globally confirmed. C3 is `stratum_dependent` b
 
 ## Real-Task Pilot Status
 
-The real-task pilot is a guarded extension rather than a replacement for historical Phase 5-7 evidence. The current readiness audit reports `PILOT_BLOCKED`, with failure codes `PILOT_FAIL_SIGNAL`, `PILOT_FAIL_SPAN`, and `PREFLIGHT_FAIL_DRIFT`. The API preflight report has `status: fail` due to drift. Any generated GSM8K/HotpotQA pilot traces should therefore be treated as pilot evidence only, not as validated real-task support for utility claims.
+The real-task pilot is a guarded extension rather than a replacement for historical Phase 5-7 evidence. The current readiness audit reports `PILOT_BLOCKED`, with failure codes `PILOT_FAIL_CONTROLS`, `PILOT_FAIL_COVERAGE`, `PILOT_FAIL_REPLAY`, `PILOT_FAIL_SIGNAL`, and `PREFLIGHT_FAIL_DRIFT`. The API preflight report has `status: fail` due to drift. Any generated GSM8K/HotpotQA pilot traces should therefore be treated as pilot evidence only, not as validated real-task support for utility claims.
 
-The nondeterministic protocol permits trace generation only under guarded pilot framing. It requires repeated replay and bootstrap confidence intervals before any utility claim is upgraded. No manuscript section should describe the real-task pilot as top-tier-ready while these gates remain unresolved.
+The nondeterministic protocol permits trace generation only under guarded pilot framing. It requires repeated replay and bootstrap confidence intervals before any utility claim is upgraded. The trajectory-control artifact is currently marked as unmeasured skeleton output, not a completed control experiment. No manuscript section should describe the real-task pilot as top-tier-ready while these gates remain unresolved.
 
 ## Required PRM/Filtering Validation
 

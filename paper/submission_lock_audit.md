@@ -75,7 +75,7 @@ No required baseline uses `Delta U`, `necessity`, `delta_utility`, `attribution_
 
 1. C1, C2, and C3 are `stratum_dependent`; none can be described as globally confirmed.
 2. Required baselines are clean but conservative proxies, not independently rerun perturbation-response experiments.
-3. Related-work citation placeholders remain outside this consistency pass.
+3. Related-work bibliography anchors are maintained outside this consistency pass.
 4. Final venue formatting, figure numbering, bibliography, and git freeze remain incomplete.
 
 ## Final Lock Recommendation

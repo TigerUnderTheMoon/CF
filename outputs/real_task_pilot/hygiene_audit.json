@@ -1,26 +1,5 @@
 {
-  "citation_placeholders_retained": [
-    {
-      "line": 93,
-      "path": "D:\\CF\\README.md",
-      "text": "TODO: manual bibliography completion"
-    },
-    {
-      "line": 3,
-      "path": "D:\\CF\\paper\\related_work.md",
-      "text": "TODO: manual bibliography completion. Citation placeholders are used where bibliographic metadata has not been manually verified."
-    },
-    {
-      "line": 7,
-      "path": "D:\\CF\\paper\\related_work.md",
-      "text": "Reflection-oriented methods such as Reflexion [REFLEXION_PLACEHOLDER] and Self-Refine [SELF_REFINE_PLACEHOLDER] study whether iterative critique, feedback, or revision changes task performance. The conceptual comparison is direct: those methods motivate the study of explicit reflective operations, while this framework asks how individual reflective steps behave under deterministic attribution and structural interventions."
-    },
-    {
-      "line": 15,
-      "path": "D:\\CF\\paper\\related_work.md",
-      "text": "Process Reward Models (PRMs) [PRM_PLACEHOLDER] provide step-level supervision for reasoning processes. They are relevant because both PRMs and this framework operate below the final-answer level. The distinction is that PRM-style work usually trains or evaluates a reward signal for intermediate steps, while this paper analyzes deterministic intervention outputs and topology-sensitive dependence."
-    }
-  ],
+  "citation_placeholders_retained": [],
   "forbidden_findings": [],
   "hygiene_clean": true,
   "scanned_files": [
@@ -29,6 +8,7 @@
     "D:\\CF\\docs\\interpretation_and_limitations.md",
     "D:\\CF\\paper\\abstract.md",
     "D:\\CF\\paper\\appendix.md",
+    "D:\\CF\\paper\\claim_registry.md",
     "D:\\CF\\paper\\conclusion.md",
     "D:\\CF\\paper\\experiments.md",
     "D:\\CF\\paper\\figure_inventory.md",
@@ -41,6 +21,7 @@
     "D:\\CF\\paper\\reproducibility.md",
     "D:\\CF\\paper\\results.md",
     "D:\\CF\\paper\\submission_lock_audit.md",
+    "D:\\CF\\paper\\submission_readiness_audit.md",
     "D:\\CF\\paper\\terminology.md"
   ]
 }

@@ -1,47 +1,47 @@
 {
   "baseline_diagnostics": {
     "question_difficulty_proxy": {
-      "n": 22,
+      "n": 382,
       "spearman_ci95": [
-        0.0,
-        0.0
+        -0.11927602302107296,
+        0.0714347787267356
       ],
       "spearman_ci_lower_gt_zero": false,
-      "spearman_rho": 0.0,
+      "spearman_rho": -0.02280817136349109,
       "used_as_primary_signal": false
     },
     "random": {
-      "n": 22,
+      "n": 382,
       "spearman_ci95": [
-        0.0,
-        0.0
+        -0.07305158903403522,
+        0.11457365654174713
       ],
       "spearman_ci_lower_gt_zero": false,
-      "spearman_rho": 0.0,
+      "spearman_rho": 0.020768497626721807,
       "used_as_primary_signal": false
     },
     "relative_position": {
-      "n": 22,
+      "n": 382,
       "spearman_ci95": [
-        0.0,
-        0.0
+        -0.015061333068069418,
+        0.17516223661496907
       ],
       "spearman_ci_lower_gt_zero": false,
-      "spearman_rho": 0.0,
+      "spearman_rho": 0.08074741099393633,
       "used_as_primary_signal": false
     },
     "span_length": {
-      "n": 22,
+      "n": 382,
       "spearman_ci95": [
-        0.0,
-        0.0
+        -0.19450675035852028,
+        -0.0026033107955900237
       ],
       "spearman_ci_lower_gt_zero": false,
-      "spearman_rho": 0.0,
+      "spearman_rho": -0.10202726829938344,
       "used_as_primary_signal": false
     },
     "taxonomy_prior": {
-      "n": 22,
+      "n": 382,
       "spearman_ci95": [
         0.0,
         0.0
@@ -51,7 +51,7 @@
       "used_as_primary_signal": false
     },
     "uniform_reflection_weight": {
-      "n": 22,
+      "n": 382,
       "spearman_ci95": [
         0.0,
         0.0

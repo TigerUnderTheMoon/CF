@@ -1,7 +1,6 @@
 {
   "records_evaluated": 20,
   "retry_labels": [
-    "without_reasoning_and_seed",
     "without_seed"
   ],
   "sample_retry_errors": [

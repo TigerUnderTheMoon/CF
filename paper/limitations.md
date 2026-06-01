@@ -22,4 +22,4 @@ Observed redistribution should not be interpreted as intentional adaptation. Com
 
 Empirical observations are bounded by the stored outputs. Structural interpretations should remain tied to those outputs. A possible interpretation is that future benchmarks could test whether the same local-utility and sparse-necessity pattern holds under larger, non-synthetic, or human-reviewed trace collections.
 
-Finally, the manuscript is limited by citation status. Related work uses placeholders until bibliographic metadata is manually completed. This is intentional citation safety: conceptual comparison is preferable to unverified author, year, venue, or title claims.
+Finally, the manuscript is limited by citation status. Related work now uses explicit bibliography anchors for the core comparison points, but venue-ready references still require a final bibliography-format pass. Citation safety remains preferable to unverified author, year, venue, or title claims.

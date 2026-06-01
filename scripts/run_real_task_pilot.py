@@ -16,7 +16,13 @@ from fma.io import load_records, write_records
 from fma.real_task_pilot.baselines import build_baseline_leakage_audit, score_independent_baselines
 from fma.real_task_pilot.coverage import audit_key_coverage, expected_span_keys
 from fma.real_task_pilot.config import load_pilot_config, output_dir
-from fma.real_task_pilot.controls import control_report_skeleton
+from fma.real_task_pilot.controls import (
+    build_control_prompt,
+    build_control_report,
+    control_report_skeleton,
+    control_row_from_response,
+    missing_control_jobs as missing_trajectory_control_jobs,
+)
 from fma.real_task_pilot.hygiene import candidate_files, render_hygiene_markdown, scan_hygiene
 from fma.real_task_pilot.generation import (
     GeneratedTraceResult,
@@ -413,8 +419,44 @@ def main() -> None:
         return
 
     if args.stage == "controls":
-        write_json(root / "trajectory_controls_report.json", control_report_skeleton())
-        print(f"Wrote trajectory control skeleton to {root / 'trajectory_controls_report.json'}")
+        if not args.allow_api:
+            write_json(root / "trajectory_controls_report.json", control_report_skeleton())
+            print(f"Wrote trajectory control skeleton to {root / 'trajectory_controls_report.json'}")
+            return
+        adapter = OpenAIResponsesAdapter()
+        variants = list(config.get("trajectory_controls", {}).get("variants") or [])
+        existing_attempts = _load_existing_records(root / "trajectory_control_attempts.jsonl")
+        existing_results = _load_existing_records(root / "trajectory_control_results.jsonl")
+        missing_jobs = missing_trajectory_control_jobs(
+            records,
+            existing_results,
+            variants=variants,
+        )
+        jobs = _limit_replay_jobs(missing_jobs, args.max_jobs)
+        print(
+            f"Selected {len(jobs)} trajectory-control jobs from {len(missing_jobs)} missing jobs "
+            f"(max_jobs={args.max_jobs})."
+        )
+        for job in jobs:
+            attempt, result_row = _run_control_job(job, adapter, config)
+            existing_attempts.append(attempt)
+            existing_results.append(result_row)
+            existing_results = _dedupe_control_rows(existing_results)
+            write_records(existing_attempts, root / "trajectory_control_attempts.jsonl")
+            write_records(existing_results, root / "trajectory_control_results.jsonl")
+            write_json(
+                root / "trajectory_controls_report.json",
+                build_control_report(existing_results, expected_per_variant=len(records)),
+            )
+        if not jobs:
+            write_json(
+                root / "trajectory_controls_report.json",
+                build_control_report(existing_results, expected_per_variant=len(records)),
+            )
+        print(
+            f"Wrote {len(existing_results)} trajectory-control rows and "
+            f"{len(existing_attempts)} attempts to {root}"
+        )
         return
 
     if args.stage == "readiness":
@@ -423,6 +465,7 @@ def main() -> None:
         baseline_audit = _read_json(root / "baseline_leakage_audit.json", default={"target_leakage_status": "missing"})
         cost_report = _read_json(root / "cost_and_rate_limit_report.json", default={})
         signal_report = _read_json(root / "rank_signal_report.json", default={})
+        control_report = _read_json(root / "trajectory_controls_report.json", default=None)
         max_spans = int(config.get("replay", {}).get("max_spans_per_trace", 3))
         expected_keys = expected_span_keys(records, max_spans_per_trace=max_spans)
         replay_rows = _load_existing_records(root / "real_task_replay_results.jsonl")
@@ -453,6 +496,7 @@ def main() -> None:
             hygiene_clean=bool(hygiene_report.get("hygiene_clean")),
             signal_report=signal_report,
             artifact_coverage=artifact_coverage,
+            control_report=control_report if isinstance(control_report, dict) else None,
         )
         write_json(root / "readiness_audit.json", audit)
         print(f"Wrote readiness audit to {root / 'readiness_audit.json'}; status={audit['status']}")
@@ -770,6 +814,132 @@ def _dedupe_replay_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
             str(row.get("sample_id") or ""),
             int(row.get("span_index", 0) or 0),
             int(row.get("repeat_index", 0) or 0),
+        )
+        by_key[key] = row
+    return [by_key[key] for key in sorted(by_key)]
+
+
+def _run_control_job(
+    job: dict[str, Any],
+    adapter: OpenAIResponsesAdapter,
+    config: dict[str, Any],
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    prompt = build_control_prompt(job)
+    fallback_order = _control_fallback_order(config)
+    events: list[dict[str, Any]] = []
+    last_row: dict[str, Any] | None = None
+    last_raw = ""
+    for json_mode in (False, True):
+        for model_name in fallback_order:
+            mode_name = "json_object" if json_mode else "json_schema"
+            try:
+                response = adapter.create_trace(
+                    prompt=prompt,
+                    config=config,
+                    model_name=model_name,
+                    json_mode=json_mode,
+                )
+            except Exception as exc:
+                events.append(
+                    {
+                        "model_name": model_name,
+                        "structured_output_mode": mode_name,
+                        "status": "api_error",
+                        "error_type": type(exc).__name__,
+                        "error": str(exc),
+                    }
+                )
+                continue
+            last_raw = response.output_text
+            row = control_row_from_response(
+                job,
+                response,
+                structured_output_mode=mode_name,
+            )
+            last_row = row
+            if row["status"] == "success":
+                return _control_attempt_payload(job, row, raw_output=last_raw, events=events), row
+            events.append(
+                {
+                    "model_name": model_name,
+                    "structured_output_mode": mode_name,
+                    "status": "invalid_output",
+                    "validation_errors": list(row.get("validation_errors") or []),
+                }
+            )
+    if last_row is None:
+        last_row = _failed_control_row(job, events=events)
+    return _control_attempt_payload(job, last_row, raw_output=last_raw, events=events), last_row
+
+
+def _control_fallback_order(config: dict[str, Any]) -> list[str]:
+    model_config = config.get("model", {})
+    order = list(model_config.get("fallback_order") or [])
+    primary = str(model_config.get("primary") or "gpt-5.5")
+    if primary not in order:
+        order.insert(0, primary)
+    return order
+
+
+def _control_attempt_payload(
+    job: dict[str, Any],
+    row: dict[str, Any],
+    *,
+    raw_output: str,
+    events: list[dict[str, Any]],
+) -> dict[str, Any]:
+    return {
+        "sample_id": job.get("sample_id"),
+        "task_type": job.get("task_type"),
+        "variant": job.get("variant"),
+        "status": row.get("status"),
+        "row": row,
+        "raw_output": raw_output,
+        "fallback_events": list(events),
+        "validation_errors": list(row.get("validation_errors") or []),
+    }
+
+
+def _failed_control_row(
+    job: dict[str, Any],
+    *,
+    events: list[dict[str, Any]],
+) -> dict[str, Any]:
+    errors = [
+        str(event.get("error") or event.get("error_type") or "control_generation_failed")
+        for event in events
+        if event.get("status") == "api_error"
+    ]
+    if not errors:
+        errors = ["control_generation_failed"]
+    return {
+        "sample_id": job.get("sample_id"),
+        "task_id": job.get("task_id"),
+        "task_type": job.get("task_type"),
+        "variant": job.get("variant"),
+        "status": "failed",
+        "valid": False,
+        "validation_errors": errors,
+        "observable_trace": "",
+        "final_answer": "",
+        "reference_answer": job.get("reference_answer"),
+        "correctness": False,
+        "score": 0.0,
+        "normalized_token_f1": 0.0,
+        "reflection_count": 0,
+        "usage": {},
+        "model_name": None,
+        "system_fingerprint": None,
+        "structured_output_mode": "unavailable",
+    }
+
+
+def _dedupe_control_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    by_key: dict[tuple[str, str], dict[str, Any]] = {}
+    for row in rows:
+        key = (
+            str(row.get("sample_id") or ""),
+            str(row.get("variant") or ""),
         )
         by_key[key] = row
     return [by_key[key] for key in sorted(by_key)]

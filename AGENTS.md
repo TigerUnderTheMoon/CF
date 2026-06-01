@@ -26,19 +26,21 @@ Correct framing:
 
 ## 2. Code Architecture
 
+Current implementation lives under `fma/`. Older `src/...` paths in the Chinese framework are target-architecture names, not current repository paths. Planned modules must not be described as completed evidence until files and artifacts exist.
+
 | Theory Component | Module | Responsibility |
 |---|---|---|
-| Trajectory Processing | `src/data/` | reasoning trajectory loading and normalization |
-| Reflection Extraction | `src/reflection/` | metacognitive span extraction |
-| Structure-Preserving Intervention | `src/intervention/` | masking, replacement, perturbation |
-| Conditional Intervention Distribution | `src/distributions/` | conditional replacement sampling |
-| CIU Estimation | `src/ciu/` | local interventional utility estimation |
-| Counterfactual Matching | `src/matching/` | matched pair construction |
-| Doubly Robust Estimation | `src/dr/` | robust utility estimation |
-| FMA Aggregation | `src/fma/` | distribution-conditioned aggregation |
-| Attribution-Aware Supervision | `src/supervision/` | process weighting |
-| Evaluation | `src/eval/` | attribution and robustness metrics |
-| Visualization | `src/visualization/` | plots, DAGs, intervention traces |
+| Trajectory Processing | `fma/data/` | reasoning trajectory loading and normalization |
+| Reflection Extraction | `fma/real_task_pilot/parsing.py`, `fma/taxonomy/` | observable span and taxonomy extraction |
+| Structure-Preserving Intervention | `fma/intervention/`, `fma/replay/`, `fma/real_task_pilot/replay.py` | masking, replay, and intervention helpers |
+| Conditional Intervention Distribution | planned, not current evidence | conditional replacement sampling |
+| CIU Estimation | `fma/ciu/` | local interventional utility estimation |
+| Counterfactual Matching | planned, not current evidence | matched pair construction |
+| Doubly Robust Estimation | planned, not current evidence | robust utility estimation |
+| FMA Aggregation | `fma/fma/` | distribution-conditioned aggregation |
+| Attribution-Aware Supervision | `fma/prm/` / planned validation | process weighting and downstream validation |
+| Evaluation | `fma/eval/`, `fma/real_task_pilot/` | attribution, robustness, pilot, and readiness metrics |
+| Visualization | `fma/visualization/` | plots, DAGs, intervention traces |
 | Experiment Runner | `scripts/` | experiment orchestration |
 
 ---
@@ -249,7 +251,7 @@ class FMAAggregator(ABC):
 ### 4.1 CIU Estimation (Executable Template)
 
 ```python
-# src/ciu/estimator.py
+# fma/ciu/estimator.py
 from typing import Callable
 
 def estimate_ciu(
@@ -289,7 +291,7 @@ def estimate_ciu(
 ### 4.2 Counterfactual Matching (Executable Template)
 
 ```python
-# src/matching/matcher.py
+# planned module: fma/matching/matcher.py
 import numpy as np
 from typing import List, Dict, Any, Tuple
 from sklearn.preprocessing import StandardScaler
@@ -392,7 +394,7 @@ def count_metacognitive_spans(steps: List[ReasoningStep]) -> int:
 ### 4.3 Doubly Robust Estimation (Executable Template)
 
 ```python
-# src/dr/estimator.py
+# planned module: fma/dr/estimator.py
 import numpy as np
 from typing import Any
 
@@ -481,7 +483,7 @@ def batch_doubly_robust_estimate(
 ### 4.4 FMA Aggregation (Executable Template)
 
 ```python
-# src/fma/aggregator.py
+# fma/fma/aggregator.py
 from typing import List
 import numpy as np
 
@@ -661,14 +663,14 @@ Replacement spans MUST originate from:
 
 Random unrelated replacement is forbidden.
 
-### 6.3 No Raw Scores Without Matching + DR
+### 6.3 No Overclaiming Raw Scores As Matched/DR Estimates
 
-All utility estimation MUST include:
+Final utility claims that invoke matched or doubly robust estimation MUST include:
 
 - counterfactual matching
 - doubly robust correction
 
-Raw intervention scores are invalid.
+Raw replay contrasts and proxy scores are allowed only when explicitly labeled as local, diagnostic, pilot, or proxy evidence. They must not be described as matched estimates, DR-corrected estimates, submission-ready real-task evidence, or PRM/filtering performance.
 
 ### 6.4 No Framing FMA as True Causal Effect
 

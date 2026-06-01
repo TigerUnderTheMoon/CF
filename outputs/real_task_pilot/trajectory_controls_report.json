@@ -1,46 +1,78 @@
 {
   "no_reflection": {
+    "attempted_count": 25,
     "definition": "Answer directly without visible reflection tags.",
+    "expected_count": 382,
+    "failed_count": 0,
+    "failure_reasons": [
+      "missing_control_jobs"
+    ],
     "metrics": {
-      "accuracy": null,
+      "accuracy": 0.8,
       "cost": null,
-      "reflection_count": null,
-      "tokens": null,
-      "validity": null
+      "reflection_count": 0.0,
+      "tokens": 14523,
+      "validity": 0.06544502617801047
     },
-    "mix_with_span_attribution": false
+    "mix_with_span_attribution": false,
+    "status": "partial",
+    "successful_count": 25
   },
   "reflexion_style": {
+    "attempted_count": 25,
     "definition": "Visible verbal reflection after failure or uncertainty, then retry.",
+    "expected_count": 382,
+    "failed_count": 0,
+    "failure_reasons": [
+      "missing_control_jobs"
+    ],
     "metrics": {
-      "accuracy": null,
+      "accuracy": 0.84,
       "cost": null,
-      "reflection_count": null,
-      "tokens": null,
-      "validity": null
+      "reflection_count": 1.0,
+      "tokens": 18496,
+      "validity": 0.06544502617801047
     },
-    "mix_with_span_attribution": false
+    "mix_with_span_attribution": false,
+    "status": "partial",
+    "successful_count": 25
   },
   "self_refine_style": {
+    "attempted_count": 25,
     "definition": "Visible draft, feedback, and revision for the same question.",
+    "expected_count": 382,
+    "failed_count": 0,
+    "failure_reasons": [
+      "missing_control_jobs"
+    ],
     "metrics": {
-      "accuracy": null,
+      "accuracy": 0.88,
       "cost": null,
-      "reflection_count": null,
-      "tokens": null,
-      "validity": null
+      "reflection_count": 1.0,
+      "tokens": 19039,
+      "validity": 0.06544502617801047
     },
-    "mix_with_span_attribution": false
+    "mix_with_span_attribution": false,
+    "status": "partial",
+    "successful_count": 25
   },
   "tagged_reflection": {
+    "attempted_count": 25,
     "definition": "Use one or more visible <reflection> tags in a single-pass solution.",
+    "expected_count": 382,
+    "failed_count": 0,
+    "failure_reasons": [
+      "missing_control_jobs"
+    ],
     "metrics": {
-      "accuracy": null,
+      "accuracy": 0.8,
       "cost": null,
-      "reflection_count": null,
-      "tokens": null,
-      "validity": null
+      "reflection_count": 1.16,
+      "tokens": 16597,
+      "validity": 0.06544502617801047
     },
-    "mix_with_span_attribution": false
+    "mix_with_span_attribution": false,
+    "status": "partial",
+    "successful_count": 25
   }
 }

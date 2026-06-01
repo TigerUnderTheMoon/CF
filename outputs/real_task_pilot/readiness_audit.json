@@ -12,161 +12,54 @@
     },
     "delta": {
       "artifact": "delta",
-      "coverage_pass": false,
+      "coverage_pass": true,
       "expected_count": 382,
       "extra_count": 0,
       "extra_preview": [],
-      "missing_count": 360,
-      "missing_preview": [
-        {
-          "sample_id": "gsm8k-00118",
-          "span_index": 0
-        },
-        {
-          "sample_id": "gsm8k-00119",
-          "span_index": 0
-        },
-        {
-          "sample_id": "gsm8k-00120",
-          "span_index": 0
-        },
-        {
-          "sample_id": "gsm8k-00125",
-          "span_index": 0
-        },
-        {
-          "sample_id": "gsm8k-00140",
-          "span_index": 0
-        },
-        {
-          "sample_id": "gsm8k-00155",
-          "span_index": 0
-        },
-        {
-          "sample_id": "gsm8k-00162",
-          "span_index": 0
-        },
-        {
-          "sample_id": "gsm8k-00168",
-          "span_index": 0
-        },
-        {
-          "sample_id": "gsm8k-00186",
-          "span_index": 0
-        },
-        {
-          "sample_id": "gsm8k-00188",
-          "span_index": 0
-        }
-      ],
-      "observed_count": 22
+      "missing_count": 0,
+      "missing_preview": [],
+      "observed_count": 382
     },
     "rank_signal": {
       "artifact": "rank_signal",
-      "coverage_pass": false,
+      "coverage_pass": true,
       "expected_count": 382,
       "extra_count": 0,
       "extra_preview": [],
-      "missing_count": 360,
-      "missing_preview": [
-        {
-          "sample_id": "gsm8k-00118",
-          "span_index": 0
-        },
-        {
-          "sample_id": "gsm8k-00119",
-          "span_index": 0
-        },
-        {
-          "sample_id": "gsm8k-00120",
-          "span_index": 0
-        },
-        {
-          "sample_id": "gsm8k-00125",
-          "span_index": 0
-        },
-        {
-          "sample_id": "gsm8k-00140",
-          "span_index": 0
-        },
-        {
-          "sample_id": "gsm8k-00155",
-          "span_index": 0
-        },
-        {
-          "sample_id": "gsm8k-00162",
-          "span_index": 0
-        },
-        {
-          "sample_id": "gsm8k-00168",
-          "span_index": 0
-        },
-        {
-          "sample_id": "gsm8k-00186",
-          "span_index": 0
-        },
-        {
-          "sample_id": "gsm8k-00188",
-          "span_index": 0
-        }
-      ],
-      "observed_count": 22
+      "missing_count": 0,
+      "missing_preview": [],
+      "observed_count": 382
     },
     "replay": {
       "artifact": "replay",
-      "coverage_pass": false,
+      "coverage_pass": true,
       "expected_count": 382,
       "extra_count": 0,
       "extra_preview": [],
-      "missing_count": 360,
-      "missing_preview": [
-        {
-          "sample_id": "gsm8k-00118",
-          "span_index": 0
-        },
-        {
-          "sample_id": "gsm8k-00119",
-          "span_index": 0
-        },
-        {
-          "sample_id": "gsm8k-00120",
-          "span_index": 0
-        },
-        {
-          "sample_id": "gsm8k-00125",
-          "span_index": 0
-        },
-        {
-          "sample_id": "gsm8k-00140",
-          "span_index": 0
-        },
-        {
-          "sample_id": "gsm8k-00155",
-          "span_index": 0
-        },
-        {
-          "sample_id": "gsm8k-00162",
-          "span_index": 0
-        },
-        {
-          "sample_id": "gsm8k-00168",
-          "span_index": 0
-        },
-        {
-          "sample_id": "gsm8k-00186",
-          "span_index": 0
-        },
-        {
-          "sample_id": "gsm8k-00188",
-          "span_index": 0
-        }
-      ],
-      "observed_count": 22
+      "missing_count": 0,
+      "missing_preview": [],
+      "observed_count": 382
     }
   },
+  "evidence_completion": {
+    "complete": true,
+    "gates": {
+      "baseline_coverage": true,
+      "baseline_leakage_clean": true,
+      "cost_report_complete": true,
+      "delta_coverage": true,
+      "hygiene_clean": true,
+      "rank_signal_coverage": true,
+      "replay_coverage": true,
+      "replay_success_rate": true,
+      "span_validity_rate": true,
+      "tests_passed": true,
+      "trajectory_controls_complete": true,
+      "valid_trace_count": true
+    },
+    "status": "PILOT_EVIDENCE_COMPLETE"
+  },
   "failure_codes": [
-    "PILOT_FAIL_COVERAGE",
-    "PILOT_FAIL_REPLAY",
     "PILOT_FAIL_SIGNAL",
     "PREFLIGHT_FAIL_DRIFT"
   ],
@@ -176,16 +69,17 @@
     "baseline_coverage": true,
     "baseline_leakage_clean": true,
     "cost_report_complete": true,
-    "delta_coverage": false,
+    "delta_coverage": true,
     "expand_to_top_tier_scale": false,
     "hygiene_clean": true,
     "pooled_ci_lower_gt_zero": false,
     "preflight": false,
-    "rank_signal_coverage": false,
-    "replay_coverage": false,
-    "replay_success_rate": false,
+    "rank_signal_coverage": true,
+    "replay_coverage": true,
+    "replay_success_rate": true,
     "span_validity_rate": true,
     "tests_passed": true,
+    "trajectory_controls_complete": true,
     "valid_trace_count": true
   },
   "pilot_pass": false,

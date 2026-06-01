@@ -9,6 +9,8 @@ It is NOT:
 
 ## Current Manuscript Status
 
+Status source rule: current readiness is derived from `outputs/real_task_pilot/readiness_audit.json`, `paper/submission_readiness_audit.md`, and `paper/claim_registry.md`. Proposal text is not evidence.
+
 The repository includes a Phase 8 paperization layer under `paper/`. The target journal storyline follows the Chinese framework in `D:/Desktop/论文框架_中文版.pdf`: FMA is proposed as a reflection utility learning framework for process supervision, while the current repository evidence supplies the diagnostic core that prevents naive supervision weighting.
 
 Current completed evidence supports this claim:
@@ -55,6 +57,8 @@ Until that final layer exists as real artifacts, PRM/filtering claims remain fut
 - `paper/terminology.md`
 - `paper/figure_inventory.md`
 - `paper/paper_outline.md`
+- `paper/claim_registry.md`
+- `paper/submission_readiness_audit.md`
 
 ## Reproduction Commands
 
@@ -107,15 +111,10 @@ Primary outputs are stored in `outputs/`, with figures under `outputs/figures/`.
 
 The new pilot-only artifacts are stored under `outputs/real_task_pilot/`. They do not rewrite historical synthetic outputs. As of the current readiness audit, `outputs/real_task_pilot/readiness_audit.json` reports `PILOT_BLOCKED`, and `outputs/real_task_pilot/api_preflight_report.json` reports `PREFLIGHT_FAIL_DRIFT`.
 
-## Citation Placeholder
+The current pilot blockers are replay/delta/rank-signal coverage, incomplete trajectory controls, missing real-task primary signal, and API determinism drift. These blockers are intentional gates, not completed evidence.
 
-TODO: manual bibliography completion
+## Reference Anchors
 
-```bibtex
-@misc{fma_placeholder,
-  title = {Functional Metacognitive Attribution: Reflection Utility Learning with Structural Necessity Diagnostics},
-  author = {Anonymous},
-  year = {2026},
-  note = {Manuscript placeholder; downstream PRM/filtering validation pending}
-}
-```
+- Reflexion: Shinn et al. (2023), "Reflexion: Language Agents with Verbal Reinforcement Learning."
+- Self-Refine: Madaan et al. (2023), "Self-Refine: Iterative Refinement with Self-Feedback."
+- Process supervision / PRM: Lightman et al. (2023), "Let's Verify Step by Step."

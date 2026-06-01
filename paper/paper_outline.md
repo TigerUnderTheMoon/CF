@@ -20,7 +20,7 @@ Key claim: prior work usually evaluates trajectory-level improvement, step label
 
 Required figures: none.
 
-Referenced outputs: none; citation placeholders remain until manual bibliography completion.
+Referenced outputs: `paper/claim_registry.md` and `paper/submission_readiness_audit.md` govern current claim status; bibliography anchors are tracked in `paper/related_work.md`.
 
 ## 3. Framework Overview
 

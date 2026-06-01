@@ -1,10 +1,8 @@
 # Related Work
 
-TODO: manual bibliography completion. Citation placeholders are used where bibliographic metadata has not been manually verified.
-
 ## Reflexion, Self-Refine, and Self-Correction
 
-Reflection-oriented methods such as Reflexion [REFLEXION_PLACEHOLDER] and Self-Refine [SELF_REFINE_PLACEHOLDER] study whether iterative critique, feedback, or revision changes task performance. The conceptual comparison is direct: those methods motivate the study of explicit reflective operations, while this framework asks how individual reflective steps behave under deterministic attribution and structural interventions.
+Reflection-oriented methods such as Reflexion (Shinn et al., 2023) and Self-Refine (Madaan et al., 2023) study whether iterative critique, feedback, or revision changes task performance. The conceptual comparison is direct: those methods motivate the study of explicit reflective operations, while this framework asks how individual reflective steps behave under deterministic attribution and structural interventions.
 
 The distinction is threefold. First, this repository separates local utility from structural necessity rather than measuring only final trajectory improvement. Second, it treats reflective steps as observable trace elements, not hidden reasoning states. Third, it interprets weak compensation and low distributedness as informative structural findings rather than as evidence that reflection is absent.
 
@@ -12,7 +10,7 @@ A possible interpretation is that reflection methods and this framework answer c
 
 ## Process Reward Models
 
-Process Reward Models (PRMs) [PRM_PLACEHOLDER] provide step-level supervision for reasoning processes. They are relevant because both PRMs and this framework operate below the final-answer level. The Chinese framework positions FMA as a way to derive reflection utility signals for process supervision, but the current repository adds an important constraint: local utility should not be treated as a direct supervision weight without structural calibration.
+Process Reward Models (PRMs), exemplified by process supervision for mathematical reasoning in Lightman et al. (2023), provide step-level supervision for reasoning processes. They are relevant because both PRMs and this framework operate below the final-answer level. The Chinese framework positions FMA as a way to derive reflection utility signals for process supervision, but the current repository adds an important constraint: local utility should not be treated as a direct supervision weight without structural calibration.
 
 The comparison has three dimensions. Supervision target: vanilla PRMs often score step correctness or process quality, while this framework distinguishes `attribution_score` from `structural_necessity`. Bias control: length-calibrated PRM variants address length or process-bias effects, while FMA focuses on reflection-level intervention sensitivity and topology-sensitive dependence. Granularity: token-attribution methods operate at token or activation level, while FMA treats explicit metacognitive spans as semantic intervention units.
 

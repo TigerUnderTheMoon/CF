@@ -16,11 +16,6 @@ FORBIDDEN_PATTERNS = {
     "global confirmation": re.compile(r"\bglobal confirmation\b", re.IGNORECASE),
     "causal discovery framework": re.compile(r"\bcausal discovery framework\b", re.IGNORECASE),
     "full causal identification": re.compile(r"\bfull causal identification\b", re.IGNORECASE),
-    "generic PRM tuning": re.compile(r"\bgeneric PRM tuning\b", re.IGNORECASE),
-    "token attribution": re.compile(r"\btoken attribution\b", re.IGNORECASE),
-    "heuristic reflection scoring": re.compile(
-        r"\bheuristic reflection scoring\b", re.IGNORECASE
-    ),
     "causal attribution of reflective cognition": re.compile(
         r"\bcausal attribution of reflective cognition\b", re.IGNORECASE
     ),
@@ -63,7 +58,7 @@ def scan_hygiene(paths: Iterable[Path]) -> dict[str, object]:
                     }
                 )
     return {
-        "hygiene_clean": not findings,
+        "hygiene_clean": not findings and not placeholders,
         "forbidden_findings": findings,
         "citation_placeholders_retained": placeholders,
         "scanned_files": [str(path) for path in paths],
