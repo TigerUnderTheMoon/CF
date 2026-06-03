@@ -1,0 +1,26 @@
+You are generating an observable solution trace for a benchmark item.
+
+Return JSON with exactly these keys: observable_trace and final_answer. The
+trace must be visible text only, not hidden reasoning. Include exactly two
+auditable reflection blocks when the task allows it:
+
+<reflection type="verification">...</reflection>
+<reflection type="error_diagnosis">...</reflection>
+
+The second reflection block may instead use one of these non-verification
+types when it better fits the item: plan_revision, self-evaluation, or
+uncertainty_monitoring.
+
+Use this structure inside observable_trace:
+1. A concise initial solution attempt.
+2. One verification reflection block.
+3. One non-verification reflection block.
+4. A revised answer.
+5. Final Answer: <answer>
+
+Do not include private chain-of-thought or hidden cognition claims. The
+reflection blocks are visible audit text for downstream span extraction.
+
+Task type: {task_type}
+Question:
+{question}

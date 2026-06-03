@@ -1,12 +1,10 @@
 {
-  "api_attempts": 30,
-  "api_execution_performed_by_finalize": false,
+  "api_attempts": 80,
   "approved_budget_usd": 5.0,
-  "cost_used_usd": 0.35119,
-  "finalize_mode": "existing_checkpoints_only",
+  "cost_used_usd": 3.14542,
   "usage_totals": {
-    "input_tokens": 12854,
-    "output_tokens": 9564,
-    "total_tokens": 22418
+    "input_tokens": 415586,
+    "output_tokens": 35583,
+    "total_tokens": 451169
   }
 }

@@ -1,0 +1,124 @@
+{
+  "allowed_outputs_after_future_approval": [
+    "api_preflight_report.json",
+    "api_preflight_attempts.jsonl",
+    "api_preflight_traces.jsonl",
+    "logs/api_preflight_cost_report.json"
+  ],
+  "api_execution_authorized_by_this_request": false,
+  "api_execution_performed_by_package_regeneration": false,
+  "approval_status": "REQUEST_ONLY_NOT_APPROVED",
+  "claim_boundary": {
+    "current_status_remains": "PILOT_BLOCKED",
+    "no_pass_claim": true,
+    "no_prm_claim": true,
+    "no_validation_claim": true
+  },
+  "current_status_remains": "PILOT_BLOCKED",
+  "forbidden_in_this_approval_request": [
+    "smoke",
+    "replay",
+    "full generation",
+    "v2.1 scoring",
+    "TASK_SPECIFIC_S_FMA_V2_PASS",
+    "GLOBAL_S_FMA_V2_PASS",
+    "PRM/filtering",
+    "deterministic replay claim",
+    "top-tier-ready claim"
+  ],
+  "forbidden_without_separate_future_approval": [
+    "API execution",
+    "trace generation beyond the API preflight outputs listed above",
+    "replay",
+    "v2.1 scoring",
+    "full validation",
+    "task/global pass wording",
+    "PRM/filtering design or claim"
+  ],
+  "historical_preflight_provenance_not_rewritten": [
+    "outputs\\s_fma_v2_1_fresh_holdout\\api_preflight_report.json",
+    "outputs\\s_fma_v2_1_fresh_holdout\\api_preflight_attempts.jsonl",
+    "outputs\\s_fma_v2_1_fresh_holdout\\api_preflight_traces.jsonl",
+    "outputs\\s_fma_v2_1_fresh_holdout\\logs\\api_preflight_cost_report.json"
+  ],
+  "manifest_source": "outputs\\s_fma_v2_1_fresh_holdout\\fresh_manifest.json",
+  "max_api_requests": 25,
+  "model_config_source": "configs/s_fma_v2_1_fresh_holdout.yaml",
+  "next_allowed_step_without_user_approval": "USER_REVIEW_APPROVAL_REQUEST_ONLY",
+  "only_allowed_next_step_after_user_approval": "Run V2_1_API_PREFLIGHT_ONLY for 20 records, 10 gsm8k and 10 hotpotqa, with max_api_requests 25 and recommended_budget_ceiling_usd 2, producing only the allowed API preflight outputs.",
+  "prompt_file": "prompts/s_fma_v2_1_reflection_generation.txt",
+  "prompt_lock_status": "CURRENT_PACKAGE_PROMPT_LOCK",
+  "prompt_version": "prompt-sha256:e5ac816bc586ee33a2800fbd0c373523154e0c4eeef74cdd349fa70271054a4b",
+  "recommended_budget_ceiling_usd": 2,
+  "records_per_task": {
+    "gsm8k": 10,
+    "hotpotqa": 10
+  },
+  "regenerated_package_artifacts": [
+    "outputs\\s_fma_v2_1_fresh_holdout\\fresh_manifest.json",
+    "outputs\\s_fma_v2_1_fresh_holdout\\manifest_overlap_audit.json",
+    "outputs\\s_fma_v2_1_fresh_holdout\\manifest_overlap_audit.md",
+    "outputs\\s_fma_v2_1_fresh_holdout\\v2_1_contract_audit.json",
+    "outputs\\s_fma_v2_1_fresh_holdout\\v2_1_contract_audit.md",
+    "outputs\\s_fma_v2_1_fresh_holdout\\api_preflight_approval_request.json",
+    "outputs\\s_fma_v2_1_fresh_holdout\\api_preflight_approval_request.md"
+  ],
+  "request_valid_for_review": true,
+  "requested_records": 20,
+  "requested_scope": "V2_1_API_PREFLIGHT_ONLY",
+  "required_pre_run_checks": [
+    {
+      "check": "v2.1 manifest rows",
+      "evidence": "outputs\\s_fma_v2_1_fresh_holdout\\fresh_manifest.json",
+      "required_value": 400
+    },
+    {
+      "check": "manifest_overlap_audit.status",
+      "evidence": "outputs\\s_fma_v2_1_fresh_holdout\\manifest_overlap_audit.json",
+      "required_value": "MANIFEST_OVERLAP_CLEAN"
+    },
+    {
+      "check": "selected overlaps all zero",
+      "evidence": "outputs\\s_fma_v2_1_fresh_holdout\\manifest_overlap_audit.json",
+      "required_value": {
+        "alias_hash": 0,
+        "dataset_config_split_source_index": 0,
+        "normalized_question_hash": 0,
+        "reference_answer_hash": 0,
+        "sample_id": 0,
+        "task_id": 0
+      }
+    },
+    {
+      "check": "v2_1_contract_audit.status",
+      "evidence": "outputs\\s_fma_v2_1_fresh_holdout\\v2_1_contract_audit.json",
+      "required_value": "V2_1_CONTRACT_CLEAN"
+    },
+    {
+      "check": "prompt hash lock",
+      "evidence": "prompts/s_fma_v2_1_reflection_generation.txt",
+      "required_value": "prompt-sha256:e5ac816bc586ee33a2800fbd0c373523154e0c4eeef74cdd349fa70271054a4b"
+    },
+    {
+      "check": "tests pass",
+      "evidence": "local verification command",
+      "required_value": "python -m pytest -q exits 0 before any approved API execution"
+    }
+  ],
+  "supporting_audit_status": {
+    "manifest_overlap_audit": "MANIFEST_OVERLAP_CLEAN",
+    "selected_overlaps_by_key": {
+      "alias_hash": 0,
+      "dataset_config_split_source_index": 0,
+      "normalized_question_hash": 0,
+      "reference_answer_hash": 0,
+      "sample_id": 0,
+      "task_id": 0
+    },
+    "v2_1_contract_audit": "V2_1_CONTRACT_CLEAN"
+  },
+  "supporting_audits": {
+    "manifest_overlap_audit": "outputs\\s_fma_v2_1_fresh_holdout\\manifest_overlap_audit.json",
+    "v2_1_contract_audit": "outputs\\s_fma_v2_1_fresh_holdout\\v2_1_contract_audit.json"
+  }
+}

@@ -1,0 +1,161 @@
+{
+  "api_execution_allowed": false,
+  "blockers": [],
+  "checks": {
+    "claim_policy": {
+      "details": {
+        "configured": [
+          "PILOT_BLOCKED",
+          "no_api_authorized",
+          "no_prm_claim",
+          "no_v2_1_validation",
+          "v2_1_planned_only"
+        ],
+        "required_current_status": [
+          "PILOT_BLOCKED",
+          "no_api_authorized",
+          "no_prm_claim",
+          "no_v2_1_validation",
+          "v2_1_planned_only"
+        ]
+      },
+      "status": "clean"
+    },
+    "gsm8k_selection_policy": {
+      "details": {
+        "policy": "rank_fresh_candidates_by_question_difficulty_proxy_desc",
+        "proxy_helper": "fma.real_task_pilot.baselines.question_difficulty_proxy",
+        "proxy_source_fields": [
+          "question_length",
+          "number_count",
+          "entity_count",
+          "supporting_fact_count"
+        ],
+        "target_outcomes_allowed_for_selection": false,
+        "tie_breakers": [
+          "manifest_item_hash",
+          "source_index"
+        ]
+      },
+      "status": "clean"
+    },
+    "hotpotqa_primary_target": {
+      "details": {
+        "alias_aware_exact_match_role": "secondary_reporting_metric",
+        "exact_match_role": "secondary_reporting_metric",
+        "llm_judge_allowed": false,
+        "primary_score_field": "normalized_token_f1",
+        "rationale": "exact_match_all_zero_in_stochastic_smoke",
+        "scorer_helper": "fma.real_task_pilot.metrics.score_answer"
+      },
+      "status": "clean"
+    },
+    "manifest_overlap_audit": {
+      "details": {
+        "manifest_status": "MANIFEST_OVERLAP_CLEAN"
+      },
+      "status": "clean"
+    },
+    "no_api_boundary": {
+      "details": {
+        "required_false": {
+          "future_api_calls_authorized": false,
+          "smoke_gate_api_authorized_by_this_config": false
+        },
+        "required_true": {
+          "no_api_execution_without_user_approval": true,
+          "no_api_run_in_current_task": true,
+          "no_full_api_generation_in_current_task": true,
+          "no_replay_in_current_task": true,
+          "no_v2_scoring_in_current_task": true,
+          "smoke_gate_requires_explicit_budget_approval": true
+        }
+      },
+      "status": "clean"
+    },
+    "plan_boundary": {
+      "details": {
+        "required_plan_terms": [
+          "PILOT_BLOCKED",
+          "normalized_token_f1",
+          "question_difficulty_proxy"
+        ]
+      },
+      "status": "clean"
+    },
+    "prompt_policy": {
+      "details": {
+        "has_non_verification_block": true,
+        "has_verification_block": true,
+        "prompt_version": "prompt-sha256:e5ac816bc586ee33a2800fbd0c373523154e0c4eeef74cdd349fa70271054a4b",
+        "reflection_blocks_requested": 2
+      },
+      "status": "clean"
+    },
+    "selection_leakage_policy": {
+      "details": {
+        "configured_forbidden_selection_fields": [
+          "correctness",
+          "delta_u",
+          "final_answer",
+          "intervened_score",
+          "original_score",
+          "rank_signal",
+          "reference_answer_similarity_after_generation",
+          "replay_outcome",
+          "target_outcome"
+        ],
+        "required_forbidden_selection_fields": [
+          "correctness",
+          "delta_u",
+          "final_answer",
+          "intervened_score",
+          "original_score",
+          "rank_signal",
+          "reference_answer_similarity_after_generation",
+          "replay_outcome",
+          "target_outcome"
+        ],
+        "target_outcomes_allowed_for_selection_all_false": true
+      },
+      "status": "clean"
+    },
+    "smoke_gate": {
+      "details": {
+        "min_nonzero_delta_u_per_task": 1,
+        "min_nonzero_delta_u_pooled": 3,
+        "sample_count_by_task": {
+          "gsm8k": 10,
+          "hotpotqa": 10
+        }
+      },
+      "status": "clean"
+    },
+    "span_diversity_policy": {
+      "details": {
+        "eligible_non_verification_types": [
+          "error_diagnosis",
+          "plan_revision",
+          "self-evaluation",
+          "uncertainty_monitoring"
+        ],
+        "max_target_spans_per_trace": 2
+      },
+      "status": "clean"
+    }
+  },
+  "claim_upgrade_allowed": false,
+  "config_path": "configs\\s_fma_v2_1_fresh_holdout.yaml",
+  "current_status_remains": "PILOT_BLOCKED",
+  "next_allowed_step": "V2_1_API_PREFLIGHT_APPROVAL_REQUEST_ONLY",
+  "no_api_run": true,
+  "no_prm_claim_yet": true,
+  "no_replay": true,
+  "no_traces_generated": true,
+  "no_v2_1_scoring": true,
+  "plan_file": "paper\\s_fma_v2_1_evidence_target_revision.md",
+  "prompt_file": "prompts\\s_fma_v2_1_reflection_generation.txt",
+  "prompt_version": "prompt-sha256:e5ac816bc586ee33a2800fbd0c373523154e0c4eeef74cdd349fa70271054a4b",
+  "s_fma_v2_1_status": "planned-only",
+  "status": "V2_1_CONTRACT_CLEAN"
+}

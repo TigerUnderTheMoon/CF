@@ -1,0 +1,298 @@
+experiment:
+  name: s_fma_v2_1_fresh_holdout
+  status: planned
+  seed: 20260603
+  output_dir: outputs/s_fma_v2_1_fresh_holdout
+  plan_file: paper/s_fma_v2_1_evidence_target_revision.md
+  no_api_execution_without_user_approval: true
+  no_api_run_in_current_task: true
+  no_full_api_generation_in_current_task: true
+  no_v2_scoring_in_current_task: true
+  no_replay_in_current_task: true
+  user_approved_budget_usd: null
+  current_task_scope: evidence_target_revision_non_api
+
+frozen_boundary:
+  current_project_status: PILOT_BLOCKED
+  current_pilot_role: development_failure_audit
+  current_pilot_pass: false
+  current_v2_smoke_status: STOCHASTIC_SMOKE_FAIL_SPARSE_SIGNAL
+  exclude_from_final_validation:
+    real_task_pilot:
+      - outputs/real_task_pilot/sample_manifest.json
+      - outputs/real_task_pilot/pilot_traces.jsonl
+      - outputs/real_task_pilot/real_task_replay_results.jsonl
+      - outputs/real_task_pilot/real_task_delta_u.jsonl
+      - outputs/real_task_pilot/structurally_calibrated_fma_scores.jsonl
+      - outputs/real_task_pilot/independent_baseline_scores.jsonl
+      - outputs/real_task_pilot/readiness_audit.json
+      - outputs/real_task_pilot/primary_signal_failure_audit.json
+    s_fma_v2_fresh_holdout:
+      - outputs/s_fma_v2_fresh_holdout/fresh_manifest.json
+      - outputs/s_fma_v2_fresh_holdout/manifest_overlap_audit.json
+      - outputs/s_fma_v2_fresh_holdout/api_preflight_report.json
+      - outputs/s_fma_v2_fresh_holdout/stochastic_smoke_report.json
+      - outputs/s_fma_v2_fresh_holdout/stochastic_smoke_delta_u.jsonl
+      - outputs/s_fma_v2_fresh_holdout/stochastic_smoke_replay_results.jsonl
+      - outputs/s_fma_v2_fresh_holdout/stochastic_smoke_sparse_signal_failure_audit.json
+  allowed_development_uses:
+    - diagnose_target_sparsity
+    - diagnose_exact_match_saturation
+    - motivate_v2_1_target_policy
+    - motivate_span_diversity_policy
+  forbidden_uses:
+    - same_pilot_tuning
+    - current_trace_v2_1_validation
+    - fit_v2_1_weights_from_frozen_outputs
+    - tune_thresholds_from_frozen_outputs
+    - claim_current_pilot_pass_after_revision
+    - prm_filtering_claim
+
+source_failure:
+  artifact: stochastic_smoke_sparse_signal_failure_audit
+  status: STOCHASTIC_SMOKE_FAIL_SPARSE_SIGNAL
+  current_status_remains: PILOT_BLOCKED
+  sample_count: 20
+  sample_count_by_task:
+    gsm8k: 10
+    hotpotqa: 10
+  replay_success_rate: 1.0
+  successful_replay_results: 60
+  expected_replay_results: 60
+  nonzero_delta_u_rows: 0
+  next_allowed_step: STOP_OR_REVISE_EVIDENCE_TARGET
+  task_patterns:
+    gsm8k:
+      diagnosis: exact_match_saturated
+      original_exact_match_correct_rows: 9
+      intervened_mean_score_1_rows: 9
+      rows: 10
+    hotpotqa:
+      diagnosis: exact_match_all_zero
+      original_exact_match_correct_rows: 0
+      intervened_mean_score_1_rows: 0
+      rows: 10
+
+target_policy:
+  target_name: graded_delta_u_v2_1
+  delta_u_definition: original_score_minus_mean_intervened_scores
+  replay_aggregation:
+    repeat_level: mean_intervened_score_per_span
+    sample_level: mean_over_eligible_spans
+    task_level: mean_over_samples
+    bootstrap_unit: sample_id
+  deterministic_replay_claim_forbidden_if_preflight_drift: true
+  task_targets:
+    hotpotqa:
+      primary_score_field: normalized_token_f1
+      scorer_helper: fma.real_task_pilot.metrics.score_answer
+      exact_match_role: secondary_reporting_metric
+      alias_aware_exact_match_role: secondary_reporting_metric
+      llm_judge_allowed: false
+      rationale: exact_match_all_zero_in_stochastic_smoke
+    gsm8k:
+      primary_score_field: exact_match_numeric
+      scorer_helper: fma.real_task_pilot.metrics.score_answer
+      graded_numeric_judge_allowed: false
+      saturation_mitigation: pre_outcome_difficulty_proxy_selection
+      rationale: exact_match_saturated_in_stochastic_smoke
+
+fresh_selection_policy:
+  non_overlap_required: true
+  required_non_overlap_keys:
+    - sample_id
+    - task_id
+    - dataset_config_split_source_index
+    - normalized_question_hash
+    - reference_answer_hash
+    - non_empty_alias_hash
+  forbidden_selection_fields:
+    - correctness
+    - original_score
+    - intervened_score
+    - delta_u
+    - replay_outcome
+    - final_answer
+    - reference_answer_similarity_after_generation
+    - rank_signal
+    - target_outcome
+  tasks:
+    gsm8k:
+      dataset: gsm8k
+      config: main
+      split: test
+      sample_count: 200
+      unsaturated_selection:
+        policy: rank_fresh_candidates_by_question_difficulty_proxy_desc
+        proxy_helper: fma.real_task_pilot.baselines.question_difficulty_proxy
+        proxy_source_fields:
+          - question_length
+          - number_count
+          - entity_count
+          - supporting_fact_count
+        tie_breakers:
+          - manifest_item_hash
+          - source_index
+        target_outcomes_allowed_for_selection: false
+    hotpotqa:
+      dataset: hotpot_qa
+      config: distractor
+      split: validation
+      sample_count: 200
+      selection_policy: deterministic_non_overlapping_manifest_order
+      target_outcomes_allowed_for_selection: false
+
+span_diversity_policy:
+  prompt_file: prompts/s_fma_v2_1_reflection_generation.txt
+  prompt_snapshot_required: true
+  prompt_version_lock_required: true
+  prompt_edits_after_manifest_lock_invalidate_route: true
+  future_prompt_requirements:
+    visible_text_only: true
+    hidden_reasoning_forbidden: true
+    reflection_blocks_requested: 2
+    required_blocks:
+      - operation_type: verification
+      - operation_type_group: non_verification
+        allowed_types:
+          - error_diagnosis
+          - plan_revision
+          - self-evaluation
+          - uncertainty_monitoring
+  target_span_policy:
+    max_target_spans_per_trace: 2
+    include_first_verification_span: true
+    include_first_non_verification_span: true
+    eligible_non_verification_types:
+      - error_diagnosis
+      - plan_revision
+      - self-evaluation
+      - uncertainty_monitoring
+    only_verification_trace_policy: schema_valid_but_counts_against_span_diversity_gate
+  reporting:
+    report_operation_type_distribution: true
+    report_non_verification_span_count_by_task: true
+    keep_trajectory_controls_separate_from_span_attribution: true
+
+smoke_gate:
+  label: S_FMA_V2_1_SMOKE_FEASIBILITY
+  claim_scope: smoke_feasibility_only
+  api_authorized_by_this_config: false
+  requires_explicit_budget_approval: true
+  sample_count: 20
+  sample_count_by_task:
+    gsm8k: 10
+    hotpotqa: 10
+  min_schema_success_rate: 0.95
+  min_tag_extraction_success_rate: 0.95
+  min_replay_success_rate: 0.85
+  min_nonzero_delta_u_per_task: 1
+  min_nonzero_delta_u_pooled: 3
+  hard_stop_conditions:
+    - any_manifest_overlap
+    - target_leakage
+    - prompt_snapshot_missing
+    - prompt_version_missing
+    - schema_success_rate_below_0_95
+    - tag_extraction_success_rate_below_0_95
+    - replay_success_rate_below_0_85
+    - nonzero_delta_u_per_task_below_1
+    - pooled_nonzero_delta_u_below_3
+    - api_drift_not_logged
+  does_not_unlock:
+    - task_specific_v2_1_pass_claim
+    - global_v2_1_pass_claim
+    - deterministic_replay_claim
+    - v2_1_validation_claim
+    - prm_filtering_claim
+
+full_gate:
+  label: S_FMA_V2_1_FULL_VALIDATION
+  available_only_after_smoke_gate_pass_and_separate_budget_approval: true
+  sample_count_by_task:
+    gsm8k: 200
+    hotpotqa: 200
+  min_valid_traces_per_task: 190
+  min_eligible_spans_per_task: 150
+  min_nonzero_delta_u_per_task: 20
+  min_replay_success_rate: 0.85
+  leakage_audit_required: clean
+  manifest_overlap_required: clean
+  no_post_hoc_threshold_tuning: true
+  no_post_hoc_weight_tuning: true
+  task_specific:
+    label: TASK_SPECIFIC_S_FMA_V2_1_PASS
+    requires:
+      - fixed_manifest_count_locked_before_scoring
+      - valid_trace_count_at_least_190
+      - eligible_span_count_at_least_150
+      - nonzero_delta_u_count_at_least_20
+      - full_trace_score_replay_delta_coverage
+      - leakage_audit_clean
+      - no_target_leakage
+      - no_post_hoc_threshold_or_weight_tuning
+      - task_rank_signal_ci_lower_gt_zero
+      - api_drift_logged_and_disclosed
+    claim_scope: task_specific_or_heterogeneous_only
+    does_not_unlock:
+      - cross_task_scale_expansion
+      - prm_filtering_design
+      - prm_filtering_superiority_claim
+  global:
+    label: GLOBAL_S_FMA_V2_1_PASS
+    requires:
+      - gsm8k_TASK_SPECIFIC_S_FMA_V2_1_PASS
+      - hotpotqa_TASK_SPECIFIC_S_FMA_V2_1_PASS
+      - both_tasks_meet_preregistered_rank_signal_standard
+      - pooled_rank_signal_not_negative
+      - no_active_stop_condition
+    unlocks:
+      - larger_real_task_expansion_design
+    does_not_establish:
+      - prm_filtering_superiority
+
+claim_policy:
+  current_status_must_remain:
+    - PILOT_BLOCKED
+    - v2_1_planned_only
+    - no_api_authorized
+    - no_v2_1_validation
+    - no_prm_claim
+  allowed_before_execution:
+    - v2_1_evidence_target_revision
+    - deterministic_hotpotqa_graded_target_specification
+    - gsm8k_unsaturated_fresh_row_selection_policy
+    - span_diversity_prompt_policy
+    - smoke_and_full_run_gate_specification
+  forbidden:
+    - same_pilot_validation
+    - same_pilot_tuning
+    - TASK_SPECIFIC_S_FMA_V2_PASS
+    - GLOBAL_S_FMA_V2_PASS
+    - TASK_SPECIFIC_S_FMA_V2_1_PASS_without_full_task_validation
+    - GLOBAL_S_FMA_V2_1_PASS_without_both_task_passes
+    - deterministic_replay_claim_while_preflight_drift_persists
+    - v2_1_scoring_validation_from_smoke
+    - prm_filtering_claim
+    - prm_filtering_superiority_claim
+  prm_filtering_allowed_only_after:
+    - GLOBAL_S_FMA_V2_1_PASS
+    - DOWNSTREAM_PRM_FILTERING_VALIDATION_PASS
+
+future_execution_boundary:
+  api_calls_authorized: false
+  future_approval_required_for:
+    - smoke_api_run
+    - full_validation_api_run
+    - replay_execution
+    - v2_1_scoring
+    - prm_filtering_design
+  approval_package_must_state:
+    - target_route
+    - manifest_source
+    - overlap_audit
+    - prompt_version
+    - expected_api_request_count
+    - approved_budget_ceiling
+    - stop_conditions
+    - claim_boundary

@@ -6,7 +6,7 @@ experiment:
   plan_file: paper/s_fma_v2_fresh_holdout_plan.md
   no_api_execution_without_user_approval: true
   no_manifest_generation_in_current_task: false
-  current_task_scope: stochastic_smoke_generation_pipeline_fix_non_api
+  current_task_scope: stochastic_smoke_rerun_approval_request_non_api
   no_api_run_in_current_task: true
   no_full_api_generation_in_current_task: true
   no_v2_scoring_in_current_task: true
@@ -297,7 +297,7 @@ stochastic_smoke:
   mask_token: "[REASONING_MASK]"
   max_api_requests: 80
   approved_budget_usd: 5
-  approval_request_json: outputs/s_fma_v2_fresh_holdout/stochastic_smoke_approval_request.json
+  approval_request_json: outputs/s_fma_v2_fresh_holdout/stochastic_smoke_rerun_approval_request.json
   cost_ceiling_usd: 5
   allowed_outputs:
     - outputs/s_fma_v2_fresh_holdout/stochastic_smoke_original_traces.jsonl

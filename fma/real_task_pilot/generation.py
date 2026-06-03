@@ -167,6 +167,10 @@ def normalize_trace_record(
 ) -> dict[str, Any]:
     trace = str(payload.get("observable_trace") or payload.get("visible_solution_trace") or "")
     spans = extract_reflection_spans(trace)
+    generation_config_payload = dict(generation_config)
+    reflection_type_normalization = _canonicalize_reflection_span_types(spans)
+    if reflection_type_normalization:
+        generation_config_payload["reflection_type_normalization"] = reflection_type_normalization
     final_answer = str(payload.get("final_answer") or extract_final_answer(trace))
     task_type = str(sample.get("task_type") or payload.get("task_type") or "")
     reference = str(sample.get("reference_answer") or payload.get("reference_answer") or "")
@@ -184,7 +188,7 @@ def normalize_trace_record(
         "aliases": list(aliases) if isinstance(aliases, list) else [],
         "correctness": bool(score["exact_match"]),
         "model_name": model_name,
-        "generation_config": dict(generation_config),
+        "generation_config": generation_config_payload,
         "system_fingerprint": system_fingerprint,
         "usage": dict(usage),
     }
@@ -249,3 +253,25 @@ def _generation_config(
 
 def _string_or_none(value: Any) -> str | None:
     return None if value is None else str(value)
+
+
+def _canonicalize_reflection_span_types(spans: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    normalization_events: list[dict[str, Any]] = []
+    aliases = {
+        "self_evaluation": "self-evaluation",
+        "self_reflection": "self-reflection",
+    }
+    for span in spans:
+        raw_type = str(span.get("operation_type") or "")
+        canonical_type = aliases.get(raw_type, raw_type)
+        if canonical_type == raw_type:
+            continue
+        span["operation_type"] = canonical_type
+        normalization_events.append(
+            {
+                "span_index": int(span.get("span_index", 0) or 0),
+                "raw_operation_type": raw_type,
+                "canonical_operation_type": canonical_type,
+            }
+        )
+    return normalization_events
