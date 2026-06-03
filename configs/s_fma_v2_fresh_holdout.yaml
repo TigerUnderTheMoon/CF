@@ -335,6 +335,45 @@ api_policy:
     disclosure_fields:
       - system_fingerprint
     api_drift_disclosure_required: true
+  route_policy:
+    DETERMINISTIC_REPLAY_ROUTE:
+      requires_preflight_drift_pass: true
+      deterministic_replay_language_allowed_only_if_pass: true
+      full_generation_language_allowed_only_if_pass: true
+      claim_scope:
+        allowed_only_after_preflight_drift_pass:
+          - deterministic replay language
+          - deterministic full-generation language
+        forbidden_while_drift_persists:
+          - deterministic replay claim
+          - deterministic full-generation claim
+    STOCHASTIC_REPEATED_REPLAY_ROUTE:
+      allowed_only_after_drift_is_disclosed: true
+      requires_explicit_budget_approval: true
+      cost_ceiling_usd: 150
+      original_generation_policy:
+        accepted_trace_policy: first_schema_and_tag_valid_trace
+        repeats_per_sample: 1
+      intervention_replay_policy:
+        repeats_per_span: 3
+        key_row_repeats_per_span_min: 5
+      bootstrap_policy:
+        unit: sample_id
+        resamples: 10000
+      delta_u_aggregation_policy:
+        span_level: mean_over_repeats_per_span
+        sample_level: mean_over_spans_within_sample
+        task_level: mean_over_sample_level_delta_u
+      failure_handling:
+        high_variance_action: stop_and_report_insufficient_precision
+        low_agreement_action: stop_and_report_insufficient_replay_agreement
+        minimum_replay_success_rate: 0.85
+      claim_scope:
+        allowed: stochastic repeated-replay evidence only
+        forbidden:
+          - deterministic replay claim
+          - deterministic causal claim
+          - full generation ready claim
   preflight_drift_policy:
     if_preflight_still_fails: stochastic_repeated_replay_estimand_only
     deterministic_replay_claim_forbidden_if_preflight_fails: true

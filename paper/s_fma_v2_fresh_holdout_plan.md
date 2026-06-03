@@ -6,6 +6,33 @@ Scope: preregister a claim-safe route for testing `structurally_calibrated_fma_v
 
 Preflight-only update, 2026-06-03: `scripts/run_s_fma_v2_fresh_holdout_preflight.py` was run with `--allow-api-preflight-only` against the locked 400-row manifest after setting the preflight-only budget to `5`. It selected and evaluated 10 GSM8K and 10 HotpotQA rows. `outputs/s_fma_v2_fresh_holdout/api_preflight_report.json` reports `PREFLIGHT_FAIL_DRIFT`, `records_evaluated: 20`, `json_parse_success_rate: 1.0`, `schema_success_rate: 1.0`, `tag_extraction_success_rate: 1.0`, `final_answer_parse_success_rate: 1.0`, and `cost_used_usd: 0.321005`; `system_fingerprint` metadata was missing for all 20 evaluated records and is a disclosure-only provider field, not a schema/tag/final-answer failure. No full generation, no 400 fresh traces, no v2 scoring, no replay, no deterministic replay claim, and no PRM/filtering claim are allowed from this result. Current status remains `PILOT_BLOCKED`.
 
+## 0. Drift Route Fork
+
+The fresh-holdout route now has two mutually exclusive reviewer-safe branches after API preflight:
+
+### `DETERMINISTIC_REPLAY_ROUTE`
+
+This route is available only if the preflight drift gate passes. It permits deterministic replay language only when the preflight report status is `API_PREFLIGHT_READY`, `drift_status` is `DETERMINISTIC_REPLAY_FEASIBLE`, and `deterministic_replay_claim_allowed` is `true`.
+
+Current route status: blocked. The stored fresh-holdout preflight report is `PREFLIGHT_FAIL_DRIFT`, so deterministic full-generation and deterministic replay claims are forbidden.
+
+### `STOCHASTIC_REPEATED_REPLAY_ROUTE`
+
+This route is planning-only unless the user explicitly approves a stochastic validation budget after drift disclosure. It is allowed only after the drift failure is disclosed, and it forbids deterministic replay, deterministic causal, and full-generation-ready wording.
+
+Pre-registered stochastic estimand:
+
+- Original generation policy: one accepted trace per manifest row, using the first schema-valid and tag-valid trace; any alternate policy must be approved before API execution.
+- Intervention replay policy: at least 3 replay repeats per eligible span; at least 5 repeats per pre-registered key-row sensitivity span.
+- Bootstrap policy: resample at the `sample_id` unit with 10,000 bootstrap resamples.
+- Delta-U aggregation: compute per-span Delta-U as the mean original-minus-intervened outcome over replay repeats, aggregate spans within each sample, then aggregate sample-level values within task before pooled reporting.
+- Failure handling: stop and report insufficient precision for high variance; stop and report insufficient replay agreement for low agreement; replay failures count against coverage.
+- Minimum replay success rate: `0.85`.
+- Cost policy: stochastic validation has a USD 150 ceiling and requires explicit user approval before any API call; the existing preflight-only approval does not authorize stochastic validation.
+- Claim wording: allowed wording is stochastic repeated-replay evidence only. Deterministic causal, deterministic replay, task/global v2 pass, full-generation-ready, and PRM/filtering claims remain forbidden unless separate gates pass.
+
+With the current `PREFLIGHT_FAIL_DRIFT` report, the only allowed next work is `PREREGISTER_STOCHASTIC_ROUTE` or `RERUN_PREFLIGHT_WITH_STRONGER_DETERMINISM_SETTINGS`. The historical report's `next_allowed_step: STOP_AND_FIX_PREFLIGHT` remains valid as a hard stop marker and must not be rewritten into `API_PREFLIGHT_READY`.
+
 ## 1. Frozen Evidence Boundary
 
 The current real-task pilot is frozen as `development_failure_audit`.

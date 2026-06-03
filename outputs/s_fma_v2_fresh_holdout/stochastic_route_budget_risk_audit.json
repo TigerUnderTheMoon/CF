@@ -1,0 +1,326 @@
+{
+  "audit_type": "s_FMA_v2 STOCHASTIC_REPEATED_REPLAY_ROUTE budget/risk audit",
+  "created_at": "2026-06-03",
+  "scope": {
+    "route": "STOCHASTIC_REPEATED_REPLAY_ROUTE",
+    "planning_only": true,
+    "no_api_run": true,
+    "no_full_generation": true,
+    "no_v2_scoring": true,
+    "no_replay": true,
+    "no_prm_filtering": true,
+    "historical_preflight_artifacts_rewritten": false,
+    "next_allowed_step_remains": "STOP_AND_FIX_PREFLIGHT",
+    "project_status_remains": "PILOT_BLOCKED"
+  },
+  "source_artifacts_read": [
+    "configs/s_fma_v2_fresh_holdout.yaml",
+    "paper/s_fma_v2_fresh_holdout_plan.md",
+    "outputs/s_fma_v2_fresh_holdout/api_preflight_report.json",
+    "outputs/s_fma_v2_fresh_holdout/fresh_manifest.json",
+    "outputs/s_fma_v2_fresh_holdout/manifest_overlap_audit.json"
+  ],
+  "supporting_artifacts_read_for_estimation_only": [
+    "outputs/s_fma_v2_fresh_holdout/api_preflight_attempts.jsonl",
+    "outputs/s_fma_v2_fresh_holdout/api_preflight_traces.jsonl",
+    "outputs/s_fma_v2_fresh_holdout/logs/api_preflight_cost_report.json"
+  ],
+  "current_status": {
+    "fresh_manifest_rows": 400,
+    "fresh_manifest_rows_by_task": {
+      "gsm8k": 200,
+      "hotpotqa": 200
+    },
+    "manifest_overlap_status": "MANIFEST_OVERLAP_CLEAN",
+    "manifest_overlap_clean": true,
+    "api_preflight_status": "PREFLIGHT_FAIL_DRIFT",
+    "api_preflight_failure_codes": [
+      "PREFLIGHT_FAIL_DRIFT",
+      "PREFLIGHT_FAIL_METADATA"
+    ],
+    "deterministic_route_status": "blocked",
+    "stochastic_route_status": "planned-only",
+    "fresh_generation_approval_request_allowed": false,
+    "claim_upgrade_allowed": false
+  },
+  "preflight_usage_basis": {
+    "records_evaluated": 20,
+    "api_attempts_total": 23,
+    "api_attempt_roles": {
+      "preflight_record": 20,
+      "determinism_probe": 3
+    },
+    "preflight_total_usage": {
+      "input_tokens": 11545,
+      "output_tokens": 8776,
+      "total_tokens": 20321,
+      "cost_usd": 0.321005
+    },
+    "base_preflight_record_usage": {
+      "requests": 20,
+      "input_tokens": 9979,
+      "output_tokens": 8005,
+      "total_tokens": 17984,
+      "cost_usd": 0.290045
+    },
+    "determinism_probe_usage": {
+      "requests": 3,
+      "input_tokens": 1566,
+      "output_tokens": 771,
+      "total_tokens": 2337,
+      "cost_usd": 0.03096
+    },
+    "observed_span_count_in_preflight_traces": 20,
+    "observed_spans_per_evaluated_record": 1.0
+  },
+  "unit_cost_assumptions": {
+    "pricing_from_config_usd_per_million_tokens": {
+      "input": 5.0,
+      "output": 30.0
+    },
+    "base_generation_request_mean": {
+      "input_tokens": 498.95,
+      "output_tokens": 400.25,
+      "total_tokens": 899.2,
+      "cost_usd": 0.01450225
+    },
+    "base_generation_request_observed_range": {
+      "lower_cost_usd": 0.00774,
+      "expected_cost_usd": 0.01450225,
+      "upper_cost_usd": 0.040395,
+      "lower_total_tokens": 471,
+      "expected_total_tokens": 899.2,
+      "upper_total_tokens": 1754
+    },
+    "range_method": "lower/expected/upper use min/mean/max observed costs from the 20 base preflight_record requests. Intervention replay has no measured live artifact, so replay estimates transfer this base-generation request unit as a proxy.",
+    "replay_measurement_available": false,
+    "key_row_extra_request_formula": "extra_requests = 2 * key_row_span_count beyond the standard 3 repeats, because key-row sensitivity requires 5 repeats per selected key-row span; no key rows are selected in this planning-only audit."
+  },
+  "full_400_original_generation_cost": {
+    "policy": "one accepted original trace per manifest row",
+    "sample_count": 400,
+    "original_generation_repeats_per_sample": 1,
+    "expected_requests": 400,
+    "expected_input_tokens": 199580,
+    "expected_output_tokens": 160100,
+    "expected_total_tokens": 359680,
+    "expected_cost_usd": 5.8009,
+    "lower_cost_usd": 3.096,
+    "upper_cost_usd": 16.158,
+    "preflight_total_amortized_envelope_not_route_policy": {
+      "request_equivalent": 460,
+      "total_tokens": 406420,
+      "cost_usd": 6.4201,
+      "note": "This envelope carries the 23/20 preflight attempt multiplier, including determinism probes. It is not the stochastic route original-generation policy."
+    }
+  },
+  "full_400_stochastic_intervention_replay_cost": {
+    "sample_count": 400,
+    "expected_spans": 400,
+    "replay_repeats_per_span": 3,
+    "expected_replay_requests": 1200,
+    "expected_input_tokens": 598740,
+    "expected_output_tokens": 480300,
+    "expected_total_tokens": 1079040,
+    "expected_cost_usd": 17.4027,
+    "lower_cost_usd": 9.288,
+    "upper_cost_usd": 48.474,
+    "basis": "Observed preflight traces contain 20 spans across 20 evaluated records. Replay cost is not measured; this is a proxy estimate from base generation request cost."
+  },
+  "scale_estimates": [
+    {
+      "scale": "minimal_smoke_stochastic_route",
+      "sample_count": 20,
+      "sample_count_by_task": {
+        "gsm8k": 10,
+        "hotpotqa": 10
+      },
+      "expected_spans": 20,
+      "original_generation_repeats_per_sample": 1,
+      "original_generation_requests": 20,
+      "replay_repeats_per_span": 3,
+      "replay_requests": 60,
+      "bootstrap_resamples": 10000,
+      "total_api_requests": 80,
+      "expected_tokens": {
+        "input_tokens": 39916,
+        "output_tokens": 32020,
+        "total_tokens": 71936
+      },
+      "token_count_range": {
+        "lower_total_tokens": 37680,
+        "expected_total_tokens": 71936,
+        "upper_total_tokens": 140320
+      },
+      "cost_usd": {
+        "original_generation_expected": 0.290045,
+        "stochastic_intervention_replay_expected": 0.870135,
+        "lower": 0.6192,
+        "expected": 1.16018,
+        "upper": 3.2316
+      },
+      "expected_runtime": {
+        "basis": "Sequential requests; no route-specific wall-clock measurement exists. Range uses 5-20 seconds per request and 45-second configured timeout ceiling.",
+        "expected_range": "7-27 minutes",
+        "timeout_ceiling": "1.0 hours"
+      },
+      "gate_stop_condition": "Planning-only until explicit stochastic budget approval. If later approved, stop on any schema/tag/final-answer failure pattern, replay success below 0.85, missing drift disclosure, cost above approved ceiling, or any attempt to treat smoke output as validation.",
+      "claim_allowed_if_pass": "Engineering smoke only: request-shape feasibility, rough cost confirmation, and preliminary replay-agreement diagnostics under disclosed drift.",
+      "claim_forbidden_even_if_pass": "No task-specific v2 pass, no global v2 pass, no deterministic replay claim, no full-generation-ready claim, no causal claim, and no PRM/filtering claim."
+    },
+    {
+      "scale": "pilot_stochastic_route",
+      "sample_count": 100,
+      "sample_count_by_task": {
+        "gsm8k": 50,
+        "hotpotqa": 50
+      },
+      "expected_spans": 100,
+      "original_generation_repeats_per_sample": 1,
+      "original_generation_requests": 100,
+      "replay_repeats_per_span": 3,
+      "replay_requests": 300,
+      "bootstrap_resamples": 10000,
+      "total_api_requests": 400,
+      "expected_tokens": {
+        "input_tokens": 199580,
+        "output_tokens": 160100,
+        "total_tokens": 359680
+      },
+      "token_count_range": {
+        "lower_total_tokens": 188400,
+        "expected_total_tokens": 359680,
+        "upper_total_tokens": 701600
+      },
+      "cost_usd": {
+        "original_generation_expected": 1.450225,
+        "stochastic_intervention_replay_expected": 4.350675,
+        "lower": 3.096,
+        "expected": 5.8009,
+        "upper": 16.158
+      },
+      "expected_runtime": {
+        "basis": "Sequential requests; no route-specific wall-clock measurement exists. Range uses 5-20 seconds per request and 45-second configured timeout ceiling.",
+        "expected_range": "33-133 minutes",
+        "timeout_ceiling": "5.0 hours"
+      },
+      "gate_stop_condition": "Cannot satisfy preregistered per-task fresh-holdout gates because it is below 190 valid traces and 150 eligible spans per task. If later approved, stop rather than scale if replay success is below 0.85, nonzero Delta-U remains too sparse, exact-match noise dominates, or cost/runtime exceed the approved pilot ceiling.",
+      "claim_allowed_if_pass": "Pilot-only feasibility and variance diagnostics; possible evidence for whether scaling to the full 400-row route is worth a separate budget request.",
+      "claim_forbidden_even_if_pass": "No task-specific v2 pass, no global v2 pass, no deterministic replay claim, no full-generation-ready claim, no causal claim, and no PRM/filtering claim."
+    },
+    {
+      "scale": "top_tier_candidate_stochastic_route",
+      "sample_count": 400,
+      "sample_count_by_task": {
+        "gsm8k": 200,
+        "hotpotqa": 200
+      },
+      "expected_spans": 400,
+      "original_generation_repeats_per_sample": 1,
+      "original_generation_requests": 400,
+      "replay_repeats_per_span": 3,
+      "replay_requests": 1200,
+      "bootstrap_resamples": 10000,
+      "total_api_requests": 1600,
+      "expected_tokens": {
+        "input_tokens": 798320,
+        "output_tokens": 640400,
+        "total_tokens": 1438720
+      },
+      "token_count_range": {
+        "lower_total_tokens": 753600,
+        "expected_total_tokens": 1438720,
+        "upper_total_tokens": 2806400
+      },
+      "cost_usd": {
+        "original_generation_expected": 5.8009,
+        "stochastic_intervention_replay_expected": 17.4027,
+        "lower": 12.384,
+        "expected": 23.2036,
+        "upper": 64.632
+      },
+      "expected_runtime": {
+        "basis": "Sequential requests; no route-specific wall-clock measurement exists. Range uses 5-20 seconds per request and 45-second configured timeout ceiling.",
+        "expected_range": "2.2-8.9 hours",
+        "timeout_ceiling": "20.0 hours"
+      },
+      "gate_stop_condition": "Minimum reviewer-viable scale for the configured fresh holdout, but still blocked now. If later approved and run, stop on any active manifest overlap, target leakage, post-hoc weight/threshold change, schema/tag success below 0.95, replay success below 0.85, valid traces below 190 per task, eligible spans below 150 per task, nonzero Delta-U below 20 per task, unlogged API drift, missing same-table baselines, or cost above the approved ceiling.",
+      "claim_allowed_if_pass": "Conditional future wording only: stochastic repeated-replay fresh-holdout evidence. Task-specific support is allowed only for tasks satisfying their preregistered gates; global v2 support is allowed only if both tasks pass and the same-table baseline/reporting contract is satisfied.",
+      "claim_forbidden_even_if_pass": "No deterministic replay claim, no deterministic causal claim, no full-generation-ready claim, no true causal effect claim, and no PRM/filtering superiority claim."
+    }
+  ],
+  "minimum_viable_scale": {
+    "smoke_minimum_for_budget_learning": "20 samples, 80 core API requests, expected cost USD 1.16018; this is not reviewer-viable validation.",
+    "reviewer_viable_minimum_for_configured_gates": "400 samples, 1600 core API requests, expected cost USD 23.2036; this is the first scale that can satisfy 190 valid traces and 150 eligible spans per task if data quality holds.",
+    "budget_ceiling_from_config_usd": 150,
+    "cost_ceiling_assessment": "The top-tier candidate expected and observed-max proxy costs are below USD 150, but scientific risk remains high because preflight drift and Delta-U sparsity are unresolved."
+  },
+  "reviewer_risks": [
+    {
+      "risk": "drift/non-determinism",
+      "status": "active",
+      "why_it_matters": "The current preflight status is PREFLIGHT_FAIL_DRIFT, so deterministic replay and deterministic full-generation wording are forbidden.",
+      "mitigation_or_stop": "Disclose drift, use repeated replay plus sample-level bootstrap only after explicit budget approval, and stop if replay agreement is too low."
+    },
+    {
+      "risk": "sparse Delta-U",
+      "status": "active_prior_risk",
+      "why_it_matters": "Sparse or zero-inflated intervention utility can make rank metrics unstable even if traces and replay rows are complete.",
+      "mitigation_or_stop": "Require at least 20 nonzero Delta-U rows per task; otherwise stop as insufficient_target_variation."
+    },
+    {
+      "risk": "exact-match noise",
+      "status": "active_metric_risk",
+      "why_it_matters": "GSM8K and HotpotQA exact-match outcomes can be brittle, especially under paraphrase or alias variation.",
+      "mitigation_or_stop": "Report appendix metrics where preregistered, keep exact-match fragility as a limitation, and do not upgrade claims if target variation is inadequate."
+    },
+    {
+      "risk": "task heterogeneity",
+      "status": "active",
+      "why_it_matters": "A pass on one task cannot imply global support across GSM8K and HotpotQA.",
+      "mitigation_or_stop": "Evaluate task-specific gates separately and permit only heterogeneous/task-specific wording unless both tasks pass."
+    },
+    {
+      "risk": "API model drift over time",
+      "status": "active",
+      "why_it_matters": "Provider model behavior and missing system_fingerprint metadata can shift between preflight and any later budget-approved run.",
+      "mitigation_or_stop": "Log API date, endpoint, model, fallback, service tier, request parameters, response IDs, SDK/transport version, and drift disclosure for any future approved run."
+    },
+    {
+      "risk": "cost-driven underpowering",
+      "status": "active_design_risk",
+      "why_it_matters": "Smoke and 100-sample pilot scales are cheaper but cannot satisfy the preregistered per-task coverage gates.",
+      "mitigation_or_stop": "Use smaller scales only for feasibility; do not claim validation unless the full configured coverage and rank-signal gates pass."
+    }
+  ],
+  "reviewer_safe_stop_conditions": [
+    "Current state: do not run any API; next_allowed_step remains STOP_AND_FIX_PREFLIGHT.",
+    "Any API execution requires a separate explicit stochastic validation budget approval; this audit is not approval.",
+    "Any manifest overlap is a hard stop before scoring, replay, or reporting.",
+    "Any target leakage or post-hoc weight/threshold change is a hard stop.",
+    "Schema success rate below 0.95 or tag extraction success rate below 0.95 is a hard stop.",
+    "Replay success rate below 0.85 is a hard stop.",
+    "Valid trace count below 190 per task is a hard stop for task/global v2 pass.",
+    "Eligible span count below 150 per task is a hard stop for task/global v2 pass.",
+    "Nonzero Delta-U count below 20 per task is insufficient_target_variation.",
+    "API drift not logged and disclosed is a hard stop.",
+    "Missing required baselines in the same table blocks v2 pass wording.",
+    "No PRM/filtering claim is allowed without GLOBAL_S_FMA_V2_PASS or a separate downstream validation gate."
+  ],
+  "budget_recommendation": {
+    "worth_requesting_budget_now": "not for execution while STOP_AND_FIX_PREFLIGHT remains active",
+    "recommended_budget_strategy": "If the user later chooses the stochastic route despite disclosed drift, request a staged budget: minimal smoke first, then pilot only if replay agreement and nonzero Delta-U look viable, then top-tier candidate only after pilot gates justify the risk.",
+    "do_not_request": "Do not request or spend a top-tier budget as approval from this audit alone.",
+    "current_api_allowed": false
+  },
+  "claim_boundary": {
+    "audit_exists": true,
+    "route_remains_planned_only": true,
+    "no_api_run": true,
+    "no_scoring": true,
+    "no_replay": true,
+    "no_task_or_global_v2_pass": true,
+    "no_prm_claim": true,
+    "not_an_approval": true
+  }
+}

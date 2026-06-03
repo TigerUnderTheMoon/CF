@@ -1,0 +1,80 @@
+{
+  "request_type": "s_FMA_v2 stochastic smoke approval request",
+  "created_at": "2026-06-03",
+  "status": "PENDING_USER_APPROVAL",
+  "approval_granted": false,
+  "api_allowed_now": false,
+  "project_status_remains": "PILOT_BLOCKED",
+  "current_state": {
+    "fresh_manifest_clean": true,
+    "fresh_manifest_rows": 400,
+    "api_preflight_status": "PREFLIGHT_FAIL_DRIFT",
+    "deterministic_route_status": "blocked",
+    "stochastic_route_status": "planned-only",
+    "stochastic_budget_risk_audit_exists": true,
+    "current_api_allowed": false
+  },
+  "approval_request": {
+    "requested_route": "STOCHASTIC_REPEATED_REPLAY_ROUTE",
+    "requested_scale": "minimal smoke only",
+    "sample_count": 20,
+    "expected_spans": 20,
+    "expected_api_requests": 80,
+    "expected_cost": "USD 1.16018",
+    "expected_cost_usd": 1.16018,
+    "recommended_approval_ceiling": "USD 5",
+    "recommended_approval_ceiling_usd": 5,
+    "max_allowed_action_after_approval": "smoke original generation + stochastic replay only"
+  },
+  "explicit_non_authorizations": {
+    "full_generation": false,
+    "v2_scoring": false,
+    "replay_before_user_approval": false,
+    "pilot_expansion": false,
+    "top_tier_expansion": false,
+    "deterministic_replay_claim": false,
+    "prm_filtering": false,
+    "task_specific_pass_claim": false,
+    "global_pass_claim": false
+  },
+  "smoke_gate": {
+    "requires_schema_tag_final_answer_success": true,
+    "requires_replay_success": true,
+    "requires_replay_agreement_variance_threshold": true,
+    "requires_nonzero_delta_u_availability": true,
+    "requires_cost_within_budget": true,
+    "requires_no_target_leakage": true
+  },
+  "post_smoke_branches": [
+    {
+      "condition": "engineering_fail",
+      "action": "fix_pipeline"
+    },
+    {
+      "condition": "engineering_pass_but_sparse_signal",
+      "action": "stop_or_revise_evidence_target"
+    },
+    {
+      "condition": "engineering_pass_and_target_variation_sufficient",
+      "action": "request_pilot_stochastic_budget"
+    }
+  ],
+  "claim_boundary": {
+    "approval_package_only": true,
+    "not_approved": true,
+    "no_api_run": true,
+    "no_full_generation": true,
+    "no_v2_scoring": true,
+    "no_replay_run": true,
+    "no_prm_filtering": true,
+    "no_task_specific_or_global_pass_claim": true
+  },
+  "blocked_conditions": [
+    "PREFLIGHT_FAIL_DRIFT persists",
+    "deterministic route remains blocked",
+    "stochastic route requires explicit user approval before API",
+    "minimal smoke has not been approved",
+    "minimal smoke has not been run",
+    "no pilot/top-tier budget has been requested or approved"
+  ]
+}
