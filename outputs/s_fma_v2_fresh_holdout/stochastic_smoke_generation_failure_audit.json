@@ -1,0 +1,156 @@
+{
+  "artifact": "stochastic_smoke_generation_failure_audit",
+  "status": "STOCHASTIC_SMOKE_FAIL_GENERATION",
+  "current_status_remains": "PILOT_BLOCKED",
+  "source_files": {
+    "smoke_report": "outputs/s_fma_v2_fresh_holdout/stochastic_smoke_report.json",
+    "original_attempts": "outputs/s_fma_v2_fresh_holdout/stochastic_smoke_original_attempts.jsonl",
+    "replay_attempts": "outputs/s_fma_v2_fresh_holdout/stochastic_smoke_replay_attempts.jsonl",
+    "fresh_manifest": "outputs/s_fma_v2_fresh_holdout/fresh_manifest.json",
+    "preflight_report": "outputs/s_fma_v2_fresh_holdout/api_preflight_report.json"
+  },
+  "prompt_audit": {
+    "requested_generation_prompt_path": "prompts/real_task_generation.txt",
+    "requested_generation_prompt_path_exists": false,
+    "configured_generation_prompt_file": "prompts/real_task_reflection_generation.txt",
+    "configured_generation_prompt_exists": true,
+    "configured_replay_prompt_file": "prompts/real_task_replay.txt",
+    "configured_replay_prompt_exists": true
+  },
+  "preflight_comparison": {
+    "preflight_status": "PREFLIGHT_FAIL_DRIFT",
+    "preflight_records_evaluated": 20,
+    "preflight_api_attempts": 23,
+    "preflight_json_parse_success_rate": 1.0,
+    "preflight_schema_success_rate": 1.0,
+    "preflight_tag_extraction_success_rate": 1.0,
+    "preflight_final_answer_parse_success_rate": 1.0,
+    "preflight_model_breakdown": {
+      "gpt-5.5": 23
+    },
+    "preflight_structured_output_modes": {
+      "json_schema": 23
+    }
+  },
+  "smoke_generation_summary": {
+    "original_attempt_count": 20,
+    "valid_original_trace_count": 8,
+    "invalid_original_attempt_count": 12,
+    "validation_error_counts": {
+      "<root>: response is not a JSON object": 12
+    },
+    "empty_raw_output_count": 12,
+    "cost_used_usd": 0.35119,
+    "cost_within_budget": true
+  },
+  "model_breakdown": {
+    "all_original_attempts": {
+      "gpt-5.4": 13,
+      "gpt-5.5": 7
+    },
+    "valid_original_attempts": {
+      "gpt-5.4": 1,
+      "gpt-5.5": 7
+    },
+    "invalid_original_attempts": {
+      "gpt-5.4": 12
+    }
+  },
+  "fallback_and_schema_telemetry": {
+    "invalid_attempts_with_fallback_events": 0,
+    "invalid_attempts_missing_fallback_events": 12,
+    "invalid_attempts_with_structured_output_mode": 0,
+    "invalid_attempts_missing_structured_output_mode": 12,
+    "invalid_attempts_with_response_id": 0,
+    "invalid_attempts_missing_response_id": 12,
+    "invalid_attempts_with_usage": 12,
+    "invalid_attempts_with_model_name": 12
+  },
+  "invalid_context_missing_counts": {
+    "sample_id": 12,
+    "task_id": 12,
+    "task_type": 12,
+    "question_hash": 12,
+    "question_preview": 12,
+    "fallback_events": 12,
+    "response_id": 12,
+    "usage": 0,
+    "model_name": 0
+  },
+  "invalid_attempts_lack_sample_id": true,
+  "invalid_attempts_lack_task_type": true,
+  "selected_sample_order_observation": {
+    "expected_selection_count": 20,
+    "selection_rule": "select_preflight_records with 10 gsm8k then 10 hotpotqa",
+    "valid_original_sample_ids": [
+      "hotpotqa-04417",
+      "hotpotqa-00686",
+      "hotpotqa-01372",
+      "hotpotqa-04705",
+      "hotpotqa-02766",
+      "hotpotqa-05319",
+      "hotpotqa-00274",
+      "hotpotqa-02536"
+    ],
+    "inference_from_order": "Because invalid original rows lack sample_id/task_type, exact failed samples cannot be proven from the historical checkpoint. The valid rows are hotpotqa positions 12-19 in the expected balanced selection, so the likely failed original rows are the first 10 gsm8k rows plus hotpotqa positions 10-11."
+  },
+  "partial_replay_checkpoint": {
+    "partial_replay_attempt_count": 10,
+    "partial_replay_result_count": 3,
+    "partial_replay_validation_evidence_allowed": false,
+    "historical_report_delta_rows": 1,
+    "disposition": "Partial replay attempts/results are disclosed for provenance only and must not be used as validation evidence while original generation is incomplete."
+  },
+  "root_cause_hypotheses": [
+    {
+      "hypothesis": "Smoke original generation hit an output extraction or provider empty-output failure on fallback model gpt-5.4.",
+      "evidence": "All 12 invalid original attempts have empty raw_output, the same root JSON parse error, nonzero token usage, and model_name gpt-5.4."
+    },
+    {
+      "hypothesis": "Smoke diverged from the preflight generation path despite preflight schema/tag success.",
+      "evidence": "Preflight attempts were 23/23 valid, all on gpt-5.5/json_schema; smoke invalid attempts ended on gpt-5.4 and lack structured_output_mode/fallback_events in the historical attempt rows."
+    },
+    {
+      "hypothesis": "Historical attempt serialization was insufficient for root-cause audit.",
+      "evidence": "Invalid original rows preserve usage/model/validation_errors but lack sample_id, task_id, task_type, question hash/preview, structured_output_mode, fallback_events, and response_id."
+    },
+    {
+      "hypothesis": "Replay was allowed to checkpoint after incomplete original generation in the historical smoke route.",
+      "evidence": "The smoke report has 20 original attempts but only 8 valid original traces, while also showing 10 partial replay attempts and 3 partial replay results."
+    }
+  ],
+  "recommended_non_api_fixes": [
+    "Preserve sample_id, task_id, task_type, question_hash, question_preview, model_name, structured_output_mode, fallback_events, response_id, usage, and validation_errors on invalid original attempt rows.",
+    "Stop the smoke runner before replay whenever valid original traces are fewer than expected_original_records.",
+    "Keep finalize-existing mode on checkpoint files only and do not instantiate an OpenAI adapter.",
+    "When finalizing incomplete original generation, disclose partial replay counts but suppress Delta-U rows and validation evidence from partial replay.",
+    "Before requesting any bounded rerun, validate the pipeline locally with fake-adapter cases for empty output, non-JSON output, and valid JSON."
+  ],
+  "implemented_non_api_fixes_this_round": [
+    "attempt_payloads_from_results now accepts optional sample context and emits audit fields for invalid attempts.",
+    "invalid GeneratedTraceResult preserves the last attempted structured_output_mode.",
+    "stochastic smoke original checkpoints pass selected sample context into attempt serialization.",
+    "checkpoint finalization suppresses Delta-U rows when original generation is incomplete.",
+    "regression tests cover invalid attempt context, early stop before replay, finalize-existing no-API behavior, and claim guard fields."
+  ],
+  "next_allowed_step": "FIX_SMOKE_GENERATION_PIPELINE",
+  "forbidden_next_steps": [
+    "API execution without new explicit approval",
+    "smoke rerun without new explicit approval",
+    "full generation",
+    "v2 scoring",
+    "replay",
+    "PRM/filtering",
+    "TASK_SPECIFIC_S_FMA_V2_PASS",
+    "GLOBAL_S_FMA_V2_PASS",
+    "deterministic replay claim",
+    "scale-ready or top-tier-ready wording"
+  ],
+  "claim_boundary": {
+    "claim_upgrade_allowed": false,
+    "api_allowed_after_smoke": false,
+    "task_specific_pass_claim_allowed": false,
+    "global_pass_claim_allowed": false,
+    "prm_filtering_claim_allowed": false
+  }
+}

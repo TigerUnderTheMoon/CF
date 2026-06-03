@@ -1,0 +1,56 @@
+{
+  "allowed_claim_scope": [
+    "engineering feasibility",
+    "cost calibration",
+    "preliminary replay agreement diagnostics"
+  ],
+  "api_allowed_after_smoke": false,
+  "api_attempts": 30,
+  "api_execution_performed_by_finalize": false,
+  "approval_source": "outputs\\s_fma_v2_fresh_holdout\\stochastic_smoke_approval_request.json",
+  "approved_budget_usd": 5.0,
+  "artifact": "stochastic_smoke_report",
+  "claim_upgrade_allowed": false,
+  "cost_used_usd": 0.35119,
+  "cost_within_budget": true,
+  "current_status_remains": "PILOT_BLOCKED",
+  "delta_rows": 1,
+  "deterministic_replay_claim_allowed": false,
+  "expected_original_records": 20,
+  "expected_replay_jobs": 60,
+  "finalize_mode": "existing_checkpoints_only",
+  "forbidden_claim_scope": [
+    "TASK_SPECIFIC_S_FMA_V2_PASS",
+    "GLOBAL_S_FMA_V2_PASS",
+    "deterministic replay claim",
+    "v2 scoring validation",
+    "PRM/filtering claim"
+  ],
+  "global_pass_claim_allowed": false,
+  "interruption_disclosure": "Smoke runner was finalized from checkpoint artifacts. Finalize performed no API calls and does not upgrade claims.",
+  "invalid_original_attempt_count": 12,
+  "manifest_source": "outputs\\s_fma_v2_fresh_holdout\\fresh_manifest.json",
+  "next_allowed_step": "FIX_SMOKE_GENERATION_PIPELINE",
+  "no_full_generation": true,
+  "no_prm_claim": true,
+  "no_v2_scoring": true,
+  "nonzero_delta_rows": 0,
+  "original_attempt_count": 20,
+  "original_validation_error_counts": {
+    "<root>: response is not a JSON object": 12
+  },
+  "partial_replay_attempt_count": 10,
+  "partial_replay_result_count": 3,
+  "preflight_report_source": "outputs\\s_fma_v2_fresh_holdout\\api_preflight_report.json",
+  "prm_filtering_claim_allowed": false,
+  "replay_attempt_count": 10,
+  "replay_success_rate": 0.05,
+  "sample_count": 8,
+  "sample_count_by_task": {
+    "hotpotqa": 8
+  },
+  "scope": "STOCHASTIC_SMOKE_ONLY",
+  "status": "STOCHASTIC_SMOKE_FAIL_GENERATION",
+  "successful_replay_count": 3,
+  "task_specific_pass_claim_allowed": false
+}

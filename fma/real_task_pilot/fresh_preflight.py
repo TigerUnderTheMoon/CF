@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections import Counter, defaultdict
+import hashlib
 from typing import Any, Mapping, Sequence
 
 from .generation import GeneratedTraceResult
@@ -265,31 +266,56 @@ def attempt_payloads_from_results(
     results: Sequence[GeneratedTraceResult],
     *,
     role: str,
+    samples: Sequence[Mapping[str, Any]] | None = None,
 ) -> list[dict[str, Any]]:
     """Convert generation results to the JSONL attempt contract."""
 
     attempts = []
-    for result in results:
+    for index, result in enumerate(results):
+        sample = samples[index] if samples is not None and index < len(samples) else {}
         generation_config = (
             result.record.get("generation_config", {})
             if result.record is not None
             else {}
         )
+        sample_context = _attempt_sample_context(sample=sample, record=result.record)
         attempts.append(
             {
                 "preflight_attempt": True,
                 "attempt_role": role,
+                **sample_context,
                 "record": result.record,
                 "raw_output": result.raw_output,
                 "usage": result.usage,
                 "model_name": result.model_name,
+                "structured_output_mode": result.structured_output_mode
+                or generation_config.get("structured_output_mode"),
                 "system_fingerprint": result.system_fingerprint,
                 "response_id": getattr(result, "response_id", None)
                 or generation_config.get("response_id"),
                 "validation_errors": list(result.validation_errors),
+                "fallback_events": list(result.fallback_events),
             }
         )
     return attempts
+
+
+def _attempt_sample_context(
+    *,
+    sample: Mapping[str, Any],
+    record: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    source = record if record is not None else sample
+    question = str(source.get("question") or sample.get("question") or "")
+    return {
+        "sample_id": _string_or_none(source.get("sample_id") or sample.get("sample_id")),
+        "task_id": _string_or_none(source.get("task_id") or sample.get("task_id")),
+        "task_type": _string_or_none(source.get("task_type") or sample.get("task_type")),
+        "question_hash": hashlib.sha256(question.encode("utf-8")).hexdigest()
+        if question
+        else None,
+        "question_preview": question[:160] if question else None,
+    }
 
 
 def _base_report(

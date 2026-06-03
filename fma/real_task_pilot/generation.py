@@ -70,9 +70,11 @@ def generate_trace_with_fallback(
     last_usage: dict[str, Any] = {}
     last_fingerprint: str | None = None
     last_errors: list[str] = []
+    last_mode = "unavailable"
     for json_mode in (False, True):
         for model_name in fallback_order:
             mode_name = "json_object" if json_mode else "json_schema"
+            last_mode = mode_name
             try:
                 response = adapter.create_trace(
                     prompt=prompt,
@@ -146,7 +148,7 @@ def generate_trace_with_fallback(
         record=None,
         raw_output=last_raw,
         model_name=last_model,
-        structured_output_mode="unavailable",
+        structured_output_mode=last_mode,
         system_fingerprint=last_fingerprint,
         usage=last_usage,
         validation_errors=last_errors,

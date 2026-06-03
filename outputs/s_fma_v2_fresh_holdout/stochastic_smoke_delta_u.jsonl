@@ -1,0 +1,1 @@
+{"delta_u": 0.0, "intervened_mean_score": 1.0, "metric": "exact_match", "original_score": 1.0, "repeat_count": 3, "sample_id": "hotpotqa-04417", "span_index": 0, "successful_repeats": 3, "task_type": "hotpotqa"}
