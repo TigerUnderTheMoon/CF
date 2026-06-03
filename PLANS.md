@@ -28,14 +28,14 @@ Proposal text is not evidence. Current claim status is governed by `paper/claim_
 | Phase 6 | Completed | Structural Reflection Attribution |
 | Phase 7 | Completed | Redundancy and compensation analysis |
 | Real-task pilot | Guarded / blocked | GSM8K/HotpotQA API preflight, replay, baselines, controls, readiness audit |
-| s_FMA_v2 fresh holdout | Planned / not run | Preregistered fresh GSM8K/HotpotQA holdout route |
+| s_FMA_v2 fresh holdout | Planned / preflight drift-failed | Fresh manifest/audit clean; guarded API preflight-only reports `PREFLIGHT_FAIL_DRIFT`; no full generation, no v2 scoring, no replay |
 | PRM/filtering validation | Required future work | Structurally calibrated supervision/filtering experiment |
 
 Phase 7 is implemented as a deterministic structural interpretation layer over stored Phase 6 outputs. The initial hypothesis was that reflection may exhibit distributed compensatory organization, but the observed results refine this into locally useful but structurally sparse reflective organization: moderate redundancy, weak compensation, low distributedness, sparse bottlenecks, and weak alignment between attribution and necessity.
 
 The real-task pilot layer is implemented as a guarded extension rather than a replacement for historical Phase 5-7 artifacts. It uses `configs/real_task_pilot.yaml`, `schemas/real_task_trace.schema.json`, and `scripts/run_real_task_pilot.py`. Live API execution requires `--allow-api`; without an explicit `user_approved_budget_usd`, the cost gate blocks full pilot execution. The current readiness state is `PILOT_BLOCKED`: replay, Delta-U, rank-signal coverage, baseline leakage, and readiness-level trajectory-control gates pass, but `PILOT_FAIL_SIGNAL` and `PREFLIGHT_FAIL_DRIFT` remain.
 
-The current pilot failed the primary rank-signal gate and is frozen as `development_failure_audit` in `outputs/real_task_pilot/primary_signal_failure_audit.md` and `.json`. It can motivate error analysis and `s_FMA_v2` design, but it cannot fit v2 weights, tune thresholds, or validate a redesigned score. The fresh holdout required for v2 is specified in `paper/s_fma_v2_fresh_holdout_plan.md` and `configs/s_fma_v2_fresh_holdout.yaml`; v2 is planned, not run.
+The current pilot failed the primary rank-signal gate and is frozen as `development_failure_audit` in `outputs/real_task_pilot/primary_signal_failure_audit.md` and `.json`. It can motivate error analysis and `s_FMA_v2` design, but it cannot fit v2 weights, tune thresholds, or validate a redesigned score. The fresh holdout required for v2 is specified in `paper/s_fma_v2_fresh_holdout_plan.md` and `configs/s_fma_v2_fresh_holdout.yaml`; `outputs/s_fma_v2_fresh_holdout/manifest_overlap_audit.json` is `MANIFEST_OVERLAP_CLEAN` after the empty-alias policy revision. The fresh-holdout live API preflight-only report is `PREFLIGHT_FAIL_DRIFT` after 20 evaluated records, with schema/tag/final-answer success rates all `1.0` and actual preflight cost `0.321005`; no full generation, no 400 fresh traces, no v2 scoring, no replay, no deterministic replay claim, and no PRM claim are allowed from this result.
 
 ### 0.1 Top-Tier Mainline and Evidence Contract
 
@@ -55,7 +55,7 @@ Current must-satisfy contract:
 - Historical `outputs/` artifacts remain provenance evidence and are not rewritten.
 - Real-task generation/replay is pilot evidence only until readiness gates pass.
 - Current pilot failed and remains frozen; same-pilot tuning cannot upgrade it.
-- Fresh holdout required for any `s_FMA_v2` real-task rank-signal claim.
+- Fresh manifest/audit is clean, but fresh traces, v2 scoring, replay, and rank-signal validation have not run; fresh holdout validation is still required for any `s_FMA_v2` real-task rank-signal claim.
 - PRM/filtering is a required top-tier downstream validation, not a completed result.
 - Any candidate supervision weight must be structurally calibrated rather than `Normalize(FMA)` alone.
 
@@ -717,7 +717,7 @@ This layer tests whether the framework can move beyond stored synthetic traces w
 
 - Primary model: `gpt-5.5`, selected only after live Responses API preflight confirms access.
 - Fallback order and JSON mode fallback are configured in `configs/real_task_pilot.yaml`.
-- Required API metadata: endpoint, structured output mode, reasoning effort, seed, `system_fingerprint`, SDK version, API date, service tier, and usage tokens.
+- Required API metadata: endpoint, structured output mode, reasoning effort, seed, SDK version, API date, service tier, and usage tokens. `system_fingerprint` is logged and disclosed when available; if absent, it is reported separately from schema/tag success.
 - Schema gate: first 20 traces must have JSON parse success and `<reflection>` tag extraction success at or above 95 percent.
 - Drift gate: the same prompt and seed called three times must have token-level output difference below 5 percent; otherwise non-full determinism is disclosed.
 - Cost gate: full pilot cannot run while `user_approved_budget_usd` is unset.
@@ -747,7 +747,7 @@ The `pilot_pass: true` gate requires preflight pass, at least 300 valid traces, 
 
 Current status: `outputs/real_task_pilot/readiness_audit.json` reports `PILOT_BLOCKED`, with failure codes `PILOT_FAIL_SIGNAL` and `PREFLIGHT_FAIL_DRIFT`. `outputs/real_task_pilot/rank_signal_report.json` now includes a clean 382-row `structurally_calibrated_fma` candidate score, but its pooled and per-task bootstrap CI lower bounds are not above zero, so expansion is blocked. `outputs/real_task_pilot/api_preflight_report.json` reports `status: fail`, so generated traces remain guarded pilot evidence only. The trajectory-controls artifact is readiness-complete as a partial pilot control report, not a completed downstream control validation.
 
-The current failure audit is frozen. The next top-tier route is the planned `s_FMA_v2` fresh holdout, not same-pilot retuning. The scorer is frozen by formula hash `sha256:6971b23562be690e5fd58dc4dfbbcf972d2137c719b1b68a440d9ec4a216b628`. `TASK_SPECIFIC_S_FMA_V2_PASS` requires fresh non-overlapping task holdout coverage, clean leakage audit, positive task rank signal with CI lower bound above zero, no target leakage, no post-hoc threshold tuning, and sufficient nonzero Delta-U variation; it permits only task-specific or heterogeneous wording. `GLOBAL_S_FMA_V2_PASS` requires both GSM8K and HotpotQA to pass their task-specific gates before scale expansion. PRM/filtering validation remains blocked until `GLOBAL_S_FMA_V2_PASS` or a separate downstream validation gate.
+The current failure audit is frozen. The next top-tier route is the planned `s_FMA_v2` fresh holdout, not same-pilot retuning. The scorer is frozen by formula hash `sha256:6971b23562be690e5fd58dc4dfbbcf972d2137c719b1b68a440d9ec4a216b628`. `outputs/s_fma_v2_fresh_holdout/manifest_overlap_audit.json` is currently `MANIFEST_OVERLAP_CLEAN`; `outputs/s_fma_v2_fresh_holdout/api_preflight_report.json` is `PREFLIGHT_FAIL_DRIFT` after a guarded live API preflight-only run with 20 evaluated records. `system_fingerprint` was missing for all 20 evaluated records and is disclosed separately from schema/tag/final-answer success. No full generation, no 400 fresh traces, no v2 scoring, no replay, no deterministic replay claim, no PRM claim yet, and current status remains `PILOT_BLOCKED`. PRM/filtering validation remains blocked until the global v2 gate or a separate downstream validation gate.
 
 ---
 

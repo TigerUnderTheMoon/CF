@@ -16,6 +16,7 @@ class ApiCallResult:
     usage: dict[str, Any]
     raw_response: Any
     request_metadata: dict[str, Any] = field(default_factory=dict)
+    response_id: str | None = None
 
 
 class OpenAIResponsesAdapter:
@@ -136,6 +137,7 @@ def _result_from_response(response: Any, *, request_metadata: dict[str, Any]) ->
         usage=usage_payload,
         raw_response=response,
         request_metadata=request_metadata,
+        response_id=_string_or_none(getattr(response, "id", None)),
     )
 
 

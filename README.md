@@ -21,7 +21,7 @@ The key manuscript turn is that local FMA-style utility cannot be used directly 
 
 The current state is not a completed top-tier PRM/filtering result. Real-task replay is still pilot evidence, readiness is `PILOT_BLOCKED`, and attribution-aware PRM/filtering remains a required downstream validation experiment.
 
-The current real-task pilot failed the primary rank-signal gate and is frozen as a development failure audit. `s_FMA_v2` is planned as a fresh-holdout route only; fresh holdout required before any v2 claim upgrade, and no PRM claim yet is allowed.
+The current real-task pilot failed the primary rank-signal gate and is frozen as a development failure audit. `s_FMA_v2` is planned as a fresh-holdout route only; its manifest overlap audit is clean after the empty-alias policy revision, and its guarded live API preflight-only run reports `PREFLIGHT_FAIL_DRIFT`. No full generation, no v2 scoring, no replay, and no PRM claim yet is allowed.
 
 ## Phase 5-7 Core Findings
 
@@ -116,7 +116,7 @@ The new pilot-only artifacts are stored under `outputs/real_task_pilot/`. They d
 
 The current pilot blockers are that the primary signal is available but failed the rank-signal gate, and API determinism drift remains. Replay, Delta-U, rank-signal coverage, baseline leakage, and readiness-level trajectory-control gates now pass; the real-task candidate score remains pilot diagnostic evidence, not scale-ready support or PRM/filtering validation.
 
-The frozen failure audit is `outputs/real_task_pilot/primary_signal_failure_audit.md` with structured companion `outputs/real_task_pilot/primary_signal_failure_audit.json`. The planned `s_FMA_v2` route is documented in `paper/s_fma_v2_fresh_holdout_plan.md` and `configs/s_fma_v2_fresh_holdout.yaml`; it must use fresh non-overlapping GSM8K and HotpotQA holdouts with formula hash `sha256:6971b23562be690e5fd58dc4dfbbcf972d2137c719b1b68a440d9ec4a216b628`. A task-specific pass permits only task-specific or heterogeneous wording. Scale expansion is not allowed until `GLOBAL_S_FMA_V2_PASS`, and PRM/filtering superiority is not allowed until a later separate downstream validation.
+The frozen failure audit is `outputs/real_task_pilot/primary_signal_failure_audit.md` with structured companion `outputs/real_task_pilot/primary_signal_failure_audit.json`. The planned `s_FMA_v2` route is documented in `paper/s_fma_v2_fresh_holdout_plan.md` and `configs/s_fma_v2_fresh_holdout.yaml`; `outputs/s_fma_v2_fresh_holdout/manifest_overlap_audit.json` reports `MANIFEST_OVERLAP_CLEAN`, and the fresh-holdout live API preflight-only report now reports `PREFLIGHT_FAIL_DRIFT` after 20 evaluated records. No full generation, no 400 fresh traces, no v2 scoring, no replay, no deterministic replay claim, and no PRM claim are allowed from this result. Current status remains `PILOT_BLOCKED`.
 
 ## Reference Anchors
 

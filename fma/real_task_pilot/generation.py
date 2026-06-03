@@ -36,6 +36,7 @@ class GeneratedTraceResult:
     usage: dict[str, Any]
     validation_errors: list[str]
     fallback_events: list[dict[str, Any]]
+    response_id: str | None = None
 
 
 def build_generation_prompt(template: str, sample: Mapping[str, Any]) -> str:
@@ -107,6 +108,7 @@ def generate_trace_with_fallback(
                         adapter_version=adapter.openai_version,
                         structured_output_mode=mode_name,
                         api_request_metadata=response.request_metadata,
+                        api_response_id=response.response_id,
                     ),
                     system_fingerprint=last_fingerprint,
                     usage=last_usage,
@@ -130,6 +132,7 @@ def generate_trace_with_fallback(
                         usage=last_usage,
                         validation_errors=[],
                         fallback_events=events,
+                        response_id=response.response_id,
                     )
             events.append(
                 {
@@ -220,6 +223,7 @@ def _generation_config(
     adapter_version: str,
     structured_output_mode: str,
     api_request_metadata: Mapping[str, Any] | None = None,
+    api_response_id: str | None = None,
 ) -> dict[str, Any]:
     model_config = config.get("model", {})
     api_config = config.get("api", {})
@@ -237,6 +241,7 @@ def _generation_config(
         "temperature": model_config.get("temperature", 0.0),
         "max_output_tokens": model_config.get("max_output_tokens"),
         "api_request_metadata": dict(api_request_metadata or {}),
+        "response_id": api_response_id,
     }
 
 

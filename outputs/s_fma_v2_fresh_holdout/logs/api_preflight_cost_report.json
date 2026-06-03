@@ -1,0 +1,20 @@
+{
+  "budget_gate_pass": true,
+  "failure_reasons": [],
+  "observed_requests": 23,
+  "preflight_only": true,
+  "projected_cost_usd": 0.321005,
+  "projected_requests": 23,
+  "projected_tokens": {
+    "input_tokens": 11545,
+    "output_tokens": 8776,
+    "total_tokens": 20321
+  },
+  "retry_count": 0,
+  "usage_totals": {
+    "input_tokens": 11545,
+    "output_tokens": 8776,
+    "total_tokens": 20321
+  },
+  "user_approved_budget_usd": 5
+}

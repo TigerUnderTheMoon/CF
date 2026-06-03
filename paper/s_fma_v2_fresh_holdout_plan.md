@@ -2,7 +2,9 @@
 
 Status: `planned`
 
-Scope: preregister a claim-safe route for testing `structurally_calibrated_fma_v2` on fresh GSM8K and HotpotQA holdout traces. This plan does not run API generation, manifest generation, replay, threshold search, PRM training, or downstream filtering validation.
+Scope: preregister a claim-safe route for testing `structurally_calibrated_fma_v2` on fresh GSM8K and HotpotQA holdout traces. This plan does not run full API generation, replay, threshold search, PRM training, or downstream filtering validation.
+
+Preflight-only update, 2026-06-03: `scripts/run_s_fma_v2_fresh_holdout_preflight.py` was run with `--allow-api-preflight-only` against the locked 400-row manifest after setting the preflight-only budget to `5`. It selected and evaluated 10 GSM8K and 10 HotpotQA rows. `outputs/s_fma_v2_fresh_holdout/api_preflight_report.json` reports `PREFLIGHT_FAIL_DRIFT`, `records_evaluated: 20`, `json_parse_success_rate: 1.0`, `schema_success_rate: 1.0`, `tag_extraction_success_rate: 1.0`, `final_answer_parse_success_rate: 1.0`, and `cost_used_usd: 0.321005`; `system_fingerprint` metadata was missing for all 20 evaluated records and is a disclosure-only provider field, not a schema/tag/final-answer failure. No full generation, no 400 fresh traces, no v2 scoring, no replay, no deterministic replay claim, and no PRM/filtering claim are allowed from this result. Current status remains `PILOT_BLOCKED`.
 
 ## 1. Frozen Evidence Boundary
 
@@ -187,19 +189,21 @@ Required non-overlap keys:
 - composite `dataset`, `config`, `split`, `source_index`
 - normalized question hash
 - reference answer hash
-- alias hash
+- non-empty alias hash
 
 Hash policy:
 
 - `normalized_question_hash`: SHA256 over NFKC-normalized, lowercased question text with collapsed whitespace.
 - `reference_answer_hash`: SHA256 over NFKC-normalized, lowercased reference answer text with collapsed whitespace.
-- `alias_hash`: SHA256 over sorted, normalized alias strings joined by newline; empty alias list hashes the empty string.
-- Any overlap on any required key is a hard stop before scoring, replay, or reporting.
+- `alias_hash`: SHA256 over sorted, normalized non-empty alias strings joined by newline.
+- Empty alias set is non-informative and not blocking.
+- Non-empty `alias_hash` overlap remains a hard stop before scoring, replay, or reporting.
+- Any overlap on `sample_id`, `task_id`, composite dataset/config/split/source index, normalized question hash, reference answer hash, or non-empty `alias_hash` is a hard stop before scoring, replay, or reporting.
 
 Seed and manifest policy:
 
 - Planning seed: `20260601`.
-- Fresh manifest generation is not part of this documentation-only task.
+- Fresh manifest generation is allowed only for the manifest-lock and hard non-overlap audit step; API execution, v2 scoring, replay, and trace generation remain forbidden.
 - Fresh manifest must be generated and locked before scoring or replay.
 - Manifest lock must store dataset name, config, split, source index, sampled task ID, seed, prompt version, normalized question hash, reference answer hash, alias hash, and SHA256 hash.
 
@@ -211,8 +215,9 @@ Prompt version policy:
 
 API and model logging:
 
-- Log API date, endpoint, model name, fallback model, service tier, request parameters, response IDs, system fingerprint when available, and SDK or transport version.
-- Keep `PREFLIGHT_FAIL_DRIFT` visible if drift persists.
+- Required metadata: API date, endpoint, model name, fallback model, service tier, request parameters, response IDs, and SDK or transport version.
+- Disclosure-only metadata: log `system_fingerprint` when available; if it is null or absent, report `PREFLIGHT_METADATA_MISSING` separately from schema, tag, and final-answer success.
+- Keep `PREFLIGHT_FAIL_DRIFT` visible if drift persists, and keep it higher priority than metadata disclosure status.
 - If API preflight still fails, the estimand must be written as a stochastic repeated-replay estimand with repeated replay and bootstrap confidence intervals; deterministic replay claims are forbidden.
 
 Replay repeat policy:
@@ -230,7 +235,7 @@ Cost ceiling:
 
 Stop conditions:
 
-- Any overlap on any required non-overlap key.
+- Any overlap on `sample_id`, `task_id`, composite dataset/config/split/source index, normalized question hash, reference answer hash, or non-empty `alias_hash`.
 - Any target leakage in scorer inputs.
 - Any post-hoc threshold or weight change after seeing fresh-holdout target outcomes.
 - Schema success rate below `0.95`.
@@ -389,6 +394,7 @@ Expected status after this plan lands:
 - Current status remains `PILOT_BLOCKED`.
 - Failure audit remains frozen.
 - `s_FMA_v2` is planned only.
+- Empty alias set is non-informative and not blocking; non-empty `alias_hash` remains a hard overlap key.
 - Fresh holdout is required for any v2 upgrade.
 - Scale expansion is not allowed before `GLOBAL_S_FMA_V2_PASS`.
 - PRM/filtering superiority is not allowed before a later, separate downstream validation.

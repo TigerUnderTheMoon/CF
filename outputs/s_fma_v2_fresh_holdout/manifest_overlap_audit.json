@@ -1,0 +1,773 @@
+{
+  "alias_policy": {
+    "empty_alias_set_blocking": false,
+    "non_empty_alias_hash_blocking": true,
+    "rationale": "empty alias set is non-informative and not blocking; non-empty alias_hash remains blocking"
+  },
+  "api_preflight_only": true,
+  "blocker": null,
+  "blocker_diagnosis": {
+    "policy_revision": "empty alias set is non-informative and not blocking; non-empty alias_hash remains blocking",
+    "prior_blocker": "BLOCKED_INSUFFICIENT_FRESH_ROWS",
+    "reviewer_safety_preserved_keys": [
+      "sample_id",
+      "task_id",
+      "dataset_config_split_source_index",
+      "normalized_question_hash",
+      "reference_answer_hash",
+      "non_empty_alias_hash"
+    ],
+    "root_cause": "empty alias sets shared the SHA256 hash of the empty string and were previously treated as blocking alias_hash overlaps"
+  },
+  "config_current_pilot_overlap_sources": [
+    "outputs/real_task_pilot/sample_manifest.json",
+    "outputs/real_task_pilot/pilot_traces.jsonl",
+    "outputs/real_task_pilot/real_task_replay_results.jsonl",
+    "outputs/real_task_pilot/real_task_delta_u.jsonl",
+    "outputs/real_task_pilot/structurally_calibrated_fma_scores.jsonl",
+    "outputs/real_task_pilot/independent_baseline_scores.jsonl"
+  ],
+  "config_path": "configs\\s_fma_v2_fresh_holdout.yaml",
+  "current_pilot_sources": {
+    "outputs/real_task_pilot/independent_baseline_scores.jsonl": {
+      "indexed_key_counts": {
+        "alias_hash": 0,
+        "dataset_config_split_source_index": 0,
+        "normalized_question_hash": 0,
+        "reference_answer_hash": 0,
+        "sample_id": 382,
+        "task_id": 0
+      },
+      "rows_loaded": 382
+    },
+    "outputs/real_task_pilot/pilot_traces.jsonl": {
+      "indexed_key_counts": {
+        "alias_hash": 0,
+        "dataset_config_split_source_index": 0,
+        "normalized_question_hash": 382,
+        "reference_answer_hash": 382,
+        "sample_id": 382,
+        "task_id": 382
+      },
+      "rows_loaded": 382
+    },
+    "outputs/real_task_pilot/real_task_delta_u.jsonl": {
+      "indexed_key_counts": {
+        "alias_hash": 0,
+        "dataset_config_split_source_index": 0,
+        "normalized_question_hash": 0,
+        "reference_answer_hash": 0,
+        "sample_id": 382,
+        "task_id": 0
+      },
+      "rows_loaded": 382
+    },
+    "outputs/real_task_pilot/real_task_replay_results.jsonl": {
+      "indexed_key_counts": {
+        "alias_hash": 0,
+        "dataset_config_split_source_index": 0,
+        "normalized_question_hash": 1146,
+        "reference_answer_hash": 1146,
+        "sample_id": 1146,
+        "task_id": 1146
+      },
+      "rows_loaded": 1146
+    },
+    "outputs/real_task_pilot/sample_manifest.json": {
+      "indexed_key_counts": {
+        "alias_hash": 0,
+        "dataset_config_split_source_index": 400,
+        "normalized_question_hash": 400,
+        "reference_answer_hash": 400,
+        "sample_id": 400,
+        "task_id": 400
+      },
+      "rows_loaded": 400
+    },
+    "outputs/real_task_pilot/structurally_calibrated_fma_scores.jsonl": {
+      "indexed_key_counts": {
+        "alias_hash": 0,
+        "dataset_config_split_source_index": 0,
+        "normalized_question_hash": 0,
+        "reference_answer_hash": 0,
+        "sample_id": 382,
+        "task_id": 0
+      },
+      "rows_loaded": 382
+    }
+  },
+  "current_pilot_sources_required_by_task": [
+    "outputs/real_task_pilot/sample_manifest.json",
+    "outputs/real_task_pilot/pilot_traces.jsonl",
+    "outputs/real_task_pilot/real_task_delta_u.jsonl",
+    "outputs/real_task_pilot/real_task_replay_results.jsonl",
+    "outputs/real_task_pilot/structurally_calibrated_fma_scores.jsonl"
+  ],
+  "current_status_remains": "PILOT_BLOCKED",
+  "formula_hash": "sha256:6971b23562be690e5fd58dc4dfbbcf972d2137c719b1b68a440d9ec4a216b628",
+  "fresh_manifest_fields": [
+    "dataset",
+    "config",
+    "split",
+    "source_index",
+    "sample_id",
+    "task_id",
+    "question",
+    "reference_answer",
+    "aliases",
+    "task_type",
+    "selection_seed",
+    "formula_hash",
+    "prompt_version",
+    "manifest_item_hash"
+  ],
+  "hard_stop": false,
+  "hard_stop_policy": "any selected-row overlap or insufficient fresh rows stops before scoring, replay, or reporting",
+  "next_allowed_step": "API_PREFLIGHT_ONLY",
+  "no_api_run": true,
+  "no_prm_claim_yet": true,
+  "no_replay": true,
+  "no_traces_generated": true,
+  "no_v2_scoring": true,
+  "overlap_clean": true,
+  "overlap_examples": {
+    "alias_hash": [],
+    "dataset_config_split_source_index": [
+      {
+        "candidate_sample_id": "gsm8k-00660",
+        "candidate_source_index": 660,
+        "candidate_task_id": "gsm8k-test-00660",
+        "candidate_task_type": "gsm8k",
+        "key": "dataset_config_split_source_index",
+        "key_value": "gsm8k/main/test/660",
+        "source_hits": [
+          "outputs/real_task_pilot/sample_manifest.json:106"
+        ]
+      },
+      {
+        "candidate_sample_id": "gsm8k-00521",
+        "candidate_source_index": 521,
+        "candidate_task_id": "gsm8k-test-00521",
+        "candidate_task_type": "gsm8k",
+        "key": "dataset_config_split_source_index",
+        "key_value": "gsm8k/main/test/521",
+        "source_hits": [
+          "outputs/real_task_pilot/sample_manifest.json:82"
+        ]
+      },
+      {
+        "candidate_sample_id": "gsm8k-00270",
+        "candidate_source_index": 270,
+        "candidate_task_id": "gsm8k-test-00270",
+        "candidate_task_type": "gsm8k",
+        "key": "dataset_config_split_source_index",
+        "key_value": "gsm8k/main/test/270",
+        "source_hits": [
+          "outputs/real_task_pilot/sample_manifest.json:40"
+        ]
+      },
+      {
+        "candidate_sample_id": "gsm8k-00802",
+        "candidate_source_index": 802,
+        "candidate_task_id": "gsm8k-test-00802",
+        "candidate_task_type": "gsm8k",
+        "key": "dataset_config_split_source_index",
+        "key_value": "gsm8k/main/test/802",
+        "source_hits": [
+          "outputs/real_task_pilot/sample_manifest.json:125"
+        ]
+      },
+      {
+        "candidate_sample_id": "gsm8k-01168",
+        "candidate_source_index": 1168,
+        "candidate_task_id": "gsm8k-test-01168",
+        "candidate_task_type": "gsm8k",
+        "key": "dataset_config_split_source_index",
+        "key_value": "gsm8k/main/test/1168",
+        "source_hits": [
+          "outputs/real_task_pilot/sample_manifest.json:173"
+        ]
+      },
+      {
+        "candidate_sample_id": "gsm8k-00162",
+        "candidate_source_index": 162,
+        "candidate_task_id": "gsm8k-test-00162",
+        "candidate_task_type": "gsm8k",
+        "key": "dataset_config_split_source_index",
+        "key_value": "gsm8k/main/test/162",
+        "source_hits": [
+          "outputs/real_task_pilot/sample_manifest.json:28"
+        ]
+      },
+      {
+        "candidate_sample_id": "gsm8k-00339",
+        "candidate_source_index": 339,
+        "candidate_task_id": "gsm8k-test-00339",
+        "candidate_task_type": "gsm8k",
+        "key": "dataset_config_split_source_index",
+        "key_value": "gsm8k/main/test/339",
+        "source_hits": [
+          "outputs/real_task_pilot/sample_manifest.json:51"
+        ]
+      },
+      {
+        "candidate_sample_id": "gsm8k-00649",
+        "candidate_source_index": 649,
+        "candidate_task_id": "gsm8k-test-00649",
+        "candidate_task_type": "gsm8k",
+        "key": "dataset_config_split_source_index",
+        "key_value": "gsm8k/main/test/649",
+        "source_hits": [
+          "outputs/real_task_pilot/sample_manifest.json:103"
+        ]
+      },
+      {
+        "candidate_sample_id": "gsm8k-00031",
+        "candidate_source_index": 31,
+        "candidate_task_id": "gsm8k-test-00031",
+        "candidate_task_type": "gsm8k",
+        "key": "dataset_config_split_source_index",
+        "key_value": "gsm8k/main/test/31",
+        "source_hits": [
+          "outputs/real_task_pilot/sample_manifest.json:4"
+        ]
+      },
+      {
+        "candidate_sample_id": "gsm8k-00636",
+        "candidate_source_index": 636,
+        "candidate_task_id": "gsm8k-test-00636",
+        "candidate_task_type": "gsm8k",
+        "key": "dataset_config_split_source_index",
+        "key_value": "gsm8k/main/test/636",
+        "source_hits": [
+          "outputs/real_task_pilot/sample_manifest.json:102"
+        ]
+      }
+    ],
+    "normalized_question_hash": [
+      {
+        "candidate_sample_id": "gsm8k-00660",
+        "candidate_source_index": 660,
+        "candidate_task_id": "gsm8k-test-00660",
+        "candidate_task_type": "gsm8k",
+        "key": "normalized_question_hash",
+        "key_value": "fd9dcbc5e5833c12a6246b5bd673bba1536f80158659875c87100d3c56847bd8",
+        "source_hits": [
+          "outputs/real_task_pilot/pilot_traces.jsonl:106",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:318",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:319",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:320",
+          "outputs/real_task_pilot/sample_manifest.json:106"
+        ]
+      },
+      {
+        "candidate_sample_id": "gsm8k-00521",
+        "candidate_source_index": 521,
+        "candidate_task_id": "gsm8k-test-00521",
+        "candidate_task_type": "gsm8k",
+        "key": "normalized_question_hash",
+        "key_value": "7ac7a6a47f4a6f91999d3e23c34b13f40c3c927556d2544efc0a307692eaad38",
+        "source_hits": [
+          "outputs/real_task_pilot/pilot_traces.jsonl:82",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:246",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:247",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:248",
+          "outputs/real_task_pilot/sample_manifest.json:82"
+        ]
+      },
+      {
+        "candidate_sample_id": "gsm8k-00270",
+        "candidate_source_index": 270,
+        "candidate_task_id": "gsm8k-test-00270",
+        "candidate_task_type": "gsm8k",
+        "key": "normalized_question_hash",
+        "key_value": "ad5ec2611425f86c61c6ba0883965af445c9fdf984145218f9edf4a2e3cdfb63",
+        "source_hits": [
+          "outputs/real_task_pilot/pilot_traces.jsonl:40",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:120",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:121",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:122",
+          "outputs/real_task_pilot/sample_manifest.json:40"
+        ]
+      },
+      {
+        "candidate_sample_id": "gsm8k-00802",
+        "candidate_source_index": 802,
+        "candidate_task_id": "gsm8k-test-00802",
+        "candidate_task_type": "gsm8k",
+        "key": "normalized_question_hash",
+        "key_value": "bb2b6666ea1c56ff0a42f5f907c57f43318a71c8c86ab71eb5112e0580e61816",
+        "source_hits": [
+          "outputs/real_task_pilot/pilot_traces.jsonl:125",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:375",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:376",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:377",
+          "outputs/real_task_pilot/sample_manifest.json:125"
+        ]
+      },
+      {
+        "candidate_sample_id": "gsm8k-01168",
+        "candidate_source_index": 1168,
+        "candidate_task_id": "gsm8k-test-01168",
+        "candidate_task_type": "gsm8k",
+        "key": "normalized_question_hash",
+        "key_value": "6bf9342fd315edf72336f5bf3f6a5e6e2aabc4ab10513ff783d101b9c46c8bac",
+        "source_hits": [
+          "outputs/real_task_pilot/pilot_traces.jsonl:173",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:519",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:520",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:521",
+          "outputs/real_task_pilot/sample_manifest.json:173"
+        ]
+      },
+      {
+        "candidate_sample_id": "gsm8k-00162",
+        "candidate_source_index": 162,
+        "candidate_task_id": "gsm8k-test-00162",
+        "candidate_task_type": "gsm8k",
+        "key": "normalized_question_hash",
+        "key_value": "aaedc7bd0215a0848a58224b9f2f64cacab001d66a1790f59db08d3517f259c5",
+        "source_hits": [
+          "outputs/real_task_pilot/pilot_traces.jsonl:28",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:84",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:85",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:86",
+          "outputs/real_task_pilot/sample_manifest.json:28"
+        ]
+      },
+      {
+        "candidate_sample_id": "gsm8k-00339",
+        "candidate_source_index": 339,
+        "candidate_task_id": "gsm8k-test-00339",
+        "candidate_task_type": "gsm8k",
+        "key": "normalized_question_hash",
+        "key_value": "86335b0a12f0182ac79ff005825aa9bc3772b0bfc9107659bc1f59926ee51385",
+        "source_hits": [
+          "outputs/real_task_pilot/pilot_traces.jsonl:51",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:153",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:154",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:155",
+          "outputs/real_task_pilot/sample_manifest.json:51"
+        ]
+      },
+      {
+        "candidate_sample_id": "gsm8k-00649",
+        "candidate_source_index": 649,
+        "candidate_task_id": "gsm8k-test-00649",
+        "candidate_task_type": "gsm8k",
+        "key": "normalized_question_hash",
+        "key_value": "a13555d615c0577379575b558298b1c03b9ba0ca619e34327297ebccb542e6da",
+        "source_hits": [
+          "outputs/real_task_pilot/pilot_traces.jsonl:103",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:309",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:310",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:311",
+          "outputs/real_task_pilot/sample_manifest.json:103"
+        ]
+      },
+      {
+        "candidate_sample_id": "gsm8k-00031",
+        "candidate_source_index": 31,
+        "candidate_task_id": "gsm8k-test-00031",
+        "candidate_task_type": "gsm8k",
+        "key": "normalized_question_hash",
+        "key_value": "d7014cde89a90f0984323819ce10204e6de96643842361e0016798709373b8af",
+        "source_hits": [
+          "outputs/real_task_pilot/pilot_traces.jsonl:4",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:12",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:13",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:14",
+          "outputs/real_task_pilot/sample_manifest.json:4"
+        ]
+      },
+      {
+        "candidate_sample_id": "gsm8k-00636",
+        "candidate_source_index": 636,
+        "candidate_task_id": "gsm8k-test-00636",
+        "candidate_task_type": "gsm8k",
+        "key": "normalized_question_hash",
+        "key_value": "a200546a3318c8ef3e7b22ca655525a2e64da8112194d1a4438c57c9a81fb161",
+        "source_hits": [
+          "outputs/real_task_pilot/pilot_traces.jsonl:102",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:306",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:307",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:308",
+          "outputs/real_task_pilot/sample_manifest.json:102"
+        ]
+      }
+    ],
+    "reference_answer_hash": [
+      {
+        "candidate_sample_id": "gsm8k-00660",
+        "candidate_source_index": 660,
+        "candidate_task_id": "gsm8k-test-00660",
+        "candidate_task_type": "gsm8k",
+        "key": "reference_answer_hash",
+        "key_value": "5c50313cd9e4e6c8b630db9b7d0d7b35e335a3e255e7042e6e8f82a3ba12d7eb",
+        "source_hits": [
+          "outputs/real_task_pilot/pilot_traces.jsonl:106",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:318",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:319",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:320",
+          "outputs/real_task_pilot/sample_manifest.json:106"
+        ]
+      },
+      {
+        "candidate_sample_id": "gsm8k-00521",
+        "candidate_source_index": 521,
+        "candidate_task_id": "gsm8k-test-00521",
+        "candidate_task_type": "gsm8k",
+        "key": "reference_answer_hash",
+        "key_value": "d25b3b835e7f85583e1aa212dde8446f79e4d6d791c97ee34e737dd70da3ae08",
+        "source_hits": [
+          "outputs/real_task_pilot/pilot_traces.jsonl:82",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:246",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:247",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:248",
+          "outputs/real_task_pilot/sample_manifest.json:82"
+        ]
+      },
+      {
+        "candidate_sample_id": "gsm8k-00270",
+        "candidate_source_index": 270,
+        "candidate_task_id": "gsm8k-test-00270",
+        "candidate_task_type": "gsm8k",
+        "key": "reference_answer_hash",
+        "key_value": "105087107a70ad2e566eee71bf6a72557870dde7bcf0098c06afb21fee1d0fce",
+        "source_hits": [
+          "outputs/real_task_pilot/pilot_traces.jsonl:40",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:120",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:121",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:122",
+          "outputs/real_task_pilot/sample_manifest.json:40"
+        ]
+      },
+      {
+        "candidate_sample_id": "gsm8k-00802",
+        "candidate_source_index": 802,
+        "candidate_task_id": "gsm8k-test-00802",
+        "candidate_task_type": "gsm8k",
+        "key": "reference_answer_hash",
+        "key_value": "e381bf6f308ce0d27a6d2de480da67bef8a20730a9ded5c91c7b7c88837d6435",
+        "source_hits": [
+          "outputs/real_task_pilot/pilot_traces.jsonl:125",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:375",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:376",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:377",
+          "outputs/real_task_pilot/sample_manifest.json:125"
+        ]
+      },
+      {
+        "candidate_sample_id": "gsm8k-01168",
+        "candidate_source_index": 1168,
+        "candidate_task_id": "gsm8k-test-01168",
+        "candidate_task_type": "gsm8k",
+        "key": "reference_answer_hash",
+        "key_value": "4be9a2f37d2bde41588d2f6907e7e4c1d4d8efee5b1968064a48c70987329439",
+        "source_hits": [
+          "outputs/real_task_pilot/pilot_traces.jsonl:173",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:519",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:520",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:521",
+          "outputs/real_task_pilot/sample_manifest.json:173"
+        ]
+      },
+      {
+        "candidate_sample_id": "gsm8k-00162",
+        "candidate_source_index": 162,
+        "candidate_task_id": "gsm8k-test-00162",
+        "candidate_task_type": "gsm8k",
+        "key": "reference_answer_hash",
+        "key_value": "faeeffa5721536728ec82f0c45dd208439b7c8df70514109fb2375772f9e559a",
+        "source_hits": [
+          "outputs/real_task_pilot/pilot_traces.jsonl:28",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:84",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:85",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:86",
+          "outputs/real_task_pilot/sample_manifest.json:28"
+        ]
+      },
+      {
+        "candidate_sample_id": "gsm8k-00339",
+        "candidate_source_index": 339,
+        "candidate_task_id": "gsm8k-test-00339",
+        "candidate_task_type": "gsm8k",
+        "key": "reference_answer_hash",
+        "key_value": "ce7cfc83276ca4d45d30cb394c4d8f320f7fc34a3923d1d1b52f15915d612e2d",
+        "source_hits": [
+          "outputs/real_task_pilot/pilot_traces.jsonl:51",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:153",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:154",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:155",
+          "outputs/real_task_pilot/sample_manifest.json:51"
+        ]
+      },
+      {
+        "candidate_sample_id": "gsm8k-00649",
+        "candidate_source_index": 649,
+        "candidate_task_id": "gsm8k-test-00649",
+        "candidate_task_type": "gsm8k",
+        "key": "reference_answer_hash",
+        "key_value": "62cbfcfa97ad8c8a579f14573a026bcda2a4c162632c3a312e3ef325e1cbe9bc",
+        "source_hits": [
+          "outputs/real_task_pilot/pilot_traces.jsonl:103",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:309",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:310",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:311",
+          "outputs/real_task_pilot/sample_manifest.json:103"
+        ]
+      },
+      {
+        "candidate_sample_id": "gsm8k-00031",
+        "candidate_source_index": 31,
+        "candidate_task_id": "gsm8k-test-00031",
+        "candidate_task_type": "gsm8k",
+        "key": "reference_answer_hash",
+        "key_value": "701cad4ae7328433caf95f85b23a100a69681021876fba6ef195f64b37da1d18",
+        "source_hits": [
+          "outputs/real_task_pilot/pilot_traces.jsonl:4",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:12",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:13",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:14",
+          "outputs/real_task_pilot/sample_manifest.json:4"
+        ]
+      },
+      {
+        "candidate_sample_id": "gsm8k-00636",
+        "candidate_source_index": 636,
+        "candidate_task_id": "gsm8k-test-00636",
+        "candidate_task_type": "gsm8k",
+        "key": "reference_answer_hash",
+        "key_value": "b88eff3dc13b1dcf3f5b23be24b2e3d484ad0745e146de38e05dff5837ef3efe",
+        "source_hits": [
+          "outputs/real_task_pilot/pilot_traces.jsonl:102",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:306",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:307",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:308",
+          "outputs/real_task_pilot/sample_manifest.json:102"
+        ]
+      }
+    ],
+    "sample_id": [
+      {
+        "candidate_sample_id": "gsm8k-00660",
+        "candidate_source_index": 660,
+        "candidate_task_id": "gsm8k-test-00660",
+        "candidate_task_type": "gsm8k",
+        "key": "sample_id",
+        "key_value": "gsm8k-00660",
+        "source_hits": [
+          "outputs/real_task_pilot/independent_baseline_scores.jsonl:106",
+          "outputs/real_task_pilot/pilot_traces.jsonl:106",
+          "outputs/real_task_pilot/real_task_delta_u.jsonl:106",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:318",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:319"
+        ]
+      },
+      {
+        "candidate_sample_id": "gsm8k-00521",
+        "candidate_source_index": 521,
+        "candidate_task_id": "gsm8k-test-00521",
+        "candidate_task_type": "gsm8k",
+        "key": "sample_id",
+        "key_value": "gsm8k-00521",
+        "source_hits": [
+          "outputs/real_task_pilot/independent_baseline_scores.jsonl:82",
+          "outputs/real_task_pilot/pilot_traces.jsonl:82",
+          "outputs/real_task_pilot/real_task_delta_u.jsonl:82",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:246",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:247"
+        ]
+      },
+      {
+        "candidate_sample_id": "gsm8k-00270",
+        "candidate_source_index": 270,
+        "candidate_task_id": "gsm8k-test-00270",
+        "candidate_task_type": "gsm8k",
+        "key": "sample_id",
+        "key_value": "gsm8k-00270",
+        "source_hits": [
+          "outputs/real_task_pilot/independent_baseline_scores.jsonl:40",
+          "outputs/real_task_pilot/pilot_traces.jsonl:40",
+          "outputs/real_task_pilot/real_task_delta_u.jsonl:40",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:120",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:121"
+        ]
+      },
+      {
+        "candidate_sample_id": "gsm8k-00802",
+        "candidate_source_index": 802,
+        "candidate_task_id": "gsm8k-test-00802",
+        "candidate_task_type": "gsm8k",
+        "key": "sample_id",
+        "key_value": "gsm8k-00802",
+        "source_hits": [
+          "outputs/real_task_pilot/independent_baseline_scores.jsonl:125",
+          "outputs/real_task_pilot/pilot_traces.jsonl:125",
+          "outputs/real_task_pilot/real_task_delta_u.jsonl:125",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:375",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:376"
+        ]
+      },
+      {
+        "candidate_sample_id": "gsm8k-01168",
+        "candidate_source_index": 1168,
+        "candidate_task_id": "gsm8k-test-01168",
+        "candidate_task_type": "gsm8k",
+        "key": "sample_id",
+        "key_value": "gsm8k-01168",
+        "source_hits": [
+          "outputs/real_task_pilot/independent_baseline_scores.jsonl:173",
+          "outputs/real_task_pilot/pilot_traces.jsonl:173",
+          "outputs/real_task_pilot/real_task_delta_u.jsonl:173",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:519",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:520"
+        ]
+      },
+      {
+        "candidate_sample_id": "gsm8k-00162",
+        "candidate_source_index": 162,
+        "candidate_task_id": "gsm8k-test-00162",
+        "candidate_task_type": "gsm8k",
+        "key": "sample_id",
+        "key_value": "gsm8k-00162",
+        "source_hits": [
+          "outputs/real_task_pilot/independent_baseline_scores.jsonl:28",
+          "outputs/real_task_pilot/pilot_traces.jsonl:28",
+          "outputs/real_task_pilot/real_task_delta_u.jsonl:28",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:84",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:85"
+        ]
+      },
+      {
+        "candidate_sample_id": "gsm8k-00339",
+        "candidate_source_index": 339,
+        "candidate_task_id": "gsm8k-test-00339",
+        "candidate_task_type": "gsm8k",
+        "key": "sample_id",
+        "key_value": "gsm8k-00339",
+        "source_hits": [
+          "outputs/real_task_pilot/independent_baseline_scores.jsonl:51",
+          "outputs/real_task_pilot/pilot_traces.jsonl:51",
+          "outputs/real_task_pilot/real_task_delta_u.jsonl:51",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:153",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:154"
+        ]
+      },
+      {
+        "candidate_sample_id": "gsm8k-00649",
+        "candidate_source_index": 649,
+        "candidate_task_id": "gsm8k-test-00649",
+        "candidate_task_type": "gsm8k",
+        "key": "sample_id",
+        "key_value": "gsm8k-00649",
+        "source_hits": [
+          "outputs/real_task_pilot/independent_baseline_scores.jsonl:103",
+          "outputs/real_task_pilot/pilot_traces.jsonl:103",
+          "outputs/real_task_pilot/real_task_delta_u.jsonl:103",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:309",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:310"
+        ]
+      },
+      {
+        "candidate_sample_id": "gsm8k-00031",
+        "candidate_source_index": 31,
+        "candidate_task_id": "gsm8k-test-00031",
+        "candidate_task_type": "gsm8k",
+        "key": "sample_id",
+        "key_value": "gsm8k-00031",
+        "source_hits": [
+          "outputs/real_task_pilot/independent_baseline_scores.jsonl:4",
+          "outputs/real_task_pilot/pilot_traces.jsonl:4",
+          "outputs/real_task_pilot/real_task_delta_u.jsonl:4",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:12",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:13"
+        ]
+      },
+      {
+        "candidate_sample_id": "gsm8k-00636",
+        "candidate_source_index": 636,
+        "candidate_task_id": "gsm8k-test-00636",
+        "candidate_task_type": "gsm8k",
+        "key": "sample_id",
+        "key_value": "gsm8k-00636",
+        "source_hits": [
+          "outputs/real_task_pilot/independent_baseline_scores.jsonl:102",
+          "outputs/real_task_pilot/pilot_traces.jsonl:102",
+          "outputs/real_task_pilot/real_task_delta_u.jsonl:102",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:306",
+          "outputs/real_task_pilot/real_task_replay_results.jsonl:307"
+        ]
+      }
+    ],
+    "task_id": []
+  },
+  "overlap_summary": {
+    "candidate_pool_overlaps_by_key": {
+      "alias_hash": 0,
+      "dataset_config_split_source_index": 400,
+      "normalized_question_hash": 400,
+      "reference_answer_hash": 933,
+      "sample_id": 400,
+      "task_id": 0
+    },
+    "selected_overlaps_by_key": {
+      "alias_hash": 0,
+      "dataset_config_split_source_index": 0,
+      "normalized_question_hash": 0,
+      "reference_answer_hash": 0,
+      "sample_id": 0,
+      "task_id": 0
+    },
+    "total_overlaps_by_key": {
+      "alias_hash": 0,
+      "dataset_config_split_source_index": 400,
+      "normalized_question_hash": 400,
+      "reference_answer_hash": 933,
+      "sample_id": 400,
+      "task_id": 0
+    }
+  },
+  "plan_file": "paper/s_fma_v2_fresh_holdout_plan.md",
+  "prompt_file": "prompts\\real_task_reflection_generation.txt",
+  "prompt_version": "prompt-sha256:4206b3ebb6bebfcabb93d5cf8710ff7c7bfcca75928bbce0577f1a60af6aca1f",
+  "required_non_overlap_keys": [
+    "sample_id",
+    "task_id",
+    "dataset_config_split_source_index",
+    "normalized_question_hash",
+    "reference_answer_hash",
+    "alias_hash"
+  ],
+  "s_fma_v2_status": "planned-only",
+  "selection_seed": 20260601,
+  "status": "MANIFEST_OVERLAP_CLEAN",
+  "tasks": {
+    "gsm8k": {
+      "config": "main",
+      "configured_sample_count": 200,
+      "dataset": "gsm8k",
+      "eligible_count": 1119,
+      "empty_alias_candidate_count": 1319,
+      "excluded_overlap_count": 200,
+      "non_empty_alias_candidate_count": 0,
+      "selected_count": 200,
+      "source_row_count": 1319,
+      "split": "test",
+      "status": "MANIFEST_OVERLAP_CLEAN"
+    },
+    "hotpotqa": {
+      "config": "distractor",
+      "configured_sample_count": 200,
+      "dataset": "hotpot_qa",
+      "eligible_count": 6672,
+      "empty_alias_candidate_count": 7405,
+      "excluded_overlap_count": 733,
+      "non_empty_alias_candidate_count": 0,
+      "selected_count": 200,
+      "source_row_count": 7405,
+      "split": "validation",
+      "status": "MANIFEST_OVERLAP_CLEAN"
+    }
+  }
+}
