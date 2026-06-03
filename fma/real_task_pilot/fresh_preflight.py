@@ -17,6 +17,12 @@ PREFLIGHT_FAIL_METADATA = "PREFLIGHT_FAIL_METADATA"
 PREFLIGHT_METADATA_MISSING = "PREFLIGHT_METADATA_MISSING"
 PREFLIGHT_FAIL_SCHEMA_OR_TAGS = "PREFLIGHT_FAIL_SCHEMA_OR_TAGS"
 DETERMINISTIC_REPLAY_FEASIBLE = "DETERMINISTIC_REPLAY_FEASIBLE"
+DETERMINISTIC_REPLAY_ROUTE = "DETERMINISTIC_REPLAY_ROUTE"
+STOCHASTIC_REPEATED_REPLAY_ROUTE = "STOCHASTIC_REPEATED_REPLAY_ROUTE"
+PREREGISTER_STOCHASTIC_ROUTE = "PREREGISTER_STOCHASTIC_ROUTE"
+RERUN_PREFLIGHT_WITH_STRONGER_DETERMINISM_SETTINGS = (
+    "RERUN_PREFLIGHT_WITH_STRONGER_DETERMINISM_SETTINGS"
+)
 
 
 class FreshPreflightError(RuntimeError):
@@ -312,6 +318,17 @@ def _base_report(
     api_attempts: int | None = None,
 ) -> dict[str, Any]:
     generation_approval_allowed = status == API_PREFLIGHT_READY
+    drift_failed = status == PREFLIGHT_FAIL_DRIFT or drift_status == PREFLIGHT_FAIL_DRIFT
+    allowed_remediation_steps = (
+        [PREREGISTER_STOCHASTIC_ROUTE, RERUN_PREFLIGHT_WITH_STRONGER_DETERMINISM_SETTINGS]
+        if drift_failed
+        else []
+    )
+    allowed_claim_wording, forbidden_claim_wording = _route_claim_wording(
+        drift_failed=drift_failed,
+        deterministic_claim_allowed=deterministic_claim_allowed,
+        stochastic_candidate=stochastic_candidate,
+    )
     return {
         "status": status,
         "failure_codes": _unique_sorted(failure_codes),
@@ -335,6 +352,16 @@ def _base_report(
         "determinism_drift_max": determinism_drift_max,
         "deterministic_replay_claim_allowed": deterministic_claim_allowed,
         "stochastic_repeated_replay_estimand_candidate": stochastic_candidate,
+        "allowed_remediation_steps": allowed_remediation_steps,
+        "route_policy": _route_policy(
+            status=status,
+            drift_status=drift_status,
+            deterministic_claim_allowed=deterministic_claim_allowed,
+            stochastic_candidate=stochastic_candidate,
+            cost_report=cost_report,
+        ),
+        "allowed_claim_wording": allowed_claim_wording,
+        "forbidden_claim_wording": forbidden_claim_wording,
         "fresh_generation_approval_request_allowed": generation_approval_allowed,
         "next_allowed_step": (
             "REQUEST_FRESH_GENERATION_APPROVAL"
@@ -352,6 +379,79 @@ def _base_report(
         "no_prm_claim": True,
         "claim_upgrade_allowed": False,
     }
+
+
+def _route_policy(
+    *,
+    status: str,
+    drift_status: str,
+    deterministic_claim_allowed: bool,
+    stochastic_candidate: bool,
+    cost_report: Mapping[str, Any],
+) -> dict[str, Any]:
+    drift_failed = status == PREFLIGHT_FAIL_DRIFT or drift_status == PREFLIGHT_FAIL_DRIFT
+    deterministic_passed = (
+        status == API_PREFLIGHT_READY
+        and drift_status == DETERMINISTIC_REPLAY_FEASIBLE
+        and deterministic_claim_allowed
+    )
+    return {
+        "allowed_routes_after_drift": (
+            [STOCHASTIC_REPEATED_REPLAY_ROUTE] if drift_failed else []
+        ),
+        DETERMINISTIC_REPLAY_ROUTE: {
+            "requires_preflight_drift_pass": True,
+            "preflight_drift_passed": deterministic_passed,
+            "route_status": (
+                "available_after_preflight_drift_pass"
+                if deterministic_passed
+                else "blocked_preflight_drift"
+                if drift_failed
+                else "blocked_preflight_not_ready"
+            ),
+            "full_generation_allowed": deterministic_passed,
+            "deterministic_replay_language_allowed": deterministic_passed,
+        },
+        STOCHASTIC_REPEATED_REPLAY_ROUTE: {
+            "requires_drift_disclosure": True,
+            "drift_disclosed": drift_failed,
+            "planning_allowed": bool(stochastic_candidate and drift_failed),
+            "api_execution_allowed": False,
+            "requires_explicit_budget_approval": True,
+            "cost_ceiling_required": True,
+            "preflight_budget_gate_passed": bool(cost_report.get("budget_gate_pass", False)),
+            "claim_scope": "stochastic_repeated_replay_evidence_only",
+            "deterministic_replay_language_allowed": False,
+        },
+    }
+
+
+def _route_claim_wording(
+    *,
+    drift_failed: bool,
+    deterministic_claim_allowed: bool,
+    stochastic_candidate: bool,
+) -> tuple[list[str], list[str]]:
+    allowed = [
+        "fresh-holdout status remains planned-only",
+        "current status remains PILOT_BLOCKED",
+    ]
+    forbidden = [
+        "deterministic causal",
+        "true causal effect",
+        "full generation ready",
+        "task/global v2 pass",
+        "PRM/filtering claim",
+    ]
+    if deterministic_claim_allowed:
+        allowed.append("deterministic replay evidence after drift gate pass")
+    else:
+        forbidden.append("deterministic replay")
+    if drift_failed and stochastic_candidate:
+        allowed.append(
+            "stochastic repeated-replay evidence only after explicit budget approval"
+        )
+    return allowed, forbidden
 
 
 def _configured_manifest_counts(config: Mapping[str, Any]) -> tuple[int, dict[str, int]]:

@@ -483,6 +483,80 @@ def test_fresh_preflight_drift_failure_forbids_deterministic_replay_claim() -> N
     assert report["stochastic_repeated_replay_estimand_candidate"] is True
 
 
+def test_fresh_preflight_drift_failure_blocks_deterministic_full_generation() -> None:
+    attempts = [_valid_preflight_attempt(f"gsm8k-{index:05d}") for index in range(20)]
+
+    report = summarize_fresh_preflight(
+        attempts,
+        selected_records=_manifest_rows(per_task=10),
+        drift_outputs=["alpha beta gamma", "alpha totally different gamma"],
+        config=_fresh_preflight_config(sample_count=10),
+    )
+
+    deterministic_route = report["route_policy"]["DETERMINISTIC_REPLAY_ROUTE"]
+    assert report["status"] == PREFLIGHT_FAIL_DRIFT
+    assert report["fresh_generation_approval_request_allowed"] is False
+    assert report["no_full_generation"] is True
+    assert deterministic_route["route_status"] == "blocked_preflight_drift"
+    assert deterministic_route["full_generation_allowed"] is False
+    assert deterministic_route["deterministic_replay_language_allowed"] is False
+
+
+def test_fresh_preflight_drift_failure_only_allows_stochastic_planning_or_stronger_preflight() -> None:
+    attempts = [_valid_preflight_attempt(f"gsm8k-{index:05d}") for index in range(20)]
+
+    report = summarize_fresh_preflight(
+        attempts,
+        selected_records=_manifest_rows(per_task=10),
+        drift_outputs=["alpha beta gamma", "alpha totally different gamma"],
+        config=_fresh_preflight_config(sample_count=10),
+    )
+
+    assert report["status"] == PREFLIGHT_FAIL_DRIFT
+    assert report["next_allowed_step"] == "STOP_AND_FIX_PREFLIGHT"
+    assert report["allowed_remediation_steps"] == [
+        "PREREGISTER_STOCHASTIC_ROUTE",
+        "RERUN_PREFLIGHT_WITH_STRONGER_DETERMINISM_SETTINGS",
+    ]
+    assert report["route_policy"]["allowed_routes_after_drift"] == [
+        "STOCHASTIC_REPEATED_REPLAY_ROUTE"
+    ]
+
+
+def test_fresh_preflight_stochastic_route_still_requires_explicit_budget_before_api() -> None:
+    attempts = [_valid_preflight_attempt(f"gsm8k-{index:05d}") for index in range(20)]
+
+    report = summarize_fresh_preflight(
+        attempts,
+        selected_records=_manifest_rows(per_task=10),
+        drift_outputs=["alpha beta gamma", "alpha totally different gamma"],
+        config=_fresh_preflight_config(sample_count=10),
+    )
+
+    stochastic_route = report["route_policy"]["STOCHASTIC_REPEATED_REPLAY_ROUTE"]
+    assert stochastic_route["planning_allowed"] is True
+    assert stochastic_route["api_execution_allowed"] is False
+    assert stochastic_route["requires_explicit_budget_approval"] is True
+    assert stochastic_route["cost_ceiling_required"] is True
+    assert stochastic_route["claim_scope"] == "stochastic_repeated_replay_evidence_only"
+
+
+def test_fresh_preflight_deterministic_replay_claim_forbidden_when_drift_persists() -> None:
+    attempts = [_valid_preflight_attempt(f"gsm8k-{index:05d}") for index in range(20)]
+
+    report = summarize_fresh_preflight(
+        attempts,
+        selected_records=_manifest_rows(per_task=10),
+        drift_outputs=["alpha beta gamma", "alpha totally different gamma"],
+        config=_fresh_preflight_config(sample_count=10),
+    )
+
+    assert report["deterministic_replay_claim_allowed"] is False
+    assert "deterministic replay" not in " ".join(report["allowed_claim_wording"]).lower()
+    assert "deterministic causal" in report["forbidden_claim_wording"]
+    assert "deterministic replay" in report["forbidden_claim_wording"]
+
+
 def test_fresh_preflight_drift_status_takes_precedence_over_fingerprint_disclosure_missing() -> None:
     attempts = [_valid_preflight_attempt(f"gsm8k-{index:05d}") for index in range(20)]
     for attempt in attempts:
