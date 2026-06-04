@@ -1,0 +1,203 @@
+{
+  "audit_name": "V2_1_PILOT_SINGLE_TRANSPORT_FAILURE_AUDIT",
+  "audit_date": "2026-06-04",
+  "scope": "V2_1_PILOT_SINGLE_TRANSPORT_FAILURE_AUDIT_AND_RETRY_REQUEST",
+  "api_execution_performed_by_this_audit": false,
+  "retry_performed_by_this_audit": false,
+  "replay_rerun_performed_by_this_audit": false,
+  "scoring_performed_by_this_audit": false,
+  "full_validation_performed_by_this_audit": false,
+  "prm_or_filtering_performed_by_this_audit": false,
+  "source_artifacts": {
+    "pilot_report": "outputs/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_report.json",
+    "cost_report": "outputs/s_fma_v2_1_fresh_holdout/logs/v2_1_pilot_stochastic_cost_report.json",
+    "rank_signal_report": "outputs/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_rank_signal_report.json",
+    "original_attempts": "outputs/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_original_attempts.jsonl",
+    "original_traces": "outputs/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_original_traces.jsonl",
+    "replay_attempts": "outputs/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_replay_attempts.jsonl",
+    "replay_results": "outputs/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_replay_results.jsonl",
+    "delta_u": "outputs/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_delta_u.jsonl"
+  },
+  "source_pilot_summary": {
+    "source_scope": "V2_1_PILOT_STOCHASTIC_VALIDATION_ONLY",
+    "source_status": "V2_1_PILOT_STOCHASTIC_FAIL_SCHEMA_OR_TAGS",
+    "actual_api_requests": 700,
+    "actual_cost_usd": 28.04808,
+    "valid_original_traces": 100,
+    "original_attempt_count": 100,
+    "replay_attempt_count": 600,
+    "successful_replay_count": 599,
+    "expected_replay_jobs": 600,
+    "replay_success_rate": 0.9983333333333333,
+    "json_schema_tag_final_answer_success": 0.9985714285714286,
+    "json_parse_success_rate": 0.9985714285714286,
+    "schema_success_rate": 0.9985714285714286,
+    "tag_extraction_success_rate": 0.9985714285714286,
+    "final_answer_parse_success_rate": 0.9985714285714286,
+    "nonzero_delta_u_pooled_count": 96,
+    "nonzero_delta_u_by_task": {
+      "gsm8k": 42,
+      "hotpotqa": 54
+    },
+    "delta_rows": 200,
+    "sample_count": 100,
+    "sample_count_by_task": {
+      "gsm8k": 50,
+      "hotpotqa": 50
+    },
+    "TASK_SPECIFIC_pass": false,
+    "GLOBAL_pass": false,
+    "TASK_SPECIFIC_pass_by_task": {
+      "gsm8k": false,
+      "hotpotqa": false
+    },
+    "current_status_remains": "PILOT_BLOCKED",
+    "claim_upgrade_allowed": false,
+    "task_specific_pass_claim_allowed": false,
+    "global_pass_claim_allowed": false,
+    "full_validation_approval_request_allowed": false,
+    "prm_filtering_validation_design_allowed": false
+  },
+  "rank_signal": {
+    "metric": "original_primary_score_vs_delta_u_spearman",
+    "estimand_boundary": "pilot stochastic repeated replay only",
+    "bootstrap": {
+      "confidence_level": 0.95,
+      "random_seed": 20262630,
+      "resamples": 10000
+    },
+    "pooled": {
+      "n": 200,
+      "spearman_rho": 0.6245252861282434,
+      "spearman_ci95": [
+        0.5270533908111767,
+        0.7061756846044145
+      ],
+      "spearman_ci_lower_gt_zero": true
+    },
+    "per_task": {
+      "gsm8k": {
+        "n": 100,
+        "spearman_rho": 0.8607773460183319,
+        "spearman_ci95": [
+          0.783942543722986,
+          0.9178556911176244
+        ],
+        "spearman_ci_lower_gt_zero": true
+      },
+      "hotpotqa": {
+        "n": 100,
+        "spearman_rho": 0.5134994412349974,
+        "spearman_ci95": [
+          0.3830411004694536,
+          0.620563137771949
+        ],
+        "spearman_ci_lower_gt_zero": true
+      }
+    },
+    "primary_signal_available": true,
+    "rank_signal_failure": false
+  },
+  "attempt_level_audit": {
+    "original_attempts": {
+      "total": 100,
+      "raw_output_empty": 0,
+      "record_null": 0,
+      "response_id_null": 0,
+      "validation_error_count": 0
+    },
+    "replay_attempts": {
+      "total": 600,
+      "success": 599,
+      "failed": 1,
+      "raw_output_empty": 1,
+      "record_null": 1,
+      "response_id_null": 1,
+      "validation_error_count": 1
+    },
+    "replay_results": {
+      "total": 599,
+      "failed_attempt_present_in_results": false
+    },
+    "validation_errors": {
+      "api_error:APIConnectionError:Connection error.": 1
+    },
+    "fallback_event_counts": {
+      "selected_model_responses": 699,
+      "api_error_APIConnectionError_Connection_error": 1
+    }
+  },
+  "failed_attempt": {
+    "sample_id": "gsm8k-00357",
+    "task_id": "gsm8k-test-00357",
+    "task_type": "gsm8k",
+    "span_index": 1,
+    "repeat_index": 2,
+    "attempt_role": "pilot_replay",
+    "status": "failed",
+    "failure": "api_error:APIConnectionError:Connection error.",
+    "fallback_event": {
+      "status": "api_error",
+      "error_type": "APIConnectionError",
+      "error": "Connection error.",
+      "model_name": "gpt-5.5",
+      "structured_output_mode": "json_schema"
+    },
+    "raw_output": "",
+    "record": null,
+    "response_id": null,
+    "usage": {},
+    "output_extraction_diagnostics": {}
+  },
+  "root_cause_classification": {
+    "primary": "single_transport_failure_hard_stop",
+    "reason": "single transport failure hard-stop, not signal failure",
+    "single_failed_attempt_only": true,
+    "transport_or_api_connection_error": true,
+    "model_schema_or_type_failure": false,
+    "model_json_schema_tag_or_final_answer_failure": false,
+    "rank_signal_failure": false,
+    "evidence_sparsity_failure": false,
+    "rationale": "The only failed source attempt is a pilot replay row with APIConnectionError, empty raw_output, null response_id, null record, and no model-emitted content to validate. All 100 original attempts and the other 599 replay attempts produced selected model responses. Rank-signal CIs are positive for pooled, GSM8K, and HotpotQA, and nonzero Delta-U exists in both tasks. The pilot remains blocked because the preregistered JSON/schema/tag/final-answer hard stop requires perfection and the single transport failure lowers those rates to 0.9985714285714286."
+  },
+  "blocked_provenance_decision": {
+    "freeze_current_pilot_artifact_as_blocked_provenance": true,
+    "current_status_remains": "PILOT_BLOCKED",
+    "TASK_SPECIFIC_pass_remains": false,
+    "GLOBAL_pass_remains": false,
+    "pass_claim_allowed": false,
+    "deterministic_replay_claim_allowed": false,
+    "full_validation_allowed": false,
+    "prm_filtering_claim_allowed": false,
+    "no_pass_claim_unless_recomputed_post_retry_artifacts_truly_satisfy_all_gates": true
+  },
+  "next_allowed_step": {
+    "request_only_artifacts": [
+      "outputs/s_fma_v2_1_fresh_holdout/v2_1_pilot_single_retry_approval_request.json",
+      "outputs/s_fma_v2_1_fresh_holdout/v2_1_pilot_single_retry_approval_request.md"
+    ],
+    "allowed_after_explicit_user_approval_only": "V2_1_PILOT_SINGLE_TRANSPORT_RETRY_ONLY",
+    "max_api_requests": 3,
+    "budget_ceiling_usd": 1,
+    "only_failed_replay_attempt_may_be_retried": true,
+    "failed_attempt_key": {
+      "sample_id": "gsm8k-00357",
+      "task_id": "gsm8k-test-00357",
+      "span_index": 1,
+      "repeat_index": 2
+    }
+  },
+  "forbidden_actions": [
+    "API execution by this audit",
+    "retry by this audit",
+    "original regeneration",
+    "any replay attempt other than gsm8k-00357 span_index 1 repeat_index 2",
+    "full replay rerun",
+    "new scoring experiment",
+    "full validation",
+    "PRM/filtering",
+    "task/global pass claim before post-retry recomputation satisfies all gates",
+    "top-tier-ready claim",
+    "historical artifact rewrite into a stronger claim"
+  ]
+}

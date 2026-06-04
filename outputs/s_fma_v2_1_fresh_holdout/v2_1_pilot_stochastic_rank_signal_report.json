@@ -1,0 +1,44 @@
+{
+  "bootstrap": {
+    "confidence_level": 0.95,
+    "random_seed": 20262630,
+    "resamples": 10000
+  },
+  "estimand_boundary": "pilot stochastic repeated replay only",
+  "metric": "original_primary_score_vs_delta_u_spearman",
+  "per_task": {
+    "gsm8k": {
+      "n": 100,
+      "spearman_ci95": [
+        0.783942543722986,
+        0.9178556911176244
+      ],
+      "spearman_ci_lower_gt_zero": true,
+      "spearman_rho": 0.8607773460183319
+    },
+    "hotpotqa": {
+      "n": 100,
+      "spearman_ci95": [
+        0.3830411004694536,
+        0.620563137771949
+      ],
+      "spearman_ci_lower_gt_zero": true,
+      "spearman_rho": 0.5134994412349974
+    }
+  },
+  "pooled": {
+    "n": 200,
+    "spearman_ci95": [
+      0.5270533908111767,
+      0.7061756846044145
+    ],
+    "spearman_ci_lower_gt_zero": true,
+    "spearman_rho": 0.6245252861282434
+  },
+  "primary_signal": {
+    "available": true,
+    "n": 200,
+    "name": "original_primary_score_vs_delta_u",
+    "target_leakage_status": "observed_pilot_metric_not_candidate_score"
+  }
+}

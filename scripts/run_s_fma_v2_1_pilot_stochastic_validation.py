@@ -539,6 +539,15 @@ def build_v2_1_pilot_stochastic_report(
     pooled_rank_pass = bool(
         rank_signal.get("pooled", {}).get("spearman_ci_lower_gt_zero") is True
     )
+    per_task_rank_pass = all(
+        bool(
+            rank_signal.get("per_task", {})
+            .get(task_type, {})
+            .get("spearman_ci_lower_gt_zero")
+            is True
+        )
+        for task_type in expected_by_task
+    )
     global_pass = task_specific_pass and pooled_rank_pass
 
     failure_codes = []
@@ -562,7 +571,7 @@ def build_v2_1_pilot_stochastic_report(
     )
     if sparse_signal:
         failure_codes.append(V2_1_PILOT_STOCHASTIC_FAIL_SPARSE_SIGNAL)
-    if not global_pass:
+    if not (pooled_rank_pass and per_task_rank_pass):
         failure_codes.append(V2_1_PILOT_STOCHASTIC_FAIL_RANK_SIGNAL)
 
     status = V2_1_PILOT_STOCHASTIC_PASS if not failure_codes else failure_codes[0]

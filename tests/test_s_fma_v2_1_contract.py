@@ -1633,6 +1633,27 @@ def test_v2_1_pilot_stochastic_report_requires_rank_signal_for_task_and_global_p
     assert report["prm_filtering_validation_design_allowed"] is False
     assert report["current_status_remains"] == "PILOT_BLOCKED"
 
+    invalid_attempt = {
+        **valid_attempt,
+        "validation_errors": ["<root>: response is not a JSON object"],
+    }
+    schema_blocked = runner.build_v2_1_pilot_stochastic_report(
+        original_records=[{"task_type": "gsm8k"} for _ in range(3)]
+        + [{"task_type": "hotpotqa"} for _ in range(3)],
+        original_attempts=[dict(valid_attempt) for _ in range(5)] + [invalid_attempt],
+        replay_results=replay_results,
+        replay_attempts=replay_attempts,
+        delta_rows=delta_rows,
+        rank_signal=rank_signal,
+        readiness=readiness,
+        cost_used_usd=10.0,
+        expected_replay_jobs=6,
+    )
+
+    assert schema_blocked["status"] == "V2_1_PILOT_STOCHASTIC_FAIL_SCHEMA_OR_TAGS"
+    assert schema_blocked["rank_signal"]["pooled"]["spearman_ci_lower_gt_zero"] is True
+    assert "V2_1_PILOT_STOCHASTIC_FAIL_RANK_SIGNAL" not in schema_blocked["failure_codes"]
+
     rank_signal["per_task"]["hotpotqa"]["spearman_ci95"] = [-1.0, 1.0]
     rank_signal["per_task"]["hotpotqa"]["spearman_ci_lower_gt_zero"] = False
     blocked = runner.build_v2_1_pilot_stochastic_report(
