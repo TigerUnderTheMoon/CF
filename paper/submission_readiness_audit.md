@@ -13,7 +13,7 @@ fresh_holdout_api_preflight_status: `PREFLIGHT_FAIL_DRIFT`
 fresh_holdout_next_allowed_step: deterministic route must stop and fix preflight drift before requesting fresh full generation approval; stochastic smoke rerun next step is `STOP_OR_REVISE_EVIDENCE_TARGET`
 fresh_holdout_route_fork: `DETERMINISTIC_REPLAY_ROUTE` blocked by drift; `STOCHASTIC_REPEATED_REPLAY_ROUTE` has only 20-row smoke diagnostics and is blocked by sparse signal
 fresh_holdout_stochastic_smoke_status: `STOCHASTIC_SMOKE_FAIL_SPARSE_SIGNAL`; first smoke failed generation with 8/20 valid original traces and 12 non-JSON original attempts; approved bounded rerun spent `3.14542` USD within the `5` USD ceiling, produced 60/60 successful replay results, but had `nonzero_delta_rows: 0`; sparse-signal failure audit added; current status remains `PILOT_BLOCKED`
-v2_1_route: `s_FMA_v2.1` planned-only; regenerated package clean for current prompt hash; approved API_PREFLIGHT_ONLY rerun now parses but remains drift-failed; approved transport canary passed as diagnostic-only extraction evidence; latest bounded stochastic smoke is feasible for a pilot-budget request only
+v2_1_route: `s_FMA_v2.1` planned-only; regenerated package clean for current prompt hash; approved API_PREFLIGHT_ONLY rerun now parses but remains drift-failed; approved transport canary passed as diagnostic-only extraction evidence; latest bounded stochastic smoke was feasible for a pilot-budget request; current pilot stochastic artifact is blocked by one replay transport/APIConnectionError hard stop
 v2_1_manifest_overlap_audit_status: `MANIFEST_OVERLAP_CLEAN`
 v2_1_contract_audit_status: `V2_1_CONTRACT_CLEAN`
 v2_1_api_preflight_approval_request: `outputs/s_fma_v2_1_fresh_holdout/api_preflight_approval_request.md` and `.json`
@@ -43,8 +43,20 @@ v2_1_stochastic_smoke_nonzero_delta_u: pooled `20`; GSM8K `7`; HotpotQA `13`
 v2_1_stochastic_smoke_signal_absent: `false`; nonzero Delta-U signal exists in both tasks
 v2_1_stochastic_smoke_failure_codes: none in the current smoke report
 v2_1_stochastic_smoke_next_allowed_step: `REQUEST_V2_1_PILOT_STOCHASTIC_BUDGET`
-v2_1_next_allowed_step: only a separately approved `V2_1_PILOT_STOCHASTIC_VALIDATION_ONLY` budget request; current status remains `PILOT_BLOCKED`; no pilot execution or full validation is allowed without explicit user approval
-v2_1_pilot_stochastic_request_status: `REQUEST_ONLY_NOT_APPROVED`; scope `V2_1_PILOT_STOCHASTIC_VALIDATION_ONLY`; budget ceiling recommendation USD 40; max API requests 700; records 100 total, GSM8K 50 and HotpotQA 50; stochastic repeats per eligible span 3; no API, pilot run, replay, scoring, full validation, pass wording, or PRM/filtering is authorized by the request-only package
+v2_1_pilot_stochastic_status: `V2_1_PILOT_STOCHASTIC_FAIL_SCHEMA_OR_TAGS`; root cause reclassified by audit as single transport failure hard-stop, not model schema/type failure, rank-signal failure, or evidence sparsity
+v2_1_pilot_stochastic_report: `outputs/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_report.json`
+v2_1_pilot_stochastic_requests: `700` actual API requests
+v2_1_pilot_stochastic_cost_usd: `28.04808`
+v2_1_pilot_stochastic_valid_original_traces: `100`
+v2_1_pilot_stochastic_replay_success: `599/600`
+v2_1_pilot_stochastic_parse_success_rates: JSON/schema/tag/final-answer `0.9985714285714286`
+v2_1_pilot_stochastic_nonzero_delta_u: pooled `96`; GSM8K `42`; HotpotQA `54`
+v2_1_pilot_stochastic_rank_signal: pooled Spearman `0.6245252861282434` CI `[0.5270533908111767, 0.7061756846044145]`; GSM8K `0.8607773460183319` CI `[0.783942543722986, 0.9178556911176244]`; HotpotQA `0.5134994412349974` CI `[0.3830411004694536, 0.620563137771949]`
+v2_1_pilot_stochastic_failed_attempt: `gsm8k-00357`; task_id `gsm8k-test-00357`; span_index `1`; repeat_index `2`; failure `api_error:APIConnectionError:Connection error.`
+v2_1_pilot_stochastic_task_specific_global_pass: `TASK_SPECIFIC=false`; `GLOBAL=false`; current status remains `PILOT_BLOCKED`
+v2_1_pilot_transport_failure_audit: `outputs/s_fma_v2_1_fresh_holdout/v2_1_pilot_transport_failure_audit.md` and `.json`
+v2_1_next_allowed_step: only user review of the request-only `V2_1_PILOT_SINGLE_TRANSPORT_RETRY_ONLY` package; current status remains `PILOT_BLOCKED`; no retry, original regeneration, other replay attempt, full validation, or PRM/filtering is allowed without explicit user approval
+v2_1_pilot_single_retry_request_status: `REQUEST_ONLY_NOT_APPROVED`; scope `V2_1_PILOT_SINGLE_TRANSPORT_RETRY_ONLY`; budget ceiling USD 1; max API requests 3; only the failed replay attempt may be retried; no API, retry, original regeneration, other replay attempt, scoring, full validation, pass wording, or PRM/filtering is authorized by the request-only package
 
 ## Gate Status
 
