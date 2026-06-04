@@ -1,0 +1,142 @@
+{
+  "request_name": "s_fma_v2_1_pilot_stochastic_budget_approval_request",
+  "request_date": "2026-06-04",
+  "artifact": "v2_1_pilot_stochastic_approval_request",
+  "scope": "V2_1_PILOT_STOCHASTIC_VALIDATION_ONLY",
+  "requested_scope": "V2_1_PILOT_STOCHASTIC_VALIDATION_ONLY",
+  "approval_status": "REQUEST_ONLY_NOT_APPROVED",
+  "approval_granted": false,
+  "request_only": true,
+  "allowed_only_after_explicit_user_approval": true,
+  "api_execution_authorized_by_this_request": false,
+  "api_execution_performed_by_this_request": false,
+  "pilot_execution_performed_by_this_request": false,
+  "replay_execution_performed_by_this_request": false,
+  "scoring_execution_performed_by_this_request": false,
+  "full_validation_performed_by_this_request": false,
+  "prm_or_filtering_performed_by_this_request": false,
+  "current_status_remains": "PILOT_BLOCKED",
+  "source_smoke_report": "outputs/s_fma_v2_1_fresh_holdout/stochastic_smoke_report.json",
+  "source_smoke_summary": {
+    "source_scope": "V2_1_STOCHASTIC_SMOKE_RERUN_AFTER_REPLAY_TYPE_FIX",
+    "source_status": "V2_1_STOCHASTIC_SMOKE_FEASIBLE_FOR_PILOT_REQUEST",
+    "source_records": 20,
+    "source_records_by_task": {
+      "gsm8k": 10,
+      "hotpotqa": 10
+    },
+    "source_api_requests": 140,
+    "source_cost_used_usd": 6.11314,
+    "source_json_parse_success_rate": 1.0,
+    "source_schema_success_rate": 1.0,
+    "source_tag_extraction_success_rate": 1.0,
+    "source_final_answer_parse_success_rate": 1.0,
+    "source_replay_success_rate": 1.0,
+    "source_nonzero_delta_u_pooled_count": 20,
+    "source_nonzero_delta_u_by_task": {
+      "gsm8k": 7,
+      "hotpotqa": 13
+    },
+    "source_next_allowed_step": "REQUEST_V2_1_PILOT_STOCHASTIC_BUDGET",
+    "source_v2_1_pilot_request_allowed": true,
+    "source_global_pass_claim_allowed": false,
+    "source_task_specific_pass_claim_allowed": false,
+    "source_prm_filtering_claim_allowed": false,
+    "source_current_status_remains": "PILOT_BLOCKED"
+  },
+  "proposed_pilot_stochastic_validation_design": {
+    "records_total": 100,
+    "records_by_task": {
+      "gsm8k": 50,
+      "hotpotqa": 50
+    },
+    "original_generation_requests": 100,
+    "target_spans_per_trace_max": 2,
+    "stochastic_repeats_per_eligible_span": 3,
+    "max_replay_requests": 600,
+    "max_api_requests": 700,
+    "budget_ceiling_recommendation_usd": 40,
+    "request_cap_is_hard": true,
+    "budget_ceiling_requires_explicit_user_approval": true,
+    "estimand_boundary": "stochastic repeated-replay pilot validation only",
+    "not_full_validation": true,
+    "not_prm_or_filtering_validation": true
+  },
+  "pilot_gate_thresholds": {
+    "original_valid_trace_rate_min": 0.95,
+    "replay_success_rate_min": 0.85,
+    "json_parse_success_rate_required": 1.0,
+    "schema_success_rate_required": 1.0,
+    "tag_extraction_success_rate_required": 1.0,
+    "final_answer_parse_success_rate_required": 1.0,
+    "nonzero_delta_u_sparsity_rule": "stop if nonzero Delta-U is too sparse under the preregistered pilot gate; no post-hoc threshold tuning",
+    "rank_signal_rule": "remain PILOT_BLOCKED unless the preregistered rank-signal gate truly passes"
+  },
+  "hard_stops": [
+    {
+      "condition": "original_valid_trace_rate_below_threshold",
+      "action": "stop",
+      "current_status_after_stop": "PILOT_BLOCKED"
+    },
+    {
+      "condition": "replay_success_rate_below_threshold",
+      "action": "stop",
+      "current_status_after_stop": "PILOT_BLOCKED"
+    },
+    {
+      "condition": "json_schema_tag_or_final_answer_failure",
+      "action": "stop",
+      "current_status_after_stop": "PILOT_BLOCKED"
+    },
+    {
+      "condition": "nonzero_delta_u_too_sparse",
+      "action": "stop",
+      "current_status_after_stop": "PILOT_BLOCKED"
+    },
+    {
+      "condition": "rank_signal_fails",
+      "action": "remain_PILOT_BLOCKED",
+      "current_status_after_stop": "PILOT_BLOCKED"
+    },
+    {
+      "condition": "task_or_global_pass_claim_attempted_without_true_gate_pass",
+      "action": "stop_and_retract_claim",
+      "current_status_after_stop": "PILOT_BLOCKED"
+    },
+    {
+      "condition": "prm_or_filtering_claim_attempted",
+      "action": "stop_and_retract_claim",
+      "current_status_after_stop": "PILOT_BLOCKED"
+    }
+  ],
+  "forbidden_actions": [
+    "API execution without separate explicit user approval",
+    "API execution by this request-only artifact",
+    "pilot execution by this request-only artifact",
+    "replay execution by this request-only artifact",
+    "scoring execution by this request-only artifact",
+    "full validation",
+    "PRM/filtering",
+    "task/global pass claim unless the gate truly passes",
+    "top-tier-ready claim",
+    "claim upgrade from the request package alone"
+  ],
+  "claim_boundary": {
+    "request_only_before_explicit_approval": true,
+    "no_api_run": true,
+    "no_pilot_run": true,
+    "no_replay_run": true,
+    "no_scoring_run": true,
+    "no_full_validation": true,
+    "no_prm_filtering": true,
+    "no_task_or_global_pass_claim": true,
+    "no_top_tier_ready_claim": true,
+    "current_status_remains": "PILOT_BLOCKED"
+  },
+  "artifacts_generated_by_this_request": [
+    "outputs/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_approval_request.json",
+    "outputs/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_approval_request.md"
+  ],
+  "allowed_next_step_without_user_approval": "USER_REVIEW_APPROVAL_REQUEST_ONLY",
+  "allowed_next_step_after_explicit_user_approval_only": "Run only V2_1_PILOT_STOCHASTIC_VALIDATION_ONLY with 100 total records, GSM8K 50 plus HotpotQA 50, 3 stochastic repeats per eligible span, max 700 API requests, recommended USD 40 budget ceiling, and no full validation or PRM/filtering claim."
+}

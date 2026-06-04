@@ -206,6 +206,27 @@ smoke_gate:
     - v2_1_validation_claim
     - prm_filtering_claim
 
+stochastic_smoke:
+  replay_prompt_file: prompts/real_task_replay.txt
+  mask_token: "[REASONING_MASK]"
+  replay_reflection_type_policy:
+    policy_name: v2_1_replay_schema_compatibility
+    allowed_types:
+      - verification
+      - error_diagnosis
+      - plan_revision
+      - self-evaluation
+      - uncertainty_monitoring
+      - strategy_critique
+      - planning
+      - other
+    alias_canonicalization:
+      final_check: verification
+      correction: error_diagnosis
+    unknown_type_policy: reject
+    compatibility_fix_only: true
+    current_failed_smoke_reinterpretation_allowed: false
+
 full_gate:
   label: S_FMA_V2_1_FULL_VALIDATION
   available_only_after_smoke_gate_pass_and_separate_budget_approval: true

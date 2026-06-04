@@ -27,6 +27,7 @@ from fma.real_task_pilot.generation import (
     build_generation_prompt,
     load_prompt_template,
     normalize_trace_record,
+    reflection_type_policy_from_config,
 )
 from fma.real_task_pilot.openai_client import ApiCallResult, extract_response_output_text
 from fma.real_task_pilot.parsing import parse_json_object
@@ -325,6 +326,10 @@ def generate_trace_once(
         ),
         system_fingerprint=response.system_fingerprint,
         usage=response.usage,
+        reflection_type_policy=reflection_type_policy_from_config(
+            config,
+            replay_context=bool(sample.get("observable_prefix")),
+        ),
     )
     validation_errors = validate_trace_record(record)
     if validation_errors:

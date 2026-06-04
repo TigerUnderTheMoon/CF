@@ -40,6 +40,12 @@ class GeneratedTraceResult:
     output_extraction_diagnostics: dict[str, Any] = field(default_factory=dict)
 
 
+DEFAULT_REFLECTION_TYPE_ALIASES = {
+    "self_evaluation": "self-evaluation",
+    "self_reflection": "self-reflection",
+}
+
+
 def build_generation_prompt(template: str, sample: Mapping[str, Any]) -> str:
     return template.format(
         sample_id=sample.get("sample_id", ""),
@@ -119,6 +125,10 @@ def generate_trace_with_fallback(
                     ),
                     system_fingerprint=last_fingerprint,
                     usage=last_usage,
+                    reflection_type_policy=reflection_type_policy_from_config(
+                        config,
+                        replay_context=bool(sample.get("observable_prefix")),
+                    ),
                 )
                 last_errors = validate_trace_record(record)
                 if not last_errors:
@@ -172,11 +182,15 @@ def normalize_trace_record(
     generation_config: Mapping[str, Any],
     system_fingerprint: str | None,
     usage: Mapping[str, Any],
+    reflection_type_policy: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     trace = str(payload.get("observable_trace") or payload.get("visible_solution_trace") or "")
     spans = extract_reflection_spans(trace)
     generation_config_payload = dict(generation_config)
-    reflection_type_normalization = _canonicalize_reflection_span_types(spans)
+    reflection_type_normalization = _canonicalize_reflection_span_types(
+        spans,
+        reflection_type_policy=reflection_type_policy,
+    )
     if reflection_type_normalization:
         generation_config_payload["reflection_type_normalization"] = reflection_type_normalization
     final_answer = str(payload.get("final_answer") or extract_final_answer(trace))
@@ -263,23 +277,69 @@ def _string_or_none(value: Any) -> str | None:
     return None if value is None else str(value)
 
 
-def _canonicalize_reflection_span_types(spans: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def reflection_type_policy_from_config(
+    config: Mapping[str, Any],
+    *,
+    replay_context: bool = False,
+) -> Mapping[str, Any] | None:
+    """Return a configured reflection-type compatibility policy, if in scope."""
+
+    if replay_context:
+        stochastic = config.get("stochastic_smoke", {})
+        if isinstance(stochastic, Mapping):
+            policy = stochastic.get("replay_reflection_type_policy")
+            if isinstance(policy, Mapping):
+                return policy
+    generation = config.get("generation", {})
+    if isinstance(generation, Mapping):
+        policy = generation.get("reflection_type_policy")
+        if isinstance(policy, Mapping):
+            return policy
+    policy = config.get("reflection_type_policy")
+    return policy if isinstance(policy, Mapping) else None
+
+
+def _canonicalize_reflection_span_types(
+    spans: list[dict[str, Any]],
+    *,
+    reflection_type_policy: Mapping[str, Any] | None = None,
+) -> list[dict[str, Any]]:
     normalization_events: list[dict[str, Any]] = []
-    aliases = {
-        "self_evaluation": "self-evaluation",
-        "self_reflection": "self-reflection",
-    }
+    policy_aliases = {}
+    allowed_types: set[str] = set()
+    unknown_type_policy = "reject"
+    policy_name = None
+    if reflection_type_policy:
+        policy_aliases = dict(reflection_type_policy.get("alias_canonicalization") or {})
+        allowed_types = {
+            str(operation_type)
+            for operation_type in reflection_type_policy.get("allowed_types", [])
+            if str(operation_type)
+        }
+        unknown_type_policy = str(reflection_type_policy.get("unknown_type_policy") or "reject")
+        policy_name = str(reflection_type_policy.get("policy_name") or "")
+    aliases = {**DEFAULT_REFLECTION_TYPE_ALIASES, **policy_aliases}
     for span in spans:
         raw_type = str(span.get("operation_type") or "")
         canonical_type = aliases.get(raw_type, raw_type)
+        mapped_by_policy = raw_type in policy_aliases
+        if (
+            canonical_type == raw_type
+            and allowed_types
+            and raw_type not in allowed_types
+            and unknown_type_policy == "map_to_other"
+        ):
+            canonical_type = "other"
+            mapped_by_policy = True
         if canonical_type == raw_type:
             continue
         span["operation_type"] = canonical_type
-        normalization_events.append(
-            {
-                "span_index": int(span.get("span_index", 0) or 0),
-                "raw_operation_type": raw_type,
-                "canonical_operation_type": canonical_type,
-            }
-        )
+        event = {
+            "span_index": int(span.get("span_index", 0) or 0),
+            "raw_operation_type": raw_type,
+            "canonical_operation_type": canonical_type,
+        }
+        if mapped_by_policy and policy_name:
+            event["policy"] = policy_name
+        normalization_events.append(event)
     return normalization_events

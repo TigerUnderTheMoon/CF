@@ -1,0 +1,162 @@
+{
+  "audit_name": "s_FMA_v2.1_STOCHASTIC_SMOKE_FAILURE_AUDIT",
+  "audit_date": "2026-06-04",
+  "scope": "failure_audit_and_non_api_replay_type_fix_plan",
+  "api_execution_performed_by_this_audit": false,
+  "smoke_rerun_performed_by_this_audit": false,
+  "replay_performed_by_this_audit": false,
+  "scoring_performed_by_this_audit": false,
+  "full_generation_performed_by_this_audit": false,
+  "pilot_or_full_validation_performed_by_this_audit": false,
+  "source_artifacts": {
+    "smoke_report": "outputs/s_fma_v2_1_fresh_holdout/stochastic_smoke_report.json",
+    "original_attempts": "outputs/s_fma_v2_1_fresh_holdout/stochastic_smoke_original_attempts.jsonl",
+    "original_traces": "outputs/s_fma_v2_1_fresh_holdout/stochastic_smoke_original_traces.jsonl",
+    "replay_attempts": "outputs/s_fma_v2_1_fresh_holdout/stochastic_smoke_replay_attempts.jsonl",
+    "replay_results": "outputs/s_fma_v2_1_fresh_holdout/stochastic_smoke_replay_results.jsonl",
+    "delta_u": "outputs/s_fma_v2_1_fresh_holdout/stochastic_smoke_delta_u.jsonl"
+  },
+  "source_smoke_summary": {
+    "scope": "V2_1_STOCHASTIC_SMOKE_ONLY",
+    "status": "V2_1_STOCHASTIC_SMOKE_FAIL_SCHEMA_OR_TAGS",
+    "api_execution_performed_in_source_smoke": true,
+    "api_requests": 140,
+    "cost_used_usd": 5.848195,
+    "current_status_remains": "PILOT_BLOCKED",
+    "failure_codes": [
+      "V2_1_STOCHASTIC_SMOKE_FAIL_SCHEMA_OR_TAGS",
+      "V2_1_STOCHASTIC_SMOKE_FAIL_REPLAY"
+    ],
+    "current_smoke_can_be_considered_pass": false,
+    "claim_upgrade_allowed": false,
+    "task_specific_pass_claim_allowed": false,
+    "global_pass_claim_allowed": false,
+    "pilot_full_validation_request_allowed": false,
+    "prm_filtering_claim_allowed": false
+  },
+  "artifact_counts": {
+    "original_valid_trace_count": 20,
+    "original_attempt_count": 20,
+    "replay_attempt_count": 120,
+    "replay_success_count": 80,
+    "replay_failure_count": 40,
+    "expected_replay_jobs": 120,
+    "replay_success_rate": 0.6666666666666666,
+    "delta_u_rows": 30
+  },
+  "failure_counts_by_task": {
+    "gsm8k": 10,
+    "hotpotqa": 30
+  },
+  "replay_success_failure_by_task": {
+    "gsm8k": {
+      "success": 50,
+      "failure": 10
+    },
+    "hotpotqa": {
+      "success": 30,
+      "failure": 30
+    }
+  },
+  "failure_counts_by_validation_error": {
+    "reflection_spans.2.operation_type: 'final_check' is not one of ['self-reflection', 'self-evaluation', 'error_diagnosis', 'plan_revision', 'strategy_critique', 'verification', 'planning', 'uncertainty_monitoring', 'other']": 16,
+    "reflection_spans.2.operation_type: 'correction' is not one of ['self-reflection', 'self-evaluation', 'error_diagnosis', 'plan_revision', 'strategy_critique', 'verification', 'planning', 'uncertainty_monitoring', 'other']": 13,
+    "reflection_spans.2.operation_type: 'conclusion' is not one of ['self-reflection', 'self-evaluation', 'error_diagnosis', 'plan_revision', 'strategy_critique', 'verification', 'planning', 'uncertainty_monitoring', 'other']": 4,
+    "reflection_spans.2.operation_type: 'final-check' is not one of ['self-reflection', 'self-evaluation', 'error_diagnosis', 'plan_revision', 'strategy_critique', 'verification', 'planning', 'uncertainty_monitoring', 'other']": 2,
+    "reflection_spans.2.operation_type: 'resolution' is not one of ['self-reflection', 'self-evaluation', 'error_diagnosis', 'plan_revision', 'strategy_critique', 'verification', 'planning', 'uncertainty_monitoring', 'other']": 2,
+    "reflection_spans.2.operation_type: 'answer-check' is not one of ['self-reflection', 'self-evaluation', 'error_diagnosis', 'plan_revision', 'strategy_critique', 'verification', 'planning', 'uncertainty_monitoring', 'other']": 1,
+    "reflection_spans.2.operation_type: 'answer_selection' is not one of ['self-reflection', 'self-evaluation', 'error_diagnosis', 'plan_revision', 'strategy_critique', 'verification', 'planning', 'uncertainty_monitoring', 'other']": 1,
+    "reflection_spans.2.operation_type: 'answer_check' is not one of ['self-reflection', 'self-evaluation', 'error_diagnosis', 'plan_revision', 'strategy_critique', 'verification', 'planning', 'uncertainty_monitoring', 'other']": 1
+  },
+  "unsupported_reflection_type_distribution": {
+    "final_check": 16,
+    "correction": 13,
+    "conclusion": 4,
+    "final-check": 2,
+    "resolution": 2,
+    "answer-check": 1,
+    "answer_selection": 1,
+    "answer_check": 1
+  },
+  "unsupported_reflection_type_distribution_by_task": {
+    "gsm8k": {
+      "answer-check": 1,
+      "final_check": 5,
+      "correction": 1,
+      "conclusion": 1,
+      "final-check": 2
+    },
+    "hotpotqa": {
+      "correction": 12,
+      "answer_selection": 1,
+      "conclusion": 3,
+      "final_check": 11,
+      "resolution": 2,
+      "answer_check": 1
+    }
+  },
+  "delta_u_signal_audit": {
+    "nonzero_delta_u_pooled_count": 9,
+    "nonzero_delta_u_by_task": {
+      "gsm8k": 8,
+      "hotpotqa": 1
+    },
+    "signal_absent": false,
+    "partial_nonzero_signal_exists": true,
+    "engineering_or_schema_blocked": true,
+    "hotpotqa_remains_weak": true,
+    "interpretation": "Partial nonzero Delta-U exists, but the smoke is blocked by replay schema/type control and replay success rate. HotpotQA has only one nonzero Delta-U row."
+  },
+  "root_cause_classification": {
+    "primary": "replay_schema_control_failure_with_partial_nonzero_signal",
+    "signal_missing": false,
+    "replay_schema_control_failure": true,
+    "prompt_enum_drift": true,
+    "parser_canonicalization_gap": true,
+    "task_specific_sparse_signal": "watch_item_hotpotqa_weak_not_current_primary_hard_stop",
+    "rationale": "The source smoke produced 20 valid original traces and 9 nonzero Delta-U rows, but only 80/120 replay attempts were valid. The dominant failures are unsupported replay reflection types invented outside the schema enum."
+  },
+  "non_api_replay_type_fix_plan": {
+    "implemented_locally": true,
+    "allowed_schema_enum": [
+      "verification",
+      "error_diagnosis",
+      "plan_revision",
+      "self-evaluation",
+      "uncertainty_monitoring",
+      "strategy_critique",
+      "planning",
+      "other"
+    ],
+    "prompt_must_forbid_new_types": true,
+    "forbidden_model_invented_types": [
+      "final_check",
+      "correction"
+    ],
+    "pre_registered_alias_canonicalization": {
+      "final_check": "verification",
+      "correction": "error_diagnosis"
+    },
+    "unknown_type_policy": "reject",
+    "unknown_to_other_allowed_only_if_config_explicitly_sets": "map_to_other",
+    "compatibility_fix_only": true,
+    "current_failed_smoke_reinterpretation_allowed": false,
+    "current_smoke_remains_failed_provenance": true
+  },
+  "next_allowed_step": {
+    "pilot_full_validation_request_allowed": false,
+    "bounded_stochastic_smoke_rerun_approval_request_allowed_after_fix_audit_clean": true,
+    "requires_separate_user_approval_before_any_api": true,
+    "allowed_next_step_label": "REQUEST_ONLY_BOUNDED_STOCHASTIC_SMOKE_RERUN_AFTER_REPLAY_TYPE_FIX",
+    "forbidden_without_separate_approval": [
+      "api",
+      "smoke_rerun",
+      "replay",
+      "scoring",
+      "full_generation",
+      "pilot_validation",
+      "full_validation",
+      "prm_filtering"
+    ]
+  }
+}

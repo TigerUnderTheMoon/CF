@@ -453,6 +453,29 @@ def test_v2_1_prompt_and_config_use_schema_canonical_self_evaluation() -> None:
     assert "self_evaluation" not in eligible_types
 
 
+def test_v2_1_replay_prompt_and_config_predeclare_schema_enum_policy() -> None:
+    config = load_pilot_config(Path("configs/s_fma_v2_1_fresh_holdout.yaml"))
+    replay_policy = config["stochastic_smoke"]["replay_reflection_type_policy"]
+    replay_prompt = Path("prompts/real_task_replay.txt").read_text(encoding="utf-8")
+    allowed_types = [
+        "verification",
+        "error_diagnosis",
+        "plan_revision",
+        "self-evaluation",
+        "uncertainty_monitoring",
+        "strategy_critique",
+        "planning",
+        "other",
+    ]
+
+    assert replay_policy == _v2_1_replay_type_policy()
+    for operation_type in allowed_types:
+        assert operation_type in replay_prompt
+    assert "Do not invent new reflection types" in replay_prompt
+    assert "final_check -> verification" in replay_prompt
+    assert "correction -> error_diagnosis" in replay_prompt
+
+
 def test_v2_1_approval_request_is_request_only_and_prompt_locked() -> None:
     prompt_version = "prompt-sha256:test"
     request = build_v2_1_api_preflight_approval_request(
@@ -578,6 +601,126 @@ def test_v2_1_invalid_reflection_type_still_fails_schema_validation() -> None:
 
     assert record["reflection_spans"][0]["operation_type"] == "not_a_valid_type"
     assert any("operation_type" in error for error in validate_trace_record(record))
+
+
+def test_v2_1_replay_final_check_alias_is_preregistered_and_canonicalized() -> None:
+    record = normalize_trace_record(
+        {
+            "observable_trace": (
+                "Initial answer. "
+                '<reflection type="final_check">Check the final answer.</reflection> '
+                "Final Answer: 5"
+            ),
+            "final_answer": "5",
+        },
+        sample={
+            "sample_id": "gsm8k-00001",
+            "task_id": "gsm8k-00001",
+            "task_type": "gsm8k",
+            "question": "What is 2 + 3?",
+            "reference_answer": "#### 5",
+            "aliases": [],
+        },
+        model_name="gpt-5.5",
+        generation_config={"structured_output_mode": "json_schema"},
+        system_fingerprint=None,
+        usage={"input_tokens": 1, "output_tokens": 2, "total_tokens": 3},
+        reflection_type_policy=_v2_1_replay_type_policy(),
+    )
+
+    assert validate_trace_record(record) == []
+    assert record["reflection_spans"][0]["operation_type"] == "verification"
+    assert record["generation_config"]["reflection_type_normalization"] == [
+        {
+            "span_index": 0,
+            "raw_operation_type": "final_check",
+            "canonical_operation_type": "verification",
+            "policy": "v2_1_replay_schema_compatibility",
+        }
+    ]
+
+
+def test_v2_1_replay_correction_alias_is_preregistered_and_canonicalized() -> None:
+    record = normalize_trace_record(
+        {
+            "observable_trace": (
+                "Initial answer. "
+                '<reflection type="correction">Fix the mistaken intermediate step.</reflection> '
+                "Final Answer: 5"
+            ),
+            "final_answer": "5",
+        },
+        sample={
+            "sample_id": "gsm8k-00001",
+            "task_id": "gsm8k-00001",
+            "task_type": "gsm8k",
+            "question": "What is 2 + 3?",
+            "reference_answer": "#### 5",
+            "aliases": [],
+        },
+        model_name="gpt-5.5",
+        generation_config={"structured_output_mode": "json_schema"},
+        system_fingerprint=None,
+        usage={"input_tokens": 1, "output_tokens": 2, "total_tokens": 3},
+        reflection_type_policy=_v2_1_replay_type_policy(),
+    )
+
+    assert validate_trace_record(record) == []
+    assert record["reflection_spans"][0]["operation_type"] == "error_diagnosis"
+    assert record["generation_config"]["reflection_type_normalization"] == [
+        {
+            "span_index": 0,
+            "raw_operation_type": "correction",
+            "canonical_operation_type": "error_diagnosis",
+            "policy": "v2_1_replay_schema_compatibility",
+        }
+    ]
+
+
+def test_v2_1_unknown_replay_type_rejects_unless_explicit_other_policy() -> None:
+    sample = {
+        "sample_id": "gsm8k-00001",
+        "task_id": "gsm8k-00001",
+        "task_type": "gsm8k",
+        "question": "What is 2 + 3?",
+        "reference_answer": "#### 5",
+        "aliases": [],
+    }
+    payload = {
+        "observable_trace": (
+            "Initial answer. "
+            '<reflection type="brand_new_type">Unsupported type.</reflection> '
+            "Final Answer: 5"
+        ),
+        "final_answer": "5",
+    }
+
+    rejected = normalize_trace_record(
+        payload,
+        sample=sample,
+        model_name="gpt-5.5",
+        generation_config={"structured_output_mode": "json_schema"},
+        system_fingerprint=None,
+        usage={"input_tokens": 1, "output_tokens": 2, "total_tokens": 3},
+        reflection_type_policy=_v2_1_replay_type_policy(),
+    )
+    explicit_other = normalize_trace_record(
+        payload,
+        sample=sample,
+        model_name="gpt-5.5",
+        generation_config={"structured_output_mode": "json_schema"},
+        system_fingerprint=None,
+        usage={"input_tokens": 1, "output_tokens": 2, "total_tokens": 3},
+        reflection_type_policy={
+            **_v2_1_replay_type_policy(),
+            "unknown_type_policy": "map_to_other",
+        },
+    )
+
+    assert rejected["reflection_spans"][0]["operation_type"] == "brand_new_type"
+    assert any("operation_type" in error for error in validate_trace_record(rejected))
+    assert explicit_other["reflection_spans"][0]["operation_type"] == "other"
+    assert validate_trace_record(explicit_other) == []
 
 
 def test_v2_1_schema_failure_status_takes_precedence_over_drift_and_metadata() -> None:
@@ -953,6 +1096,565 @@ def test_v2_1_transport_canary_cli_requires_budget_before_adapter(monkeypatch) -
         runner.main()
 
 
+def test_v2_1_stochastic_smoke_runner_contract_exists_and_uses_allowed_paths() -> None:
+    runner = _v2_1_stochastic_smoke_runner()
+
+    paths = runner.v2_1_stochastic_smoke_paths(
+        Path("outputs") / "s_fma_v2_1_fresh_holdout"
+    )
+
+    assert paths["report"] == Path("outputs/s_fma_v2_1_fresh_holdout/stochastic_smoke_report.json")
+    assert paths["original_attempts"] == Path(
+        "outputs/s_fma_v2_1_fresh_holdout/stochastic_smoke_original_attempts.jsonl"
+    )
+    assert paths["original_traces"] == Path(
+        "outputs/s_fma_v2_1_fresh_holdout/stochastic_smoke_original_traces.jsonl"
+    )
+    assert paths["prefixes"] == Path(
+        "outputs/s_fma_v2_1_fresh_holdout/stochastic_smoke_replay_prefixes.jsonl"
+    )
+    assert paths["replay_attempts"] == Path(
+        "outputs/s_fma_v2_1_fresh_holdout/stochastic_smoke_replay_attempts.jsonl"
+    )
+    assert paths["replay_results"] == Path(
+        "outputs/s_fma_v2_1_fresh_holdout/stochastic_smoke_replay_results.jsonl"
+    )
+    assert paths["delta_u"] == Path("outputs/s_fma_v2_1_fresh_holdout/stochastic_smoke_delta_u.jsonl")
+    assert paths["cost"] == Path(
+        "outputs/s_fma_v2_1_fresh_holdout/logs/stochastic_smoke_cost_report.json"
+    )
+
+
+def test_v2_1_stochastic_smoke_readiness_requires_all_current_pre_run_gates() -> None:
+    runner = _v2_1_stochastic_smoke_runner()
+    config = _v2_1_config(sample_count=200)
+    manifest = [
+        {**row, "prompt_version": "prompt-sha256:test"}
+        for row in _v2_1_manifest_rows(per_task=200)
+    ]
+    contract_audit = {
+        **_v2_1_clean_contract_audit(),
+        "prompt_version": "prompt-sha256:test",
+    }
+
+    with pytest.raises(runner.V2_1StochasticSmokeError, match="--allow-stochastic-smoke-only"):
+        runner.validate_v2_1_stochastic_smoke_readiness(
+            config=config,
+            manifest=manifest,
+            overlap_audit=_v2_1_clean_overlap_audit(),
+            contract_audit=contract_audit,
+            preflight_report=_v2_1_smoke_ready_preflight_report(),
+            transport_canary_report={"status": "TRANSPORT_CANARY_PASS"},
+            drift_failure_audit=_v2_1_drift_failure_audit(),
+            approval_request=_v2_1_stochastic_smoke_approval_request(),
+            current_readiness={"status": "PILOT_BLOCKED", "pilot_pass": False},
+            allow_stochastic_smoke_only=False,
+            approved_budget_usd=8,
+            current_prompt_version="prompt-sha256:test",
+        )
+
+    bad_preflight = _v2_1_smoke_ready_preflight_report()
+    bad_preflight["schema_success_rate"] = 0.9
+    with pytest.raises(runner.V2_1StochasticSmokeError, match="schema/tag/final-answer"):
+        runner.validate_v2_1_stochastic_smoke_readiness(
+            config=config,
+            manifest=manifest,
+            overlap_audit=_v2_1_clean_overlap_audit(),
+            contract_audit=contract_audit,
+            preflight_report=bad_preflight,
+            transport_canary_report={"status": "TRANSPORT_CANARY_PASS"},
+            drift_failure_audit=_v2_1_drift_failure_audit(),
+            approval_request=_v2_1_stochastic_smoke_approval_request(),
+            current_readiness={"status": "PILOT_BLOCKED", "pilot_pass": False},
+            allow_stochastic_smoke_only=True,
+            approved_budget_usd=8,
+            current_prompt_version="prompt-sha256:test",
+        )
+
+    stale_approval = _v2_1_stochastic_smoke_approval_request()
+    stale_approval["requested_scope"] = "V2_1_STOCHASTIC_SMOKE_ONLY"
+    with pytest.raises(
+        runner.V2_1StochasticSmokeError,
+        match=runner.V2_1_STOCHASTIC_SMOKE_RERUN_AFTER_REPLAY_TYPE_FIX,
+    ):
+        runner.validate_v2_1_stochastic_smoke_readiness(
+            config=config,
+            manifest=manifest,
+            overlap_audit=_v2_1_clean_overlap_audit(),
+            contract_audit=contract_audit,
+            preflight_report=_v2_1_smoke_ready_preflight_report(),
+            transport_canary_report={"status": "TRANSPORT_CANARY_PASS"},
+            drift_failure_audit=_v2_1_drift_failure_audit(),
+            approval_request=stale_approval,
+            current_readiness={"status": "PILOT_BLOCKED", "pilot_pass": False},
+            allow_stochastic_smoke_only=True,
+            approved_budget_usd=8,
+            current_prompt_version="prompt-sha256:test",
+        )
+
+    readiness = runner.validate_v2_1_stochastic_smoke_readiness(
+        config=config,
+        manifest=manifest,
+        overlap_audit=_v2_1_clean_overlap_audit(),
+        contract_audit=contract_audit,
+        preflight_report=_v2_1_smoke_ready_preflight_report(),
+        transport_canary_report={"status": "TRANSPORT_CANARY_PASS"},
+        drift_failure_audit=_v2_1_drift_failure_audit(),
+        approval_request=_v2_1_stochastic_smoke_approval_request(),
+        current_readiness={"status": "PILOT_BLOCKED", "pilot_pass": False},
+        allow_stochastic_smoke_only=True,
+        approved_budget_usd=8,
+        current_prompt_version="prompt-sha256:test",
+    )
+
+    assert readiness["scope"] == runner.V2_1_STOCHASTIC_SMOKE_RERUN_AFTER_REPLAY_TYPE_FIX
+    assert readiness["api_call_allowed"] is True
+    assert readiness["sample_count"] == 20
+    assert readiness["sample_count_by_task"] == {"gsm8k": 10, "hotpotqa": 10}
+    assert readiness["approved_budget_usd"] == 8
+    assert readiness["max_api_requests"] == 140
+    assert readiness["stochastic_repeats_per_span"] == 3
+    assert readiness["max_target_spans_per_trace"] == 2
+    assert readiness["current_status_remains"] == "PILOT_BLOCKED"
+    assert readiness["deterministic_replay_claim_allowed"] is False
+
+
+def test_v2_1_stochastic_smoke_prefixes_use_first_verification_and_non_verification_span() -> None:
+    runner = _v2_1_stochastic_smoke_runner()
+    trace = (
+        "Compute 2 + 3. "
+        '<reflection type="verification">Check the arithmetic.</reflection> '
+        "Then decide. "
+        '<reflection type="self-evaluation">This is a direct addition.</reflection> '
+        '<reflection type="verification">Check again.</reflection> '
+        "Final Answer: 5"
+    )
+    record = normalize_trace_record(
+        {"observable_trace": trace, "final_answer": "5"},
+        sample={
+            "sample_id": "gsm8k-00000",
+            "task_id": "gsm8k-00000",
+            "task_type": "gsm8k",
+            "question": "What is 2 + 3?",
+            "reference_answer": "#### 5",
+            "aliases": [],
+        },
+        model_name="gpt-5.5",
+        generation_config={"structured_output_mode": "json_schema"},
+        system_fingerprint=None,
+        usage={"input_tokens": 1, "output_tokens": 2, "total_tokens": 3},
+    )
+
+    prefixes = runner.build_v2_1_stochastic_smoke_prefixes(
+        [record],
+        config=_v2_1_config(sample_count=200),
+        mask_token="[REASONING_MASK]",
+    )
+
+    assert [prefix["span_index"] for prefix in prefixes] == [0, 1]
+    assert len(prefixes) == 2
+    assert all("[REASONING_MASK]" in prefix["observable_prefix"] for prefix in prefixes)
+    assert prefixes[1]["target_span"]["operation_type"] == "self-evaluation"
+
+
+def test_v2_1_stochastic_delta_u_uses_task_specific_primary_scores() -> None:
+    runner = _v2_1_stochastic_smoke_runner()
+    original_records = [
+        {
+            "sample_id": "hotpotqa-00000",
+            "task_type": "hotpotqa",
+            "final_answer": "United States",
+            "reference_answer": "United States",
+            "aliases": [],
+        },
+        {
+            "sample_id": "gsm8k-00000",
+            "task_type": "gsm8k",
+            "final_answer": "5",
+            "reference_answer": "#### 5",
+            "aliases": [],
+        },
+    ]
+    replay_results = [
+        {
+            "sample_id": "hotpotqa-00000",
+            "task_type": "hotpotqa",
+            "span_index": 0,
+            "repeat_index": 0,
+            "status": "success",
+            "final_answer": "United States of America",
+        },
+        {
+            "sample_id": "gsm8k-00000",
+            "task_type": "gsm8k",
+            "span_index": 0,
+            "repeat_index": 0,
+            "status": "success",
+            "final_answer": "6",
+        },
+    ]
+
+    rows = runner.aggregate_v2_1_delta_u_by_span(original_records, replay_results)
+    by_task = {row["task_type"]: row for row in rows}
+
+    assert by_task["hotpotqa"]["primary_score_field"] == "normalized_token_f1"
+    assert by_task["hotpotqa"]["intervened_mean_score"] == pytest.approx(2 / 3)
+    assert by_task["hotpotqa"]["delta_u"] == pytest.approx(1 / 3)
+    assert by_task["gsm8k"]["primary_score_field"] == "exact_match_numeric"
+    assert by_task["gsm8k"]["intervened_mean_score"] == 0.0
+    assert by_task["gsm8k"]["delta_u"] == 1.0
+
+
+def test_v2_1_stochastic_smoke_report_blocks_low_replay_success_with_nonzero_signal() -> None:
+    runner = _v2_1_stochastic_smoke_runner()
+    original_records = [
+        {
+            "sample_id": f"gsm8k-{index:05d}",
+            "task_type": "gsm8k",
+            "reflection_spans": [{"operation_type": "verification"}],
+            "final_answer": "5",
+        }
+        for index in range(10)
+    ] + [
+        {
+            "sample_id": f"hotpotqa-{index:05d}",
+            "task_type": "hotpotqa",
+            "reflection_spans": [{"operation_type": "verification"}],
+            "final_answer": "United States",
+        }
+        for index in range(10)
+    ]
+    successful_replay_results = [
+        {
+            "sample_id": f"gsm8k-{index % 10:05d}",
+            "task_type": "gsm8k",
+            "span_index": 0,
+            "status": "success",
+            "final_answer": "5",
+        }
+        for index in range(40)
+    ] + [
+        {
+            "sample_id": f"hotpotqa-{index % 10:05d}",
+            "task_type": "hotpotqa",
+            "span_index": 0,
+            "status": "success",
+            "final_answer": "United States",
+        }
+        for index in range(40)
+    ]
+    valid_attempt = {
+        "record": {
+            "reflection_spans": [{"operation_type": "verification"}],
+            "final_answer": "5",
+        },
+        "validation_errors": [],
+        "output_extraction_diagnostics": {"output_text_present": True},
+    }
+    delta_rows = [
+        {"task_type": "gsm8k", "delta_u": 0.25},
+        {"task_type": "gsm8k", "delta_u": -0.25},
+        {"task_type": "hotpotqa", "delta_u": 0.1},
+    ]
+
+    report = runner.build_v2_1_stochastic_smoke_report(
+        original_records=original_records,
+        original_attempts=[dict(valid_attempt) for _ in range(20)],
+        replay_results=successful_replay_results,
+        replay_attempts=[dict(valid_attempt) for _ in range(120)],
+        delta_rows=delta_rows,
+        readiness={
+            "sample_count": 20,
+            "max_api_requests": 140,
+            "approved_budget_usd": 8,
+            "valid_original_traces_min": 15,
+            "min_replay_success_rate": 0.85,
+            "min_nonzero_delta_u_pooled": 3,
+            "min_nonzero_delta_u_per_task": 1,
+            "min_schema_success_rate": 0.95,
+            "min_tag_extraction_success_rate": 0.95,
+        },
+        cost_used_usd=1.0,
+        expected_replay_jobs=120,
+    )
+
+    assert report["replay_success_rate"] == pytest.approx(80 / 120)
+    assert report["nonzero_delta_u_pooled_count"] == 3
+    assert report["nonzero_delta_u_by_task"] == {"gsm8k": 2, "hotpotqa": 1}
+    assert report["status"] == "V2_1_STOCHASTIC_SMOKE_FAIL_REPLAY"
+    assert report["v2_1_pilot_request_allowed"] is False
+    assert report["current_status_remains"] == "PILOT_BLOCKED"
+
+
+def test_v2_1_stochastic_smoke_cli_requires_approved_budget_before_adapter(monkeypatch) -> None:
+    runner = _v2_1_stochastic_smoke_runner()
+
+    def fail_if_instantiated() -> None:
+        raise AssertionError("adapter must not be instantiated before required budget is parsed")
+
+    monkeypatch.setattr(runner, "SingleRequestOpenAITraceAdapter", fail_if_instantiated)
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "run_s_fma_v2_1_stochastic_smoke.py",
+            "--config",
+            "configs/s_fma_v2_1_fresh_holdout.yaml",
+            "--allow-stochastic-smoke-only",
+        ],
+    )
+
+    with pytest.raises(SystemExit):
+        runner.main()
+
+
+def test_v2_1_pilot_stochastic_runner_contract_exists_and_uses_separate_paths() -> None:
+    runner = _v2_1_pilot_runner()
+
+    paths = runner.v2_1_pilot_stochastic_paths(
+        Path("outputs") / "s_fma_v2_1_fresh_holdout"
+    )
+
+    assert paths["report"] == Path(
+        "outputs/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_report.json"
+    )
+    assert paths["rank_signal"] == Path(
+        "outputs/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_rank_signal_report.json"
+    )
+    assert paths["original_attempts"] == Path(
+        "outputs/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_original_attempts.jsonl"
+    )
+    assert paths["original_traces"] == Path(
+        "outputs/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_original_traces.jsonl"
+    )
+    assert paths["prefixes"] == Path(
+        "outputs/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_replay_prefixes.jsonl"
+    )
+    assert paths["replay_attempts"] == Path(
+        "outputs/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_replay_attempts.jsonl"
+    )
+    assert paths["replay_results"] == Path(
+        "outputs/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_replay_results.jsonl"
+    )
+    assert paths["delta_u"] == Path(
+        "outputs/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_delta_u.jsonl"
+    )
+    assert paths["cost"] == Path(
+        "outputs/s_fma_v2_1_fresh_holdout/logs/v2_1_pilot_stochastic_cost_report.json"
+    )
+
+
+def test_v2_1_pilot_stochastic_readiness_requires_approval_smoke_and_replay_alias_gates() -> None:
+    runner = _v2_1_pilot_runner()
+    config = _v2_1_config(sample_count=200)
+    config["stochastic_smoke"] = {
+        "replay_reflection_type_policy": _v2_1_replay_type_policy()
+    }
+    manifest = [
+        {**row, "prompt_version": "prompt-sha256:test"}
+        for row in _v2_1_manifest_rows(per_task=200)
+    ]
+    smoke_report = _v2_1_feasible_smoke_report()
+
+    with pytest.raises(
+        runner.V2_1PilotStochasticError,
+        match="--allow-pilot-stochastic-validation-only",
+    ):
+        runner.validate_v2_1_pilot_stochastic_readiness(
+            config=config,
+            manifest=manifest,
+            overlap_audit=_v2_1_clean_overlap_audit(),
+            contract_audit=_v2_1_clean_contract_audit(),
+            smoke_report=smoke_report,
+            approval_request=_v2_1_pilot_stochastic_approval_request(smoke_report),
+            current_readiness={"status": "PILOT_BLOCKED", "pilot_pass": False},
+            allow_pilot_stochastic_validation_only=False,
+            approved_budget_usd=40,
+            current_prompt_version="prompt-sha256:test",
+        )
+
+    stale_approval = _v2_1_pilot_stochastic_approval_request(smoke_report)
+    stale_approval["source_smoke_summary"]["source_api_requests"] = 139
+    with pytest.raises(
+        runner.V2_1PilotStochasticError,
+        match="current smoke feasible artifact",
+    ):
+        runner.validate_v2_1_pilot_stochastic_readiness(
+            config=config,
+            manifest=manifest,
+            overlap_audit=_v2_1_clean_overlap_audit(),
+            contract_audit=_v2_1_clean_contract_audit(),
+            smoke_report=smoke_report,
+            approval_request=stale_approval,
+            current_readiness={"status": "PILOT_BLOCKED", "pilot_pass": False},
+            allow_pilot_stochastic_validation_only=True,
+            approved_budget_usd=40,
+            current_prompt_version="prompt-sha256:test",
+        )
+
+    no_alias_config = dict(config)
+    no_alias_config["stochastic_smoke"] = {"replay_reflection_type_policy": {}}
+    with pytest.raises(runner.V2_1PilotStochasticError, match="replay alias policy"):
+        runner.validate_v2_1_pilot_stochastic_readiness(
+            config=no_alias_config,
+            manifest=manifest,
+            overlap_audit=_v2_1_clean_overlap_audit(),
+            contract_audit=_v2_1_clean_contract_audit(),
+            smoke_report=smoke_report,
+            approval_request=_v2_1_pilot_stochastic_approval_request(smoke_report),
+            current_readiness={"status": "PILOT_BLOCKED", "pilot_pass": False},
+            allow_pilot_stochastic_validation_only=True,
+            approved_budget_usd=40,
+            current_prompt_version="prompt-sha256:test",
+        )
+
+    readiness = runner.validate_v2_1_pilot_stochastic_readiness(
+        config=config,
+        manifest=manifest,
+        overlap_audit=_v2_1_clean_overlap_audit(),
+        contract_audit=_v2_1_clean_contract_audit(),
+        smoke_report=smoke_report,
+        approval_request=_v2_1_pilot_stochastic_approval_request(smoke_report),
+        current_readiness={"status": "PILOT_BLOCKED", "pilot_pass": False},
+        allow_pilot_stochastic_validation_only=True,
+        approved_budget_usd=40,
+        current_prompt_version="prompt-sha256:test",
+    )
+
+    assert readiness["scope"] == runner.V2_1_PILOT_STOCHASTIC_VALIDATION_ONLY
+    assert readiness["sample_count"] == 100
+    assert readiness["sample_count_by_task"] == {"gsm8k": 50, "hotpotqa": 50}
+    assert readiness["max_api_requests"] == 700
+    assert readiness["stochastic_repeats_per_span"] == 3
+    assert readiness["approved_budget_usd"] == 40
+    assert readiness["budget_gate_pass"] is True
+    assert readiness["replay_alias_policy_active"] is True
+    assert readiness["current_status_remains"] == "PILOT_BLOCKED"
+
+
+def test_v2_1_pilot_stochastic_report_requires_rank_signal_for_task_and_global_pass() -> None:
+    runner = _v2_1_pilot_runner()
+    valid_attempt = {
+        "record": {
+            "final_answer": "ok",
+            "reflection_spans": [{"operation_type": "verification"}],
+        },
+        "raw_output": {"ok": True},
+        "output_extraction_diagnostics": {"output_text_present": True},
+        "validation_errors": [],
+    }
+    replay_results = [{"status": "success"} for _ in range(6)]
+    replay_attempts = [dict(valid_attempt) for _ in replay_results]
+    delta_rows = [
+        {
+            "sample_id": "g1",
+            "task_type": "gsm8k",
+            "span_index": 0,
+            "original_score": 0.1,
+            "delta_u": 0.1,
+        },
+        {
+            "sample_id": "g2",
+            "task_type": "gsm8k",
+            "span_index": 0,
+            "original_score": 0.2,
+            "delta_u": 0.2,
+        },
+        {
+            "sample_id": "g3",
+            "task_type": "gsm8k",
+            "span_index": 0,
+            "original_score": 0.3,
+            "delta_u": 0.3,
+        },
+        {
+            "sample_id": "h1",
+            "task_type": "hotpotqa",
+            "span_index": 0,
+            "original_score": 0.1,
+            "delta_u": 0.1,
+        },
+        {
+            "sample_id": "h2",
+            "task_type": "hotpotqa",
+            "span_index": 0,
+            "original_score": 0.2,
+            "delta_u": 0.2,
+        },
+        {
+            "sample_id": "h3",
+            "task_type": "hotpotqa",
+            "span_index": 0,
+            "original_score": 0.3,
+            "delta_u": 0.3,
+        },
+    ]
+    readiness = {
+        "scope": runner.V2_1_PILOT_STOCHASTIC_VALIDATION_ONLY,
+        "sample_count": 6,
+        "sample_count_by_task": {"gsm8k": 3, "hotpotqa": 3},
+        "max_api_requests": 12,
+        "approved_budget_usd": 40,
+        "valid_original_trace_rate_min": 1.0,
+        "min_replay_success_rate": 0.85,
+        "required_json_parse_success_rate": 1.0,
+        "required_schema_success_rate": 1.0,
+        "required_tag_extraction_success_rate": 1.0,
+        "required_final_answer_parse_success_rate": 1.0,
+        "min_nonzero_delta_u_pooled": 1,
+        "min_nonzero_delta_u_per_task": 1,
+        "rank_signal_ci_lower_must_exceed": 0.0,
+        "current_status_remains": "PILOT_BLOCKED",
+    }
+
+    rank_signal = runner.build_v2_1_pilot_rank_signal_report(
+        delta_rows,
+        resamples=0,
+        confidence_level=0.95,
+        seed=7,
+    )
+    report = runner.build_v2_1_pilot_stochastic_report(
+        original_records=[{"task_type": "gsm8k"} for _ in range(3)]
+        + [{"task_type": "hotpotqa"} for _ in range(3)],
+        original_attempts=[dict(valid_attempt) for _ in range(6)],
+        replay_results=replay_results,
+        replay_attempts=replay_attempts,
+        delta_rows=delta_rows,
+        rank_signal=rank_signal,
+        readiness=readiness,
+        cost_used_usd=10.0,
+        expected_replay_jobs=6,
+    )
+
+    assert report["rank_signal"]["pooled"]["spearman_ci_lower_gt_zero"] is True
+    assert report["TASK_SPECIFIC_pass_by_task"] == {"gsm8k": True, "hotpotqa": True}
+    assert report["TASK_SPECIFIC_pass"] is True
+    assert report["GLOBAL_pass"] is True
+    assert report["full_validation_approval_request_allowed"] is True
+    assert report["prm_filtering_validation_design_allowed"] is False
+    assert report["current_status_remains"] == "PILOT_BLOCKED"
+
+    rank_signal["per_task"]["hotpotqa"]["spearman_ci95"] = [-1.0, 1.0]
+    rank_signal["per_task"]["hotpotqa"]["spearman_ci_lower_gt_zero"] = False
+    blocked = runner.build_v2_1_pilot_stochastic_report(
+        original_records=[{"task_type": "gsm8k"} for _ in range(3)]
+        + [{"task_type": "hotpotqa"} for _ in range(3)],
+        original_attempts=[dict(valid_attempt) for _ in range(6)],
+        replay_results=replay_results,
+        replay_attempts=replay_attempts,
+        delta_rows=delta_rows,
+        rank_signal=rank_signal,
+        readiness=readiness,
+        cost_used_usd=10.0,
+        expected_replay_jobs=6,
+    )
+
+    assert blocked["TASK_SPECIFIC_pass_by_task"] == {"gsm8k": True, "hotpotqa": False}
+    assert blocked["TASK_SPECIFIC_pass"] is False
+    assert blocked["GLOBAL_pass"] is False
+    assert blocked["full_validation_approval_request_allowed"] is False
+    assert blocked["current_status_remains"] == "PILOT_BLOCKED"
+
+
 def _v2_1_manifest_rows(per_task: int) -> list[dict]:
     rows = []
     for task_type in ("gsm8k", "hotpotqa"):
@@ -1167,3 +1869,181 @@ def _v2_1_empty_attempt(sample_id: str) -> dict:
         "validation_errors": ["<root>: response is not a JSON object"],
         "fallback_events": [],
     }
+
+
+def _v2_1_stochastic_smoke_approval_request() -> dict:
+    return {
+        "requested_scope": "V2_1_STOCHASTIC_SMOKE_RERUN_AFTER_REPLAY_TYPE_FIX",
+        "approval_status": "REQUEST_ONLY_NOT_APPROVED",
+        "current_status_remains": "PILOT_BLOCKED",
+        "proposed_rerun_design": {
+            "records": 20,
+            "records_per_task": {"gsm8k": 10, "hotpotqa": 10},
+            "target_spans_per_trace_max": 2,
+            "stochastic_repeats_per_span": 3,
+            "max_api_requests": 140,
+            "budget_ceiling_usd": 8,
+        },
+        "request_estimate": {
+            "original_generation_requests": 20,
+            "max_replay_requests": 120,
+            "max_total_requests": 140,
+        },
+    }
+
+
+def _v2_1_smoke_ready_preflight_report() -> dict:
+    return {
+        "status": PREFLIGHT_FAIL_DRIFT,
+        "current_status_remains": "PILOT_BLOCKED",
+        "json_parse_success_rate": 1.0,
+        "schema_success_rate": 1.0,
+        "tag_extraction_success_rate": 1.0,
+        "final_answer_parse_success_rate": 1.0,
+        "deterministic_replay_claim_allowed": False,
+        "stochastic_repeated_replay_estimand_candidate": True,
+        "empty_output_summary": {
+            "output_extraction_diagnostics_present_count": 20,
+            "raw_output_nonempty_count": 20,
+        },
+    }
+
+
+def _v2_1_drift_failure_audit() -> dict:
+    return {
+        "audit_name": "s_fma_v2_1_api_preflight_drift_failure_audit",
+        "current_status_remains": "PILOT_BLOCKED",
+        "preflight_summary": {"status": PREFLIGHT_FAIL_DRIFT},
+        "schema_and_transport_audit": {
+            "schema_transport_blockers_resolved": True,
+            "json_parse_success_rate": 1.0,
+            "schema_success_rate": 1.0,
+            "tag_extraction_success_rate": 1.0,
+            "final_answer_parse_success_rate": 1.0,
+        },
+        "drift_metric": {
+            "determinism_gate_pass": False,
+            "determinism_drift_max": 0.1,
+        },
+    }
+
+
+def _v2_1_replay_type_policy() -> dict:
+    return {
+        "policy_name": "v2_1_replay_schema_compatibility",
+        "allowed_types": [
+            "verification",
+            "error_diagnosis",
+            "plan_revision",
+            "self-evaluation",
+            "uncertainty_monitoring",
+            "strategy_critique",
+            "planning",
+            "other",
+        ],
+        "alias_canonicalization": {
+            "final_check": "verification",
+            "correction": "error_diagnosis",
+        },
+        "unknown_type_policy": "reject",
+        "compatibility_fix_only": True,
+        "current_failed_smoke_reinterpretation_allowed": False,
+    }
+
+
+def _v2_1_stochastic_smoke_runner():
+    module_name = "scripts.run_s_fma_v2_1_stochastic_smoke"
+    spec = importlib.util.find_spec(module_name)
+    assert spec is not None, "V2_1_STOCHASTIC_SMOKE_ONLY runner module is missing"
+    return importlib.import_module(module_name)
+
+
+def _v2_1_feasible_smoke_report() -> dict:
+    return {
+        "scope": "V2_1_STOCHASTIC_SMOKE_RERUN_AFTER_REPLAY_TYPE_FIX",
+        "status": "V2_1_STOCHASTIC_SMOKE_FEASIBLE_FOR_PILOT_REQUEST",
+        "sample_count": 20,
+        "sample_count_by_task": {"gsm8k": 10, "hotpotqa": 10},
+        "api_attempts": 140,
+        "cost_used_usd": 6.11314,
+        "json_parse_success_rate": 1.0,
+        "schema_success_rate": 1.0,
+        "tag_extraction_success_rate": 1.0,
+        "final_answer_parse_success_rate": 1.0,
+        "replay_success_rate": 1.0,
+        "nonzero_delta_u_pooled_count": 20,
+        "nonzero_delta_u_by_task": {"gsm8k": 7, "hotpotqa": 13},
+        "next_allowed_step": "REQUEST_V2_1_PILOT_STOCHASTIC_BUDGET",
+        "v2_1_pilot_request_allowed": True,
+        "global_pass_claim_allowed": False,
+        "task_specific_pass_claim_allowed": False,
+        "prm_filtering_claim_allowed": False,
+        "current_status_remains": "PILOT_BLOCKED",
+    }
+
+
+def _v2_1_pilot_stochastic_approval_request(smoke_report: dict) -> dict:
+    return {
+        "requested_scope": "V2_1_PILOT_STOCHASTIC_VALIDATION_ONLY",
+        "scope": "V2_1_PILOT_STOCHASTIC_VALIDATION_ONLY",
+        "approval_status": "REQUEST_ONLY_NOT_APPROVED",
+        "current_status_remains": "PILOT_BLOCKED",
+        "source_smoke_summary": {
+            "source_scope": smoke_report["scope"],
+            "source_status": smoke_report["status"],
+            "source_records": smoke_report["sample_count"],
+            "source_records_by_task": smoke_report["sample_count_by_task"],
+            "source_api_requests": smoke_report["api_attempts"],
+            "source_cost_used_usd": smoke_report["cost_used_usd"],
+            "source_json_parse_success_rate": smoke_report["json_parse_success_rate"],
+            "source_schema_success_rate": smoke_report["schema_success_rate"],
+            "source_tag_extraction_success_rate": smoke_report[
+                "tag_extraction_success_rate"
+            ],
+            "source_final_answer_parse_success_rate": smoke_report[
+                "final_answer_parse_success_rate"
+            ],
+            "source_replay_success_rate": smoke_report["replay_success_rate"],
+            "source_nonzero_delta_u_pooled_count": smoke_report[
+                "nonzero_delta_u_pooled_count"
+            ],
+            "source_nonzero_delta_u_by_task": smoke_report["nonzero_delta_u_by_task"],
+            "source_next_allowed_step": smoke_report["next_allowed_step"],
+            "source_v2_1_pilot_request_allowed": smoke_report[
+                "v2_1_pilot_request_allowed"
+            ],
+            "source_global_pass_claim_allowed": smoke_report[
+                "global_pass_claim_allowed"
+            ],
+            "source_task_specific_pass_claim_allowed": smoke_report[
+                "task_specific_pass_claim_allowed"
+            ],
+            "source_prm_filtering_claim_allowed": smoke_report[
+                "prm_filtering_claim_allowed"
+            ],
+            "source_current_status_remains": smoke_report["current_status_remains"],
+        },
+        "proposed_pilot_stochastic_validation_design": {
+            "records_total": 100,
+            "records_by_task": {"gsm8k": 50, "hotpotqa": 50},
+            "target_spans_per_trace_max": 2,
+            "stochastic_repeats_per_eligible_span": 3,
+            "max_api_requests": 700,
+            "budget_ceiling_recommendation_usd": 40,
+        },
+        "pilot_gate_thresholds": {
+            "original_valid_trace_rate_min": 0.95,
+            "replay_success_rate_min": 0.85,
+            "json_parse_success_rate_required": 1.0,
+            "schema_success_rate_required": 1.0,
+            "tag_extraction_success_rate_required": 1.0,
+            "final_answer_parse_success_rate_required": 1.0,
+        },
+    }
+
+
+def _v2_1_pilot_runner():
+    module_name = "scripts.run_s_fma_v2_1_pilot_stochastic_validation"
+    spec = importlib.util.find_spec(module_name)
+    assert spec is not None, "V2_1_PILOT_STOCHASTIC_VALIDATION_ONLY runner module is missing"
+    return importlib.import_module(module_name)

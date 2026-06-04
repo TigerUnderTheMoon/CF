@@ -12,6 +12,24 @@ contains [REASONING_MASK], keep those mask tokens visible inside the reflection
 payload; do not delete or replace them. Do not use any original text that came
 after the target reflection span.
 
+Allowed reflection types are exactly:
+- verification
+- error_diagnosis
+- plan_revision
+- self-evaluation
+- uncertainty_monitoring
+- strategy_critique
+- planning
+- other
+
+Do not invent new reflection types. Do not output final_check, correction,
+conclusion, resolution, answer-check, answer_selection, answer_check, or any
+other type outside the allowed list. If you would write final_check, write
+verification instead. If you would write correction, write error_diagnosis
+instead. Pre-registered compatibility aliases for audit are:
+final_check -> verification
+correction -> error_diagnosis
+
 Task type: {task_type}
 Question:
 {question}
