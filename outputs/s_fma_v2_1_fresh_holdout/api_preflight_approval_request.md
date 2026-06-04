@@ -50,11 +50,10 @@ This is a request only. It does not authorize or execute API calls.
 - replay
 - full generation
 - v2.1 scoring
-- TASK_SPECIFIC_S_FMA_V2_PASS
-- GLOBAL_S_FMA_V2_PASS
+- task/global pass claim
 - PRM/filtering
 - deterministic replay claim
-- top-tier-ready claim
+- submission-ready claim
 
 ## Claim Boundary
 

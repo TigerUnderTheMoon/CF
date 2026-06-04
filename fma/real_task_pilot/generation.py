@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Mapping, Protocol, Sequence
 
@@ -37,6 +37,7 @@ class GeneratedTraceResult:
     validation_errors: list[str]
     fallback_events: list[dict[str, Any]]
     response_id: str | None = None
+    output_extraction_diagnostics: dict[str, Any] = field(default_factory=dict)
 
 
 def build_generation_prompt(template: str, sample: Mapping[str, Any]) -> str:
@@ -71,6 +72,8 @@ def generate_trace_with_fallback(
     last_fingerprint: str | None = None
     last_errors: list[str] = []
     last_mode = "unavailable"
+    last_response_id: str | None = None
+    last_output_extraction_diagnostics: dict[str, Any] = {}
     for json_mode in (False, True):
         for model_name in fallback_order:
             mode_name = "json_object" if json_mode else "json_schema"
@@ -97,6 +100,8 @@ def generate_trace_with_fallback(
             last_model = response.model_name or model_name
             last_usage = response.usage
             last_fingerprint = response.system_fingerprint
+            last_response_id = response.response_id
+            last_output_extraction_diagnostics = dict(response.output_extraction_diagnostics)
             parsed = parse_json_object(response.output_text)
             if parsed is None:
                 last_errors = ["<root>: response is not a JSON object"]
@@ -135,6 +140,7 @@ def generate_trace_with_fallback(
                         validation_errors=[],
                         fallback_events=events,
                         response_id=response.response_id,
+                        output_extraction_diagnostics=dict(response.output_extraction_diagnostics),
                     )
             events.append(
                 {
@@ -153,6 +159,8 @@ def generate_trace_with_fallback(
         usage=last_usage,
         validation_errors=last_errors,
         fallback_events=events,
+        response_id=last_response_id,
+        output_extraction_diagnostics=last_output_extraction_diagnostics,
     )
 
 

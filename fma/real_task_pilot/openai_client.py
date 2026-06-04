@@ -17,6 +17,7 @@ class ApiCallResult:
     raw_response: Any
     request_metadata: dict[str, Any] = field(default_factory=dict)
     response_id: str | None = None
+    output_extraction_diagnostics: dict[str, Any] = field(default_factory=dict)
 
 
 class OpenAIResponsesAdapter:
@@ -120,9 +121,7 @@ def _without_keys(request: dict[str, Any], *keys: str) -> dict[str, Any]:
 
 
 def _result_from_response(response: Any, *, request_metadata: dict[str, Any]) -> ApiCallResult:
-    output_text = getattr(response, "output_text", None)
-    if not output_text:
-        output_text = _extract_output_text(response)
+    output_text, output_extraction_diagnostics = extract_response_output_text(response)
     usage = getattr(response, "usage", None)
     if hasattr(usage, "model_dump"):
         usage_payload = usage.model_dump()
@@ -130,6 +129,10 @@ def _result_from_response(response: Any, *, request_metadata: dict[str, Any]) ->
         usage_payload = dict(usage)
     else:
         usage_payload = {}
+    response_id = _string_or_none(getattr(response, "id", None))
+    output_extraction_diagnostics = dict(output_extraction_diagnostics)
+    output_extraction_diagnostics["usage_present"] = bool(usage_payload)
+    output_extraction_diagnostics["response_id_present"] = response_id is not None
     return ApiCallResult(
         output_text=str(output_text or ""),
         model_name=str(getattr(response, "model", "")),
@@ -137,24 +140,98 @@ def _result_from_response(response: Any, *, request_metadata: dict[str, Any]) ->
         usage=usage_payload,
         raw_response=response,
         request_metadata=request_metadata,
-        response_id=_string_or_none(getattr(response, "id", None)),
+        response_id=response_id,
+        output_extraction_diagnostics=output_extraction_diagnostics,
     )
 
 
 def _extract_output_text(response: Any) -> str:
+    return extract_response_output_text(response)[0]
+
+
+def extract_response_output_text(response: Any) -> tuple[str, dict[str, Any]]:
+    """Extract Responses text from output_text, dict payloads, or typed content objects."""
+
+    direct_output = getattr(response, "output_text", None)
+    direct_text = str(direct_output) if direct_output else ""
+    diagnostics: dict[str, Any] = {
+        "output_text_present": bool(direct_text.strip()),
+        "fallback_used": not bool(direct_text.strip()),
+        "model_dump_available": hasattr(response, "model_dump"),
+        "output_item_count": 0,
+        "content_item_count": 0,
+        "text_segment_count": 1 if direct_text.strip() else 0,
+        "content_item_kinds": [],
+        "extracted_text_empty": not bool(direct_text.strip()),
+        "response_id_present": _string_or_none(getattr(response, "id", None)) is not None,
+        "usage_present": getattr(response, "usage", None) is not None,
+    }
+    if direct_text.strip():
+        return direct_text, diagnostics
+
+    payload = _response_payload(response)
+    output_items = _as_list(_get_field(payload, "output"))
+    if not output_items:
+        output_items = _as_list(_get_field(response, "output"))
+
+    texts: list[str] = []
+    content_item_kinds: list[str] = []
+    content_count = 0
+    for output in output_items:
+        content_items = _as_list(_get_field(output, "content"))
+        content_count += len(content_items)
+        for content in content_items:
+            content_item_kinds.append(type(content).__name__)
+            text = _get_field(content, "text")
+            if text is None:
+                text = _get_field(content, "output_text")
+            if text is None:
+                continue
+            text_value = str(text)
+            if text_value:
+                texts.append(text_value)
+
+    extracted = "\n".join(texts)
+    diagnostics.update(
+        {
+            "output_item_count": len(output_items),
+            "content_item_count": content_count,
+            "text_segment_count": len(texts),
+            "content_item_kinds": content_item_kinds,
+            "extracted_text_empty": not bool(extracted.strip()),
+        }
+    )
+    return extracted, diagnostics
+
+
+def _response_payload(response: Any) -> Any:
     if hasattr(response, "model_dump"):
-        payload = response.model_dump()
-    elif isinstance(response, Mapping):
-        payload = dict(response)
-    else:
-        return ""
-    texts = []
-    for output in payload.get("output", []):
-        for content in output.get("content", []):
-            text = content.get("text")
-            if text:
-                texts.append(text)
-    return "\n".join(texts)
+        return response.model_dump()
+    if isinstance(response, Mapping):
+        return dict(response)
+    return response
+
+
+def _get_field(value: Any, key: str) -> Any:
+    if isinstance(value, Mapping):
+        return value.get(key)
+    if hasattr(value, key):
+        return getattr(value, key)
+    if hasattr(value, "model_dump"):
+        payload = value.model_dump()
+        if isinstance(payload, Mapping):
+            return payload.get(key)
+    return None
+
+
+def _as_list(value: Any) -> list[Any]:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return value
+    if isinstance(value, tuple):
+        return list(value)
+    return [value]
 
 
 def api_metadata(config: Mapping[str, Any], *, sdk_version: str) -> dict[str, Any]:

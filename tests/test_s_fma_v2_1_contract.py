@@ -1,10 +1,14 @@
 from __future__ import annotations
 
+import importlib
+import importlib.util
+import json
 from pathlib import Path
 
 import pytest
 
 from fma.real_task_pilot.config import load_pilot_config
+from fma.real_task_pilot import openai_client
 from fma.real_task_pilot.fresh_preflight import (
     PREFLIGHT_FAIL_DRIFT,
     PREFLIGHT_FAIL_SCHEMA_OR_TAGS,
@@ -637,6 +641,142 @@ def test_v2_1_api_preflight_schema_failure_blocks_smoke_approval_request() -> No
     assert report["next_allowed_step"] == "STOP_AND_FIX_PREFLIGHT"
 
 
+def test_responses_adapter_extracts_model_dump_output_text_with_diagnostics() -> None:
+    response = _FakeResponsesObject(
+        output_text="",
+        response_id="resp_text",
+        usage={"input_tokens": 1, "output_tokens": 2, "total_tokens": 3},
+        output=[{"content": [{"text": '{"observable_trace":"ok"}'}]}],
+    )
+
+    result = openai_client._result_from_response(  # noqa: SLF001
+        response,
+        request_metadata={"retry_label": "full"},
+    )
+
+    assert result.output_text == '{"observable_trace":"ok"}'
+    diagnostics = result.output_extraction_diagnostics
+    assert diagnostics["fallback_used"] is True
+    assert diagnostics["output_text_present"] is False
+    assert diagnostics["extracted_text_empty"] is False
+    assert diagnostics["response_id_present"] is True
+    assert diagnostics["usage_present"] is True
+    assert diagnostics["text_segment_count"] == 1
+
+
+def test_v2_1_runner_extracts_typed_response_content_objects() -> None:
+    response = _FakeResponsesObject(
+        output_text="",
+        response_id="resp_typed",
+        usage={"input_tokens": 1, "output_tokens": 2, "total_tokens": 3},
+        output=[_FakeOutput([_FakeContent('{"observable_trace":"typed"}')])],
+    )
+
+    result = v2_1_preflight_runner._api_result_from_response(  # noqa: SLF001
+        response,
+        request_metadata={"single_request_preflight": True},
+    )
+
+    assert result.output_text == '{"observable_trace":"typed"}'
+    diagnostics = result.output_extraction_diagnostics
+    assert diagnostics["fallback_used"] is True
+    assert diagnostics["content_item_kinds"] == ["_FakeContent"]
+    assert diagnostics["text_segment_count"] == 1
+
+
+def test_responses_adapter_records_empty_output_extraction_diagnostics() -> None:
+    response = _FakeResponsesObject(
+        output_text="",
+        response_id="resp_empty",
+        usage={"input_tokens": 10, "output_tokens": 20, "total_tokens": 30},
+        output=[{"content": [{"type": "output_text"}]}],
+    )
+
+    result = openai_client._result_from_response(  # noqa: SLF001
+        response,
+        request_metadata={"retry_label": "full"},
+    )
+
+    assert result.output_text == ""
+    assert result.response_id == "resp_empty"
+    assert result.usage["total_tokens"] == 30
+    diagnostics = result.output_extraction_diagnostics
+    assert diagnostics["extracted_text_empty"] is True
+    assert diagnostics["response_id_present"] is True
+    assert diagnostics["usage_present"] is True
+    assert diagnostics["output_item_count"] == 1
+    assert diagnostics["content_item_count"] == 1
+    assert diagnostics["text_segment_count"] == 0
+
+
+def test_v2_1_preflight_report_classifies_all_empty_raw_output_as_transport_failure() -> None:
+    readiness = {
+        "approved_budget_usd": 2,
+        "max_api_requests": 25,
+        "selected_records": 20,
+        "scope": V2_1_API_PREFLIGHT_ONLY,
+    }
+    attempts = [
+        {
+            "preflight_attempt": True,
+            "attempt_role": "preflight_record",
+            "record": None,
+            "raw_output": "",
+            "usage": {"input_tokens": 10, "output_tokens": 20, "total_tokens": 30},
+            "model_name": "gpt-5.5",
+            "structured_output_mode": "json_schema",
+            "response_id": f"resp_empty_{index}",
+            "validation_errors": ["<root>: response is not a JSON object"],
+            "fallback_events": [
+                {
+                    "model_name": "gpt-5.5",
+                    "structured_output_mode": "json_schema",
+                    "status": "invalid_output",
+                    "validation_errors": ["<root>: response is not a JSON object"],
+                }
+            ],
+        }
+        for index in range(20)
+    ]
+
+    report = build_v2_1_preflight_report(
+        attempts,
+        selected_records=_v2_1_manifest_rows(per_task=10),
+        drift_outputs=["", ""],
+        config=build_v2_1_generation_config(_v2_1_config(sample_count=200), readiness=readiness),
+        readiness=readiness,
+    )
+
+    assert report["status"] == "PREFLIGHT_FAIL_EMPTY_OUTPUT"
+    assert "PREFLIGHT_FAIL_EMPTY_OUTPUT" in report["failure_codes"]
+    assert "PREFLIGHT_FAIL_OUTPUT_EXTRACTION" in report["failure_codes"]
+    assert report["empty_output_summary"]["raw_output_empty_count"] == 20
+    assert report["empty_output_summary"]["any_nonempty_raw_output"] is False
+    assert report["root_cause_classification"] == "transport_or_output_extraction_failure_suspected"
+    assert report["v2_1_smoke_approval_request_allowed"] is False
+    assert report["next_allowed_step"] == "STOP_AND_FIX_OUTPUT_EXTRACTION"
+
+
+def test_current_v2_1_preflight_report_remains_drift_failed_not_ready() -> None:
+    report = json.loads(
+        Path("outputs/s_fma_v2_1_fresh_holdout/api_preflight_report.json").read_text(
+            encoding="utf-8"
+        )
+    )
+
+    assert report["status"] == PREFLIGHT_FAIL_DRIFT
+    assert report["json_parse_success_rate"] == 1.0
+    assert report["schema_success_rate"] == 1.0
+    assert report["tag_extraction_success_rate"] == 1.0
+    assert report["final_answer_parse_success_rate"] == 1.0
+    assert report["empty_output_summary"]["raw_output_nonempty_count"] == 20
+    assert report["root_cause_classification"] == "not_empty_output_failure"
+    assert report["v2_1_smoke_approval_request_allowed"] is False
+    assert report["deterministic_replay_claim_allowed"] is False
+    assert report["next_allowed_step"] == "STOP_AND_FIX_PREFLIGHT"
+    assert report["current_status_remains"] == "PILOT_BLOCKED"
+
+
 def test_v2_1_preflight_cli_requires_approved_budget_before_adapter(monkeypatch) -> None:
     def fail_if_instantiated() -> None:
         raise AssertionError("adapter must not be instantiated before required budget is parsed")
@@ -654,6 +794,163 @@ def test_v2_1_preflight_cli_requires_approved_budget_before_adapter(monkeypatch)
 
     with pytest.raises(SystemExit):
         v2_1_preflight_runner.main()
+
+
+def test_v2_1_transport_canary_runner_contract_exists_and_uses_independent_paths() -> None:
+    runner = _transport_canary_runner()
+
+    paths = runner.transport_canary_paths(Path("outputs") / "s_fma_v2_1_fresh_holdout")
+
+    assert paths["report"] == Path("outputs/s_fma_v2_1_fresh_holdout/transport_canary_report.json")
+    assert paths["attempts"] == Path("outputs/s_fma_v2_1_fresh_holdout/transport_canary_attempts.jsonl")
+    assert paths["traces"] == Path("outputs/s_fma_v2_1_fresh_holdout/transport_canary_traces.jsonl")
+    assert paths["cost"] == Path("outputs/s_fma_v2_1_fresh_holdout/logs/transport_canary_cost_report.json")
+
+
+def test_v2_1_transport_canary_readiness_requires_guard_budget_and_clean_package() -> None:
+    runner = _transport_canary_runner()
+    config = _v2_1_config(sample_count=200)
+    manifest = [
+        {**row, "prompt_version": "prompt-sha256:test"}
+        for row in _v2_1_manifest_rows(per_task=200)
+    ]
+    contract_audit = {
+        **_v2_1_clean_contract_audit(),
+        "prompt_version": "prompt-sha256:test",
+    }
+
+    with pytest.raises(runner.TransportCanaryError, match="--allow-transport-canary-only"):
+        runner.validate_transport_canary_readiness(
+            config=config,
+            manifest=manifest,
+            overlap_audit=_v2_1_clean_overlap_audit(),
+            contract_audit=contract_audit,
+            approval_request=_v2_1_approval_request(),
+            empty_output_failure_audit=_v2_1_empty_output_failure_audit(),
+            current_readiness={"status": "PILOT_BLOCKED", "pilot_pass": False},
+            allow_transport_canary_only=False,
+            approved_budget_usd=0.5,
+            current_prompt_version="prompt-sha256:test",
+        )
+
+    with pytest.raises(runner.TransportCanaryError, match="0.5"):
+        runner.validate_transport_canary_readiness(
+            config=config,
+            manifest=manifest,
+            overlap_audit=_v2_1_clean_overlap_audit(),
+            contract_audit=contract_audit,
+            approval_request=_v2_1_approval_request(),
+            empty_output_failure_audit=_v2_1_empty_output_failure_audit(),
+            current_readiness={"status": "PILOT_BLOCKED", "pilot_pass": False},
+            allow_transport_canary_only=True,
+            approved_budget_usd=2.0,
+            current_prompt_version="prompt-sha256:test",
+        )
+
+    readiness = runner.validate_transport_canary_readiness(
+        config=config,
+        manifest=manifest,
+        overlap_audit=_v2_1_clean_overlap_audit(),
+        contract_audit=contract_audit,
+        approval_request=_v2_1_approval_request(),
+        empty_output_failure_audit=_v2_1_empty_output_failure_audit(),
+        current_readiness={"status": "PILOT_BLOCKED", "pilot_pass": False},
+        allow_transport_canary_only=True,
+        approved_budget_usd=0.5,
+        current_prompt_version="prompt-sha256:test",
+    )
+
+    assert readiness["scope"] == "TRANSPORT_CANARY_ONLY"
+    assert readiness["api_call_allowed"] is True
+    assert readiness["approved_budget_usd"] == 0.5
+    assert readiness["max_api_requests"] == 3
+    assert readiness["selected_records"] == 2
+    assert readiness["selected_counts_by_task"] == {"gsm8k": 1, "hotpotqa": 1}
+    assert readiness["historical_preflight_report_used_as_ready_evidence"] is False
+    assert readiness["current_status_remains"] == "PILOT_BLOCKED"
+
+
+def test_v2_1_transport_canary_report_passes_transport_only_with_partial_parse_success() -> None:
+    runner = _transport_canary_runner()
+    readiness = _transport_canary_readiness()
+    selected = _v2_1_manifest_rows(per_task=1)
+    valid = _v2_1_valid_attempt("gsm8k-00000")
+    valid["output_extraction_diagnostics"] = {
+        "fallback_used": True,
+        "extracted_text_empty": False,
+    }
+    empty = _v2_1_empty_attempt("hotpotqa-00000")
+
+    report = runner.build_transport_canary_report(
+        [valid, empty],
+        selected_records=selected,
+        config=runner.build_transport_canary_generation_config(
+            _v2_1_config(sample_count=200),
+            readiness=readiness,
+        ),
+        readiness=readiness,
+    )
+
+    assert report["status"] == "TRANSPORT_CANARY_PASS"
+    assert report["api_attempts"] == 2
+    assert report["raw_output_nonempty_count"] == 1
+    assert report["raw_output_nonempty_rate"] == 0.5
+    assert report["output_extraction_diagnostics_complete"] is True
+    assert report["json_parse_success_count"] == 1
+    assert report["json_parse_success_rate"] == 0.5
+    assert report["schema_success_rate"] == 0.5
+    assert report["tag_extraction_success_rate"] == 0.5
+    assert report["final_answer_parse_success_rate"] == 0.5
+    assert report["api_preflight_rerun_approval_request_allowed"] is True
+    assert report["api_preflight_rerun_allowed_without_approval"] is False
+    assert report["transport_canary_only"] is True
+    assert report["cost_report"]["transport_canary_only"] is True
+    assert report["cost_report"]["preflight_only"] is False
+    assert report["claim_upgrade_allowed"] is False
+    assert report["current_status_remains"] == "PILOT_BLOCKED"
+
+
+def test_v2_1_transport_canary_report_fails_when_diagnostics_are_missing() -> None:
+    runner = _transport_canary_runner()
+    readiness = _transport_canary_readiness()
+    attempt = _v2_1_valid_attempt("gsm8k-00000")
+    attempt["output_extraction_diagnostics"] = {}
+
+    report = runner.build_transport_canary_report(
+        [attempt],
+        selected_records=_v2_1_manifest_rows(per_task=1),
+        config=runner.build_transport_canary_generation_config(
+            _v2_1_config(sample_count=200),
+            readiness=readiness,
+        ),
+        readiness=readiness,
+    )
+
+    assert report["status"] == "TRANSPORT_CANARY_FAIL_MISSING_DIAGNOSTICS"
+    assert report["output_extraction_diagnostics_complete"] is False
+    assert report["api_preflight_rerun_approval_request_allowed"] is False
+    assert report["current_status_remains"] == "PILOT_BLOCKED"
+
+
+def test_v2_1_transport_canary_cli_requires_budget_before_adapter(monkeypatch) -> None:
+    runner = _transport_canary_runner()
+
+    def fail_if_instantiated() -> None:
+        raise AssertionError("adapter must not be instantiated before required budget is parsed")
+
+    monkeypatch.setattr(runner, "SingleRequestOpenAITraceAdapter", fail_if_instantiated)
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "run_s_fma_v2_1_transport_canary.py",
+            "--config",
+            "configs/s_fma_v2_1_fresh_holdout.yaml",
+            "--allow-transport-canary-only",
+        ],
+    )
+
+    with pytest.raises(SystemExit):
+        runner.main()
 
 
 def _v2_1_manifest_rows(per_task: int) -> list[dict]:
@@ -678,6 +975,7 @@ def _v2_1_clean_overlap_audit() -> dict:
         "status": "MANIFEST_OVERLAP_CLEAN",
         "overlap_clean": True,
         "api_preflight_approval_request_only": True,
+        "claim_upgrade_allowed": False,
         "current_status_remains": "PILOT_BLOCKED",
         "overlap_summary": {
             "selected_overlaps_by_key": {
@@ -709,11 +1007,89 @@ def _v2_1_approval_request() -> dict:
     return {
         "requested_scope": V2_1_API_PREFLIGHT_ONLY,
         "current_status_remains": "PILOT_BLOCKED",
+        "request_valid_for_review": True,
+        "api_execution_authorized_by_this_request": False,
         "requested_records": 20,
         "records_per_task": {"gsm8k": 10, "hotpotqa": 10},
         "recommended_budget_ceiling_usd": 2,
         "max_api_requests": 25,
     }
+
+
+def _v2_1_empty_output_failure_audit() -> dict:
+    return {
+        "audit_name": "s_FMA_v2.1 EMPTY_OUTPUT_TRANSPORT_FAILURE_AUDIT",
+        "raw_output_audit": {
+            "any_nonempty_raw_output": False,
+            "raw_output_empty_count": 23,
+            "raw_output_nonempty_count": 0,
+        },
+        "claim_boundary": {
+            "current_status_remains": "PILOT_BLOCKED",
+            "v2_1_evidence_signal_available": False,
+        },
+    }
+
+
+def _transport_canary_readiness() -> dict:
+    return {
+        "scope": "TRANSPORT_CANARY_ONLY",
+        "approved_budget_usd": 0.5,
+        "max_api_requests": 3,
+        "selected_records": 2,
+        "selected_counts_by_task": {"gsm8k": 1, "hotpotqa": 1},
+        "current_status_remains": "PILOT_BLOCKED",
+    }
+
+
+def _transport_canary_runner():
+    module_name = "scripts.run_s_fma_v2_1_transport_canary"
+    spec = importlib.util.find_spec(module_name)
+    assert spec is not None, "TRANSPORT_CANARY_ONLY runner module is missing"
+    return importlib.import_module(module_name)
+
+
+class _FakeUsage:
+    def __init__(self, payload: dict) -> None:
+        self.payload = payload
+
+    def model_dump(self) -> dict:
+        return dict(self.payload)
+
+
+class _FakeContent:
+    def __init__(self, text: str | None = None) -> None:
+        self.text = text
+
+
+class _FakeOutput:
+    def __init__(self, content: list) -> None:
+        self.content = content
+
+
+class _FakeResponsesObject:
+    model = "gpt-5.5"
+    system_fingerprint = None
+
+    def __init__(
+        self,
+        *,
+        output_text: str,
+        response_id: str,
+        usage: dict,
+        output: list,
+    ) -> None:
+        self.output_text = output_text
+        self.id = response_id
+        self.usage = _FakeUsage(usage)
+        self.output = output
+
+    def model_dump(self) -> dict:
+        return {
+            "id": self.id,
+            "model": self.model,
+            "output": self.output,
+        }
 
 
 def _v2_1_valid_attempt(sample_id: str) -> dict:
@@ -768,4 +1144,26 @@ def _v2_1_valid_attempt(sample_id: str) -> dict:
         "system_fingerprint": None,
         "response_id": "resp_test",
         "validation_errors": [],
+    }
+
+
+def _v2_1_empty_attempt(sample_id: str) -> dict:
+    return {
+        "preflight_attempt": True,
+        "attempt_role": "transport_canary_record",
+        "sample_id": sample_id,
+        "task_id": sample_id,
+        "task_type": "hotpotqa",
+        "record": None,
+        "raw_output": "",
+        "usage": {"input_tokens": 10, "output_tokens": 20, "total_tokens": 30},
+        "model_name": "gpt-5.5",
+        "structured_output_mode": "json_schema",
+        "response_id": f"resp_{sample_id}",
+        "output_extraction_diagnostics": {
+            "fallback_used": True,
+            "extracted_text_empty": True,
+        },
+        "validation_errors": ["<root>: response is not a JSON object"],
+        "fallback_events": [],
     }

@@ -19,6 +19,8 @@ from .fresh_preflight import (
 
 
 V2_1_API_PREFLIGHT_ONLY = "V2_1_API_PREFLIGHT_ONLY"
+PREFLIGHT_FAIL_EMPTY_OUTPUT = "PREFLIGHT_FAIL_EMPTY_OUTPUT"
+PREFLIGHT_FAIL_OUTPUT_EXTRACTION = "PREFLIGHT_FAIL_OUTPUT_EXTRACTION"
 PREFLIGHT_FAIL_INCOMPLETE_RECORDS = "PREFLIGHT_FAIL_INCOMPLETE_RECORDS"
 PREFLIGHT_FAIL_REQUEST_LIMIT = "PREFLIGHT_FAIL_REQUEST_LIMIT"
 
@@ -277,6 +279,13 @@ def build_v2_1_preflight_report(
     cost_over_budget = cost_used is not None and float(cost_used) > approved_budget
     request_over_limit = max_requests > 0 and actual_requests > max_requests
     incomplete_records = int(report.get("records_evaluated") or 0) != expected_records
+    empty_output_summary = _empty_output_summary(attempts)
+    all_raw_output_empty = (
+        empty_output_summary["attempt_count"] > 0
+        and empty_output_summary["raw_output_empty_count"]
+        == empty_output_summary["attempt_count"]
+    )
+    any_empty_raw_output = empty_output_summary["raw_output_empty_count"] > 0
 
     failure_codes = list(report.get("failure_codes") or [])
     if incomplete_records:
@@ -285,6 +294,11 @@ def build_v2_1_preflight_report(
         failure_codes.append(PREFLIGHT_FAIL_REQUEST_LIMIT)
     if cost_over_budget:
         failure_codes.append(PREFLIGHT_FAIL_COST)
+    if all_raw_output_empty:
+        failure_codes.append(PREFLIGHT_FAIL_EMPTY_OUTPUT)
+        failure_codes.append(PREFLIGHT_FAIL_OUTPUT_EXTRACTION)
+    elif any_empty_raw_output:
+        failure_codes.append(PREFLIGHT_FAIL_OUTPUT_EXTRACTION)
     if float(report.get("json_parse_success_rate", 0.0)) < 1.0:
         failure_codes.append("PREFLIGHT_FAIL_SCHEMA")
     if float(report.get("schema_success_rate", 0.0)) < 1.0:
@@ -322,13 +336,28 @@ def build_v2_1_preflight_report(
 
     if cost_over_budget or request_over_limit:
         report["status"] = PREFLIGHT_FAIL_COST
+    elif all_raw_output_empty:
+        report["status"] = PREFLIGHT_FAIL_EMPTY_OUTPUT
     elif schema_or_tag_or_final_failure:
         report["status"] = PREFLIGHT_FAIL_SCHEMA_OR_TAGS
+
+    root_cause_classification = "not_empty_output_failure"
+    if all_raw_output_empty:
+        root_cause_classification = "transport_or_output_extraction_failure_suspected"
+    elif any_empty_raw_output:
+        root_cause_classification = "partial_output_extraction_failure_suspected"
 
     report.update(
         {
             "scope": V2_1_API_PREFLIGHT_ONLY,
             "failure_codes": failure_codes,
+            "empty_output_summary": empty_output_summary,
+            "root_cause_classification": root_cause_classification,
+            "empty_output_interpretation": (
+                "Do not interpret empty raw_output as model capability evidence or "
+                "as v2.1 validation signal; classify it as transport/output extraction "
+                "suspected until a separate canary proves otherwise."
+            ),
             "approved_budget_usd": approved_budget,
             "max_api_requests": max_requests,
             "actual_api_requests": actual_requests,
@@ -352,6 +381,8 @@ def build_v2_1_preflight_report(
             "next_allowed_step": (
                 "REQUEST_V2_1_SMOKE_APPROVAL"
                 if smoke_request_allowed
+                else "STOP_AND_FIX_OUTPUT_EXTRACTION"
+                if all_raw_output_empty
                 else "STOP_AND_FIX_PREFLIGHT"
             ),
         }
@@ -381,6 +412,42 @@ def estimate_attempt_cost_usd(
         (input_tokens / 1_000_000) * float(input_rate)
         + (output_tokens / 1_000_000) * float(output_rate)
     )
+
+
+def _empty_output_summary(attempts: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    raw_values = [attempt.get("raw_output") for attempt in attempts]
+    empty_count = sum(1 for value in raw_values if not _has_nonempty_raw_output(value))
+    diagnostics_present = sum(
+        1
+        for attempt in attempts
+        if isinstance(attempt.get("output_extraction_diagnostics"), Mapping)
+        and bool(attempt.get("output_extraction_diagnostics"))
+    )
+    response_id_present = sum(1 for attempt in attempts if attempt.get("response_id"))
+    usage_present = sum(
+        1
+        for attempt in attempts
+        if isinstance(attempt.get("usage"), Mapping) and bool(attempt.get("usage"))
+    )
+    return {
+        "attempt_count": len(attempts),
+        "raw_output_empty_count": empty_count,
+        "raw_output_nonempty_count": len(attempts) - empty_count,
+        "any_nonempty_raw_output": empty_count < len(attempts) if attempts else False,
+        "response_id_present_count": response_id_present,
+        "usage_present_count": usage_present,
+        "output_extraction_diagnostics_present_count": diagnostics_present,
+    }
+
+
+def _has_nonempty_raw_output(value: Any) -> bool:
+    if value is None:
+        return False
+    if isinstance(value, str):
+        return bool(value.strip())
+    if isinstance(value, Mapping):
+        return bool(value)
+    return True
 
 
 def _configured_manifest_counts(config: Mapping[str, Any]) -> tuple[int, dict[str, int]]:

@@ -28,7 +28,7 @@ from fma.real_task_pilot.generation import (
     load_prompt_template,
     normalize_trace_record,
 )
-from fma.real_task_pilot.openai_client import ApiCallResult
+from fma.real_task_pilot.openai_client import ApiCallResult, extract_response_output_text
 from fma.real_task_pilot.parsing import parse_json_object
 from fma.real_task_pilot.schema import structured_output_text_format, validate_trace_record
 
@@ -287,6 +287,7 @@ def generate_trace_once(
                 }
             ],
             response_id=None,
+            output_extraction_diagnostics={},
         )
 
     parsed = parse_json_object(response.output_text)
@@ -308,6 +309,7 @@ def generate_trace_once(
                 }
             ],
             response_id=response.response_id,
+            output_extraction_diagnostics=dict(response.output_extraction_diagnostics),
         )
 
     record = normalize_trace_record(
@@ -343,6 +345,7 @@ def generate_trace_once(
                 }
             ],
             response_id=response.response_id,
+            output_extraction_diagnostics=dict(response.output_extraction_diagnostics),
         )
     return GeneratedTraceResult(
         record=record,
@@ -361,6 +364,7 @@ def generate_trace_once(
             }
         ],
         response_id=response.response_id,
+        output_extraction_diagnostics=dict(response.output_extraction_diagnostics),
     )
 
 
@@ -451,9 +455,7 @@ def _single_request_kwargs(
 
 
 def _api_result_from_response(response: Any, *, request_metadata: Mapping[str, Any]) -> ApiCallResult:
-    output_text = getattr(response, "output_text", None)
-    if not output_text:
-        output_text = _extract_output_text(response)
+    output_text, output_extraction_diagnostics = extract_response_output_text(response)
     usage = getattr(response, "usage", None)
     if hasattr(usage, "model_dump"):
         usage_payload = usage.model_dump()
@@ -461,6 +463,10 @@ def _api_result_from_response(response: Any, *, request_metadata: Mapping[str, A
         usage_payload = dict(usage)
     else:
         usage_payload = {}
+    response_id = _string_or_none(getattr(response, "id", None))
+    output_extraction_diagnostics = dict(output_extraction_diagnostics)
+    output_extraction_diagnostics["usage_present"] = bool(usage_payload)
+    output_extraction_diagnostics["response_id_present"] = response_id is not None
     return ApiCallResult(
         output_text=str(output_text or ""),
         model_name=str(getattr(response, "model", "")),
@@ -468,24 +474,13 @@ def _api_result_from_response(response: Any, *, request_metadata: Mapping[str, A
         usage=usage_payload,
         raw_response=response,
         request_metadata=dict(request_metadata),
-        response_id=_string_or_none(getattr(response, "id", None)),
+        response_id=response_id,
+        output_extraction_diagnostics=output_extraction_diagnostics,
     )
 
 
 def _extract_output_text(response: Any) -> str:
-    if hasattr(response, "model_dump"):
-        payload = response.model_dump()
-    elif isinstance(response, Mapping):
-        payload = dict(response)
-    else:
-        return ""
-    texts = []
-    for output in payload.get("output", []):
-        for content in output.get("content", []):
-            text = content.get("text")
-            if text:
-                texts.append(text)
-    return "\n".join(texts)
+    return extract_response_output_text(response)[0]
 
 
 def _generation_config(

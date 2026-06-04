@@ -293,6 +293,9 @@ def attempt_payloads_from_results(
                 "system_fingerprint": result.system_fingerprint,
                 "response_id": getattr(result, "response_id", None)
                 or generation_config.get("response_id"),
+                "output_extraction_diagnostics": dict(
+                    getattr(result, "output_extraction_diagnostics", {}) or {}
+                ),
                 "validation_errors": list(result.validation_errors),
                 "fallback_events": list(result.fallback_events),
             }

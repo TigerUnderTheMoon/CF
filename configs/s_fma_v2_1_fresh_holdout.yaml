@@ -251,6 +251,67 @@ full_gate:
     does_not_establish:
       - prm_filtering_superiority
 
+route_fork_policy:
+  source_preflight_report: outputs/s_fma_v2_1_fresh_holdout/api_preflight_report.json
+  source_drift_audit: outputs/s_fma_v2_1_fresh_holdout/api_preflight_drift_failure_audit.json
+  current_preflight_status: PREFLIGHT_FAIL_DRIFT
+  current_status_remains: PILOT_BLOCKED
+  schema_transport_gates_resolved: true
+  DETERMINISTIC_REPLAY_ROUTE:
+    route_status: blocked
+    blocked_by: PREFLIGHT_FAIL_DRIFT
+    deterministic_replay_language_allowed: false
+    full_generation_allowed: false
+    task_or_global_pass_claim_allowed: false
+  STOCHASTIC_REPEATED_REPLAY_ROUTE:
+    route_status: planning_only_candidate
+    approved: false
+    api_execution_allowed: false
+    smoke_execution_allowed: false
+    requires_explicit_budget_approval: true
+    requires_repeated_replay: true
+    requires_bootstrap_uncertainty: true
+    deterministic_replay_language_allowed: false
+    repeats_per_intervention: 3
+    bootstrap_unit: sample_id
+    min_replay_success_rate: 0.85
+    min_nonzero_delta_u_rows:
+      per_task: 1
+      pooled: 3
+    claim_boundary:
+      - request_only_before_explicit_approval
+      - smoke_feasibility_only_if_later_approved_and_run
+      - no_deterministic_replay_wording
+      - no_task_or_global_pass_claim
+      - no_v2_1_validation_claim
+      - no_prm_filtering_claim
+  staged_budget:
+    smoke:
+      status: planning_only_not_approved_not_run
+      records: 20
+      max_target_spans_per_trace: 2
+      replay_repeats_per_span: 3
+      approval_request_only_next_step: true
+      approval_required_before_api: true
+    pilot:
+      status: unavailable_until_smoke_feasibility_gate_passes
+      approval_required_before_api: true
+    full:
+      status: unavailable_until_smoke_and_pilot_gates_pass
+      records: 400
+      approval_required_before_api: true
+  stop_conditions:
+    - manifest_overlap
+    - target_leakage
+    - prompt_snapshot_or_version_missing
+    - schema_success_rate_below_0_95
+    - tag_extraction_success_rate_below_0_95
+    - replay_success_rate_below_0_85
+    - nonzero_delta_u_per_task_below_1
+    - pooled_nonzero_delta_u_below_3
+    - missing_drift_disclosure
+    - budget_or_request_cap_exceeded
+
 claim_policy:
   current_status_must_remain:
     - PILOT_BLOCKED
