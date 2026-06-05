@@ -5,7 +5,7 @@ experiment:
   output_dir: outputs/s_fma_v2_2_fresh_holdout
   plan_file: paper/s_fma_v2_2_preregistration_plan.md
   transition_audit_file: paper/v2_1_to_v2_2_transition_audit.md
-  current_task_scope: S_FMA_V2_2_PREREGISTRATION_ONLY_AFTER_FULL_VALIDATION_FAILURE
+  current_task_scope: S_FMA_V2_2_PROMPT_LOCK_ONLY
   no_api_execution_without_user_approval: true
   no_api_run_in_current_task: true
   no_manifest_generation_in_current_task: true
@@ -145,6 +145,46 @@ utility_target:
         non_empty_alias_hash_blocks_overlap: true
       rationale: retain_normalized_token_f1_with_explicit_alias_policy
 
+prompt_lock:
+  generation_prompt_file: prompts/s_fma_v2_2_reflection_generation.txt
+  replay_prompt_file: prompts/s_fma_v2_2_replay.txt
+  prompt_version: prompt-sha256:8f9498811a4534f390d4f0a0ea648aa3701565e05c89174b72f2b8ba2191ae52
+  prompt_lock_status: CURRENT_PACKAGE_PROMPT_LOCK
+  prompt_hash_scope: generation_and_replay_prompt_bundle
+  prompt_hash_canonicalization: sha256 over canonical JSON with generation_prompt_file, generation_prompt_text, replay_prompt_file, and replay_prompt_text
+  prompt_snapshot_required: true
+  prompt_version_lock_required: true
+  prompt_edits_after_lock_invalidate_route: true
+  output_schema_keys:
+    - observable_trace
+    - final_answer
+  allowed_reflection_types:
+    - self-reflection
+    - self-evaluation
+    - error_diagnosis
+    - plan_revision
+    - strategy_critique
+    - verification
+    - planning
+    - uncertainty_monitoring
+    - other
+  forbidden_reflection_type_spellings:
+    - self_evaluation
+    - error-diagnosis
+    - plan-revision
+    - strategy-critique
+    - final_check
+    - correction
+    - conclusion
+    - answer_check
+    - answer-selection
+  unknown_type_policy: reject_before_scoring
+  model_must_not_invent_new_types: true
+  utility_target_supported: graded_stochastic_delta_u_v2_2
+  task_target_support:
+    gsm8k: repeated_numeric_success_probability
+    hotpotqa: normalized_token_f1
+
 schema_transport_policy:
   silent_ignore_forbidden: true
   failed_attempts_count_against_quality_and_coverage: true
@@ -250,7 +290,8 @@ claim_policy:
     - PILOT_BLOCKED
     - v2_2_preregistered_only
     - no_api_authorized
-    - no_manifest_generated
+    - manifest_locked_request_only
+    - prompt_locked_request_only
     - no_replay_run
     - no_scoring_run
     - no_prm_filtering_claim

@@ -1,0 +1,210 @@
+{
+  "actual_api_requests": 24,
+  "actual_cost_usd": 0.256195,
+  "allowed_claim_wording": [
+    "fresh-holdout status remains planned-only",
+    "current status remains PILOT_BLOCKED",
+    "stochastic repeated-replay evidence only after explicit budget approval"
+  ],
+  "allowed_remediation_steps": [
+    "PREREGISTER_STOCHASTIC_ROUTE",
+    "RERUN_PREFLIGHT_WITH_STRONGER_DETERMINISM_SETTINGS"
+  ],
+  "api_attempts": 24,
+  "api_metadata": {
+    "api_date": "2026-06-05",
+    "endpoint": "/v1/responses",
+    "fallback_model": null,
+    "model": "gpt-5.5",
+    "observed_models": [
+      "gpt-5.5"
+    ],
+    "request_parameters": {
+      "max_output_tokens": 2048,
+      "seed": 20260605,
+      "structured_output_mode": "json_schema",
+      "temperature": 0.0
+    },
+    "response_id": "resp_00b8cd123b22c980016a22870a5ff4819194a0c4f87a661d04",
+    "sdk_or_transport_version": "2.8.1",
+    "service_tier": "default",
+    "system_fingerprint": null,
+    "system_fingerprints": []
+  },
+  "approved_budget_usd": 1.0,
+  "claim_upgrade_allowed": false,
+  "cost_report": {
+    "budget_gate_pass": true,
+    "determinism_probe_rerun_performed": false,
+    "failure_reasons": [],
+    "observed_requests": 24,
+    "preflight_only": true,
+    "preflight_rerun_performed": false,
+    "projected_cost_usd": 0.256195,
+    "projected_requests": 24,
+    "projected_tokens": {
+      "input_tokens": 18407,
+      "output_tokens": 5472,
+      "total_tokens": 23879
+    },
+    "retry_count": 0,
+    "single_retry_api_attempts": 1,
+    "single_retry_budget_ceiling_usd": 1.0,
+    "single_retry_budget_gate_pass": true,
+    "single_retry_cost_used_usd": 0.029474999999999998,
+    "single_retry_request_cap": 3,
+    "single_retry_scope": "V2_2_API_PREFLIGHT_SINGLE_TRANSPORT_RETRY_ONLY",
+    "single_retry_target_sample_id": "hotpotqa-00240",
+    "usage_totals": {
+      "input_tokens": 18407,
+      "output_tokens": 5472,
+      "total_tokens": 23879
+    },
+    "user_approved_budget_usd": 1.0
+  },
+  "cost_used_usd": 0.256195,
+  "current_status_remains": "PILOT_BLOCKED",
+  "determinism_drift_max": 0.6944444444444444,
+  "determinism_probe_rerun_performed": false,
+  "deterministic_replay_claim_allowed": false,
+  "drift_failure_must_not_be_rewritten": true,
+  "drift_outputs_reused_from_source_preflight": true,
+  "drift_status": "PREFLIGHT_FAIL_DRIFT",
+  "empty_output_summary": {
+    "any_nonempty_raw_output": true,
+    "attempt_count": 20,
+    "output_extraction_diagnostics_present_count": 20,
+    "raw_output_empty_count": 0,
+    "raw_output_nonempty_count": 20,
+    "response_id_present_count": 20,
+    "usage_present_count": 20
+  },
+  "failure_codes": [
+    "PREFLIGHT_FAIL_DRIFT",
+    "PREFLIGHT_FAIL_METADATA"
+  ],
+  "final_answer_parse_success_rate": 1.0,
+  "forbidden_claim_wording": [
+    "deterministic causal",
+    "true causal effect",
+    "full generation ready",
+    "task/global v2 pass",
+    "PRM/filtering claim",
+    "deterministic replay"
+  ],
+  "fresh_generation_approval_request_allowed": false,
+  "global_pass_claim_allowed": false,
+  "json_parse_success_rate": 1.0,
+  "max_api_requests": 28,
+  "metadata_disclosure_explanation": "`system_fingerprint` is disclosure-only provider metadata; it was null or missing for all 20 evaluated records and is reported separately from schema, tag, and final-answer success.",
+  "metadata_disclosure_missing_counts": {
+    "fallback_model": 20,
+    "system_fingerprint": 20
+  },
+  "metadata_disclosure_status": "PREFLIGHT_METADATA_MISSING",
+  "metadata_missing_counts": {
+    "api_date": 0,
+    "endpoint": 0,
+    "model": 0,
+    "request_parameters": 0,
+    "response_id": 0,
+    "sdk_or_transport_version": 0,
+    "service_tier": 0
+  },
+  "metadata_policy": {
+    "disclosure_fields": [
+      "system_fingerprint",
+      "fallback_model"
+    ],
+    "required_fields": [
+      "api_date",
+      "endpoint",
+      "model",
+      "service_tier",
+      "request_parameters",
+      "response_id",
+      "sdk_or_transport_version"
+    ]
+  },
+  "next_allowed_step": "STOP_AND_FIX_PREFLIGHT",
+  "no_full_generation": true,
+  "no_full_validation": true,
+  "no_pilot": true,
+  "no_prm_claim": true,
+  "no_replay": true,
+  "no_smoke": true,
+  "no_v2_2_scoring": true,
+  "no_v2_scoring": true,
+  "preflight_rerun_performed": false,
+  "prm_or_filtering_performed": false,
+  "raw_output_nonempty_rate": 1.0,
+  "records_evaluated": 20,
+  "records_expected": 20,
+  "replay_performed": false,
+  "required_metadata_success_rate": 1.0,
+  "root_cause_classification": "not_empty_output_failure",
+  "route_policy": {
+    "DETERMINISTIC_REPLAY_ROUTE": {
+      "deterministic_replay_language_allowed": false,
+      "full_generation_allowed": false,
+      "preflight_drift_passed": false,
+      "requires_preflight_drift_pass": true,
+      "route_status": "blocked_preflight_drift"
+    },
+    "STOCHASTIC_REPEATED_REPLAY_ROUTE": {
+      "api_execution_allowed": false,
+      "claim_scope": "stochastic_repeated_replay_evidence_only",
+      "cost_ceiling_required": true,
+      "deterministic_replay_language_allowed": false,
+      "drift_disclosed": true,
+      "planning_allowed": true,
+      "preflight_budget_gate_passed": true,
+      "requires_drift_disclosure": true,
+      "requires_explicit_budget_approval": true
+    },
+    "allowed_routes_after_drift": [
+      "STOCHASTIC_REPEATED_REPLAY_ROUTE"
+    ]
+  },
+  "s_fma_v2_2_status": "planned-only-api-preflight-run",
+  "s_fma_v2_status": "planned-only",
+  "schema_report": {
+    "fallback_required": false,
+    "json_parse_success_rate": 1.0,
+    "minimum_schema_success_rate": 1.0,
+    "minimum_tag_success_rate": 1.0,
+    "schema_gate_pass": true,
+    "schema_success_rate": 1.0,
+    "tag_extraction_success_rate": 1.0,
+    "tag_gate_pass": true
+  },
+  "schema_success_rate": 1.0,
+  "scope": "V2_2_API_PREFLIGHT_ONLY",
+  "scoring_performed": false,
+  "selected_counts_by_task": {
+    "gsm8k": 10,
+    "hotpotqa": 10
+  },
+  "selected_records": 20,
+  "single_retry_api_attempts": 1,
+  "single_retry_budget_ceiling_usd": 1.0,
+  "single_retry_budget_gate_pass": true,
+  "single_retry_budget_stop_triggered": false,
+  "single_retry_cost_used_usd": 0.029474999999999998,
+  "single_retry_replaced_preflight_attempts": 1,
+  "single_retry_request_cap": 3,
+  "single_retry_request_within_cap": true,
+  "single_retry_result_status": "success",
+  "single_retry_scope": "V2_2_API_PREFLIGHT_SINGLE_TRANSPORT_RETRY_ONLY",
+  "single_retry_target_sample_id": "hotpotqa-00240",
+  "smoke_execution_allowed": false,
+  "smoke_performed": false,
+  "source_drift_status": "PREFLIGHT_FAIL_DRIFT",
+  "status": "PREFLIGHT_FAIL_DRIFT",
+  "stochastic_repeated_replay_estimand_candidate": true,
+  "tag_extraction_success_rate": 1.0,
+  "task_specific_pass_claim_allowed": false,
+  "v2_2_stochastic_smoke_approval_request_allowed": false,
+  "v2_2_stochastic_smoke_approval_request_scope": "not_allowed",
+  "validation_performed": false
+}

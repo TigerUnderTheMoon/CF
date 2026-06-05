@@ -1,0 +1,110 @@
+{
+  "audit_name": "s_fma_v2_2_api_preflight_failure_audit",
+  "audit_date": "2026-06-05",
+  "audit_scope": "V2_2_API_PREFLIGHT_FAILURE_AUDIT_AND_SINGLE_TRANSPORT_RETRY_REQUEST",
+  "request_only_followup_generated": true,
+  "api_execution_performed_by_this_audit": false,
+  "retry_performed_by_this_audit": false,
+  "preflight_rerun_performed_by_this_audit": false,
+  "smoke_performed_by_this_audit": false,
+  "replay_performed_by_this_audit": false,
+  "scoring_performed_by_this_audit": false,
+  "validation_performed_by_this_audit": false,
+  "prm_or_filtering_performed_by_this_audit": false,
+  "current_status_remains": "PILOT_BLOCKED",
+  "source_artifact_freeze": {
+    "frozen_preflight_report": "outputs/s_fma_v2_2_fresh_holdout/api_preflight_report.json",
+    "frozen_preflight_attempts": "outputs/s_fma_v2_2_fresh_holdout/api_preflight_attempts.jsonl",
+    "frozen_preflight_traces": "outputs/s_fma_v2_2_fresh_holdout/api_preflight_traces.jsonl",
+    "frozen_cost_report": "outputs/s_fma_v2_2_fresh_holdout/logs/api_preflight_cost_report.json",
+    "source_artifacts_modified_by_this_audit": false,
+    "sha256": {
+      "api_preflight_report.json": "e520271efeb2d85bb7d947cd1abcf602891fc3f178cbedf336fd0e6979ccd4b9",
+      "api_preflight_attempts.jsonl": "dbb82e3fc14c139285f39e6b86ca17b38d6dd8624659e2529aabd65d79f352f0",
+      "api_preflight_traces.jsonl": "5e5f8f3fbb0817c6c6f28e368ce41f917ab116a102acd1a906095ea5d7193670",
+      "logs/api_preflight_cost_report.json": "0d689cb707c656c1903c46320a768160aaf4490c486a5237af6a25b3a2f52bcf"
+    }
+  },
+  "observed_preflight_summary": {
+    "source_scope": "V2_2_API_PREFLIGHT_ONLY",
+    "source_report_status": "PREFLIGHT_FAIL_SCHEMA_OR_TAGS",
+    "drift_status": "PREFLIGHT_FAIL_DRIFT",
+    "records_expected": 20,
+    "records_evaluated": 20,
+    "valid_trace_rows": 19,
+    "api_attempts": 23,
+    "preflight_record_attempts": 20,
+    "determinism_probe_attempts": 3,
+    "actual_cost_usd": 0.22672,
+    "approved_budget_usd": 2.0,
+    "max_api_requests": 25,
+    "json_parse_success_rate": 0.95,
+    "schema_success_rate": 0.95,
+    "tag_extraction_success_rate": 0.95,
+    "final_answer_parse_success_rate": 0.95,
+    "raw_output_nonempty_rate": 0.95,
+    "raw_output_nonempty_count": 19,
+    "raw_output_empty_count": 1,
+    "metadata_disclosure_status": "PREFLIGHT_METADATA_MISSING",
+    "metadata_disclosure_missing_counts": {
+      "fallback_model": 20,
+      "system_fingerprint": 20
+    },
+    "failure_codes": [
+      "PREFLIGHT_FAIL_DRIFT",
+      "PREFLIGHT_FAIL_FINAL_ANSWER",
+      "PREFLIGHT_FAIL_METADATA",
+      "PREFLIGHT_FAIL_OUTPUT_EXTRACTION",
+      "PREFLIGHT_FAIL_SCHEMA",
+      "PREFLIGHT_FAIL_TAG"
+    ]
+  },
+  "failure_source_audit": {
+    "primary_transport_failure_count": 1,
+    "primary_transport_failure_type": "APIConnectionError",
+    "primary_transport_failure_message": "Connection error.",
+    "failed_preflight_record": {
+      "sample_id": "hotpotqa-00240",
+      "task_id": "5a85cead5542991dd0999ea9",
+      "task_type": "hotpotqa",
+      "question_hash": "9b41e5e3b291969a4d3a8c10ae2735df89d957bf0724cffe8644b3af071fc26e",
+      "attempt_role": "preflight_record",
+      "raw_output_empty": true,
+      "record": null,
+      "response_id": null,
+      "system_fingerprint": null,
+      "usage": {},
+      "validation_errors": [
+        "api_error:APIConnectionError:Connection error."
+      ]
+    },
+    "missing_trace_sample_ids": [
+      "hotpotqa-00240"
+    ],
+    "interpretation": "The 0.95 JSON/schema/tag/final-answer and raw-output rates are explained by one failed preflight transport attempt out of 20 selected records. This does not repair or weaken the independent drift failure."
+  },
+  "route_and_claim_boundary": {
+    "current_is_v2_2_pass": false,
+    "current_is_stochastic_smoke_ready": false,
+    "stochastic_smoke_approval_request_allowed_now": false,
+    "no_smoke_approval_unless_recomputed_schema_tag_final_answer_gates_clean": true,
+    "deterministic_replay_claim_allowed": false,
+    "deterministic_route_remains_blocked_even_if_single_retry_succeeds": true,
+    "drift_failure_must_not_be_rewritten": true,
+    "task_specific_pass_claim_allowed": false,
+    "global_pass_claim_allowed": false,
+    "top_tier_ready_claim_allowed": false,
+    "prm_or_filtering_claim_allowed": false
+  },
+  "single_retry_recommendation": {
+    "recommendation": "request_only_single_transport_retry_approval",
+    "request_artifact_json": "outputs/s_fma_v2_2_fresh_holdout/api_preflight_single_retry_approval_request.json",
+    "request_artifact_md": "outputs/s_fma_v2_2_fresh_holdout/api_preflight_single_retry_approval_request.md",
+    "requested_scope": "V2_2_API_PREFLIGHT_SINGLE_TRANSPORT_RETRY_ONLY",
+    "target_record": "hotpotqa-00240",
+    "max_api_requests": 3,
+    "budget_ceiling_usd": 1,
+    "allowed_outputs_only_retry_or_recomputed_preflight_artifacts": true,
+    "no_deterministic_replay_upgrade_after_retry": true
+  }
+}

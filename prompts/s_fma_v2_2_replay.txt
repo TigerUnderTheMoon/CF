@@ -1,0 +1,53 @@
+You are replaying an s_FMA_v2.2 benchmark solution from an intervened
+observable prefix.
+
+Return exactly one JSON object with these keys:
+- "observable_trace": a complete visible solution trace after the intervention.
+- "final_answer": the concise final answer string.
+
+Do not return markdown, comments, hidden reasoning, private chain-of-thought, or
+any keys other than "observable_trace" and "final_answer".
+
+The "observable_trace" value must start with the intervened observable prefix
+exactly as supplied below, then continue naturally to a final answer. If the
+prefix contains [REASONING_MASK], keep those mask tokens visible inside the
+reflection payload; do not delete, replace, paraphrase, or explain them. Do not
+use any original text that came after the target reflection span.
+
+Use only schema-canonical reflection types in tags. Allowed reflection types are
+exactly:
+- self-reflection
+- self-evaluation
+- error_diagnosis
+- plan_revision
+- strategy_critique
+- verification
+- planning
+- uncertainty_monitoring
+- other
+
+Do not invent new reflection types. Do not output underscore aliases, hyphen
+aliases, final-check aliases, correction aliases, conclusion aliases,
+answer-check aliases, or any type outside the allowed list. If a reflection is
+a final check, use verification. If a reflection fixes a mistake, use
+error_diagnosis.
+
+This replay prompt is locked for the v2.2 graded utility target
+graded_stochastic_delta_u_v2_2. Continue the trace so later scoring can
+evaluate:
+- GSM8K with repeated_numeric_success_probability from repeated concise numeric
+  final answers;
+- HotpotQA with normalized_token_f1 against the reference answer and any
+  non-empty aliases.
+
+For GSM8K, make final_answer the final numeric answer when possible. For
+HotpotQA, make final_answer a concise entity, name, date, place, or phrase that
+directly answers the question. Do not include Delta-U, scores, rank signal,
+correctness labels, API metadata, or validation claims in the JSON.
+
+Task type: {task_type}
+Question:
+{question}
+
+Intervened observable prefix:
+{observable_prefix}

@@ -1,0 +1,50 @@
+You are generating an observable solution trace for an s_FMA_v2.2 benchmark item.
+
+Return exactly one JSON object with these keys:
+- "observable_trace": visible task-solving text with reflection tags.
+- "final_answer": the concise final answer string.
+
+Do not return markdown, comments, hidden reasoning, private chain-of-thought, or
+any keys other than "observable_trace" and "final_answer".
+
+Use only schema-canonical reflection types in tags. Allowed reflection types are
+exactly:
+- self-reflection
+- self-evaluation
+- error_diagnosis
+- plan_revision
+- strategy_critique
+- verification
+- planning
+- uncertainty_monitoring
+- other
+
+Do not invent new reflection types. Do not output underscore aliases, hyphen
+aliases, final-check aliases, correction aliases, conclusion aliases,
+answer-check aliases, or any type outside the allowed list. If a reflection is
+a final check, use verification. If a reflection fixes a mistake, use
+error_diagnosis.
+
+The observable_trace must include at least two visible reflection blocks:
+1. one task-appropriate reflection block;
+2. one additional reflection block that is useful for checking, revising,
+   evaluating, planning, diagnosing, critiquing, or monitoring uncertainty.
+
+Each reflection block must use this exact tag form:
+<reflection type="allowed_type">visible audit text</reflection>
+
+This prompt is locked for the v2.2 graded utility target
+graded_stochastic_delta_u_v2_2. Write the trace so later scoring can evaluate:
+- GSM8K with repeated_numeric_success_probability from repeated concise numeric
+  final answers;
+- HotpotQA with normalized_token_f1 against the reference answer and any
+  non-empty aliases.
+
+For GSM8K, make final_answer the final numeric answer when possible. For
+HotpotQA, make final_answer a concise entity, name, date, place, or phrase that
+directly answers the question. Do not include Delta-U, scores, rank signal,
+correctness labels, API metadata, or validation claims in the JSON.
+
+Task type: {task_type}
+Question:
+{question}

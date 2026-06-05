@@ -1,0 +1,191 @@
+{
+  "request_name": "V2_2_STOCHASTIC_SMOKE_APPROVAL_REQUEST_AFTER_DRIFT_DISCLOSURE",
+  "request_date": "2026-06-05",
+  "scope": "V2_2_STOCHASTIC_SMOKE_ONLY",
+  "requested_scope": "V2_2_STOCHASTIC_SMOKE_ONLY",
+  "approval_status": "REQUEST_ONLY_NOT_APPROVED",
+  "request_only": true,
+  "generated_after_drift_disclosure": true,
+  "api_execution_authorized_by_this_request": false,
+  "api_execution_performed_by_this_request": false,
+  "smoke_execution_performed_by_this_request": false,
+  "replay_execution_performed_by_this_request": false,
+  "scoring_execution_performed_by_this_request": false,
+  "validation_execution_performed_by_this_request": false,
+  "pilot_execution_performed_by_this_request": false,
+  "full_generation_performed_by_this_request": false,
+  "prm_or_filtering_performed_by_this_request": false,
+  "current_status_remains": "PILOT_BLOCKED",
+  "source_preflight_report": "outputs/s_fma_v2_2_fresh_holdout/api_preflight_report.json",
+  "source_failure_audit": "outputs/s_fma_v2_2_fresh_holdout/api_preflight_failure_audit.json",
+  "current_preflight_status": "PREFLIGHT_FAIL_DRIFT",
+  "current_preflight_failure_codes": [
+    "PREFLIGHT_FAIL_DRIFT",
+    "PREFLIGHT_FAIL_METADATA"
+  ],
+  "current_preflight_summary": {
+    "scope": "V2_2_API_PREFLIGHT_ONLY",
+    "records_evaluated": 20,
+    "records_expected": 20,
+    "records_by_task": {
+      "gsm8k": 10,
+      "hotpotqa": 10
+    },
+    "json_parse_success_rate": 1.0,
+    "schema_success_rate": 1.0,
+    "tag_extraction_success_rate": 1.0,
+    "final_answer_parse_success_rate": 1.0,
+    "raw_output_nonempty_rate": 1.0,
+    "required_metadata_success_rate": 1.0,
+    "metadata_disclosure_status": "PREFLIGHT_METADATA_MISSING",
+    "metadata_missing_is_disclosure_only": true,
+    "metadata_disclosure_missing_counts": {
+      "fallback_model": 20,
+      "system_fingerprint": 20
+    },
+    "drift_status": "PREFLIGHT_FAIL_DRIFT",
+    "determinism_drift_max": 0.6944444444444444,
+    "deterministic_route_blocked": true,
+    "deterministic_replay_claim_allowed": false
+  },
+  "route_boundary": {
+    "DETERMINISTIC_REPLAY_ROUTE": {
+      "route_status": "blocked",
+      "blocked_by": "PREFLIGHT_FAIL_DRIFT",
+      "deterministic_replay_language_allowed": false,
+      "full_generation_allowed": false,
+      "claim_upgrade_allowed": false
+    },
+    "STOCHASTIC_REPEATED_REPLAY_ROUTE": {
+      "route_status": "request_only_candidate_after_drift_disclosure",
+      "approval_status": "REQUEST_ONLY_NOT_APPROVED",
+      "route_description": "drift-disclosed stochastic repeated replay only",
+      "api_execution_allowed_now": false,
+      "smoke_execution_allowed_now": false,
+      "requires_explicit_user_approval": true,
+      "requires_repeated_replay": true,
+      "requires_drift_disclosure": true,
+      "requires_bootstrap_uncertainty": true,
+      "deterministic_replay_language_allowed": false,
+      "claim_scope": "stochastic repeated-replay smoke diagnostics only"
+    }
+  },
+  "proposed_smoke_design": {
+    "sample_count": 20,
+    "records_per_task": {
+      "gsm8k": 10,
+      "hotpotqa": 10
+    },
+    "original_generation_requests": 20,
+    "target_spans_per_trace_max": 2,
+    "stochastic_replay_repeats_per_eligible_span": 3,
+    "max_replay_requests_estimate": "20 * 2 * 3 = 120",
+    "max_replay_requests": 120,
+    "max_total_requests": 140,
+    "bootstrap_unit": "sample_id",
+    "estimand_boundary": "drift-disclosed stochastic repeated-replay smoke feasibility only",
+    "rank_signal_boundary": "rank signal may be inspected only as smoke diagnostics and must not be evaluated as pilot, full-validation, task-specific, or global pass evidence"
+  },
+  "request_estimate": {
+    "original_generation_requests": 20,
+    "max_replay_requests": 120,
+    "max_total_requests": 140
+  },
+  "cost_estimate": {
+    "recommended_budget_ceiling_usd": 8,
+    "hard_stop_if_projected_cost_exceeds_ceiling": true,
+    "estimate_basis": "bounded smoke ceiling only; this request did not call an API or query pricing"
+  },
+  "hard_stop_conditions": [
+    "projected_cost_exceeds_usd_8",
+    "json_parse_success_rate_below_1_0",
+    "schema_success_rate_below_1_0",
+    "tag_extraction_success_rate_below_1_0",
+    "final_answer_parse_success_rate_below_1_0",
+    "raw_output_nonempty_rate_below_1_0",
+    "valid_original_traces_below_15",
+    "replay_success_rate_below_0_85",
+    "pooled_nonzero_delta_u_rows_below_3",
+    "per_task_nonzero_delta_u_rows_equals_0",
+    "rank_signal_evaluated_beyond_smoke_diagnostics",
+    "missing_drift_disclosure",
+    "attempted_deterministic_replay_wording",
+    "attempted_pilot_or_full_validation_without_separate_approval",
+    "attempted_validation_pass_or_prm_filtering_claim"
+  ],
+  "smoke_feasibility_gates_if_approved": {
+    "json_parse_success_rate": 1.0,
+    "schema_success_rate": 1.0,
+    "tag_extraction_success_rate": 1.0,
+    "final_answer_parse_success_rate": 1.0,
+    "raw_output_nonempty_rate": 1.0,
+    "valid_original_traces_min": 15,
+    "replay_success_rate_min": 0.85,
+    "pooled_nonzero_delta_u_rows_min": 3,
+    "per_task_nonzero_delta_u_rows_min": 1,
+    "cost_ceiling_usd": 8,
+    "request_cap": 140
+  },
+  "rank_signal_policy_if_approved": {
+    "rank_signal_allowed_only_as_smoke_diagnostic": true,
+    "task_specific_gate_evaluation_allowed": false,
+    "global_gate_evaluation_allowed": false,
+    "pilot_validation_allowed": false,
+    "full_validation_allowed": false
+  },
+  "allowed_output_paths_for_future_approved_run": [
+    "outputs/s_fma_v2_2_fresh_holdout/stochastic_smoke_original_attempts.jsonl",
+    "outputs/s_fma_v2_2_fresh_holdout/stochastic_smoke_original_traces.jsonl",
+    "outputs/s_fma_v2_2_fresh_holdout/stochastic_smoke_replay_prefixes.jsonl",
+    "outputs/s_fma_v2_2_fresh_holdout/stochastic_smoke_replay_attempts.jsonl",
+    "outputs/s_fma_v2_2_fresh_holdout/stochastic_smoke_replay_results.jsonl",
+    "outputs/s_fma_v2_2_fresh_holdout/stochastic_smoke_delta_u.jsonl",
+    "outputs/s_fma_v2_2_fresh_holdout/stochastic_smoke_report.json",
+    "outputs/s_fma_v2_2_fresh_holdout/logs/stochastic_smoke_cost_report.json"
+  ],
+  "artifacts_generated_by_this_request": [
+    "outputs/s_fma_v2_2_fresh_holdout/stochastic_smoke_approval_request.json",
+    "outputs/s_fma_v2_2_fresh_holdout/stochastic_smoke_approval_request.md"
+  ],
+  "artifacts_not_rewritten_by_this_request": [
+    "outputs/real_task_pilot/*",
+    "outputs/s_fma_v2_fresh_holdout/*",
+    "outputs/s_fma_v2_1_fresh_holdout/*",
+    "outputs/s_fma_v2_2_fresh_holdout/api_preflight_report.json",
+    "outputs/s_fma_v2_2_fresh_holdout/api_preflight_attempts.jsonl",
+    "outputs/s_fma_v2_2_fresh_holdout/api_preflight_traces.jsonl",
+    "outputs/s_fma_v2_2_fresh_holdout/logs/api_preflight_cost_report.json",
+    "outputs/s_fma_v2_2_fresh_holdout/api_preflight_failure_audit.json",
+    "outputs/s_fma_v2_2_fresh_holdout/api_preflight_failure_audit.md",
+    "outputs/s_fma_v2_2_fresh_holdout/api_preflight_single_retry_approval_request.json",
+    "outputs/s_fma_v2_2_fresh_holdout/api_preflight_single_retry_approval_request.md"
+  ],
+  "forbidden_actions": [
+    "API execution without separate explicit approval",
+    "smoke execution by this request",
+    "replay execution by this request",
+    "scoring execution by this request",
+    "pilot validation",
+    "full validation",
+    "full generation",
+    "PRM/filtering",
+    "validation claim",
+    "v2_2 pass claim",
+    "task/global pass claim",
+    "top-tier-ready claim",
+    "deterministic replay claim",
+    "deterministic replay wording"
+  ],
+  "claim_boundary": {
+    "no_v2_2_pass_claim": true,
+    "no_pilot_or_full_validation_claim": true,
+    "no_deterministic_replay_wording": true,
+    "no_validation_claim": true,
+    "no_prm_claim": true,
+    "no_task_or_global_pass_claim": true,
+    "no_top_tier_ready_claim": true,
+    "current_status_remains": "PILOT_BLOCKED"
+  },
+  "next_allowed_step_without_user_approval": "USER_REVIEW_APPROVAL_REQUEST_ONLY",
+  "next_allowed_step_after_user_approval_only": "Run only V2_2_STOCHASTIC_SMOKE_ONLY with sample_count 20, GSM8K 10 plus HotpotQA 10, max_total_requests 140, stochastic replay repeats per eligible span 3, and recommended_budget_ceiling_usd 8, writing only the allowed stochastic smoke output paths."
+}
