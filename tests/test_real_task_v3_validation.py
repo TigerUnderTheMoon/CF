@@ -453,6 +453,7 @@ def test_declared_gsm8k_source_provenance_hashes_rows_and_previous_sources() -> 
 def test_manifest_gate_links_declared_gsm8k_source_provenance(tmp_path: Path) -> None:
     extra_path = tmp_path / "gsm8k_openai_main_train_declared.jsonl"
     provenance_path = tmp_path / "gsm8k_openai_main_train_declared_provenance.json"
+    hotpotqa_path, _ = _write_hotpotqa_source(tmp_path, 4)
     rows = build_declared_gsm8k_rows(
         [{"question": f"What is {index} + 1?", "answer": f"#### {index + 1}"} for index in range(4)]
     )
@@ -485,13 +486,19 @@ def test_manifest_gate_links_declared_gsm8k_source_provenance(tmp_path: Path) ->
             "locked_validation": {"sample_count_by_task": {"gsm8k": 1, "hotpotqa": 1}},
         },
     }
-    result = _write_manifest_generation_package(config, gsm8k_extra_source=extra_path)
+    result = _write_manifest_generation_package(
+        config,
+        gsm8k_extra_source=extra_path,
+        hotpotqa_source=hotpotqa_path,
+        exclusion_artifacts_dir=tmp_path / "empty_outputs",
+        output_dir=tmp_path / "out",
+        random_seed=123,
+    )
     audit = json.loads(Path(result["audit_path"]).read_text(encoding="utf-8"))
 
-    linked = audit["input_source_provenance"]["gsm8k_extra_source"]
-    assert linked["provenance_path"] == str(provenance_path)
-    assert linked["full_revision"] == DECLARED_GSM8K_REVISION
-    assert linked["generated_file_hash"] == file_sha256(extra_path)
+    assert audit["gsm8k_extra_source_provenance_path"] == str(provenance_path)
+    assert audit["gsm8k_extra_source_provenance_hash"] == file_sha256(provenance_path)
+    assert result["status"] == "MANIFEST_OVERLAP_CLEAN"
 
 
 def test_manifest_gate_rejects_missing_or_mismatched_gsm8k_source_provenance(
@@ -505,6 +512,189 @@ def test_manifest_gate_rejects_missing_or_mismatched_gsm8k_source_provenance(
 
     with pytest.raises(RuntimeError, match="source_preparation_failure_audit"):
         _load_gsm8k_extra_source_metadata(extra_path)
+
+
+def test_real_task_v3_manifest_gate_clean_generation_writes_all_splits(tmp_path: Path) -> None:
+    gsm8k_path, provenance_path, _ = _write_declared_gsm8k_pair(tmp_path, 2000)
+    hotpotqa_path, _ = _write_hotpotqa_source(tmp_path, 2000)
+    output_dir = tmp_path / "out"
+
+    result = _run_manifest_gate(
+        gsm8k_source=gsm8k_path,
+        hotpotqa_source=hotpotqa_path,
+        exclusion_dir=tmp_path / "empty_outputs",
+        output_dir=output_dir,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "REAL_TASK_V3_MANIFEST_OVERLAP_CLEAN" in result.stdout
+    audit = json.loads((output_dir / "manifest_overlap_audit.json").read_text(encoding="utf-8"))
+    assert audit["status"] == "MANIFEST_OVERLAP_CLEAN"
+    assert audit["gsm8k_extra_source_provenance_path"] == str(provenance_path)
+    assert audit["gsm8k_extra_source_provenance_hash"] == file_sha256(provenance_path)
+    assert audit["split_counts"] == {
+        "smoke": {"total": 200, "gsm8k": 100, "hotpotqa": 100},
+        "dev": {"total": 1000, "gsm8k": 500, "hotpotqa": 500},
+        "locked": {"total": 2000, "gsm8k": 1000, "hotpotqa": 1000},
+    }
+    assert len(_read_manifest_rows(output_dir / "smoke_manifest.jsonl")) == 200
+    assert len(_read_manifest_rows(output_dir / "dev_calibration_manifest.jsonl")) == 1000
+    assert len(_read_manifest_rows(output_dir / "locked_validation_manifest.jsonl")) == 2000
+
+
+def test_real_task_v3_manifest_gate_blocks_any_six_key_overlap(tmp_path: Path) -> None:
+    gsm8k_path, _, _ = _write_declared_gsm8k_pair(tmp_path, 2000)
+    hotpotqa_path, hotpotqa_rows = _write_hotpotqa_source(tmp_path, 2000)
+    exclusion_dir = tmp_path / "outputs"
+    _write_json(exclusion_dir / "real_task_pilot" / "sample_manifest.json", [hotpotqa_rows[0]])
+    output_dir = tmp_path / "out"
+
+    result = _run_manifest_gate(
+        gsm8k_source=gsm8k_path,
+        hotpotqa_source=hotpotqa_path,
+        exclusion_dir=exclusion_dir,
+        output_dir=output_dir,
+    )
+
+    assert result.returncode == 1
+    assert "REAL_TASK_V3_MANIFEST_BLOCKED: overlap_detected" in (result.stdout + result.stderr)
+    audit = json.loads((output_dir / "manifest_overlap_audit.json").read_text(encoding="utf-8"))
+    assert audit["status"] == "BLOCKED_OVERLAP_DETECTED"
+    assert audit["overlap_counts"]["pilot"]["sample_id"] == 1
+    assert audit["total_excluded_rows"] == 1
+    assert not (output_dir / "smoke_manifest.jsonl").exists()
+    assert not (output_dir / "dev_calibration_manifest.jsonl").exists()
+    assert not (output_dir / "locked_validation_manifest.jsonl").exists()
+
+
+def test_real_task_v3_manifest_gate_blocks_insufficient_fresh_rows_without_partials(
+    tmp_path: Path,
+) -> None:
+    gsm8k_path, _, _ = _write_declared_gsm8k_pair(tmp_path, 50)
+    hotpotqa_path, _ = _write_hotpotqa_source(tmp_path, 2000)
+    output_dir = tmp_path / "out"
+
+    result = _run_manifest_gate(
+        gsm8k_source=gsm8k_path,
+        hotpotqa_source=hotpotqa_path,
+        exclusion_dir=tmp_path / "empty_outputs",
+        output_dir=output_dir,
+    )
+
+    assert result.returncode == 1
+    assert "REAL_TASK_V3_MANIFEST_BLOCKED: insufficient_fresh_rows" in (result.stdout + result.stderr)
+    audit = json.loads((output_dir / "manifest_overlap_audit.json").read_text(encoding="utf-8"))
+    assert audit["status"] == "BLOCKED_INSUFFICIENT_FRESH_ROWS"
+    assert audit["post_dedup_counts"]["gsm8k"] == 50
+    assert audit["preflight_passed"] is False
+    assert not (output_dir / "smoke_manifest.jsonl").exists()
+    assert not (output_dir / "dev_calibration_manifest.jsonl").exists()
+    assert not (output_dir / "locked_validation_manifest.jsonl").exists()
+
+
+def test_real_task_v3_manifest_gate_blocks_source_provenance_hash_mismatch(
+    tmp_path: Path,
+) -> None:
+    gsm8k_path, provenance_path, _ = _write_declared_gsm8k_pair(tmp_path, 2000)
+    provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
+    provenance["generated_file_hash"] = "0" * 64
+    _write_json(provenance_path, provenance)
+    hotpotqa_path, _ = _write_hotpotqa_source(tmp_path, 2000)
+    output_dir = tmp_path / "out"
+
+    result = _run_manifest_gate(
+        gsm8k_source=gsm8k_path,
+        hotpotqa_source=hotpotqa_path,
+        exclusion_dir=tmp_path / "empty_outputs",
+        output_dir=output_dir,
+    )
+
+    assert result.returncode == 1
+    assert "REAL_TASK_V3_MANIFEST_BLOCKED: source_provenance_invalid" in (
+        result.stdout + result.stderr
+    )
+    audit = json.loads((output_dir / "manifest_overlap_audit.json").read_text(encoding="utf-8"))
+    assert audit["status"] == "BLOCKED_SOURCE_PROVENANCE_INVALID"
+    assert not (output_dir / "smoke_manifest.jsonl").exists()
+
+
+def test_real_task_v3_manifest_gate_enforces_split_disjointness_and_six_keys(
+    tmp_path: Path,
+) -> None:
+    gsm8k_path, _, _ = _write_declared_gsm8k_pair(tmp_path, 2000)
+    hotpotqa_path, _ = _write_hotpotqa_source(tmp_path, 2000)
+    output_dir = tmp_path / "out"
+
+    result = _run_manifest_gate(
+        gsm8k_source=gsm8k_path,
+        hotpotqa_source=hotpotqa_path,
+        exclusion_dir=tmp_path / "empty_outputs",
+        output_dir=output_dir,
+    )
+
+    assert result.returncode == 0, result.stderr
+    split_paths = [
+        output_dir / "smoke_manifest.jsonl",
+        output_dir / "dev_calibration_manifest.jsonl",
+        output_dir / "locked_validation_manifest.jsonl",
+    ]
+    rows_by_split = [_read_manifest_rows(path) for path in split_paths]
+    seen_sample_ids: set[str] = set()
+    seen_task_ids: set[str] = set()
+    six_keys = {
+        "sample_id",
+        "task_id",
+        "dataset_config_split_source_index",
+        "normalized_question_hash",
+        "reference_answer_hash",
+        "non_empty_alias_hash",
+    }
+    for rows in rows_by_split:
+        sample_ids = {str(row["sample_id"]) for row in rows}
+        task_ids = {str(row["task_id"]) for row in rows}
+        assert seen_sample_ids.isdisjoint(sample_ids)
+        assert seen_task_ids.isdisjoint(task_ids)
+        seen_sample_ids.update(sample_ids)
+        seen_task_ids.update(task_ids)
+        assert all(six_keys.issubset(row) for row in rows)
+        assert all(row["split"] in {"smoke", "dev", "locked"} for row in rows)
+    gsm8k_rows = [
+        row
+        for rows in rows_by_split
+        for row in rows
+        if row["task_type"] == "gsm8k"
+    ]
+    assert all(row["non_empty_alias_hash"] == EMPTY_STRING_HASH for row in gsm8k_rows)
+
+
+def test_real_task_v3_manifest_gate_requires_guarded_cli_flag(tmp_path: Path) -> None:
+    gsm8k_path, _, _ = _write_declared_gsm8k_pair(tmp_path, 2000)
+    hotpotqa_path, _ = _write_hotpotqa_source(tmp_path, 2000)
+    command = [
+        sys.executable,
+        "scripts/generate_real_task_v3_manifest.py",
+        "--task-scope",
+        MANIFEST_SCOPE,
+        "--gsm8k-extra-source",
+        str(gsm8k_path),
+        "--hotpotqa-source",
+        str(hotpotqa_path),
+        "--exclusion-artifacts-dir",
+        str(tmp_path / "empty_outputs"),
+        "--output-dir",
+        str(tmp_path / "out"),
+    ]
+
+    result = subprocess.run(
+        command,
+        cwd=Path.cwd(),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 1
+    assert "--allow-manifest-generation-only is required" in (result.stdout + result.stderr)
 
 
 def test_source_preparation_cache_hit_writes_success_audit(tmp_path: Path) -> None:
