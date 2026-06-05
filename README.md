@@ -29,6 +29,8 @@ The recomputed v2.1 pilot stochastic artifact at `outputs/s_fma_v2_1_fresh_holdo
 
 The current v2.1 full stochastic validation artifact at `outputs/s_fma_v2_1_fresh_holdout/v2_1_full_stochastic_report.json` is frozen as failed full-validation provenance, not a pass. It reports `V2_1_FULL_STOCHASTIC_FAIL_SCHEMA_OR_TAGS` with failure codes `V2_1_FULL_STOCHASTIC_FAIL_SCHEMA_OR_TAGS` and `V2_1_FULL_STOCHASTIC_FAIL_SPARSE_SIGNAL`: JSON/schema/tag/final-answer success rates are `0.9971181556195965` because 8 HotpotQA attempts hit timeout/connection errors, and GSM8K has 16 nonzero Delta-U rows against the preregistered threshold of 20. The rank signal is positive in pooled/GSM8K/HotpotQA, but the preregistered pass gates failed. The failure audit is stored at `outputs/s_fma_v2_1_fresh_holdout/v2_1_full_validation_failure_audit.md` and `.json`; the route decision is `paper/full_validation_route_decision.md`. No deterministic replay language, top-tier-ready claim, or PRM/filtering claim is allowed.
 
+The planned `s_FMA_v2.2` route is now preregistered in `paper/s_fma_v2_2_preregistration_plan.md`, `configs/s_fma_v2_2_fresh_holdout.yaml`, and `paper/v2_1_to_v2_2_transition_audit.md`. It is a new route after the failed v2.1 full validation, not a reinterpretation of v2.1. v2.2 targets GSM8K binary Delta-U sparsity with a repeated numeric-success probability utility target, keeps HotpotQA on normalized token F1 with explicit alias/normalization policy, requires bounded and audited schema/transport repair rather than silent dropping, and requires Spearman/Kendall/NDCG/top-k AUC bootstrap uncertainty reporting. It must use a fresh non-overlapping holdout or new preregistered split, and it must not tune thresholds from v2.1 full-validation artifacts. Current status remains `PILOT_BLOCKED`; no API, manifest, replay, scoring, or PRM/filtering route is authorized by the preregistration.
+
 ## Phase 5-7 Core Findings
 
 The empirical contributions currently completed are concentrated in Phase 5-7. Phase 1-4 established conceptual and infrastructural foundations.
@@ -70,6 +72,8 @@ Until that final layer exists as real artifacts, PRM/filtering claims remain fut
 - `paper/full_validation_route_decision.md`
 - `paper/s_fma_v2_fresh_holdout_plan.md`
 - `paper/s_fma_v2_1_evidence_target_revision.md`
+- `paper/s_fma_v2_2_preregistration_plan.md`
+- `paper/v2_1_to_v2_2_transition_audit.md`
 
 ## Reproduction Commands
 
@@ -131,6 +135,8 @@ The planned `s_FMA_v2.1` revision is documented in `paper/s_fma_v2_1_evidence_ta
 The current v2.1 pilot stochastic artifact is `outputs/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_report.json`. After the single retry, it reports 600/600 replay success, JSON/schema/tag/final-answer success `1.0`, `TASK_SPECIFIC_pass: true`, `GLOBAL_pass: true`, and `full_validation_approval_request_allowed: true`. These are pilot stochastic gate fields only. They do not establish full validation, deterministic replay, top-tier readiness, or PRM/filtering; current status remains `PILOT_BLOCKED`.
 
 The corresponding v2.1 full stochastic validation artifacts now include the failed execution report, rank-signal report, Delta-U/replay/original trace files, and failure audit under `outputs/s_fma_v2_1_fresh_holdout/`. The full artifact has positive pooled/GSM8K/HotpotQA rank signal, but it fails the exact quality gates and the GSM8K sparse-signal gate; `TASK_SPECIFIC_pass` and `GLOBAL_pass` are both `false`, and `PILOT_BLOCKED` remains unchanged.
+
+The v2.2 preregistration files add a planned-only fresh route under `paper/s_fma_v2_2_preregistration_plan.md` and `configs/s_fma_v2_2_fresh_holdout.yaml`. No `outputs/s_fma_v2_2_fresh_holdout/` artifacts exist yet, and the v2.2 route cannot use v2.1 full-validation artifacts for threshold tuning, row selection, weight fitting, claim upgrades, or PRM/filtering.
 
 ## Reference Anchors
 
