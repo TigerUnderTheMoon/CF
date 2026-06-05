@@ -1,0 +1,279 @@
+{
+  "GLOBAL_pass": false,
+  "TASK_SPECIFIC_pass": false,
+  "TASK_SPECIFIC_pass_by_task": {
+    "gsm8k": false,
+    "hotpotqa": false
+  },
+  "allowed_claim_scope": [
+    "full stochastic repeated-replay validation diagnostics",
+    "task-specific full gate status if directly passed by this artifact",
+    "global full gate status if directly passed by this artifact",
+    "downstream PRM/filtering approval request only if GLOBAL_pass is true"
+  ],
+  "api_attempts": 2794,
+  "api_execution_performed": true,
+  "approved_budget_usd": 150.0,
+  "artifact": "v2_1_full_stochastic_report",
+  "claim_upgrade_allowed": false,
+  "cost_used_usd": 65.806855,
+  "cost_within_budget": true,
+  "cumulative_route_api_calls": 2895,
+  "cumulative_route_cost_usd": 65.806855,
+  "current_status_remains": "PILOT_BLOCKED",
+  "delta_rows": 791,
+  "deterministic_replay_claim_allowed": false,
+  "effective_report_api_attempts": 2794,
+  "eligible_span_count_by_task": {
+    "gsm8k": 400,
+    "hotpotqa": 391
+  },
+  "expected_replay_jobs": 2394,
+  "failure_codes": [
+    "V2_1_FULL_STOCHASTIC_FAIL_SCHEMA_OR_TAGS",
+    "V2_1_FULL_STOCHASTIC_FAIL_SPARSE_SIGNAL"
+  ],
+  "final_answer_parse_success_rate": 0.9917680744452398,
+  "forbidden_claim_scope": [
+    "deterministic replay claim",
+    "top-tier-ready claim",
+    "submission-ready claim",
+    "PRM/filtering execution or superiority claim without separate approval",
+    "historical failed artifact rewrite"
+  ],
+  "full_validation_completion_report": true,
+  "incremental_retry_api_calls": 119,
+  "incremental_retry_cost_usd": 0.11687,
+  "json_parse_success_rate": 0.9917680744452398,
+  "max_api_requests": 2800,
+  "nonzero_delta_rows": 158,
+  "nonzero_delta_u_by_task": {
+    "gsm8k": 16,
+    "hotpotqa": 142
+  },
+  "nonzero_delta_u_pooled_count": 158,
+  "output_extraction_diagnostics_complete": false,
+  "prm_filtering_performed": false,
+  "prm_filtering_validation_approval_request_allowed": false,
+  "prm_filtering_validation_execution_allowed": false,
+  "rank_signal": {
+    "bootstrap": {
+      "confidence_level": 0.95,
+      "random_seed": 20264630,
+      "resamples": 10000
+    },
+    "estimand_boundary": "full stochastic repeated replay only",
+    "metric": "original_primary_score_vs_delta_u_spearman",
+    "per_task": {
+      "gsm8k": {
+        "n": 400,
+        "spearman_ci95": [
+          0.20630072703505137,
+          0.5508530833108137
+        ],
+        "spearman_ci_lower_gt_zero": true,
+        "spearman_rho": 0.39190746956761374
+      },
+      "hotpotqa": {
+        "n": 391,
+        "spearman_ci95": [
+          0.18675427605451636,
+          0.34933833273025694
+        ],
+        "spearman_ci_lower_gt_zero": true,
+        "spearman_rho": 0.26541149212099957
+      }
+    },
+    "pooled": {
+      "n": 791,
+      "spearman_ci95": [
+        0.33114184870994695,
+        0.4747663622404725
+      ],
+      "spearman_ci_lower_gt_zero": true,
+      "spearman_rho": 0.40429826194063756
+    },
+    "primary_signal": {
+      "available": true,
+      "n": 791,
+      "name": "original_primary_score_vs_delta_u",
+      "target_leakage_status": "observed_full_validation_metric_not_candidate_score"
+    }
+  },
+  "rank_signal_metric": "original_primary_score_vs_delta_u_spearman",
+  "replay_attempt_count": 2394,
+  "replay_success_rate": 0.9908103592314118,
+  "request_within_cap": true,
+  "retry_abandon_reason": "transport_unresolved_and_gsm8k_sparse_signal_below_preregistered_threshold",
+  "retry_nonretryable_attempts": [],
+  "retry_replaced_attempts": [
+    {
+      "attempt_key": [
+        "original",
+        "hotpotqa-00178"
+      ],
+      "retry_attempt_role": "full_original_engineering_retry",
+      "source_attempt_index": 349,
+      "source_attempt_role": "full_original",
+      "source_validation_errors": [
+        "api_error:APITimeoutError:Request timed out."
+      ]
+    },
+    {
+      "attempt_key": [
+        "original",
+        "hotpotqa-00179"
+      ],
+      "retry_attempt_role": "full_original_engineering_retry",
+      "source_attempt_index": 350,
+      "source_attempt_role": "full_original",
+      "source_validation_errors": [
+        "api_error:APIConnectionError:Connection error."
+      ]
+    },
+    {
+      "attempt_key": [
+        "original",
+        "hotpotqa-00180"
+      ],
+      "retry_attempt_role": "full_original_engineering_retry",
+      "source_attempt_index": 351,
+      "source_attempt_role": "full_original",
+      "source_validation_errors": [
+        "api_error:APIConnectionError:Connection error."
+      ]
+    }
+  ],
+  "retry_unresolved_retryable_attempts": [
+    {
+      "attempt_key": [
+        "original",
+        "hotpotqa-00021"
+      ],
+      "source_attempt_index": 215,
+      "source_attempt_role": "full_original",
+      "source_validation_errors": [
+        "api_error:APITimeoutError:Request timed out."
+      ]
+    },
+    {
+      "attempt_key": [
+        "replay",
+        "hotpotqa-00006",
+        0,
+        0
+      ],
+      "source_attempt_index": 1224,
+      "source_attempt_role": "full_replay",
+      "source_validation_errors": [
+        "api_error:APITimeoutError:Request timed out."
+      ]
+    },
+    {
+      "attempt_key": [
+        "replay",
+        "hotpotqa-00006",
+        0,
+        1
+      ],
+      "source_attempt_index": 1225,
+      "source_attempt_role": "full_replay",
+      "source_validation_errors": [
+        "api_error:APITimeoutError:Request timed out."
+      ]
+    },
+    {
+      "attempt_key": [
+        "replay",
+        "hotpotqa-00006",
+        0,
+        2
+      ],
+      "source_attempt_index": 1226,
+      "source_attempt_role": "full_replay",
+      "source_validation_errors": [
+        "api_error:APITimeoutError:Request timed out."
+      ]
+    },
+    {
+      "attempt_key": [
+        "replay",
+        "hotpotqa-00006",
+        1,
+        1
+      ],
+      "source_attempt_index": 1228,
+      "source_attempt_role": "full_replay",
+      "source_validation_errors": [
+        "api_error:APITimeoutError:Request timed out."
+      ]
+    }
+  ],
+  "sample_count": 400,
+  "sample_count_by_task": {
+    "gsm8k": 200,
+    "hotpotqa": 200
+  },
+  "schema_success_rate": 0.9917680744452398,
+  "scope": "V2_1_FULL_STOCHASTIC_ENGINEERING_RETRY_ONLY",
+  "source_api_attempts": 2776,
+  "source_cost_report_cost_usd": 65.689985,
+  "source_cost_usd": 65.689985,
+  "source_failed_artifact_rewritten": false,
+  "source_full_validation_scope": "V2_1_FULL_STOCHASTIC_VALIDATION_ONLY",
+  "source_full_validation_status": "V2_1_FULL_STOCHASTIC_FAIL_SCHEMA_OR_TAGS",
+  "source_rank_signal": {
+    "bootstrap": {
+      "confidence_level": 0.95,
+      "random_seed": 20263630,
+      "resamples": 10000
+    },
+    "estimand_boundary": "full stochastic repeated replay only",
+    "metric": "original_primary_score_vs_delta_u_spearman",
+    "per_task": {
+      "gsm8k": {
+        "n": 400,
+        "spearman_ci95": [
+          0.20969565326846643,
+          0.5611862887115356
+        ],
+        "spearman_ci_lower_gt_zero": true,
+        "spearman_rho": 0.39190746956761374
+      },
+      "hotpotqa": {
+        "n": 391,
+        "spearman_ci95": [
+          0.18518584662107646,
+          0.3476265903398467
+        ],
+        "spearman_ci_lower_gt_zero": true,
+        "spearman_rho": 0.26541149212099957
+      }
+    },
+    "pooled": {
+      "n": 791,
+      "spearman_ci95": [
+        0.33018536417588107,
+        0.47498179008098873
+      ],
+      "spearman_ci_lower_gt_zero": true,
+      "spearman_rho": 0.40429826194063756
+    },
+    "primary_signal": {
+      "available": true,
+      "n": 791,
+      "name": "original_primary_score_vs_delta_u",
+      "target_leakage_status": "observed_full_validation_metric_not_candidate_score"
+    }
+  },
+  "status": "V2_1_FULL_STOCHASTIC_FAIL_SCHEMA_OR_TAGS",
+  "submission_ready_claim_allowed": false,
+  "successful_replay_count": 2372,
+  "tag_extraction_success_rate": 0.9917680744452398,
+  "top_tier_ready_claim_allowed": false,
+  "valid_original_traces": 399,
+  "valid_original_traces_by_task": {
+    "gsm8k": 200,
+    "hotpotqa": 199
+  }
+}

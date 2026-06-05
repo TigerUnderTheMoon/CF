@@ -1976,6 +1976,268 @@ def test_v2_1_full_replay_plan_skips_existing_successful_checkpoint_rows() -> No
     ]
 
 
+def test_v2_1_full_engineering_retry_identifies_only_transport_failures() -> None:
+    runner = _v2_1_full_retry_runner()
+    attempts = [
+        {
+            "sample_id": "hotpotqa-00021",
+            "validation_errors": ["api_error:APITimeoutError:Request timed out."],
+        },
+        {
+            "sample_id": "hotpotqa-00179",
+            "validation_errors": ["api_error:APIConnectionError:Connection error."],
+        },
+        {
+            "sample_id": "hotpotqa-schema",
+            "validation_errors": ["<root>: response is not a JSON object"],
+        },
+        {
+            "sample_id": "hotpotqa-valid",
+            "record": {"final_answer": "ok"},
+            "validation_errors": [],
+        },
+    ]
+
+    partition = runner.partition_retryable_transport_attempts(attempts)
+
+    assert [row["sample_id"] for row in partition["retryable"]] == [
+        "hotpotqa-00021",
+        "hotpotqa-00179",
+    ]
+    assert [row["sample_id"] for row in partition["nonretryable"]] == [
+        "hotpotqa-schema"
+    ]
+
+
+def test_v2_1_full_engineering_retry_replaces_effective_attempts_with_provenance() -> None:
+    runner = _v2_1_full_retry_runner()
+    source_attempts = [
+        {
+            "attempt_role": "full_original",
+            "sample_id": "hotpotqa-00021",
+            "task_type": "hotpotqa",
+            "validation_errors": ["api_error:APITimeoutError:Request timed out."],
+        },
+        {
+            "attempt_role": "full_original",
+            "sample_id": "hotpotqa-valid",
+            "task_type": "hotpotqa",
+            "record": {"sample_id": "hotpotqa-valid", "final_answer": "ok"},
+            "validation_errors": [],
+        },
+    ]
+    retry_attempts = [
+        {
+            "attempt_role": "full_original_engineering_retry",
+            "sample_id": "hotpotqa-00021",
+            "task_type": "hotpotqa",
+            "record": {"sample_id": "hotpotqa-00021", "final_answer": "retry ok"},
+            "validation_errors": [],
+            "response_id": "resp_retry",
+        }
+    ]
+
+    result = runner.apply_successful_transport_retries(
+        source_attempts,
+        retry_attempts,
+        retry_scope="unit_retry",
+    )
+
+    assert result["effective_attempts"][0]["record"]["final_answer"] == "retry ok"
+    assert result["effective_attempts"][0]["retry_provenance"] == {
+        "retry_scope": "unit_retry",
+        "source_attempt_index": 0,
+        "source_attempt_role": "full_original",
+        "source_validation_errors": ["api_error:APITimeoutError:Request timed out."],
+    }
+    assert result["effective_attempts"][1]["sample_id"] == "hotpotqa-valid"
+    assert result["retry_replaced_attempts"] == [
+        {
+            "attempt_key": ["original", "hotpotqa-00021"],
+            "source_attempt_index": 0,
+            "source_attempt_role": "full_original",
+            "retry_attempt_role": "full_original_engineering_retry",
+            "source_validation_errors": ["api_error:APITimeoutError:Request timed out."],
+        }
+    ]
+    assert result["unresolved_retryable_attempts"] == []
+
+
+def test_v2_1_full_engineering_retry_rebuilds_missing_replay_jobs() -> None:
+    runner = _v2_1_full_retry_runner()
+    prefixes = [
+        {"sample_id": "hotpotqa-00006", "span_index": 0, "task_type": "hotpotqa"},
+        {"sample_id": "hotpotqa-new", "span_index": 1, "task_type": "hotpotqa"},
+    ]
+    replay_results = [
+        {
+            "sample_id": "hotpotqa-00006",
+            "span_index": 0,
+            "repeat_index": 1,
+            "status": "success",
+        }
+    ]
+
+    plan = runner.build_effective_replay_job_plan(
+        prefixes,
+        replay_results,
+        repeats=3,
+    )
+
+    assert plan["expected_replay_jobs"] == 6
+    assert [
+        (job["sample_id"], job["span_index"], job["repeat_index"])
+        for job in plan["missing_jobs"]
+    ] == [
+        ("hotpotqa-00006", 0, 0),
+        ("hotpotqa-00006", 0, 2),
+        ("hotpotqa-new", 1, 0),
+        ("hotpotqa-new", 1, 1),
+        ("hotpotqa-new", 1, 2),
+    ]
+
+
+def test_v2_1_full_engineering_retry_collapses_new_replay_attempt_retries() -> None:
+    runner = _v2_1_full_retry_runner()
+    source_replay_attempts = [
+        {
+            "sample_id": "hotpotqa-source",
+            "span_index": 0,
+            "repeat_index": 0,
+            "record": {"final_answer": "source"},
+            "validation_errors": [],
+        }
+    ]
+    retry_replay_attempts = [
+        {
+            "sample_id": "hotpotqa-new-success",
+            "span_index": 1,
+            "repeat_index": 0,
+            "validation_errors": ["api_error:APITimeoutError:Request timed out."],
+        },
+        {
+            "sample_id": "hotpotqa-new-success",
+            "span_index": 1,
+            "repeat_index": 0,
+            "record": {"final_answer": "retry ok"},
+            "validation_errors": [],
+        },
+        {
+            "sample_id": "hotpotqa-new-failed",
+            "span_index": 1,
+            "repeat_index": 2,
+            "validation_errors": ["api_error:APIConnectionError:Connection error."],
+        },
+        {
+            "sample_id": "hotpotqa-new-failed",
+            "span_index": 1,
+            "repeat_index": 2,
+            "validation_errors": ["api_error:APITimeoutError:Request timed out."],
+        },
+        {
+            "sample_id": "hotpotqa-source",
+            "span_index": 0,
+            "repeat_index": 0,
+            "record": {"final_answer": "duplicate source key"},
+            "validation_errors": [],
+        },
+    ]
+
+    effective = runner.collapse_new_replay_attempts_for_effective_report(
+        source_replay_attempts,
+        retry_replay_attempts,
+    )
+
+    assert [
+        (row["sample_id"], row["span_index"], row["repeat_index"])
+        for row in effective
+    ] == [
+        ("hotpotqa-new-success", 1, 0),
+        ("hotpotqa-new-failed", 1, 2),
+    ]
+    assert effective[0]["record"]["final_answer"] == "retry ok"
+    assert effective[1]["validation_errors"] == [
+        "api_error:APITimeoutError:Request timed out."
+    ]
+
+
+def test_v2_1_full_report_still_fails_sparse_signal_after_quality_retry() -> None:
+    runner = _v2_1_full_runner()
+    valid_attempt = {
+        "record": {
+            "final_answer": "ok",
+            "reflection_spans": [{"operation_type": "verification"}],
+        },
+        "raw_output": {"ok": True},
+        "output_extraction_diagnostics": {"output_text_present": True},
+        "validation_errors": [],
+    }
+    readiness = {
+        "scope": runner.V2_1_FULL_STOCHASTIC_VALIDATION_ONLY,
+        "sample_count": 400,
+        "sample_count_by_task": {"gsm8k": 200, "hotpotqa": 200},
+        "max_api_requests": 2800,
+        "approved_budget_usd": 150,
+        "min_valid_traces_per_task": 190,
+        "min_eligible_spans_per_task": 150,
+        "min_replay_success_rate": 0.85,
+        "required_json_parse_success_rate": 1.0,
+        "required_schema_success_rate": 1.0,
+        "required_tag_extraction_success_rate": 1.0,
+        "required_final_answer_parse_success_rate": 1.0,
+        "min_nonzero_delta_u_pooled": 40,
+        "min_nonzero_delta_u_per_task": 20,
+        "rank_signal_ci_lower_must_exceed": 0.0,
+    }
+    delta_rows = [
+        {
+            "sample_id": f"g-{index}",
+            "task_type": "gsm8k",
+            "span_index": 0,
+            "original_score": index / 400,
+            "delta_u": 0.1 if index < 16 else 0.0,
+        }
+        for index in range(400)
+    ] + [
+        {
+            "sample_id": f"h-{index}",
+            "task_type": "hotpotqa",
+            "span_index": 0,
+            "original_score": index / 391,
+            "delta_u": 0.1 if index < 20 else 0.0,
+        }
+        for index in range(391)
+    ]
+    rank_signal = {
+        "metric": "original_primary_score_vs_delta_u_spearman",
+        "pooled": {"spearman_ci_lower_gt_zero": True},
+        "per_task": {
+            "gsm8k": {"spearman_ci_lower_gt_zero": True},
+            "hotpotqa": {"spearman_ci_lower_gt_zero": True},
+        },
+    }
+
+    report = runner.build_v2_1_full_stochastic_report(
+        original_records=[{"task_type": "gsm8k"} for _ in range(200)]
+        + [{"task_type": "hotpotqa"} for _ in range(200)],
+        original_attempts=[dict(valid_attempt) for _ in range(400)],
+        replay_results=[{"status": "success"} for _ in range(2400)],
+        replay_attempts=[dict(valid_attempt) for _ in range(2400)],
+        delta_rows=delta_rows,
+        rank_signal=rank_signal,
+        readiness=readiness,
+        cost_used_usd=80.0,
+        expected_replay_jobs=2400,
+    )
+
+    assert report["json_parse_success_rate"] == 1.0
+    assert report["schema_success_rate"] == 1.0
+    assert report["nonzero_delta_u_by_task"] == {"gsm8k": 16, "hotpotqa": 20}
+    assert report["status"] == runner.V2_1_FULL_STOCHASTIC_FAIL_SPARSE_SIGNAL
+    assert report["TASK_SPECIFIC_pass_by_task"] == {"gsm8k": False, "hotpotqa": True}
+    assert report["GLOBAL_pass"] is False
+
+
 def _v2_1_manifest_rows(per_task: int) -> list[dict]:
     rows = []
     for task_type in ("gsm8k", "hotpotqa"):
@@ -2463,4 +2725,11 @@ def _v2_1_full_runner():
     module_name = "scripts.run_s_fma_v2_1_full_stochastic_validation"
     spec = importlib.util.find_spec(module_name)
     assert spec is not None, "V2_1_FULL_STOCHASTIC_VALIDATION_ONLY runner module is missing"
+    return importlib.import_module(module_name)
+
+
+def _v2_1_full_retry_runner():
+    module_name = "scripts.run_s_fma_v2_1_full_stochastic_engineering_retry"
+    spec = importlib.util.find_spec(module_name)
+    assert spec is not None, "V2_1 full engineering retry runner module is missing"
     return importlib.import_module(module_name)
