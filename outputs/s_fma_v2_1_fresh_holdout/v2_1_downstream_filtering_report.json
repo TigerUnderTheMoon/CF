@@ -1,0 +1,242 @@
+{
+  "GLOBAL_pass": false,
+  "TASK_SPECIFIC_pass_by_task": {
+    "gsm8k": false,
+    "hotpotqa": true
+  },
+  "allowed_claim_scope": [
+    "failed or abandoned mini downstream filtering route"
+  ],
+  "api_attempts": 40,
+  "api_execution_performed": true,
+  "approved_budget_usd": 5.0,
+  "artifact": "v2_1_downstream_filtering_report",
+  "budget_stop_triggered": false,
+  "claim_upgrade_allowed": false,
+  "cost_used_usd": 1.629725,
+  "cost_within_budget": true,
+  "current_status_remains": "PILOT_BLOCKED",
+  "deterministic_replay_claim_allowed": false,
+  "failure_codes": [
+    "V2_1_DOWNSTREAM_FILTERING_MINI_FAIL_FILTERING_SIGNAL"
+  ],
+  "forbidden_claim_scope": [
+    "full validation claim",
+    "deterministic replay claim",
+    "top-tier-ready claim",
+    "submission-ready claim",
+    "PRM/filtering superiority claim",
+    "v2.4 route claim"
+  ],
+  "full_validation_claim_allowed": false,
+  "max_api_requests": 60,
+  "next_allowed_step": "ABANDON_MINI_DOWNSTREAM_FILTERING_ROUTE",
+  "paired_metrics": {
+    "per_task": {
+      "gsm8k": {
+        "mean_advantage": -0.2,
+        "n": 10,
+        "nonnegative_pair_fraction": 0.8
+      },
+      "hotpotqa": {
+        "mean_advantage": 0.1,
+        "n": 10,
+        "nonnegative_pair_fraction": 1.0
+      }
+    },
+    "pooled": {
+      "mean_advantage": -0.05,
+      "n": 20,
+      "nonnegative_pair_fraction": 0.9
+    }
+  },
+  "paired_rows": [
+    {
+      "advantage": 0.0,
+      "mask_high_anti_filter_score": 1.0,
+      "mask_high_span_index": 0,
+      "mask_low_retain_high_score": 1.0,
+      "mask_low_span_index": 1,
+      "sample_id": "gsm8k-00295",
+      "task_type": "gsm8k"
+    },
+    {
+      "advantage": 0.0,
+      "mask_high_anti_filter_score": 1.0,
+      "mask_high_span_index": 0,
+      "mask_low_retain_high_score": 1.0,
+      "mask_low_span_index": 1,
+      "sample_id": "gsm8k-00356",
+      "task_type": "gsm8k"
+    },
+    {
+      "advantage": 0.0,
+      "mask_high_anti_filter_score": 1.0,
+      "mask_high_span_index": 0,
+      "mask_low_retain_high_score": 1.0,
+      "mask_low_span_index": 1,
+      "sample_id": "gsm8k-00369",
+      "task_type": "gsm8k"
+    },
+    {
+      "advantage": 0.0,
+      "mask_high_anti_filter_score": 0.0,
+      "mask_high_span_index": 0,
+      "mask_low_retain_high_score": 0.0,
+      "mask_low_span_index": 1,
+      "sample_id": "gsm8k-00409",
+      "task_type": "gsm8k"
+    },
+    {
+      "advantage": 0.0,
+      "mask_high_anti_filter_score": 1.0,
+      "mask_high_span_index": 0,
+      "mask_low_retain_high_score": 1.0,
+      "mask_low_span_index": 1,
+      "sample_id": "gsm8k-00577",
+      "task_type": "gsm8k"
+    },
+    {
+      "advantage": -1.0,
+      "mask_high_anti_filter_score": 1.0,
+      "mask_high_span_index": 0,
+      "mask_low_retain_high_score": 0.0,
+      "mask_low_span_index": 1,
+      "sample_id": "gsm8k-00729",
+      "task_type": "gsm8k"
+    },
+    {
+      "advantage": 0.0,
+      "mask_high_anti_filter_score": 1.0,
+      "mask_high_span_index": 0,
+      "mask_low_retain_high_score": 1.0,
+      "mask_low_span_index": 1,
+      "sample_id": "gsm8k-01014",
+      "task_type": "gsm8k"
+    },
+    {
+      "advantage": 0.0,
+      "mask_high_anti_filter_score": 1.0,
+      "mask_high_span_index": 0,
+      "mask_low_retain_high_score": 1.0,
+      "mask_low_span_index": 1,
+      "sample_id": "gsm8k-01060",
+      "task_type": "gsm8k"
+    },
+    {
+      "advantage": 0.0,
+      "mask_high_anti_filter_score": 1.0,
+      "mask_high_span_index": 0,
+      "mask_low_retain_high_score": 1.0,
+      "mask_low_span_index": 1,
+      "sample_id": "gsm8k-01231",
+      "task_type": "gsm8k"
+    },
+    {
+      "advantage": -1.0,
+      "mask_high_anti_filter_score": 1.0,
+      "mask_high_span_index": 0,
+      "mask_low_retain_high_score": 0.0,
+      "mask_low_span_index": 1,
+      "sample_id": "gsm8k-01297",
+      "task_type": "gsm8k"
+    },
+    {
+      "advantage": 0.0,
+      "mask_high_anti_filter_score": 0.0,
+      "mask_high_span_index": 0,
+      "mask_low_retain_high_score": 0.0,
+      "mask_low_span_index": 1,
+      "sample_id": "hotpotqa-00001",
+      "task_type": "hotpotqa"
+    },
+    {
+      "advantage": 0.0,
+      "mask_high_anti_filter_score": 1.0,
+      "mask_high_span_index": 0,
+      "mask_low_retain_high_score": 1.0,
+      "mask_low_span_index": 1,
+      "sample_id": "hotpotqa-00012",
+      "task_type": "hotpotqa"
+    },
+    {
+      "advantage": 0.0,
+      "mask_high_anti_filter_score": 1.0,
+      "mask_high_span_index": 0,
+      "mask_low_retain_high_score": 1.0,
+      "mask_low_span_index": 1,
+      "sample_id": "hotpotqa-00016",
+      "task_type": "hotpotqa"
+    },
+    {
+      "advantage": 0.0,
+      "mask_high_anti_filter_score": 0.3333333333333333,
+      "mask_high_span_index": 0,
+      "mask_low_retain_high_score": 0.3333333333333333,
+      "mask_low_span_index": 1,
+      "sample_id": "hotpotqa-00018",
+      "task_type": "hotpotqa"
+    },
+    {
+      "advantage": 0.0,
+      "mask_high_anti_filter_score": 0.5,
+      "mask_high_span_index": 0,
+      "mask_low_retain_high_score": 0.5,
+      "mask_low_span_index": 1,
+      "sample_id": "hotpotqa-00023",
+      "task_type": "hotpotqa"
+    },
+    {
+      "advantage": 0.0,
+      "mask_high_anti_filter_score": 0.5,
+      "mask_high_span_index": 0,
+      "mask_low_retain_high_score": 0.5,
+      "mask_low_span_index": 1,
+      "sample_id": "hotpotqa-00032",
+      "task_type": "hotpotqa"
+    },
+    {
+      "advantage": 0.0,
+      "mask_high_anti_filter_score": 0.0,
+      "mask_high_span_index": 0,
+      "mask_low_retain_high_score": 0.0,
+      "mask_low_span_index": 1,
+      "sample_id": "hotpotqa-00044",
+      "task_type": "hotpotqa"
+    },
+    {
+      "advantage": 1.0,
+      "mask_high_anti_filter_score": 0.0,
+      "mask_high_span_index": 0,
+      "mask_low_retain_high_score": 1.0,
+      "mask_low_span_index": 1,
+      "sample_id": "hotpotqa-00045",
+      "task_type": "hotpotqa"
+    },
+    {
+      "advantage": 0.0,
+      "mask_high_anti_filter_score": 0.0,
+      "mask_high_span_index": 0,
+      "mask_low_retain_high_score": 0.0,
+      "mask_low_span_index": 1,
+      "sample_id": "hotpotqa-00061",
+      "task_type": "hotpotqa"
+    },
+    {
+      "advantage": 0.0,
+      "mask_high_anti_filter_score": 1.0,
+      "mask_high_span_index": 0,
+      "mask_low_retain_high_score": 1.0,
+      "mask_low_span_index": 1,
+      "sample_id": "hotpotqa-00065",
+      "task_type": "hotpotqa"
+    }
+  ],
+  "planned_api_calls": 40,
+  "prm_filtering_superiority_claim_allowed": false,
+  "request_stop_triggered": false,
+  "request_within_cap": true,
+  "scope": "V2_1_DOWNSTREAM_FILTERING_MINI_VALIDATION_ONLY",
+  "status": "V2_1_DOWNSTREAM_FILTERING_MINI_FAIL_FILTERING_SIGNAL",
+  "valid_pair_count": 20
+}

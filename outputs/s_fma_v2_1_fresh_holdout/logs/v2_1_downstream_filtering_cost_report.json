@@ -1,0 +1,15 @@
+{
+  "api_attempts": 40,
+  "approved_budget_usd": 5.0,
+  "budget_gate_pass": true,
+  "cost_used_usd": 1.629725,
+  "current_status_remains": "PILOT_BLOCKED",
+  "request_cap": 60,
+  "scope": "V2_1_DOWNSTREAM_FILTERING_MINI_VALIDATION_ONLY",
+  "status": "V2_1_DOWNSTREAM_FILTERING_MINI_FAIL_FILTERING_SIGNAL",
+  "usage_totals": {
+    "input_tokens": 206233,
+    "output_tokens": 19952,
+    "total_tokens": 226185
+  }
+}

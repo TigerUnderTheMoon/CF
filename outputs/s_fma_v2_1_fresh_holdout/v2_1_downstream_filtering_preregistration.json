@@ -1,0 +1,61 @@
+{
+  "allowed_claim_scope": [
+    "one small preregistered online filtering diagnostic",
+    "task-balanced v2.1 pilot-sourced paired replay result"
+  ],
+  "approval_status": "REQUEST_ONLY_NOT_APPROVED",
+  "artifact": "v2_1_downstream_filtering_preregistration",
+  "claim_upgrade_allowed": false,
+  "conditions": [
+    "mask_low_retain_high",
+    "mask_high_anti_filter"
+  ],
+  "current_status_remains": "PILOT_BLOCKED",
+  "filtering_policy": {
+    "mask_high_anti_filter": "mask the highest-scored span as a negative-control anti-filter",
+    "mask_low_retain_high": "mask the lowest-scored span and retain the highest-scored span"
+  },
+  "forbidden_claim_scope": [
+    "full validation claim",
+    "deterministic replay claim",
+    "top-tier-ready claim",
+    "submission-ready claim",
+    "PRM/filtering superiority claim",
+    "v2.4 route claim"
+  ],
+  "max_api_requests": 60,
+  "pass_criteria": {
+    "budget_within_usd": 5.0,
+    "min_valid_pairs": 16,
+    "min_valid_pairs_per_task": 8,
+    "per_task_mean_advantage": "nonnegative_for_each_task",
+    "pooled_mean_advantage": "strictly_greater_than_zero",
+    "request_cap": 60
+  },
+  "planned_api_calls": 40,
+  "recommended_budget_ceiling_usd": 5.0,
+  "requested_scope": "V2_1_DOWNSTREAM_FILTERING_MINI_VALIDATION_ONLY",
+  "sample_count": 20,
+  "sample_count_by_task": {
+    "gsm8k": 10,
+    "hotpotqa": 10
+  },
+  "selection_rule": "target_blind_balanced_hash_order_requires_two_clean_candidate_spans",
+  "selection_seed": 20260606,
+  "source_artifacts": {
+    "full_abandonment_audit": "outputs/s_fma_v2_1_fresh_holdout/v2_1_full_validation_abandonment_audit.json",
+    "original_traces": "outputs/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_original_traces.jsonl",
+    "pilot_report": "outputs/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_report.json",
+    "redundancy_analysis": "outputs/redundancy_analysis.json",
+    "structural_diagnostics": "outputs/structural_diagnostics.json"
+  },
+  "target_blind_forbidden_selection_fields": [
+    "correctness",
+    "delta_u",
+    "final_answer",
+    "intervened_score",
+    "original_score",
+    "rank_signal",
+    "replay_outcome"
+  ]
+}
