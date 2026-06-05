@@ -1,0 +1,44 @@
+{
+  "bootstrap": {
+    "confidence_level": 0.95,
+    "random_seed": 20263630,
+    "resamples": 10000
+  },
+  "estimand_boundary": "full stochastic repeated replay only",
+  "metric": "original_primary_score_vs_delta_u_spearman",
+  "per_task": {
+    "gsm8k": {
+      "n": 400,
+      "spearman_ci95": [
+        0.20969565326846643,
+        0.5611862887115356
+      ],
+      "spearman_ci_lower_gt_zero": true,
+      "spearman_rho": 0.39190746956761374
+    },
+    "hotpotqa": {
+      "n": 391,
+      "spearman_ci95": [
+        0.18518584662107646,
+        0.3476265903398467
+      ],
+      "spearman_ci_lower_gt_zero": true,
+      "spearman_rho": 0.26541149212099957
+    }
+  },
+  "pooled": {
+    "n": 791,
+    "spearman_ci95": [
+      0.33018536417588107,
+      0.47498179008098873
+    ],
+    "spearman_ci_lower_gt_zero": true,
+    "spearman_rho": 0.40429826194063756
+  },
+  "primary_signal": {
+    "available": true,
+    "n": 791,
+    "name": "original_primary_score_vs_delta_u",
+    "target_leakage_status": "observed_full_validation_metric_not_candidate_score"
+  }
+}

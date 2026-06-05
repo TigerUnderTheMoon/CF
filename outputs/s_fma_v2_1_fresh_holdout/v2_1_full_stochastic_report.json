@@ -1,0 +1,128 @@
+{
+  "GLOBAL_pass": false,
+  "TASK_SPECIFIC_pass": false,
+  "TASK_SPECIFIC_pass_by_task": {
+    "gsm8k": false,
+    "hotpotqa": false
+  },
+  "allowed_claim_scope": [
+    "full stochastic repeated-replay validation diagnostics",
+    "task-specific full gate status if directly passed by this artifact",
+    "global full gate status if directly passed by this artifact",
+    "downstream PRM/filtering approval request only if GLOBAL_pass is true"
+  ],
+  "api_attempts": 2776,
+  "api_execution_performed": true,
+  "approval_source": "outputs\\s_fma_v2_1_fresh_holdout\\v2_1_full_stochastic_validation_approval_request.json",
+  "approved_budget_usd": 150.0,
+  "artifact": "v2_1_full_stochastic_report",
+  "budget_stop_triggered": false,
+  "claim_upgrade_allowed": false,
+  "cost_used_usd": 65.689985,
+  "cost_within_budget": true,
+  "current_status_remains": "PILOT_BLOCKED",
+  "delta_rows": 791,
+  "deterministic_replay_claim_allowed": false,
+  "eligible_span_count_by_task": {
+    "gsm8k": 400,
+    "hotpotqa": 391
+  },
+  "expected_replay_jobs": 2376,
+  "failure_codes": [
+    "V2_1_FULL_STOCHASTIC_FAIL_SCHEMA_OR_TAGS",
+    "V2_1_FULL_STOCHASTIC_FAIL_SPARSE_SIGNAL"
+  ],
+  "final_answer_parse_success_rate": 0.9971181556195965,
+  "forbidden_claim_scope": [
+    "deterministic replay claim",
+    "top-tier-ready claim",
+    "submission-ready claim",
+    "PRM/filtering execution or superiority claim without separate approval",
+    "historical failed artifact rewrite"
+  ],
+  "full_validation_completion_report": true,
+  "json_parse_success_rate": 0.9971181556195965,
+  "manifest_source": "outputs\\s_fma_v2_1_fresh_holdout\\fresh_manifest.json",
+  "max_api_requests": 2800,
+  "nonzero_delta_rows": 158,
+  "nonzero_delta_u_by_task": {
+    "gsm8k": 16,
+    "hotpotqa": 142
+  },
+  "nonzero_delta_u_pooled_count": 158,
+  "original_attempt_count": 400,
+  "original_valid_trace_count": 396,
+  "output_extraction_diagnostics_complete": false,
+  "prm_filtering_performed": false,
+  "prm_filtering_validation_approval_request_allowed": false,
+  "prm_filtering_validation_execution_allowed": false,
+  "rank_signal": {
+    "bootstrap": {
+      "confidence_level": 0.95,
+      "random_seed": 20263630,
+      "resamples": 10000
+    },
+    "estimand_boundary": "full stochastic repeated replay only",
+    "metric": "original_primary_score_vs_delta_u_spearman",
+    "per_task": {
+      "gsm8k": {
+        "n": 400,
+        "spearman_ci95": [
+          0.20969565326846643,
+          0.5611862887115356
+        ],
+        "spearman_ci_lower_gt_zero": true,
+        "spearman_rho": 0.39190746956761374
+      },
+      "hotpotqa": {
+        "n": 391,
+        "spearman_ci95": [
+          0.18518584662107646,
+          0.3476265903398467
+        ],
+        "spearman_ci_lower_gt_zero": true,
+        "spearman_rho": 0.26541149212099957
+      }
+    },
+    "pooled": {
+      "n": 791,
+      "spearman_ci95": [
+        0.33018536417588107,
+        0.47498179008098873
+      ],
+      "spearman_ci_lower_gt_zero": true,
+      "spearman_rho": 0.40429826194063756
+    },
+    "primary_signal": {
+      "available": true,
+      "n": 791,
+      "name": "original_primary_score_vs_delta_u",
+      "target_leakage_status": "observed_full_validation_metric_not_candidate_score"
+    }
+  },
+  "rank_signal_metric": "original_primary_score_vs_delta_u_spearman",
+  "replay_attempt_count": 2376,
+  "replay_success_rate": 0.9983164983164983,
+  "request_stop_triggered": false,
+  "request_within_cap": true,
+  "sample_count": 400,
+  "sample_count_by_task": {
+    "gsm8k": 200,
+    "hotpotqa": 200
+  },
+  "schema_success_rate": 0.9971181556195965,
+  "scope": "V2_1_FULL_STOCHASTIC_VALIDATION_ONLY",
+  "source_pilot_report": "outputs\\s_fma_v2_1_fresh_holdout\\v2_1_pilot_stochastic_report.json",
+  "status": "V2_1_FULL_STOCHASTIC_FAIL_SCHEMA_OR_TAGS",
+  "stochastic_repeats_per_span": 3,
+  "submission_ready_claim_allowed": false,
+  "successful_replay_count": 2372,
+  "tag_extraction_success_rate": 0.9971181556195965,
+  "target_prefix_count": 792,
+  "top_tier_ready_claim_allowed": false,
+  "valid_original_traces": 396,
+  "valid_original_traces_by_task": {
+    "gsm8k": 200,
+    "hotpotqa": 196
+  }
+}

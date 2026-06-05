@@ -1,0 +1,184 @@
+{
+  "request_name": "V2_1_FULL_STOCHASTIC_VALIDATION_APPROVAL_REQUEST",
+  "request_date": "2026-06-04",
+  "artifact": "v2_1_full_stochastic_validation_approval_request",
+  "scope": "V2_1_FULL_STOCHASTIC_VALIDATION_APPROVAL_REQUEST",
+  "requested_execution_scope": "V2_1_FULL_STOCHASTIC_VALIDATION_ONLY",
+  "approval_status": "REQUEST_ONLY_NOT_APPROVED",
+  "approval_granted": false,
+  "request_only": true,
+  "allowed_only_after_explicit_user_approval": true,
+  "api_execution_authorized_by_this_request": false,
+  "api_execution_performed_by_this_request": false,
+  "full_validation_performed_by_this_request": false,
+  "deterministic_replay_performed_by_this_request": false,
+  "prm_or_filtering_performed_by_this_request": false,
+  "current_status_remains": "PILOT_BLOCKED",
+  "source_pilot_report": "outputs/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_report.json",
+  "source_pilot_summary": {
+    "source_scope": "V2_1_PILOT_STOCHASTIC_VALIDATION_ONLY",
+    "source_status": "V2_1_PILOT_STOCHASTIC_PASS",
+    "recomputed_after_scope": "V2_1_PILOT_SINGLE_TRANSPORT_RETRY_ONLY",
+    "actual_api_requests": 700,
+    "actual_cost_usd": 28.06931,
+    "valid_original_traces": 100,
+    "valid_original_traces_by_task": {
+      "gsm8k": 50,
+      "hotpotqa": 50
+    },
+    "replay_success": "600/600",
+    "replay_success_rate": 1.0,
+    "json_parse_success_rate": 1.0,
+    "schema_success_rate": 1.0,
+    "tag_extraction_success_rate": 1.0,
+    "final_answer_parse_success_rate": 1.0,
+    "nonzero_delta_u_pooled_count": 96,
+    "nonzero_delta_u_by_task": {
+      "gsm8k": 42,
+      "hotpotqa": 54
+    },
+    "TASK_SPECIFIC_pass": true,
+    "GLOBAL_pass": true,
+    "full_validation_approval_request_allowed": true,
+    "deterministic_replay_claim_allowed": false,
+    "current_status_remains": "PILOT_BLOCKED",
+    "claim_scope_boundary": "pilot stochastic repeated-replay gate evidence only; not full validation, readiness, deterministic replay, or PRM/filtering evidence"
+  },
+  "source_rank_signal_summary": {
+    "metric": "original_primary_score_vs_delta_u_spearman",
+    "pooled": {
+      "n": 200,
+      "spearman_rho": 0.6245252861282434,
+      "spearman_ci95": [
+        0.5270533908111767,
+        0.7061756846044145
+      ],
+      "spearman_ci_lower_gt_zero": true
+    },
+    "per_task": {
+      "gsm8k": {
+        "n": 100,
+        "spearman_rho": 0.8607773460183319,
+        "spearman_ci95": [
+          0.783942543722986,
+          0.9178556911176244
+        ],
+        "spearman_ci_lower_gt_zero": true
+      },
+      "hotpotqa": {
+        "n": 100,
+        "spearman_rho": 0.5134994412349974,
+        "spearman_ci95": [
+          0.3830411004694536,
+          0.620563137771949
+        ],
+        "spearman_ci_lower_gt_zero": true
+      }
+    }
+  },
+  "proposed_full_stochastic_validation_design": {
+    "records_total": 400,
+    "records_by_task": {
+      "gsm8k": 200,
+      "hotpotqa": 200
+    },
+    "original_generation_requests": 400,
+    "target_spans_per_trace_max": 2,
+    "stochastic_repeats_per_eligible_span": 3,
+    "max_replay_requests": 2400,
+    "max_api_requests": 2800,
+    "budget_ceiling_recommendation_usd": 150,
+    "request_cap_is_hard": true,
+    "budget_ceiling_requires_explicit_user_approval": true,
+    "route": "stochastic repeated replay only",
+    "deterministic_replay_language_allowed": false,
+    "requires_repeated_replay": true,
+    "requires_bootstrap_uncertainty": true,
+    "bootstrap_unit": "sample_id",
+    "not_prm_or_filtering_validation": true
+  },
+  "full_validation_gate_thresholds": {
+    "min_valid_traces_per_task": 190,
+    "min_eligible_spans_per_task": 150,
+    "min_nonzero_delta_u_per_task": 20,
+    "min_replay_success_rate": 0.85,
+    "json_parse_success_rate_required": 1.0,
+    "schema_success_rate_required": 1.0,
+    "tag_extraction_success_rate_required": 1.0,
+    "final_answer_parse_success_rate_required": 1.0,
+    "task_rank_signal_ci_lower_gt_zero_required": true,
+    "global_requires_both_task_specific_passes": true,
+    "no_post_hoc_threshold_tuning": true,
+    "no_post_hoc_weight_tuning": true
+  },
+  "hard_stops": [
+    {
+      "condition": "valid_original_traces_below_threshold",
+      "action": "stop",
+      "current_status_after_stop": "PILOT_BLOCKED"
+    },
+    {
+      "condition": "replay_success_below_threshold",
+      "action": "stop",
+      "current_status_after_stop": "PILOT_BLOCKED"
+    },
+    {
+      "condition": "json_schema_tag_or_final_answer_success_below_threshold",
+      "action": "stop",
+      "current_status_after_stop": "PILOT_BLOCKED"
+    },
+    {
+      "condition": "nonzero_delta_u_sparse_by_task",
+      "action": "stop",
+      "current_status_after_stop": "PILOT_BLOCKED"
+    },
+    {
+      "condition": "rank_signal_ci_lower_bound_not_positive",
+      "action": "no_GLOBAL_pass",
+      "current_status_after_stop": "PILOT_BLOCKED"
+    },
+    {
+      "condition": "full_validation_failure",
+      "action": "keep_blocked",
+      "current_status_after_stop": "PILOT_BLOCKED"
+    },
+    {
+      "condition": "prm_or_filtering_requested_before_full_validation_pass_and_separate_downstream_approval",
+      "action": "stop",
+      "current_status_after_stop": "PILOT_BLOCKED"
+    },
+    {
+      "condition": "deterministic_replay_language_or_claim_attempted",
+      "action": "stop_and_retract_claim",
+      "current_status_after_stop": "PILOT_BLOCKED"
+    }
+  ],
+  "forbidden_actions": [
+    "API execution without separate explicit user approval",
+    "API execution by this request-only artifact",
+    "full validation execution by this request-only artifact",
+    "deterministic replay route or deterministic replay claim",
+    "top-tier-ready claim",
+    "PRM/filtering execution",
+    "PRM superiority claim",
+    "historical failed artifact rewrite",
+    "claim upgrade from the request package alone"
+  ],
+  "claim_boundary": {
+    "request_only_before_explicit_approval": true,
+    "no_api_run": true,
+    "no_full_validation_run": true,
+    "no_deterministic_replay_claim": true,
+    "no_prm_filtering": true,
+    "no_top_tier_ready_claim": true,
+    "pilot_task_and_global_pass_are_not_full_validation": true,
+    "full_validation_approval_request_allowed": true,
+    "current_status_remains": "PILOT_BLOCKED"
+  },
+  "artifacts_generated_by_this_request": [
+    "outputs/s_fma_v2_1_fresh_holdout/v2_1_full_stochastic_validation_approval_request.json",
+    "outputs/s_fma_v2_1_fresh_holdout/v2_1_full_stochastic_validation_approval_request.md"
+  ],
+  "allowed_next_step_without_user_approval": "USER_REVIEW_APPROVAL_REQUEST_ONLY",
+  "allowed_next_step_after_explicit_user_approval_only": "Run only V2_1_FULL_STOCHASTIC_VALIDATION_ONLY with 400 total records, GSM8K 200 plus HotpotQA 200, 3 stochastic repeats per eligible span, max 2800 API requests, recommended USD 150 budget ceiling, stochastic repeated replay only, no deterministic replay language, and no PRM/filtering unless full validation passes and a separate downstream approval is generated."
+}

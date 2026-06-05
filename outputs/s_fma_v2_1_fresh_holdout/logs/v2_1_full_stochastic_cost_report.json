@@ -1,0 +1,14 @@
+{
+  "api_attempts": 2776,
+  "approved_budget_usd": 150.0,
+  "approved_scope": "V2_1_FULL_STOCHASTIC_VALIDATION_ONLY",
+  "budget_gate_pass": true,
+  "cost_used_usd": 65.689985,
+  "request_cap": 2800,
+  "scope": "V2_1_FULL_STOCHASTIC_VALIDATION_ONLY",
+  "usage_totals": {
+    "input_tokens": 5423827,
+    "output_tokens": 1285695,
+    "total_tokens": 6709522
+  }
+}

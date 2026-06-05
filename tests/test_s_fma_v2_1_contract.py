@@ -1676,6 +1676,306 @@ def test_v2_1_pilot_stochastic_report_requires_rank_signal_for_task_and_global_p
     assert blocked["current_status_remains"] == "PILOT_BLOCKED"
 
 
+def test_v2_1_full_stochastic_runner_contract_exists_and_uses_separate_paths() -> None:
+    runner = _v2_1_full_runner()
+
+    paths = runner.v2_1_full_stochastic_paths(
+        Path("outputs") / "s_fma_v2_1_fresh_holdout"
+    )
+
+    assert paths["report"] == Path(
+        "outputs/s_fma_v2_1_fresh_holdout/v2_1_full_stochastic_report.json"
+    )
+    assert paths["rank_signal"] == Path(
+        "outputs/s_fma_v2_1_fresh_holdout/v2_1_full_stochastic_rank_signal_report.json"
+    )
+    assert paths["original_attempts"] == Path(
+        "outputs/s_fma_v2_1_fresh_holdout/v2_1_full_stochastic_original_attempts.jsonl"
+    )
+    assert paths["original_traces"] == Path(
+        "outputs/s_fma_v2_1_fresh_holdout/v2_1_full_stochastic_original_traces.jsonl"
+    )
+    assert paths["prefixes"] == Path(
+        "outputs/s_fma_v2_1_fresh_holdout/v2_1_full_stochastic_replay_prefixes.jsonl"
+    )
+    assert paths["replay_attempts"] == Path(
+        "outputs/s_fma_v2_1_fresh_holdout/v2_1_full_stochastic_replay_attempts.jsonl"
+    )
+    assert paths["replay_results"] == Path(
+        "outputs/s_fma_v2_1_fresh_holdout/v2_1_full_stochastic_replay_results.jsonl"
+    )
+    assert paths["delta_u"] == Path(
+        "outputs/s_fma_v2_1_fresh_holdout/v2_1_full_stochastic_delta_u.jsonl"
+    )
+    assert paths["cost"] == Path(
+        "outputs/s_fma_v2_1_fresh_holdout/logs/v2_1_full_stochastic_cost_report.json"
+    )
+
+
+def test_v2_1_full_stochastic_readiness_requires_current_pilot_and_approval_gates() -> None:
+    runner = _v2_1_full_runner()
+    config = _v2_1_config(sample_count=200)
+    config["stochastic_smoke"] = {
+        "replay_reflection_type_policy": _v2_1_replay_type_policy()
+    }
+    manifest = [
+        {**row, "prompt_version": "prompt-sha256:test"}
+        for row in _v2_1_manifest_rows(per_task=200)
+    ]
+    pilot_report = _v2_1_passing_pilot_report()
+
+    with pytest.raises(
+        runner.V2_1FullStochasticError,
+        match="--allow-full-stochastic-validation-only",
+    ):
+        runner.validate_v2_1_full_stochastic_readiness(
+            config=config,
+            manifest=manifest,
+            overlap_audit=_v2_1_clean_overlap_audit(),
+            contract_audit=_v2_1_clean_contract_audit(),
+            pilot_report=pilot_report,
+            approval_request=_v2_1_full_stochastic_approval_request(pilot_report),
+            current_readiness={"status": "PILOT_BLOCKED", "pilot_pass": False},
+            allow_full_stochastic_validation_only=False,
+            approved_budget_usd=150,
+            current_prompt_version="prompt-sha256:test",
+        )
+
+    stale_approval = _v2_1_full_stochastic_approval_request(pilot_report)
+    stale_approval["source_pilot_summary"]["actual_api_requests"] = 699
+    with pytest.raises(
+        runner.V2_1FullStochasticError,
+        match="current pilot stochastic artifact",
+    ):
+        runner.validate_v2_1_full_stochastic_readiness(
+            config=config,
+            manifest=manifest,
+            overlap_audit=_v2_1_clean_overlap_audit(),
+            contract_audit=_v2_1_clean_contract_audit(),
+            pilot_report=pilot_report,
+            approval_request=stale_approval,
+            current_readiness={"status": "PILOT_BLOCKED", "pilot_pass": False},
+            allow_full_stochastic_validation_only=True,
+            approved_budget_usd=150,
+            current_prompt_version="prompt-sha256:test",
+        )
+
+    no_alias_config = dict(config)
+    no_alias_config["stochastic_smoke"] = {"replay_reflection_type_policy": {}}
+    with pytest.raises(runner.V2_1FullStochasticError, match="replay alias policy"):
+        runner.validate_v2_1_full_stochastic_readiness(
+            config=no_alias_config,
+            manifest=manifest,
+            overlap_audit=_v2_1_clean_overlap_audit(),
+            contract_audit=_v2_1_clean_contract_audit(),
+            pilot_report=pilot_report,
+            approval_request=_v2_1_full_stochastic_approval_request(pilot_report),
+            current_readiness={"status": "PILOT_BLOCKED", "pilot_pass": False},
+            allow_full_stochastic_validation_only=True,
+            approved_budget_usd=150,
+            current_prompt_version="prompt-sha256:test",
+        )
+
+    readiness = runner.validate_v2_1_full_stochastic_readiness(
+        config=config,
+        manifest=manifest,
+        overlap_audit=_v2_1_clean_overlap_audit(),
+        contract_audit=_v2_1_clean_contract_audit(),
+        pilot_report=pilot_report,
+        approval_request=_v2_1_full_stochastic_approval_request(pilot_report),
+        current_readiness={"status": "PILOT_BLOCKED", "pilot_pass": False},
+        allow_full_stochastic_validation_only=True,
+        approved_budget_usd=150,
+        current_prompt_version="prompt-sha256:test",
+    )
+
+    assert readiness["scope"] == runner.V2_1_FULL_STOCHASTIC_VALIDATION_ONLY
+    assert readiness["sample_count"] == 400
+    assert readiness["sample_count_by_task"] == {"gsm8k": 200, "hotpotqa": 200}
+    assert readiness["max_api_requests"] == 2800
+    assert readiness["stochastic_repeats_per_span"] == 3
+    assert readiness["approved_budget_usd"] == 150
+    assert readiness["min_valid_traces_per_task"] == 190
+    assert readiness["min_eligible_spans_per_task"] == 150
+    assert readiness["min_nonzero_delta_u_per_task"] == 20
+    assert readiness["budget_gate_pass"] is True
+    assert readiness["replay_alias_policy_active"] is True
+    assert readiness["current_status_remains"] == "PILOT_BLOCKED"
+    live_config = runner.build_v2_1_full_generation_config(config, readiness=readiness)
+    assert (
+        live_config["experiment"]["current_task_scope"]
+        == runner.V2_1_FULL_STOCHASTIC_VALIDATION_ONLY
+    )
+    assert live_config["pricing"]["basis"] == "s_FMA_v2.1 full stochastic ceiling"
+
+
+def test_v2_1_full_stochastic_report_allows_only_downstream_approval_request_after_global_pass() -> None:
+    runner = _v2_1_full_runner()
+    valid_attempt = {
+        "record": {
+            "final_answer": "ok",
+            "reflection_spans": [{"operation_type": "verification"}],
+        },
+        "raw_output": {"ok": True},
+        "output_extraction_diagnostics": {"output_text_present": True},
+        "validation_errors": [],
+    }
+    replay_results = [{"status": "success"} for _ in range(6)]
+    replay_attempts = [dict(valid_attempt) for _ in replay_results]
+    delta_rows = [
+        {
+            "sample_id": "g1",
+            "task_type": "gsm8k",
+            "span_index": 0,
+            "original_score": 0.1,
+            "delta_u": 0.1,
+        },
+        {
+            "sample_id": "g2",
+            "task_type": "gsm8k",
+            "span_index": 0,
+            "original_score": 0.2,
+            "delta_u": 0.2,
+        },
+        {
+            "sample_id": "g3",
+            "task_type": "gsm8k",
+            "span_index": 0,
+            "original_score": 0.3,
+            "delta_u": 0.3,
+        },
+        {
+            "sample_id": "h1",
+            "task_type": "hotpotqa",
+            "span_index": 0,
+            "original_score": 0.1,
+            "delta_u": 0.1,
+        },
+        {
+            "sample_id": "h2",
+            "task_type": "hotpotqa",
+            "span_index": 0,
+            "original_score": 0.2,
+            "delta_u": 0.2,
+        },
+        {
+            "sample_id": "h3",
+            "task_type": "hotpotqa",
+            "span_index": 0,
+            "original_score": 0.3,
+            "delta_u": 0.3,
+        },
+    ]
+    readiness = {
+        "scope": runner.V2_1_FULL_STOCHASTIC_VALIDATION_ONLY,
+        "sample_count": 6,
+        "sample_count_by_task": {"gsm8k": 3, "hotpotqa": 3},
+        "max_api_requests": 12,
+        "approved_budget_usd": 150,
+        "min_valid_traces_per_task": 3,
+        "min_eligible_spans_per_task": 1,
+        "min_replay_success_rate": 0.85,
+        "required_json_parse_success_rate": 1.0,
+        "required_schema_success_rate": 1.0,
+        "required_tag_extraction_success_rate": 1.0,
+        "required_final_answer_parse_success_rate": 1.0,
+        "min_nonzero_delta_u_pooled": 1,
+        "min_nonzero_delta_u_per_task": 1,
+        "rank_signal_ci_lower_must_exceed": 0.0,
+        "current_status_remains": "PILOT_BLOCKED",
+    }
+    rank_signal = runner.build_v2_1_full_rank_signal_report(
+        delta_rows,
+        resamples=0,
+        confidence_level=0.95,
+        seed=7,
+    )
+
+    report = runner.build_v2_1_full_stochastic_report(
+        original_records=[{"task_type": "gsm8k"} for _ in range(3)]
+        + [{"task_type": "hotpotqa"} for _ in range(3)],
+        original_attempts=[dict(valid_attempt) for _ in range(6)],
+        replay_results=replay_results,
+        replay_attempts=replay_attempts,
+        delta_rows=delta_rows,
+        rank_signal=rank_signal,
+        readiness=readiness,
+        cost_used_usd=30.0,
+        expected_replay_jobs=6,
+    )
+
+    assert report["status"] == runner.V2_1_FULL_STOCHASTIC_PASS
+    assert report["TASK_SPECIFIC_pass"] is True
+    assert report["GLOBAL_pass"] is True
+    assert report["prm_filtering_validation_approval_request_allowed"] is True
+    assert report["prm_filtering_validation_execution_allowed"] is False
+    assert report["submission_ready_claim_allowed"] is False
+    assert report["top_tier_ready_claim_allowed"] is False
+    assert report["deterministic_replay_claim_allowed"] is False
+    assert report["current_status_remains"] == "PILOT_BLOCKED"
+
+    rank_signal["per_task"]["hotpotqa"]["spearman_ci95"] = [-1.0, 1.0]
+    rank_signal["per_task"]["hotpotqa"]["spearman_ci_lower_gt_zero"] = False
+    blocked = runner.build_v2_1_full_stochastic_report(
+        original_records=[{"task_type": "gsm8k"} for _ in range(3)]
+        + [{"task_type": "hotpotqa"} for _ in range(3)],
+        original_attempts=[dict(valid_attempt) for _ in range(6)],
+        replay_results=replay_results,
+        replay_attempts=replay_attempts,
+        delta_rows=delta_rows,
+        rank_signal=rank_signal,
+        readiness=readiness,
+        cost_used_usd=30.0,
+        expected_replay_jobs=6,
+    )
+
+    assert blocked["GLOBAL_pass"] is False
+    assert blocked["prm_filtering_validation_approval_request_allowed"] is False
+    assert blocked["current_status_remains"] == "PILOT_BLOCKED"
+
+
+def test_v2_1_full_checkpoint_writer_retries_transient_oserror(monkeypatch, tmp_path) -> None:
+    runner = _v2_1_full_runner()
+    calls = {"count": 0}
+
+    def flaky_write_records(records, path):
+        calls["count"] += 1
+        if calls["count"] == 1:
+            raise OSError(22, "Invalid argument")
+        Path(path).write_text('{"ok": true}\n', encoding="utf-8")
+
+    monkeypatch.setattr(runner, "write_records", flaky_write_records)
+
+    runner._write_records_checkpoint([{"ok": True}], tmp_path / "checkpoint.jsonl")
+
+    assert calls["count"] == 2
+
+
+def test_v2_1_full_replay_plan_skips_existing_successful_checkpoint_rows() -> None:
+    runner = _v2_1_full_runner()
+    prefixes = [
+        {"sample_id": "a", "span_index": 0, "task_type": "gsm8k"},
+        {"sample_id": "b", "span_index": 1, "task_type": "hotpotqa"},
+    ]
+    existing_results = [
+        {"sample_id": "a", "span_index": 0, "repeat_index": 0, "status": "success"},
+        {"sample_id": "b", "span_index": 1, "repeat_index": 1, "status": "success"},
+    ]
+
+    plan = runner._full_replay_job_plan(prefixes, existing_results, repeats=3)
+
+    assert plan["expected_replay_jobs"] == 6
+    assert [
+        (job["sample_id"], job["span_index"], job["repeat_index"])
+        for job in plan["missing_jobs"]
+    ] == [
+        ("a", 0, 1),
+        ("a", 0, 2),
+        ("b", 1, 0),
+        ("b", 1, 2),
+    ]
+
+
 def _v2_1_manifest_rows(per_task: int) -> list[dict]:
     rows = []
     for task_type in ("gsm8k", "hotpotqa"):
@@ -2063,8 +2363,104 @@ def _v2_1_pilot_stochastic_approval_request(smoke_report: dict) -> dict:
     }
 
 
+def _v2_1_passing_pilot_report() -> dict:
+    return {
+        "scope": "V2_1_PILOT_STOCHASTIC_VALIDATION_ONLY",
+        "status": "V2_1_PILOT_STOCHASTIC_PASS",
+        "recomputed_after_scope": "V2_1_PILOT_SINGLE_TRANSPORT_RETRY_ONLY",
+        "api_attempts": 700,
+        "actual_api_requests": 700,
+        "cost_used_usd": 28.06931,
+        "actual_cost_usd": 28.06931,
+        "valid_original_traces": 100,
+        "valid_original_traces_by_task": {"gsm8k": 50, "hotpotqa": 50},
+        "replay_success": "600/600",
+        "replay_success_rate": 1.0,
+        "json_parse_success_rate": 1.0,
+        "schema_success_rate": 1.0,
+        "tag_extraction_success_rate": 1.0,
+        "final_answer_parse_success_rate": 1.0,
+        "nonzero_delta_u_pooled_count": 96,
+        "nonzero_delta_u_by_task": {"gsm8k": 42, "hotpotqa": 54},
+        "TASK_SPECIFIC_pass": True,
+        "GLOBAL_pass": True,
+        "full_validation_approval_request_allowed": True,
+        "deterministic_replay_claim_allowed": False,
+        "current_status_remains": "PILOT_BLOCKED",
+    }
+
+
+def _v2_1_full_stochastic_approval_request(pilot_report: dict) -> dict:
+    return {
+        "requested_execution_scope": "V2_1_FULL_STOCHASTIC_VALIDATION_ONLY",
+        "scope": "V2_1_FULL_STOCHASTIC_VALIDATION_APPROVAL_REQUEST",
+        "approval_status": "REQUEST_ONLY_NOT_APPROVED",
+        "approval_granted": False,
+        "request_only": True,
+        "current_status_remains": "PILOT_BLOCKED",
+        "source_pilot_summary": {
+            "source_scope": pilot_report["scope"],
+            "source_status": pilot_report["status"],
+            "recomputed_after_scope": pilot_report["recomputed_after_scope"],
+            "actual_api_requests": pilot_report["api_attempts"],
+            "actual_cost_usd": pilot_report["cost_used_usd"],
+            "valid_original_traces": pilot_report["valid_original_traces"],
+            "valid_original_traces_by_task": pilot_report[
+                "valid_original_traces_by_task"
+            ],
+            "replay_success": pilot_report["replay_success"],
+            "replay_success_rate": pilot_report["replay_success_rate"],
+            "json_parse_success_rate": pilot_report["json_parse_success_rate"],
+            "schema_success_rate": pilot_report["schema_success_rate"],
+            "tag_extraction_success_rate": pilot_report["tag_extraction_success_rate"],
+            "final_answer_parse_success_rate": pilot_report[
+                "final_answer_parse_success_rate"
+            ],
+            "nonzero_delta_u_pooled_count": pilot_report[
+                "nonzero_delta_u_pooled_count"
+            ],
+            "nonzero_delta_u_by_task": pilot_report["nonzero_delta_u_by_task"],
+            "TASK_SPECIFIC_pass": pilot_report["TASK_SPECIFIC_pass"],
+            "GLOBAL_pass": pilot_report["GLOBAL_pass"],
+            "full_validation_approval_request_allowed": pilot_report[
+                "full_validation_approval_request_allowed"
+            ],
+            "deterministic_replay_claim_allowed": pilot_report[
+                "deterministic_replay_claim_allowed"
+            ],
+            "current_status_remains": pilot_report["current_status_remains"],
+        },
+        "proposed_full_stochastic_validation_design": {
+            "records_total": 400,
+            "records_by_task": {"gsm8k": 200, "hotpotqa": 200},
+            "target_spans_per_trace_max": 2,
+            "stochastic_repeats_per_eligible_span": 3,
+            "max_api_requests": 2800,
+            "budget_ceiling_recommendation_usd": 150,
+            "route": "stochastic repeated replay only",
+        },
+        "full_validation_gate_thresholds": {
+            "min_valid_traces_per_task": 190,
+            "min_eligible_spans_per_task": 150,
+            "min_nonzero_delta_u_per_task": 20,
+            "min_replay_success_rate": 0.85,
+            "json_parse_success_rate_required": 1.0,
+            "schema_success_rate_required": 1.0,
+            "tag_extraction_success_rate_required": 1.0,
+            "final_answer_parse_success_rate_required": 1.0,
+        },
+    }
+
+
 def _v2_1_pilot_runner():
     module_name = "scripts.run_s_fma_v2_1_pilot_stochastic_validation"
     spec = importlib.util.find_spec(module_name)
     assert spec is not None, "V2_1_PILOT_STOCHASTIC_VALIDATION_ONLY runner module is missing"
+    return importlib.import_module(module_name)
+
+
+def _v2_1_full_runner():
+    module_name = "scripts.run_s_fma_v2_1_full_stochastic_validation"
+    spec = importlib.util.find_spec(module_name)
+    assert spec is not None, "V2_1_FULL_STOCHASTIC_VALIDATION_ONLY runner module is missing"
     return importlib.import_module(module_name)

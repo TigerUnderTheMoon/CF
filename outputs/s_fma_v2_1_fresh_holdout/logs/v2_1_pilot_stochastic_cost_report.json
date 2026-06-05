@@ -1,14 +1,29 @@
 {
-  "api_attempts": 700,
   "approved_budget_usd": 40.0,
-  "approved_scope": "V2_1_PILOT_STOCHASTIC_VALIDATION_ONLY",
   "budget_gate_pass": true,
-  "cost_used_usd": 28.04808,
+  "cost_used_usd": 28.06931,
+  "current_status_remains": "PILOT_BLOCKED",
+  "effective_gate_api_attempts": 700,
+  "historical_plus_retry_attempt_rows": 701,
+  "pilot_report_scope": "V2_1_PILOT_STOCHASTIC_VALIDATION_ONLY",
   "request_cap": 700,
-  "scope": "V2_1_PILOT_STOCHASTIC_VALIDATION_ONLY",
+  "retry_attempt_key": {
+    "repeat_index": 2,
+    "sample_id": "gsm8k-00357",
+    "span_index": 1,
+    "task_id": "gsm8k-test-00357"
+  },
+  "retry_status": "success",
+  "scope": "V2_1_PILOT_SINGLE_TRANSPORT_RETRY_ONLY",
+  "single_retry_api_attempts": 1,
+  "single_retry_budget_ceiling_usd": 1.0,
+  "single_retry_budget_gate_pass": true,
+  "single_retry_cost_used_usd": 0.02123,
+  "single_retry_request_cap": 3,
+  "single_retry_request_within_cap": true,
   "usage_totals": {
-    "input_tokens": 3546834,
-    "output_tokens": 343797,
-    "total_tokens": 3890631
+    "input_tokens": 3547960,
+    "output_tokens": 344317,
+    "total_tokens": 3892277
   }
 }
