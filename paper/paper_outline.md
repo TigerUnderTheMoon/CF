@@ -1,6 +1,6 @@
 # Paper Outline
 
-Target format: claim-safe journal/top-tier manuscript outline, with a diagnostic-paper fallback. The mainline is FMA reflection utility learning, Phase 5-7 structural necessity diagnostics, and required downstream PRM/filtering validation.
+Target format: diagnostic journal manuscript outline. The mainline is FMA reflection utility learning, Phase 5-7 structural necessity diagnostics, and failed real-task/downstream boundary evidence.
 
 ## 1. Introduction
 
@@ -26,7 +26,7 @@ Referenced outputs: `paper/claim_registry.md` and `paper/submission_readiness_au
 
 Section purpose: define reflective traces, step-level attribution records, graph construction, the FMA target architecture, and the operational proxy stance.
 
-Key claim: the framework estimates local utility and topology-sensitive dependence proxies, not internal-process explanations; PRM/filtering remains a downstream validation target.
+Key claim: the framework estimates local utility and topology-sensitive dependence proxies, not internal-process explanations; PRM/filtering improvement is unsupported by current artifacts.
 
 Required figures: `outputs/figures/graph_size_distribution.png`, `outputs/figures/taxonomy_distribution.png`.
 
@@ -68,7 +68,7 @@ Referenced outputs: `outputs/redundancy_analysis.json`, `outputs/redundancy_anal
 
 ## 7. Results
 
-Section purpose: consolidate the Phase 5-7 empirical pattern into the final diagnostic narrative and spell out why downstream PRM/filtering must use structural calibration.
+Section purpose: consolidate the Phase 5-7 empirical pattern into the final diagnostic narrative and spell out why downstream PRM/filtering cannot be claimed from raw local utility.
 
 Key claim: weak alignment, weak compensation, and low distributedness are informative structural findings, not experimental failure and not completed downstream PRM/filtering evidence.
 
@@ -82,7 +82,7 @@ Referenced outputs: `outputs/structural_diagnostics.json`, `outputs/redundancy_a
 
 Section purpose: bound the claims and prevent over-interpretation.
 
-Key claim: observed redistribution should not be interpreted as intentional adaptation, deterministic proxy measurements do not provide internal-process guarantees, and attribution-aware PRM/filtering has not yet been validated.
+Key claim: observed redistribution should not be interpreted as intentional adaptation, deterministic proxy measurements do not provide internal-process guarantees, and the current mini downstream filtering validation failed.
 
 Required figures: none.
 
@@ -100,9 +100,9 @@ Referenced outputs: `outputs/phase6_readme.md`, `outputs/phase6_sensitivity.json
 
 ## 10. Conclusion
 
-Section purpose: state the final current paper claim compactly and identify required validation.
+Section purpose: state the final current paper claim compactly and identify the failed downstream boundary.
 
-Key claim: reflective reasoning contains widespread local utility, but sparse structural necessity; the top-tier version must add real PRM/filtering validation before claiming downstream process-supervision gains.
+Key claim: reflective reasoning contains widespread local utility, but sparse structural necessity; current artifacts do not support downstream process-supervision gains.
 
 Required figures: none.
 

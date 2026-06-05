@@ -183,7 +183,7 @@ Forbidden before execution:
 - v2.2 validation success wording
 - v2.1 full-validation success wording
 - deterministic replay upgrade wording
-- top-tier readiness wording
+- submission-upgrade wording
 - PRM/filtering execution or comparative gain wording
 - threshold tuning on v2.1 full-validation artifacts
 

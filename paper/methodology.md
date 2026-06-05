@@ -2,7 +2,7 @@
 
 The framework studies intervention-based functional attribution for reflective cognition dynamics. In the target journal architecture, FMA is a reflection utility learning framework that can supply candidate signals for process supervision and reflection filtering. In the current repository, the implemented evidence estimates local utility and topology-sensitive dependence over observable reasoning traces, then consolidates those estimates into structural diagnostics. The framework estimates operational proxies, not internal-process explanations.
 
-The empirical contributions and deterministic validation presented in this paper are concentrated in Phase 5-7, for which complete implementations, deterministic tests, and reproducible outputs are available in the repository. PRM/filtering validation is part of the target architecture, but it is not a completed experiment in the current artifact set.
+The empirical contributions and deterministic validation presented in this paper are concentrated in Phase 5-7, for which complete implementations, deterministic tests, and reproducible outputs are available in the repository. PRM/filtering is a target application, but the current mini downstream filtering validation failed and does not support a downstream improvement claim.
 
 Phase 1-4 established the conceptual framework and pipeline architecture.
 
@@ -97,7 +97,7 @@ The methodology distinguishes three signals that should not be collapsed:
 |---|---|---|
 | Local attribution signal | Implemented in Phase 5 as `attribution_score` | Candidate evidence that a reflection is locally functional |
 | Structural necessity signal | Implemented in Phase 6-7 as `structural_necessity`, bottlenecks, redundancy, compensation, and distributedness | Constraint on whether local utility should receive high supervision or filtering weight |
-| PRM/filtering weight | Required future validation | Must be learned or computed from structurally calibrated attribution, not raw FMA alone |
+| PRM/filtering weight | Not validated; mini downstream filtering failed | Must not be claimed from raw FMA or from the current failed mini validation |
 
 The direct rule `w_k = Normalize(FMA(m_k; D))` is therefore only a target-architecture starting point from the original framework, not a claim supported by the current diagnostics. The claim-safe formulation is:
 
@@ -105,12 +105,12 @@ The direct rule `w_k = Normalize(FMA(m_k; D))` is therefore only a target-archit
 w_k = Normalize(Calibrate(FMA, structural_necessity, bottleneck, redundancy, compensation))
 ```
 
-The repository has not yet trained a PRM, run a filtering comparison, or produced downstream task-success evidence for this calibrated signal. The current methodology explains why such validation is needed.
+The repository has not trained a PRM or produced downstream task-success evidence for this calibrated signal. The current mini filtering comparison failed, so the methodology supports a diagnostic constraint rather than a downstream performance claim.
 
 ## Pipeline Overview
 
-The deterministic pipeline can be read as a sequence of progressively stricter questions. Phase 1-4 establish trace schemas, taxonomy coverage, locality diagnostics, and functional-validity infrastructure. Phase 5 asks which reflective steps have local utility. Phase 6 asks whether those steps are topology-sensitive. Phase 7 asks whether low alignment can be explained by redundancy, compensation, bottlenecks, resilience, and distributedness. The next required validation asks whether structurally calibrated signals benefit PRM/filtering behavior on real downstream tasks.
+The deterministic pipeline can be read as a sequence of progressively stricter questions. Phase 1-4 establish trace schemas, taxonomy coverage, locality diagnostics, and functional-validity infrastructure. Phase 5 asks which reflective steps have local utility. Phase 6 asks whether those steps are topology-sensitive. Phase 7 asks whether low alignment can be explained by redundancy, compensation, bottlenecks, resilience, and distributedness. The downstream mini-validation then checks one filtering implication and fails, keeping the current paper in diagnostic scope.
 
 The claim hierarchy is fixed. Empirical observations are values stored in JSON, JSONL, Markdown reports, and PNG figures. Structural interpretations describe how local utility and structural necessity diverge. Process supervision and reflection filtering are target applications that require downstream validation, not settled conclusions.
 
-The methodology therefore fits a compact manuscript structure. FMA supplies the reflection utility learning architecture. Phase 5 supplies local attribution evidence. Phase 6 supplies topology-sensitive necessity evidence. Phase 7 supplies the refinement that compensation and distributedness are limited. The final current claim is not that reflection is absent or that local utility is invalid. The final current claim is that reflective reasoning exhibits widespread local utility, but only sparse structural necessity; the top-tier claim still requires real PRM/filtering validation.
+The methodology therefore fits a compact manuscript structure. FMA supplies the reflection utility learning architecture. Phase 5 supplies local attribution evidence. Phase 6 supplies topology-sensitive necessity evidence. Phase 7 supplies the refinement that compensation and distributedness are limited. The final current claim is not that reflection is absent or that local utility is invalid. The final current claim is that reflective reasoning exhibits widespread local utility, but only sparse structural necessity; current downstream filtering evidence does not validate a process-supervision gain.

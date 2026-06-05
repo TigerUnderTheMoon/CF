@@ -54,7 +54,7 @@ This result is consistent with the attribution-necessity distinction. Attributio
 
 ## Downstream Validation Boundary
 
-The results explain why structurally calibrated supervision is needed, but they do not show that a PRM/filtering system has improved downstream task performance. No current artifact trains a PRM, filters live reflective trajectories, or compares against vanilla PRM, length-calibrated PRM, token attribution, and heuristic reflection scoring on downstream tasks.
+The results explain why structurally calibrated supervision is needed, but they do not show that a PRM/filtering system has improved downstream task performance. The one-shot v2.1 downstream filtering mini-validation is negative evidence for the current pilot-sourced signal: it produced 20/20 valid pairs from 40 API calls, but failed `V2_1_DOWNSTREAM_FILTERING_MINI_FAIL_FILTERING_SIGNAL`. The pooled mean advantage for masking the lower-scored span rather than the higher-scored anti-filter was -0.05; GSM8K was -0.2 and HotpotQA was 0.1.
 
 The claim-safe implication is:
 
@@ -62,13 +62,13 @@ The claim-safe implication is:
 local utility alone is not enough for supervision weighting
 ```
 
-The claim that remains to be validated is:
+The claim not supported by current artifacts is:
 
 ```text
 structurally calibrated FMA benefits PRM/filtering behavior
 ```
 
-The latter requires real training or filtering artifacts and downstream comparison metrics before it can be stated as a result.
+The latter requires new training or filtering artifacts and downstream comparison metrics before it can be stated as a result. The current mini validation should be reported as a failed boundary check, not as an unfinished positive route.
 
 ## Hypothesis Refinement
 
@@ -78,4 +78,4 @@ Empirical observations: weak Pearson alignment, a weak aggregate Stage 2 rank-al
 
 Structural interpretation: local utility is substantially more widespread than topology-sensitive dependence, so many reflective steps are locally functional without being structurally necessary under the protocol. Held-out validation supports this relation only in a weak-effect regime and with `stratum_dependent` generalization.
 
-Process-supervision implication: future work should test whether separating local utility scores from sparse bottleneck diagnostics benefits PRM/filtering. This remains a validation target rather than a conclusion drawn from the current deterministic proxy pipeline.
+Process-supervision implication: separating local utility scores from sparse bottleneck diagnostics is a plausible design constraint, but the current downstream filtering mini-validation did not show a gain. This remains a future application hypothesis rather than a conclusion drawn from the current deterministic proxy pipeline.

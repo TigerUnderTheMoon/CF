@@ -31,7 +31,7 @@ The pilot stochastic artifact remains a pilot pass only. The full stochastic val
 | Preregistered full pass gates | failed |
 | PRM/filtering | blocked |
 | Deterministic replay claim | forbidden |
-| Submission/top-tier-ready claim | forbidden |
+| Submission-upgrade claim | forbidden |
 
 ## Failure Source
 
@@ -80,7 +80,7 @@ The engineering retry has been executed and failed. It did not produce a v2.1 pa
 
 - Do not claim full-validation `GLOBAL_pass`.
 - Do not claim PRM/filtering execution, improvement, or superiority.
-- Do not claim top-tier readiness or submission readiness.
+- Do not claim submission readiness or downstream validation readiness.
 - Do not describe the stochastic route as deterministic replay evidence.
 - Do not adjust pass gates on the same full-validation artifacts.
 - Do not describe the failed engineering retry as a v2.1 rescue or pass.

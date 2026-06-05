@@ -11,10 +11,10 @@ The experimental story has three layers:
 | Layer | Status | Role in the paper |
 |---|---|---|
 | Diagnostic evidence | Completed Phase 5-7 | Shows why local utility and structural necessity must be separated |
-| Real-task replay/pilot | Guarded pilot evidence | Tests whether the pipeline can move beyond stored synthetic traces under preflight and readiness gates |
-| PRM/filtering validation | Required future experiment | Must evaluate downstream benefit from structurally calibrated FMA in process supervision or reflection filtering |
+| Real-task replay/pilot | Guarded and blocked | Boundary evidence showing that the current signal does not yet pass real-task readiness gates |
+| Downstream filtering mini-validation | Failed and abandoned | Tests one minimal filtering implication; the result is negative and does not support PRM/filtering claims |
 
-Only the first layer is currently complete. The second layer is blocked by readiness gates, and the third layer is not yet present as a repository artifact.
+Only the first layer is positive evidence for the manuscript claim. The second and third layers are failure-boundary evidence: they justify diagnostic framing and block downstream improvement claims.
 
 ## Data Scale
 
@@ -74,9 +74,11 @@ The real-task pilot is a guarded extension rather than a replacement for histori
 
 The nondeterministic protocol permits trace generation only under guarded pilot framing. It requires repeated replay and bootstrap confidence intervals before any utility claim is upgraded. The trajectory-control artifact is readiness-complete as a partial pilot control report, not a completed downstream control validation. No manuscript section should describe the real-task pilot as scale-ready while these gates remain unresolved.
 
-## Required PRM/Filtering Validation
+## Downstream Validation Boundary
 
-The top-tier version must add a downstream experiment that tests whether structurally calibrated FMA signals improve process supervision or reflection filtering. The key comparison should separate:
+The current repository includes a one-shot v2.1 downstream filtering mini-validation rather than a completed PRM/filtering result. It used 20 paired pilot-sourced samples, 40 API calls, and USD 1.629725. It produced 20/20 valid pairs but failed `V2_1_DOWNSTREAM_FILTERING_MINI_FAIL_FILTERING_SIGNAL`: pooled mean advantage was -0.05, GSM8K was -0.2, and HotpotQA was 0.1.
+
+Any future downstream experiment would need to separate:
 
 | Method family | Required role |
 |---|---|
@@ -86,13 +88,13 @@ The top-tier version must add a downstream experiment that tests whether structu
 | Heuristic reflection scoring | Tests against length, confidence, or self-consistency heuristics |
 | Structurally calibrated FMA | Candidate method combining local utility with structural necessity diagnostics |
 
-This validation is not completed in the current repository. Phase 5-7 justify the need for the experiment by showing that raw local utility can overrepresent redundant reflection.
+That future comparison is not part of the current diagnostic manuscript. Phase 5-7 justify why the comparison would need structural calibration, while the mini validation shows that the current pilot-sourced filtering signal is not sufficient.
 
 ## Figure Set
 
 The primary paper-level result figures are `outputs/figures/structural_diagnostics_attribution_vs_necessity.png`, `outputs/figures/redundancy_density_histogram.png`, and the optional selected primary figure `outputs/figures/resilience_curves.png`. Other generated figures summarize supplementary diagnostics and are catalogued in `paper/figure_inventory.md`.
 
-Empirical observations are the stored report values. The structural interpretation is that local utility is more widespread than structural necessity. The process-supervision implication is a required validation hypothesis: future PRM/filtering work should compare structurally calibrated attribution signals against raw local utility and heuristic reflection scores.
+Empirical observations are the stored report values. The structural interpretation is that local utility is more widespread than structural necessity. The process-supervision implication is a blocked application hypothesis: future PRM/filtering work would need new evidence, because the current mini filtering diagnostic failed.
 
 Human evaluation, semantic reasoning verification, benchmark superiority, external PRM/filtering comparison, and downstream statistical significance testing are not evaluated in the current framework.
 

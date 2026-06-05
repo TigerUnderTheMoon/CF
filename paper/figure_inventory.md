@@ -6,13 +6,13 @@ Captions must describe stored outputs, metrics, perturbation settings, observed 
 
 | Figure path | Status | Phase source | Figure purpose | Paper placement |
 |---|---|---|---|---|
-| `outputs/figures/structural_diagnostics_attribution_vs_necessity.png` | available | Phase 6 diagnostics | Plots `attribution_score` and `structural_necessity` by mode. | Primary Results, Attribution vs Necessity |
-| `outputs/figures/structural_diagnostics_mode_comparison.png` | available | Phase 6 diagnostics | Summarize PRUNE, CASCADE, and BYPASS diagnostic differences. | Appendix or supplementary diagnostics |
-| `outputs/figures/compensation_distribution.png` | available | Phase 7 redundancy | Reports compensation ratio distribution. | Appendix or supplementary diagnostics |
+| `outputs/figures/structural_diagnostics_attribution_vs_necessity.png` | available | Phase 6 diagnostics | Plots `attribution_score` and `structural_necessity` by mode. | Main Figure 1, Results: Attribution vs Necessity |
+| `outputs/figures/structural_diagnostics_mode_comparison.png` | available | Phase 6 diagnostics | Summarize PRUNE, CASCADE, and BYPASS diagnostic differences. | Main Figure 2, Results: Structural Diagnostic Summary |
+| `outputs/figures/compensation_distribution.png` | available | Phase 7 redundancy | Reports compensation ratio distribution. | Main Figure 4, Results: Weak Compensation |
 | `outputs/figures/rerouting_entropy_vs_attribution.png` | available | Phase 7 redundancy | Plots rerouting entropy against attribution values. | Appendix or supplementary diagnostics |
-| `outputs/figures/redundancy_density_histogram.png` | available | Phase 7 redundancy | Reports redundancy density distribution. | Primary Results, Redundancy |
+| `outputs/figures/redundancy_density_histogram.png` | available | Phase 7 redundancy | Reports redundancy density distribution. | Main Figure 3, Results: Redundancy |
 | `outputs/figures/bottleneck_examples.png` | available | Phase 7 redundancy | Visualizes sparse bottleneck examples. | Appendix or supplementary diagnostics |
-| `outputs/figures/resilience_curves.png` | available | Phase 7 redundancy | Plots removal-order resilience curves. | Primary Results, optional selected figure |
+| `outputs/figures/resilience_curves.png` | available | Phase 7 redundancy | Plots removal-order resilience curves. | Main Figure 5, Results: Resilience |
 | `outputs/figures/distributedness_distribution.png` | available | Phase 7 redundancy | Reports distributedness distribution. | Appendix or supplementary diagnostics |
 | `outputs/figures/ablation_strategy_comparison.png` | available | Phase 5 attribution | Summarizes deterministic ablation strategies. | Methodology or Appendix |
 | `outputs/figures/necessity_distribution.png` | available | Phase 5 attribution | Reports necessity-score distribution. | Appendix |
@@ -27,10 +27,10 @@ Captions must describe stored outputs, metrics, perturbation settings, observed 
 | `outputs/figures/locality_sensitivity.png` | available | Phase 3 locality | Reports locality sensitivity. | Appendix |
 | `outputs/figures/locality_stress_scatter.png` | available | Phase 3 locality | Plots locality stress relation. | Appendix |
 | `outputs/figures/intervention_type_comparison.png` | available | Phase 3 locality | Summarizes intervention types. | Appendix |
-| `outputs/figures/taxonomy_distribution.png` | available | Phase 2 taxonomy | Reports taxonomy distribution. | Framework Overview |
+| `outputs/figures/taxonomy_distribution.png` | available | Phase 2 taxonomy | Reports taxonomy distribution. | Appendix or supplementary diagnostics |
 | `outputs/figures/stability_histogram.png` | available | Phase 2/3 stability | Reports stability distribution. | Appendix |
 | `outputs/figures/stability_scatter.png` | available | Phase 2/3 stability | Plots stability scatter. | Appendix |
-| `outputs/figures/graph_size_distribution.png` | available | Phase 6 SRA | Reports graph size distribution. | Framework Overview |
+| `outputs/figures/graph_size_distribution.png` | available | Phase 6 SRA | Reports graph size distribution. | Appendix or supplementary diagnostics |
 | `outputs/figures/node_necessity_distribution.png` | available | Phase 6 SRA | Reports node structural necessity distribution. | Appendix |
 | `outputs/figures/edge_necessity_distribution.png` | available | Phase 6 SRA | Reports edge structural necessity distribution. | Appendix |
 | `outputs/figures/structural_faithfulness_scatter.png` | available | Phase 6 SRA | Plots structural faithfulness scatter. | Appendix |

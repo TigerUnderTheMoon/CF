@@ -67,7 +67,7 @@ Forbidden now:
 - using v2.1 full-validation artifacts to tune v2.2 thresholds
 - claiming v2.2 validation success before v2.2 execution artifacts exist
 - claiming deterministic-route support from this preregistration
-- claiming top-tier readiness
+- claiming submission-upgrade readiness
 - claiming PRM/filtering execution or comparative downstream gain
 
 ## Next Allowed Step

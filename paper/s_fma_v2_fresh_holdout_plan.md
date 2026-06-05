@@ -272,7 +272,7 @@ Stop conditions:
 - Eligible span count below `150` for either task.
 - Nonzero Delta-U count below `20` for either task, reported as `insufficient_target_variation`.
 - API drift is not logged and disclosed.
-- Both task-specific rank-signal gates fail; in that case the top-tier route stops and the work moves to diagnostic or workshop framing.
+- Both task-specific rank-signal gates fail; in that case the validation route stops and the work moves to diagnostic or workshop framing.
 
 ## 4. Metrics, Baselines, and Gates
 
@@ -357,7 +357,7 @@ Heterogeneity rules:
 
 - If GSM8K passes but HotpotQA does not, the result can only be task-specific or heterogeneous; it is not global confirmation.
 - If HotpotQA passes but GSM8K does not, the result can only be task-specific or heterogeneous; it is not global confirmation.
-- If pooled and per-task rank signals all fail, stop the top-tier route and reframe as diagnostic or workshop evidence.
+- If pooled and per-task rank signals all fail, stop the validation route and reframe as diagnostic or workshop evidence.
 
 ## 5. Claim Policy
 
