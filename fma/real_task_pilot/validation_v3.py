@@ -49,10 +49,14 @@ GSM8K_WEIGHTS = {
 }
 
 HOTPOTQA_WEIGHTS = {
-    "alias_token_f1": 0.45,
-    "reference_only_f1": 0.25,
-    "support_overlap": 0.20,
-    "semantic_equivalence": 0.10,
+    "alias_token_f1": 0.50,
+    "reference_only_f1": 0.2777777778,
+    "support_overlap": 0.2222222222,
+}
+
+HOTPOTQA_SURFACE_MATCH_THRESHOLDS = {
+    "alias_token_f1_gt": 0.8,
+    "support_overlap_lt": 0.2,
 }
 
 DENSE_TARGET_THRESHOLDS = {
@@ -100,7 +104,7 @@ V3_REQUIRED_NON_OVERLAP_KEYS = (
     "dataset_config_split_source_index",
     "normalized_question_hash",
     "reference_answer_hash",
-    "alias_hash",
+    "non_empty_alias_hash",
 )
 
 V3_MANIFEST_FIELDS = (
@@ -110,6 +114,10 @@ V3_MANIFEST_FIELDS = (
     "source_index",
     "sample_id",
     "task_id",
+    "dataset_config_split_source_index",
+    "normalized_question_hash",
+    "reference_answer_hash",
+    "non_empty_alias_hash",
     "question",
     "reference_answer",
     "aliases",
@@ -216,20 +224,56 @@ def score_hotpotqa_v3_utility(
     )
     reference_only_f1 = normalized_token_f1(prediction_text, str(reference_answer))
     support_overlap = _support_overlap(predicted_supports or [], reference_supports or [])
-    semantic_score = _clamp01(float(semantic_equivalence))
     utility = (
         HOTPOTQA_WEIGHTS["alias_token_f1"] * alias_token_f1
         + HOTPOTQA_WEIGHTS["reference_only_f1"] * reference_only_f1
         + HOTPOTQA_WEIGHTS["support_overlap"] * support_overlap
-        + HOTPOTQA_WEIGHTS["semantic_equivalence"] * semantic_score
     )
     return {
         "utility": float(utility),
         "alias_token_f1": float(alias_token_f1),
         "reference_only_f1": float(reference_only_f1),
         "support_overlap": float(support_overlap),
-        "semantic_equivalence": semantic_score,
+        "semantic_judge_gate": "disabled_by_target_revision",
         "weights": dict(HOTPOTQA_WEIGHTS),
+    }
+
+
+def build_hotpotqa_surface_match_risk_report(
+    rows: Sequence[Mapping[str, Any]],
+    *,
+    thresholds: Mapping[str, float] | None = None,
+    max_examples: int = 20,
+) -> dict[str, Any]:
+    """Report high lexical match with weak support overlap after removing semantic judge."""
+
+    active = dict(HOTPOTQA_SURFACE_MATCH_THRESHOLDS)
+    if thresholds:
+        active.update({key: float(value) for key, value in thresholds.items()})
+    risk_rows = []
+    for row in rows:
+        alias_score = float(row.get("alias_token_f1", 0.0) or 0.0)
+        support_score = float(row.get("support_overlap", 0.0) or 0.0)
+        if (
+            alias_score > float(active["alias_token_f1_gt"])
+            and support_score < float(active["support_overlap_lt"])
+        ):
+            risk_rows.append(
+                {
+                    "sample_id": row.get("sample_id"),
+                    "task_id": row.get("task_id"),
+                    "alias_token_f1": alias_score,
+                    "support_overlap": support_score,
+                }
+            )
+    return {
+        "artifact": "hotpotqa_surface_match_risk_report",
+        "thresholds": active,
+        "row_count": len(rows),
+        "risk_count": len(risk_rows),
+        "risk_fraction": len(risk_rows) / len(rows) if rows else 0.0,
+        "examples": risk_rows[:max_examples],
+        "claim_boundary": "diagnostic_risk_only",
     }
 
 
@@ -357,6 +401,58 @@ def build_v3_split_manifest(
     return manifest, audit
 
 
+def build_v3_route_manifests(
+    source_rows_by_task: Mapping[str, Iterable[Mapping[str, Any]]],
+    *,
+    config: Mapping[str, Any],
+    split_sample_counts: Mapping[str, Mapping[str, int]],
+    overlap_sources: Mapping[str, Iterable[Mapping[str, Any]]],
+) -> tuple[dict[str, list[dict[str, Any]]], dict[str, Any]]:
+    """Build disjoint v3 split manifests in order, adding prior splits to exclusions."""
+
+    manifests: dict[str, list[dict[str, Any]]] = {}
+    split_audits: dict[str, dict[str, Any]] = {}
+    active_overlap_sources: dict[str, Iterable[Mapping[str, Any]]] = dict(overlap_sources)
+
+    for split_name, sample_count_by_task in split_sample_counts.items():
+        manifest, audit = build_v3_split_manifest(
+            source_rows_by_task,
+            config=config,
+            split_name=split_name,
+            sample_count_by_task=sample_count_by_task,
+            overlap_sources=active_overlap_sources,
+        )
+        manifests[split_name] = manifest
+        split_audits[split_name] = audit
+        active_overlap_sources[f"real_task_v3_{split_name}"] = manifest
+
+    blocker_splits = [
+        split
+        for split, audit in split_audits.items()
+        if audit.get("status") != MANIFEST_OVERLAP_CLEAN
+    ]
+    blocker_statuses = {
+        split: str(split_audits[split].get("status"))
+        for split in blocker_splits
+    }
+    if not blocker_splits:
+        status = MANIFEST_OVERLAP_CLEAN
+    elif any(value == OVERLAP_AUDIT_FAIL for value in blocker_statuses.values()):
+        status = OVERLAP_AUDIT_FAIL
+    else:
+        status = BLOCKED_INSUFFICIENT_FRESH_ROWS
+    return manifests, {
+        "status": status,
+        "route": "real_task_v3",
+        "hard_stop": bool(blocker_splits),
+        "blocker_splits": blocker_splits,
+        "blocker_statuses": blocker_statuses,
+        "split_audits": split_audits,
+        "required_non_overlap_keys": list(V3_REQUIRED_NON_OVERLAP_KEYS),
+        "current_status_remains": "PILOT_BLOCKED",
+    }
+
+
 def build_dense_target_reliability_report(
     rows: Sequence[Mapping[str, Any]],
     *,
@@ -454,12 +550,142 @@ def validate_w_struct_feature_rows(rows: Sequence[Mapping[str, Any]]) -> dict[st
     }
 
 
+def build_w_struct_stability_report(
+    *,
+    folds: Sequence[Mapping[str, Any]],
+    zero_rate_by_task: Mapping[str, float],
+) -> dict[str, Any]:
+    """Apply sparse-aware dev calibration gates for the structural profile block."""
+
+    raw_positive = sum(
+        1 for fold in folds if float(fold.get("raw_local_utility_direction", 0.0) or 0.0) > 0.0
+    )
+    structural_nonnegative = sum(
+        1 for fold in folds if float(fold.get("structural_profile_direction", 0.0) or 0.0) >= 0.0
+    )
+    structural_positive_ci = sum(
+        1
+        for fold in folds
+        if _ci_lower(fold.get("structural_profile_ci95")) > 0.0
+    )
+    mean_spearman = _mean(
+        [float(fold.get("spearman_diff_over_raw", 0.0) or 0.0) for fold in folds]
+    )
+    mean_brier = _mean(
+        [float(fold.get("brier_improvement_over_base_rate", 0.0) or 0.0) for fold in folds]
+    )
+    calibration_slopes = [
+        float(fold.get("calibration_slope", 0.0) or 0.0) for fold in folds
+    ]
+    zero_rates = {str(task): float(value) for task, value in zero_rate_by_task.items()}
+    task_zero_rates = {
+        task: value for task, value in zero_rates.items() if task != "pooled"
+    }
+    pooled_zero_rate = (
+        zero_rates["pooled"]
+        if "pooled" in zero_rates
+        else _mean(list(task_zero_rates.values()))
+    )
+    zero_rate_gate_pass = bool(task_zero_rates) and pooled_zero_rate <= 0.90 and all(
+        value <= 0.90 for value in task_zero_rates.values()
+    )
+    checks = {
+        "raw_local_utility_positive_folds": raw_positive >= 4,
+        "structural_profile_nonnegative_folds": structural_nonnegative >= 4,
+        "structural_profile_positive_ci_folds": structural_positive_ci >= 2,
+        "structural_profile_zero_rate": zero_rate_gate_pass,
+        "structural_profile_zero_rate_pooled": bool(task_zero_rates)
+        and pooled_zero_rate <= 0.90,
+        "structural_profile_zero_rate_per_task": bool(task_zero_rates)
+        and all(value <= 0.90 for value in task_zero_rates.values()),
+        "mean_spearman_diff_over_raw": mean_spearman > 0.03,
+        "brier_improvement_over_base_rate": mean_brier >= 0.01,
+        "calibration_slope": bool(calibration_slopes)
+        and all(0.7 <= value <= 1.3 for value in calibration_slopes),
+    }
+    return {
+        "artifact": "w_struct_stability_report",
+        "gate_pass": all(checks.values()),
+        "checks": checks,
+        "fold_counts": {
+            "raw_local_utility_positive": raw_positive,
+            "structural_profile_nonnegative": structural_nonnegative,
+            "structural_profile_positive_ci": structural_positive_ci,
+            "folds": len(folds),
+        },
+        "mean_spearman_diff_over_raw": mean_spearman,
+        "brier_improvement_over_base_rate": mean_brier,
+        "pooled_zero_rate": pooled_zero_rate,
+        "zero_rate_by_task": zero_rates,
+        "sparse_signal_warning": pooled_zero_rate > 0.80
+        or any(value > 0.80 for value in task_zero_rates.values()),
+    }
+
+
+def build_synthetic_real_profile_alignment_report(
+    *,
+    synthetic_profile: Mapping[str, Any],
+    real_task_profile: Mapping[str, Any],
+    sparse_warning_zero_rate: float = 0.80,
+) -> dict[str, Any]:
+    """Compare synthetic structural diagnostics to real-task dev profiles."""
+
+    profile_comparisons = {
+        "zero_rate": _profile_metric_comparison(
+            synthetic_profile,
+            real_task_profile,
+            synthetic_key="structural_zero_rate",
+            real_key="structural_zero_rate",
+        ),
+        "bottleneck_ratio": _profile_metric_comparison(
+            synthetic_profile,
+            real_task_profile,
+            synthetic_key="bottleneck_ratio",
+            real_key="bottleneck_ratio",
+        ),
+        "redundancy_density": _profile_metric_comparison(
+            synthetic_profile,
+            real_task_profile,
+            synthetic_key="redundancy_density",
+            real_key="redundancy_density",
+        ),
+        "compensation": _profile_metric_comparison(
+            synthetic_profile,
+            real_task_profile,
+            synthetic_key="compensation",
+            real_key="compensation",
+        ),
+        "local_utility_alignment": _profile_metric_comparison(
+            synthetic_profile,
+            real_task_profile,
+            synthetic_key="local_utility_alignment",
+            real_key="local_utility_alignment",
+        ),
+    }
+    zero_rate = profile_comparisons["zero_rate"]
+    return {
+        "artifact": "synthetic_vs_real_structural_profile_alignment",
+        "profile_comparisons": profile_comparisons,
+        "zero_rate": zero_rate,
+        "bottleneck_ratio": profile_comparisons["bottleneck_ratio"],
+        "redundancy_density": profile_comparisons["redundancy_density"],
+        "compensation": profile_comparisons["compensation"],
+        "local_utility_alignment": profile_comparisons["local_utility_alignment"],
+        "sparse_signal_warning_threshold": sparse_warning_zero_rate,
+        "sparse_signal_warning": zero_rate["real_task"] > sparse_warning_zero_rate,
+        "claim_boundary": "migration_validity_diagnostic_only",
+    }
+
+
 def build_v3_decision_report(
     *,
     task_gate_pass: Mapping[str, bool],
     pooled_gate_pass: bool,
     paired_improvement_ci95: Sequence[float],
     blockers: Sequence[str],
+    task_blockers: Mapping[str, Sequence[str]] | None = None,
+    holm_corrected_task_gate_pass: Mapping[str, bool] | None = None,
+    explicit_task_specific_downstream_allowed: bool = False,
     downstream_gate_pass: bool | None = None,
 ) -> dict[str, Any]:
     """Apply the preregistered v3 locked-validation decision tree."""
@@ -468,29 +694,56 @@ def build_v3_decision_report(
     paired_pass = ci_lower > 0.0
     task_pass_values = {str(task): bool(value) for task, value in task_gate_pass.items()}
     all_tasks_pass = bool(task_pass_values) and all(task_pass_values.values())
-    any_task_pass = any(task_pass_values.values())
+    passing_tasks = [task for task, passed in task_pass_values.items() if passed]
+    any_task_pass = bool(passing_tasks)
     blocker_list = list(blockers)
+    task_blocker_values = {
+        str(task): [str(blocker) for blocker in values]
+        for task, values in (task_blockers or {}).items()
+    }
+    holm_values = {
+        str(task): bool(value)
+        for task, value in (holm_corrected_task_gate_pass or task_pass_values).items()
+    }
+    strict_scenario_b_pass = False
+    if len(passing_tasks) == 1:
+        passing_task = passing_tasks[0]
+        failed_tasks = [task for task, passed in task_pass_values.items() if not passed]
+        strict_scenario_b_pass = (
+            bool(failed_tasks)
+            and all(not task_blocker_values.get(task) for task in failed_tasks)
+            and holm_values.get(passing_task, False)
+        )
 
     if blocker_list or not paired_pass or not pooled_gate_pass or not any_task_pass:
         status = V3_VALIDATION_FAIL
     elif all_tasks_pass:
         status = V3_GLOBAL_PASS
-    else:
+    elif strict_scenario_b_pass:
         status = V3_TASK_SPECIFIC_ONLY
+    else:
+        status = V3_VALIDATION_FAIL
 
     diagnostic_allowed = status in {V3_GLOBAL_PASS, V3_TASK_SPECIFIC_ONLY}
     global_allowed = status == V3_GLOBAL_PASS
+    downstream_request_allowed = global_allowed or (
+        status == V3_TASK_SPECIFIC_ONLY and explicit_task_specific_downstream_allowed
+    )
     downstream_allowed = bool(downstream_gate_pass) and global_allowed
     return {
         "status": status,
         "task_gate_pass": task_pass_values,
+        "task_blockers": task_blocker_values,
+        "holm_corrected_task_gate_pass": holm_values,
         "pooled_gate_pass": bool(pooled_gate_pass),
         "paired_improvement_ci95": list(paired_improvement_ci95),
         "paired_improvement_gate_pass": paired_pass,
+        "strict_scenario_b_gate_pass": strict_scenario_b_pass,
         "blockers": blocker_list,
         "diagnostic_validation_claim_allowed": diagnostic_allowed,
         "task_specific_claim_allowed": diagnostic_allowed,
         "global_claim_allowed": global_allowed,
+        "downstream_gate_request_allowed": downstream_request_allowed,
         "prm_filtering_improvement_claim_allowed": downstream_allowed,
         "downstream_gate_pass": bool(downstream_gate_pass),
         "claim_boundary": "diagnostic_only"
@@ -543,7 +796,7 @@ def _v3_candidate_manifest_item(
     item["dataset_config_split_source_index"] = dataset_config_split_source_index(item)
     item["normalized_question_hash"] = normalized_text_hash(question)
     item["reference_answer_hash"] = normalized_text_hash(reference_answer)
-    item["alias_hash"] = alias_hash(aliases) if has_non_empty_aliases(aliases) else ""
+    item["non_empty_alias_hash"] = alias_hash(aliases) if has_non_empty_aliases(aliases) else ""
     return item
 
 
@@ -568,12 +821,128 @@ def _v3_overlaps_for_item(
         "reference_answer_hash": str(item.get("reference_answer_hash") or ""),
     }
     if has_non_empty_aliases(item.get("aliases")):
-        keys["alias_hash"] = str(item.get("alias_hash") or "")
+        keys["non_empty_alias_hash"] = str(item.get("non_empty_alias_hash") or "")
     overlaps = {}
     for key, value in keys.items():
-        if value and value in index.get(key, {}):
-            overlaps[key] = sorted(index[key][value])
+        index_key = "alias_hash" if key == "non_empty_alias_hash" else key
+        if value and value in index.get(index_key, {}):
+            overlaps[key] = sorted(index[index_key][value])
     return overlaps
+
+
+def build_circuit_breaker_report(
+    attempts: Sequence[Mapping[str, Any]],
+    *,
+    consecutive_infra_error_limit: int = 10,
+    rolling_window: int = 50,
+    rolling_infra_error_fraction_max: float = 0.20,
+) -> dict[str, Any]:
+    """Return whether endpoint health must stop due infrastructure errors."""
+
+    normalized = [str(attempt.get("error_class") or "success") for attempt in attempts]
+    rolling_error_fraction = 0.0
+    if len(normalized) >= rolling_window:
+        window = normalized[-rolling_window:]
+        rolling_error_fraction = sum(1 for value in window if value == "infra_error") / rolling_window
+        if rolling_error_fraction > rolling_infra_error_fraction_max:
+            return {
+                "hard_stop": True,
+                "reason": "rolling_infra_error_fraction",
+                "rolling_window": rolling_window,
+                "rolling_infra_error_fraction": rolling_error_fraction,
+            }
+
+    consecutive = 0
+    max_consecutive = 0
+    for value in normalized:
+        if value == "infra_error":
+            consecutive += 1
+            max_consecutive = max(max_consecutive, consecutive)
+        else:
+            consecutive = 0
+    if max_consecutive >= consecutive_infra_error_limit:
+        return {
+            "hard_stop": True,
+            "reason": "consecutive_infra_errors",
+            "consecutive_infra_errors": max_consecutive,
+        }
+    return {
+        "hard_stop": False,
+        "reason": None,
+        "consecutive_infra_errors": max_consecutive,
+        "rolling_infra_error_fraction": rolling_error_fraction,
+    }
+
+
+def build_smoke_calibrated_cost_forecast(
+    *,
+    smoke_attempts: Sequence[Mapping[str, Any]],
+    planned_request_counts: Mapping[str, int],
+    route_cost_cap_usd: float,
+    input_price_per_million_tokens: float = 0.14,
+    output_price_per_million_tokens: float = 0.28,
+) -> dict[str, Any]:
+    """Forecast v3 route costs from observed smoke token usage."""
+
+    prompt_tokens = [
+        int(_mapping(attempt.get("usage")).get("prompt_tokens", 0) or 0)
+        for attempt in smoke_attempts
+    ]
+    completion_tokens = [
+        int(_mapping(attempt.get("usage")).get("completion_tokens", 0) or 0)
+        for attempt in smoke_attempts
+    ]
+    token_quantiles = {
+        "prompt_tokens": _quantile_report(prompt_tokens),
+        "completion_tokens": _quantile_report(completion_tokens),
+    }
+    stage_forecasts = {}
+    total_p95 = 0.0
+    for stage, request_count in planned_request_counts.items():
+        p95_cost = _request_cost(
+            token_quantiles["prompt_tokens"]["p95"],
+            token_quantiles["completion_tokens"]["p95"],
+            input_price_per_million_tokens=input_price_per_million_tokens,
+            output_price_per_million_tokens=output_price_per_million_tokens,
+        ) * int(request_count)
+        stage_forecasts[str(stage)] = {
+            "planned_requests": int(request_count),
+            "p95_cost_usd": p95_cost,
+        }
+        total_p95 += p95_cost
+    return {
+        "artifact": "smoke_calibrated_cost_forecast",
+        "token_quantiles": token_quantiles,
+        "stage_forecasts": stage_forecasts,
+        "route_p95_cost_usd": total_p95,
+        "route_cost_cap_usd": float(route_cost_cap_usd),
+        "cost_gate_pass": total_p95 <= float(route_cost_cap_usd),
+    }
+
+
+def build_locked_cost_checkpoint(
+    *,
+    requests_completed: int,
+    cost_used_usd: float,
+    planned_locked_requests: int,
+    locked_stage_cost_cap_usd: float,
+) -> dict[str, Any]:
+    """Freeze locked validation if observed spend projects over the stage cap."""
+
+    completed = max(1, int(requests_completed))
+    projected_locked_cost = float(cost_used_usd) / completed * int(planned_locked_requests)
+    over_cap = projected_locked_cost > float(locked_stage_cost_cap_usd)
+    return {
+        "artifact": "locked_cost_checkpoint",
+        "requests_completed": int(requests_completed),
+        "cost_used_usd": float(cost_used_usd),
+        "planned_locked_requests": int(planned_locked_requests),
+        "locked_stage_cost_cap_usd": float(locked_stage_cost_cap_usd),
+        "projected_locked_cost_usd": projected_locked_cost,
+        "status": "cost-exceeded partial locked" if over_cap else "cost_checkpoint_pass",
+        "freeze_locked": over_cap,
+        "pass_claim_allowed": False if over_cap else None,
+    }
 
 
 def _last_number(text: str) -> float | None:
@@ -581,6 +950,12 @@ def _last_number(text: str) -> float | None:
     if not matches:
         return None
     return float(matches[-1].replace(",", ""))
+
+
+def _ci_lower(value: Any) -> float:
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes)) and value:
+        return float(value[0])
+    return 0.0
 
 
 def _support_overlap(predicted: Iterable[str], reference: Iterable[str]) -> float:
@@ -628,6 +1003,46 @@ def _mean(values: Sequence[float]) -> float:
     return float(sum(float(value) for value in values) / len(values)) if values else 0.0
 
 
+def _quantile_report(values: Sequence[int]) -> dict[str, float]:
+    if not values:
+        return {"p50": 0.0, "p90": 0.0, "p95": 0.0}
+    array = np.asarray(values, dtype=float)
+    return {
+        "p50": float(np.quantile(array, 0.50)),
+        "p90": float(np.quantile(array, 0.90)),
+        "p95": float(np.quantile(array, 0.95)),
+    }
+
+
+def _request_cost(
+    prompt_tokens: float,
+    completion_tokens: float,
+    *,
+    input_price_per_million_tokens: float,
+    output_price_per_million_tokens: float,
+) -> float:
+    return float(
+        (prompt_tokens / 1_000_000.0 * input_price_per_million_tokens)
+        + (completion_tokens / 1_000_000.0 * output_price_per_million_tokens)
+    )
+
+
+def _profile_metric_comparison(
+    synthetic_profile: Mapping[str, Any],
+    real_task_profile: Mapping[str, Any],
+    *,
+    synthetic_key: str,
+    real_key: str,
+) -> dict[str, float]:
+    synthetic_value = float(synthetic_profile.get(synthetic_key, 0.0) or 0.0)
+    real_value = float(real_task_profile.get(real_key, 0.0) or 0.0)
+    return {
+        "synthetic": synthetic_value,
+        "real_task": real_value,
+        "difference_real_minus_synthetic": real_value - synthetic_value,
+    }
+
+
 def _fraction(values: Iterable[Any]) -> float:
     return float(sum(1 for value in values if bool(value)))
 
@@ -641,6 +1056,7 @@ def _clamp01(value: float) -> float:
 __all__ = [
     "DENSE_TARGET_THRESHOLDS",
     "EXPECTED_V3_HARD_CAPS",
+    "HOTPOTQA_SURFACE_MATCH_THRESHOLDS",
     "REAL_TASK_V3_CONTRACT_CLEAN",
     "REAL_TASK_V3_PREREGISTRATION_ONLY",
     "V3_MANIFEST_FIELDS",
@@ -650,7 +1066,14 @@ __all__ = [
     "W_STRUCT_ALLOWED_FEATURES",
     "W_STRUCT_FORBIDDEN_SOURCE_FIELDS",
     "audit_v3_config_contract",
+    "build_circuit_breaker_report",
     "build_dense_target_reliability_report",
+    "build_hotpotqa_surface_match_risk_report",
+    "build_locked_cost_checkpoint",
+    "build_smoke_calibrated_cost_forecast",
+    "build_synthetic_real_profile_alignment_report",
+    "build_w_struct_stability_report",
+    "build_v3_route_manifests",
     "build_v3_split_manifest",
     "build_v3_decision_report",
     "score_gsm8k_v3_utility",

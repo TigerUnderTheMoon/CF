@@ -1,0 +1,40 @@
+{
+  "current_status_remains": "PILOT_BLOCKED",
+  "declared_revision": "e53f048856ff4f594e959d75785d2c2d37b678ee",
+  "failure_mode": "NETWORK_RETRY_EXHAUSTED",
+  "last_error_type": "ConnectionError",
+  "no_api_run": true,
+  "no_prm_filtering_claim": true,
+  "no_replay": true,
+  "no_scoring": true,
+  "reason": "(ProtocolError('Connection aborted.', ConnectionResetError(10054, '远程主机强迫关闭了一个现有的连接。', None, 10054, None)), '(Request ID: 4a9a2c3f-8f60-48e2-999e-b03dea53f344)')",
+  "resolved_revision": null,
+  "retry_attempts": 4,
+  "retry_log": [
+    {
+      "attempt": 1,
+      "error": "(ProtocolError('Connection aborted.', ConnectionResetError(10054, '远程主机强迫关闭了一个现有的连接。', None, 10054, None)), '(Request ID: 4c01b10b-afdc-43ec-aef0-69484a5ccbc3)')",
+      "error_type": "ConnectionError",
+      "timestamp": "2026-06-05T23:19:39.076403+00:00"
+    },
+    {
+      "attempt": 2,
+      "error": "(ProtocolError('Connection aborted.', ConnectionResetError(10054, '远程主机强迫关闭了一个现有的连接。', None, 10054, None)), '(Request ID: fc0ca24f-bd97-4cc7-87a9-5770ca9417c9)')",
+      "error_type": "ConnectionError",
+      "timestamp": "2026-06-05T23:19:49.081484+00:00"
+    },
+    {
+      "attempt": 3,
+      "error": "(ProtocolError('Connection aborted.', ConnectionResetError(10054, '远程主机强迫关闭了一个现有的连接。', None, 10054, None)), '(Request ID: 8dec40f7-2583-4ca4-9e7b-cdb6cc2144aa)')",
+      "error_type": "ConnectionError",
+      "timestamp": "2026-06-05T23:20:09.092028+00:00"
+    },
+    {
+      "attempt": 4,
+      "error": "(ProtocolError('Connection aborted.', ConnectionResetError(10054, '远程主机强迫关闭了一个现有的连接。', None, 10054, None)), '(Request ID: 4a9a2c3f-8f60-48e2-999e-b03dea53f344)')",
+      "error_type": "ConnectionError",
+      "timestamp": "2026-06-05T23:20:59.102793+00:00"
+    }
+  ],
+  "status": "source_preparation_failure_audit"
+}

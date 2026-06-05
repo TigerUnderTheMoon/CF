@@ -1,23 +1,163 @@
 from __future__ import annotations
 
+import hashlib
 import math
+import json
+import subprocess
+import sys
 from pathlib import Path
+from typing import Any
 
+import pytest
+
+from fma.io import write_records
 from fma.real_task_pilot.config import load_pilot_config
 from fma.real_task_pilot.validation_v3 import (
     EXPECTED_V3_HARD_CAPS,
+    HOTPOTQA_SURFACE_MATCH_THRESHOLDS,
     REAL_TASK_V3_PREREGISTRATION_ONLY,
     V3_GLOBAL_PASS,
     V3_TASK_SPECIFIC_ONLY,
     audit_v3_config_contract,
+    build_circuit_breaker_report,
     build_v3_split_manifest,
+    build_v3_route_manifests,
+    build_hotpotqa_surface_match_risk_report,
+    build_locked_cost_checkpoint,
+    build_smoke_calibrated_cost_forecast,
+    build_synthetic_real_profile_alignment_report,
+    build_w_struct_stability_report,
     build_dense_target_reliability_report,
     build_v3_decision_report,
     score_gsm8k_v3_utility,
     score_hotpotqa_v3_utility,
     validate_w_struct_feature_rows,
 )
+from scripts.generate_real_task_v3_manifest import (
+    _load_gsm8k_extra_source_metadata,
+    _write_manifest_generation_package,
+)
+from scripts.prepare_real_task_v3_gsm8k_source import (
+    DECLARED_GSM8K_REVISION,
+    SourcePreparationBlocked,
+    backoff_delay_seconds,
+    build_declared_gsm8k_rows,
+    build_declared_source_provenance,
+    file_sha256,
+    find_declared_revision_cache,
+    prepare_declared_gsm8k_source,
+    records_sha256,
+    validate_declared_jsonl_schema,
+    validate_declared_revision,
+    validate_prematerialized_source,
+)
+from fma.real_task_pilot.chat_completions import (
+    DEFAULT_CHAT_COMPLETIONS_ENDPOINT,
+    DEFAULT_V3_MODEL,
+    ChatCompletionsAdapter,
+)
 from scripts.generate_real_task_v3_manifest import _assert_current_task_boundary
+
+
+MANIFEST_SCOPE = "REAL_TASK_V3_MANIFEST_GENERATION_ONLY"
+EMPTY_STRING_HASH = hashlib.sha256(b"").hexdigest()
+
+
+def _write_json(path: Path, payload: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, sort_keys=True), encoding="utf-8")
+
+
+def _write_declared_gsm8k_pair(tmp_path: Path, row_count: int) -> tuple[Path, Path, list[dict[str, Any]]]:
+    jsonl_path = tmp_path / "gsm8k_openai_main_train_declared.jsonl"
+    provenance_path = tmp_path / "gsm8k_openai_main_train_declared_provenance.json"
+    rows = build_declared_gsm8k_rows(
+        [
+            {
+                "question": f"What is {index} + 1?",
+                "answer": f"#### {index + 1}",
+            }
+            for index in range(row_count)
+        ]
+    )
+    write_records(rows, jsonl_path)
+    provenance = build_declared_source_provenance(
+        rows=rows,
+        output_path=jsonl_path,
+        generated_file_hash=file_sha256(jsonl_path),
+        resolved_revision=DECLARED_GSM8K_REVISION,
+        cache_path=None,
+        observed_previous_gsm8k_sources=[],
+        cache_hit=False,
+        retry_attempts=0,
+        download_timestamp=None,
+    )
+    _write_json(provenance_path, provenance)
+    return jsonl_path, provenance_path, rows
+
+
+def _write_hotpotqa_source(tmp_path: Path, row_count: int) -> tuple[Path, list[dict[str, Any]]]:
+    path = tmp_path / "hotpotqa_validation.jsonl"
+    rows = [
+        {
+            "dataset": "hotpotqa",
+            "config": "distractor",
+            "split": "validation",
+            "source_index": index,
+            "sample_id": f"hotpotqa-validation-{index:05d}",
+            "task_id": f"hotpotqa-validation-{index:05d}",
+            "question": f"Who is linked to entity {index}?",
+            "reference_answer": f"Entity {index}",
+            "aliases": [f"Alias {index}"],
+            "task_type": "hotpotqa",
+            "source_row_hash": hashlib.sha256(
+                f"Who is linked to entity {index}?|Entity {index}".encode("utf-8")
+            ).hexdigest(),
+        }
+        for index in range(row_count)
+    ]
+    write_records(rows, path)
+    return path, rows
+
+
+def _run_manifest_gate(
+    *,
+    gsm8k_source: Path,
+    hotpotqa_source: Path,
+    exclusion_dir: Path,
+    output_dir: Path,
+    extra_args: list[str] | None = None,
+) -> subprocess.CompletedProcess[str]:
+    command = [
+        sys.executable,
+        "scripts/generate_real_task_v3_manifest.py",
+        "--allow-manifest-generation-only",
+        "--task-scope",
+        MANIFEST_SCOPE,
+        "--gsm8k-extra-source",
+        str(gsm8k_source),
+        "--hotpotqa-source",
+        str(hotpotqa_source),
+        "--exclusion-artifacts-dir",
+        str(exclusion_dir),
+        "--output-dir",
+        str(output_dir),
+        "--random-seed",
+        "123",
+    ]
+    if extra_args:
+        command.extend(extra_args)
+    return subprocess.run(
+        command,
+        cwd=Path.cwd(),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
+def _read_manifest_rows(path: Path) -> list[dict[str, Any]]:
+    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
 
 
 def test_real_task_v3_config_locks_budget_scale_and_claim_boundary() -> None:
@@ -35,6 +175,31 @@ def test_real_task_v3_config_locks_budget_scale_and_claim_boundary() -> None:
         "gsm8k": 1000,
         "hotpotqa": 1000,
     }
+
+
+def test_real_task_v3_config_records_final_execution_guards() -> None:
+    config = load_pilot_config(Path("configs/real_task_v3_validation.yaml"))
+
+    assert config["model"]["primary"] == DEFAULT_V3_MODEL
+    assert config["api"]["chat_completions_endpoint"] == DEFAULT_CHAT_COMPLETIONS_ENDPOINT
+    assert config["api"]["health_check"]["counted_json_requests"] == 3
+    assert config["api"]["circuit_breaker"] == {
+        "consecutive_infra_errors_hard_stop": 10,
+        "rolling_window_requests": 50,
+        "rolling_infra_error_fraction_max": 0.20,
+    }
+    assert config["cost_controls"]["locked_checkpoint_interval_requests"] == 10000
+    assert config["utility_target"]["hotpotqa"]["weights"] == {
+        "alias_token_f1": 0.50,
+        "reference_only_f1": 0.2777777778,
+        "support_overlap": 0.2222222222,
+    }
+    assert config["utility_target"]["hotpotqa"]["semantic_judge_gate"] == "disabled_by_target_revision"
+    assert config["utility_target"]["hotpotqa"]["surface_match_risk"] == {
+        "alias_token_f1_gt": 0.8,
+        "support_overlap_lt": 0.2,
+    }
+    assert "semantic_judge_human_audit_pairs" not in config["utility_target"]["reliability_gate"]
 
 
 def test_v3_dense_utility_scoring_uses_locked_weights() -> None:
@@ -55,17 +220,41 @@ def test_v3_dense_utility_scoring_uses_locked_weights() -> None:
         aliases=["Shakespeare"],
         predicted_supports=["Hamlet"],
         reference_supports=["Hamlet", "Authorship"],
-        semantic_equivalence=0.8,
     )
 
     assert hotpot_score["weights"] == {
-        "alias_token_f1": 0.45,
-        "reference_only_f1": 0.25,
-        "support_overlap": 0.20,
-        "semantic_equivalence": 0.10,
+        "alias_token_f1": 0.50,
+        "reference_only_f1": 0.2777777778,
+        "support_overlap": 0.2222222222,
     }
     assert 0.0 < hotpot_score["utility"] <= 1.0
-    assert hotpot_score["semantic_equivalence"] == 0.8
+    assert hotpot_score["semantic_judge_gate"] == "disabled_by_target_revision"
+    assert "semantic_equivalence" not in hotpot_score
+
+
+def test_hotpotqa_surface_match_risk_uses_preregistered_predicate() -> None:
+    report = build_hotpotqa_surface_match_risk_report(
+        [
+            {
+                "sample_id": "hotpotqa-risk",
+                "alias_token_f1": 0.9,
+                "support_overlap": 0.1,
+            },
+            {
+                "sample_id": "hotpotqa-clean",
+                "alias_token_f1": 0.9,
+                "support_overlap": 0.5,
+            },
+        ]
+    )
+
+    assert HOTPOTQA_SURFACE_MATCH_THRESHOLDS == {
+        "alias_token_f1_gt": 0.8,
+        "support_overlap_lt": 0.2,
+    }
+    assert report["risk_count"] == 1
+    assert report["risk_fraction"] == 0.5
+    assert report["examples"][0]["sample_id"] == "hotpotqa-risk"
 
 
 def test_v3_split_manifest_uses_six_key_non_overlap_and_locked_counts() -> None:
@@ -128,6 +317,340 @@ def test_v3_split_manifest_uses_six_key_non_overlap_and_locked_counts() -> None:
     assert audit["overlap_summary"]["selected_overlaps_by_key"]["sample_id"] == 0
     assert "gsm8k-00000" not in {row["sample_id"] for row in manifest}
     assert {row["split_role"] for row in manifest} == {"smoke"}
+    assert set(audit["required_non_overlap_keys"]) == {
+        "sample_id",
+        "task_id",
+        "dataset_config_split_source_index",
+        "normalized_question_hash",
+        "reference_answer_hash",
+        "non_empty_alias_hash",
+    }
+    assert all("non_empty_alias_hash" in row for row in manifest)
+
+
+def test_v3_route_manifests_are_disjoint_across_splits() -> None:
+    config = load_pilot_config(Path("configs/real_task_v3_validation.yaml"))
+    source_rows = {
+        "gsm8k": [
+            {
+                "dataset": "gsm8k",
+                "config": "main",
+                "split": "train",
+                "source_index": index,
+                "sample_id": f"gsm8k-train-{index:05d}",
+                "task_id": f"gsm8k-train-task-{index}",
+                "question": f"What is {index} + 2?",
+                "reference_answer": f"#### {index + 2}",
+                "aliases": [],
+                "task_type": "gsm8k",
+            }
+            for index in range(6)
+        ],
+        "hotpotqa": [
+            {
+                "dataset": "hotpot_qa",
+                "config": "distractor",
+                "split": "validation",
+                "source_index": index,
+                "sample_id": f"hotpotqa-v3-{index:05d}",
+                "task_id": f"hotpotqa-v3-task-{index}",
+                "question": f"Who is entity {index}?",
+                "reference_answer": f"Entity {index}",
+                "aliases": [f"Alias {index}"],
+                "task_type": "hotpotqa",
+            }
+            for index in range(6)
+        ],
+    }
+
+    manifests, audit = build_v3_route_manifests(
+        source_rows,
+        config=config,
+        split_sample_counts={
+            "smoke": {"gsm8k": 1, "hotpotqa": 1},
+            "dev_calibration": {"gsm8k": 2, "hotpotqa": 2},
+            "locked_validation": {"gsm8k": 3, "hotpotqa": 3},
+        },
+        overlap_sources={},
+    )
+
+    assert audit["status"] == "MANIFEST_OVERLAP_CLEAN"
+    selected_ids_by_split = {
+        split: {row["sample_id"] for row in rows}
+        for split, rows in manifests.items()
+    }
+    assert selected_ids_by_split["smoke"].isdisjoint(
+        selected_ids_by_split["dev_calibration"]
+    )
+    assert selected_ids_by_split["dev_calibration"].isdisjoint(
+        selected_ids_by_split["locked_validation"]
+    )
+
+
+def test_declared_gsm8k_source_requires_full_revision_and_stable_row_indices() -> None:
+    assert len(DECLARED_GSM8K_REVISION) == 40
+    assert validate_declared_revision(DECLARED_GSM8K_REVISION) == DECLARED_GSM8K_REVISION
+
+    with pytest.raises(ValueError, match="40-character"):
+        validate_declared_revision("e53f048")
+
+    declared_rows = build_declared_gsm8k_rows(
+        [
+            {"question": "What is 1 + 1?", "answer": "#### 2"},
+            {"question": "What is 2 + 2?", "answer": "#### 4"},
+        ]
+    )
+
+    assert declared_rows[0]["dataset"] == "openai/gsm8k"
+    assert declared_rows[0]["config"] == "main"
+    assert declared_rows[0]["split"] == "train"
+    assert declared_rows[0]["hf_row_index"] == 0
+    assert declared_rows[0]["source_index"] == 0
+    assert declared_rows[0]["sample_id"] == "gsm8k-train-00000"
+    assert declared_rows[0]["task_id"] == "gsm8k-train-00000"
+    assert declared_rows[0]["reference_answer"] == "#### 2"
+    assert declared_rows[0]["aliases"] == []
+    assert declared_rows[0]["task_type"] == "gsm8k"
+    assert len(declared_rows[0]["source_row_hash"]) == 64
+    assert declared_rows[0]["source_row_hash"] != declared_rows[1]["source_row_hash"]
+    assert declared_rows[1]["source_index"] == 1
+
+
+def test_declared_gsm8k_source_provenance_hashes_rows_and_previous_sources() -> None:
+    declared_rows = build_declared_gsm8k_rows(
+        [{"question": "What is 3 + 3?", "answer": "#### 6"}]
+    )
+
+    provenance = build_declared_source_provenance(
+        rows=declared_rows,
+        output_path=Path("data/real_task_v3/gsm8k_openai_main_train_declared.jsonl"),
+        generated_file_hash=records_sha256(declared_rows),
+        resolved_revision=DECLARED_GSM8K_REVISION,
+        cache_path=Path("hf-cache/openai/gsm8k"),
+        observed_previous_gsm8k_sources=[
+            {
+                "name": "real_task_pilot",
+                "path": "outputs/real_task_pilot/sample_manifest.json",
+                "splits": ["test"],
+            }
+        ],
+        cache_hit=True,
+        retry_attempts=0,
+        download_timestamp=None,
+    )
+
+    assert provenance["dataset_id"] == "openai/gsm8k"
+    assert provenance["full_revision"] == DECLARED_GSM8K_REVISION
+    assert provenance["resolved_revision"] == DECLARED_GSM8K_REVISION
+    assert provenance["row_order_policy"] == "source_index equals raw HF row index"
+    assert provenance["row_count"] == 1
+    assert provenance["aggregate_source_hash"] == records_sha256(declared_rows)
+    assert provenance["generated_file_hash"] == records_sha256(declared_rows)
+    assert len(provenance["conversion_script_hash"]) == 64
+    assert provenance["observed_previous_gsm8k_sources"][0]["splits"] == ["test"]
+
+
+def test_manifest_gate_links_declared_gsm8k_source_provenance(tmp_path: Path) -> None:
+    extra_path = tmp_path / "gsm8k_openai_main_train_declared.jsonl"
+    provenance_path = tmp_path / "gsm8k_openai_main_train_declared_provenance.json"
+    rows = build_declared_gsm8k_rows(
+        [{"question": f"What is {index} + 1?", "answer": f"#### {index + 1}"} for index in range(4)]
+    )
+    write_records(rows, extra_path)
+    provenance = build_declared_source_provenance(
+        rows=rows,
+        output_path=extra_path,
+        generated_file_hash=file_sha256(extra_path),
+        resolved_revision=DECLARED_GSM8K_REVISION,
+        cache_path=Path("hf-cache/openai/gsm8k"),
+        observed_previous_gsm8k_sources=[],
+        cache_hit=False,
+        retry_attempts=1,
+        download_timestamp="2026-06-06T00:00:00+00:00",
+    )
+    provenance_path.write_text(json.dumps(provenance, sort_keys=True), encoding="utf-8")
+
+    metadata = _load_gsm8k_extra_source_metadata(extra_path)
+    assert metadata["provenance_path"] == str(provenance_path)
+    assert metadata["generated_jsonl_sha256"] == file_sha256(extra_path)
+
+    config = load_pilot_config(Path("configs/real_task_v3_validation.yaml"))
+    config = {
+        **config,
+        "experiment": {**config["experiment"], "output_dir": str(tmp_path / "out")},
+        "splits": {
+            **config["splits"],
+            "smoke": {"sample_count_by_task": {"gsm8k": 1, "hotpotqa": 1}},
+            "dev_calibration": {"sample_count_by_task": {"gsm8k": 1, "hotpotqa": 1}},
+            "locked_validation": {"sample_count_by_task": {"gsm8k": 1, "hotpotqa": 1}},
+        },
+    }
+    result = _write_manifest_generation_package(config, gsm8k_extra_source=extra_path)
+    audit = json.loads(Path(result["audit_path"]).read_text(encoding="utf-8"))
+
+    linked = audit["input_source_provenance"]["gsm8k_extra_source"]
+    assert linked["provenance_path"] == str(provenance_path)
+    assert linked["full_revision"] == DECLARED_GSM8K_REVISION
+    assert linked["generated_file_hash"] == file_sha256(extra_path)
+
+
+def test_manifest_gate_rejects_missing_or_mismatched_gsm8k_source_provenance(
+    tmp_path: Path,
+) -> None:
+    extra_path = tmp_path / "gsm8k_openai_main_train_declared.jsonl"
+    write_records(
+        build_declared_gsm8k_rows([{"question": "What is 5 + 5?", "answer": "#### 10"}]),
+        extra_path,
+    )
+
+    with pytest.raises(RuntimeError, match="source_preparation_failure_audit"):
+        _load_gsm8k_extra_source_metadata(extra_path)
+
+
+def test_source_preparation_cache_hit_writes_success_audit(tmp_path: Path) -> None:
+    cache_root = tmp_path / "hf-cache"
+    snapshot = cache_root / "datasets--openai--gsm8k" / "snapshots" / DECLARED_GSM8K_REVISION
+    snapshot.mkdir(parents=True)
+    output_dir = tmp_path / "declared"
+
+    result = prepare_declared_gsm8k_source(
+        output_dir=output_dir,
+        declared_revision=DECLARED_GSM8K_REVISION,
+        cache_root=cache_root,
+        allow_cache_reuse=True,
+        dataset_loader=lambda **_: [
+            {"question": "What is 6 + 6?", "answer": "#### 12"},
+        ],
+        revision_resolver=lambda revision: revision,
+        sleep=lambda _: None,
+    )
+
+    assert result["status"] == "DECLARED_GSM8K_SOURCE_READY"
+    assert result["cache_hit"] is True
+    assert Path(result["success_audit_path"]).exists()
+    success = json.loads(Path(result["success_audit_path"]).read_text(encoding="utf-8"))
+    assert success["ready_for_manifest"] is True
+    assert success["cache_hit"] is True
+    assert find_declared_revision_cache(cache_root, DECLARED_GSM8K_REVISION) == snapshot
+
+
+def test_source_preparation_retry_exhaustion_freezes_failure_audit(tmp_path: Path) -> None:
+    attempts = []
+
+    def failing_loader(**_: object) -> list[dict[str, str]]:
+        attempts.append("attempt")
+        raise ConnectionError("network down")
+
+    with pytest.raises(SourcePreparationBlocked) as excinfo:
+        prepare_declared_gsm8k_source(
+            output_dir=tmp_path / "declared",
+            declared_revision=DECLARED_GSM8K_REVISION,
+            cache_root=tmp_path / "empty-cache",
+            allow_cache_reuse=False,
+            dataset_loader=failing_loader,
+            revision_resolver=lambda revision: revision,
+            max_download_attempts=4,
+            backoff_base_seconds=0,
+            sleep=lambda _: None,
+        )
+
+    audit = excinfo.value.audit
+    assert len(attempts) == 4
+    assert audit["failure_mode"] == "NETWORK_RETRY_EXHAUSTED"
+    assert audit["retry_attempts"] == 4
+    assert audit["declared_revision"] == DECLARED_GSM8K_REVISION
+    assert not (tmp_path / "declared" / "gsm8k_openai_main_train_declared.jsonl").exists()
+
+
+def test_prematerialized_validation_accepts_valid_source_and_rejects_hash_mismatch(
+    tmp_path: Path,
+) -> None:
+    pre_jsonl = tmp_path / "provided.jsonl"
+    pre_provenance = tmp_path / "provided_provenance.json"
+    output_dir = tmp_path / "declared"
+    rows = build_declared_gsm8k_rows(
+        [{"question": "What is 7 + 7?", "answer": "#### 14"}]
+    )
+    write_records(rows, pre_jsonl)
+    provenance = build_declared_source_provenance(
+        rows=rows,
+        output_path=pre_jsonl,
+        generated_file_hash=file_sha256(pre_jsonl),
+        resolved_revision=DECLARED_GSM8K_REVISION,
+        cache_path=None,
+        observed_previous_gsm8k_sources=[],
+        cache_hit=False,
+        retry_attempts=0,
+        download_timestamp=None,
+    )
+    pre_provenance.write_text(json.dumps(provenance, sort_keys=True), encoding="utf-8")
+
+    result = validate_prematerialized_source(
+        jsonl_path=pre_jsonl,
+        provenance_path=pre_provenance,
+        output_dir=output_dir,
+        declared_revision=DECLARED_GSM8K_REVISION,
+    )
+
+    assert result["status"] == "DECLARED_GSM8K_SOURCE_READY"
+    assert Path(result["output_path"]).exists()
+    assert Path(result["provenance_path"]).exists()
+
+    bad_provenance = {**provenance, "generated_file_hash": "0" * 64}
+    pre_provenance.write_text(json.dumps(bad_provenance, sort_keys=True), encoding="utf-8")
+    with pytest.raises(SourcePreparationBlocked) as excinfo:
+        validate_prematerialized_source(
+            jsonl_path=pre_jsonl,
+            provenance_path=pre_provenance,
+            output_dir=tmp_path / "bad",
+            declared_revision=DECLARED_GSM8K_REVISION,
+        )
+    assert excinfo.value.audit["failure_mode"] == "PREMATERIALIZED_VALIDATION_FAILED"
+
+
+def test_source_preparation_rejects_revision_mismatch_and_bad_schema(tmp_path: Path) -> None:
+    different_revision = DECLARED_GSM8K_REVISION[:-1] + (
+        "0" if DECLARED_GSM8K_REVISION[-1] != "0" else "1"
+    )
+    with pytest.raises(SourcePreparationBlocked) as excinfo:
+        prepare_declared_gsm8k_source(
+            output_dir=tmp_path / "declared",
+            declared_revision=DECLARED_GSM8K_REVISION,
+            cache_root=tmp_path / "empty-cache",
+            allow_cache_reuse=False,
+            dataset_loader=lambda **_: [{"question": "Q", "answer": "A"}],
+            revision_resolver=lambda _: different_revision,
+            max_download_attempts=1,
+            backoff_base_seconds=0,
+            sleep=lambda _: None,
+        )
+    assert excinfo.value.audit["failure_mode"] == "REVISION_MISMATCH"
+
+    bad_jsonl = tmp_path / "bad.jsonl"
+    write_records(
+        [
+            {
+                "dataset": "openai/gsm8k",
+                "config": "main",
+                "split": "train",
+                "source_index": 0,
+                "sample_id": "wrong",
+                "task_id": "wrong",
+                "question": "Q",
+                "reference_answer": "A",
+                "aliases": [],
+                "task_type": "gsm8k",
+                "source_row_hash": "0" * 64,
+            }
+        ],
+        bad_jsonl,
+    )
+    with pytest.raises(ValueError, match="hf_row_index"):
+        validate_declared_jsonl_schema(bad_jsonl)
+
+
+def test_source_preparation_backoff_schedule_matches_contract() -> None:
+    assert [backoff_delay_seconds(index, 5) for index in range(1, 5)] == [0, 5, 15, 45]
 
 
 def test_dense_target_reliability_gate_requires_variance_beyond_binary() -> None:
@@ -198,6 +721,89 @@ def test_w_struct_feature_rows_reject_target_side_leakage() -> None:
     assert validate_w_struct_feature_rows(leaked)["status"] == "target_leaking"
 
 
+def test_w_struct_stability_gate_handles_sparse_structural_profile() -> None:
+    report = build_w_struct_stability_report(
+        folds=[
+            {
+                "raw_local_utility_direction": 1,
+                "structural_profile_direction": 1,
+                "structural_profile_ci95": [0.01, 0.05],
+                "spearman_diff_over_raw": 0.04,
+                "brier_improvement_over_base_rate": 0.02,
+                "calibration_slope": 1.0,
+            },
+            {
+                "raw_local_utility_direction": 1,
+                "structural_profile_direction": 0,
+                "structural_profile_ci95": [0.0, 0.04],
+                "spearman_diff_over_raw": 0.03,
+                "brier_improvement_over_base_rate": 0.01,
+                "calibration_slope": 0.9,
+            },
+            {
+                "raw_local_utility_direction": 1,
+                "structural_profile_direction": 1,
+                "structural_profile_ci95": [0.02, 0.06],
+                "spearman_diff_over_raw": 0.05,
+                "brier_improvement_over_base_rate": 0.03,
+                "calibration_slope": 1.1,
+            },
+            {
+                "raw_local_utility_direction": 1,
+                "structural_profile_direction": 0,
+                "structural_profile_ci95": [-0.01, 0.03],
+                "spearman_diff_over_raw": 0.04,
+                "brier_improvement_over_base_rate": 0.02,
+                "calibration_slope": 1.2,
+            },
+            {
+                "raw_local_utility_direction": 0,
+                "structural_profile_direction": 1,
+                "structural_profile_ci95": [-0.01, 0.02],
+                "spearman_diff_over_raw": 0.04,
+                "brier_improvement_over_base_rate": 0.02,
+                "calibration_slope": 1.0,
+            },
+        ],
+        zero_rate_by_task={"gsm8k": 0.7, "hotpotqa": 0.85},
+    )
+
+    assert report["gate_pass"] is True
+    assert report["sparse_signal_warning"] is True
+    assert report["checks"]["structural_profile_positive_ci_folds"] is True
+
+
+def test_synthetic_real_profile_alignment_reports_sparse_warning() -> None:
+    report = build_synthetic_real_profile_alignment_report(
+        synthetic_profile={
+            "structural_zero_rate": 0.6779,
+            "bottleneck_ratio": 0.12,
+            "redundancy_density": 0.31,
+            "compensation": 0.18,
+            "local_utility_alignment": 0.08,
+        },
+        real_task_profile={
+            "structural_zero_rate": 0.82,
+            "bottleneck_ratio": 0.09,
+            "redundancy_density": 0.27,
+            "compensation": 0.15,
+            "local_utility_alignment": 0.05,
+        },
+    )
+
+    assert report["sparse_signal_warning"] is True
+    assert report["zero_rate"]["synthetic"] == 0.6779
+    assert report["zero_rate"]["real_task"] == 0.82
+    assert set(report["profile_comparisons"]) == {
+        "zero_rate",
+        "bottleneck_ratio",
+        "redundancy_density",
+        "compensation",
+        "local_utility_alignment",
+    }
+    assert report["profile_comparisons"]["bottleneck_ratio"]["real_task"] == 0.09
+
+
 def test_v3_decision_tree_separates_global_task_specific_and_downstream_claims() -> None:
     global_report = build_v3_decision_report(
         task_gate_pass={"gsm8k": True, "hotpotqa": True},
@@ -211,6 +817,17 @@ def test_v3_decision_tree_separates_global_task_specific_and_downstream_claims()
         pooled_gate_pass=True,
         paired_improvement_ci95=[0.01, 0.08],
         blockers=[],
+        task_blockers={"hotpotqa": []},
+        holm_corrected_task_gate_pass={"gsm8k": True, "hotpotqa": False},
+        downstream_gate_pass=False,
+    )
+    task_specific_blocked = build_v3_decision_report(
+        task_gate_pass={"gsm8k": True, "hotpotqa": False},
+        pooled_gate_pass=True,
+        paired_improvement_ci95=[0.01, 0.08],
+        blockers=[],
+        task_blockers={"hotpotqa": ["schema_transport"]},
+        holm_corrected_task_gate_pass={"gsm8k": True, "hotpotqa": False},
         downstream_gate_pass=False,
     )
     blocked = build_v3_decision_report(
@@ -226,8 +843,75 @@ def test_v3_decision_tree_separates_global_task_specific_and_downstream_claims()
     assert global_report["prm_filtering_improvement_claim_allowed"] is False
     assert task_specific["status"] == V3_TASK_SPECIFIC_ONLY
     assert task_specific["global_claim_allowed"] is False
+    assert task_specific["downstream_gate_request_allowed"] is False
+    assert task_specific_blocked["status"] == "REAL_TASK_V3_VALIDATION_FAIL"
     assert blocked["status"] == "REAL_TASK_V3_VALIDATION_FAIL"
     assert blocked["diagnostic_validation_claim_allowed"] is False
+
+
+def test_circuit_breaker_uses_consecutive_and_rolling_error_limits() -> None:
+    consecutive = build_circuit_breaker_report(
+        [{"error_class": "infra_error"} for _ in range(10)]
+    )
+    rolling = build_circuit_breaker_report(
+        [{"error_class": "infra_error"} for _ in range(11)]
+        + [{"error_class": "success"} for _ in range(39)]
+    )
+
+    assert consecutive["hard_stop"] is True
+    assert consecutive["reason"] == "consecutive_infra_errors"
+    assert rolling["hard_stop"] is True
+    assert rolling["reason"] == "rolling_infra_error_fraction"
+
+
+def test_chat_completions_adapter_normalizes_fake_response() -> None:
+    calls = []
+
+    def fake_transport(endpoint, payload, headers, timeout):
+        calls.append((endpoint, payload, headers, timeout))
+        return {
+            "id": "chatcmpl-test",
+            "model": "deepseek-v4-flash",
+            "choices": [{"message": {"content": "{\"ok\": true}"}}],
+            "usage": {"prompt_tokens": 10, "completion_tokens": 5},
+        }
+
+    adapter = ChatCompletionsAdapter(api_key="test-key", transport=fake_transport)
+    result = adapter.create_trace(
+        prompt="Return JSON",
+        config={"model": {"temperature": 0, "max_output_tokens": 16}, "api": {"request_timeout_seconds": 5}},
+        model_name="deepseek-v4-flash",
+    )
+
+    assert calls[0][0] == DEFAULT_CHAT_COMPLETIONS_ENDPOINT
+    assert calls[0][1]["response_format"] == {"type": "json_object"}
+    assert calls[0][2]["Authorization"] == "Bearer test-key"
+    assert result.output_text == "{\"ok\": true}"
+    assert result.usage == {"prompt_tokens": 10, "completion_tokens": 5}
+    assert result.response_id == "chatcmpl-test"
+    assert result.request_metadata["endpoint"] == DEFAULT_CHAT_COMPLETIONS_ENDPOINT
+
+
+def test_smoke_calibrated_cost_forecast_and_locked_checkpoint_freeze_on_cost_risk() -> None:
+    forecast = build_smoke_calibrated_cost_forecast(
+        smoke_attempts=[
+            {"usage": {"prompt_tokens": 1000, "completion_tokens": 500}},
+            {"usage": {"prompt_tokens": 2000, "completion_tokens": 1000}},
+            {"usage": {"prompt_tokens": 4000, "completion_tokens": 2000}},
+        ],
+        planned_request_counts={"locked_validation": 52000},
+        route_cost_cap_usd=5000.0,
+    )
+    checkpoint = build_locked_cost_checkpoint(
+        requests_completed=10000,
+        cost_used_usd=1200.0,
+        planned_locked_requests=52000,
+        locked_stage_cost_cap_usd=2500.0,
+    )
+
+    assert forecast["token_quantiles"]["prompt_tokens"]["p95"] >= 2000
+    assert checkpoint["status"] == "cost-exceeded partial locked"
+    assert checkpoint["pass_claim_allowed"] is False
 
 
 def test_real_task_v3_manifest_script_rejects_execution_scope_drift() -> None:

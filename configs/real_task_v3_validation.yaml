@@ -42,6 +42,44 @@ hard_caps:
   max_repair_attempts_per_failed_request: 2
   total_repair_fraction_max: 0.03
 
+model:
+  primary: deepseek-v4-flash
+  adapter: chat_completions_direct
+  temperature: 0
+  max_output_tokens: 2048
+
+api:
+  provider: opencode_zen
+  chat_completions_endpoint: https://opencode.ai/zen/go/v1/chat/completions
+  request_timeout_seconds: 90
+  health_check:
+    counted_json_requests: 3
+    fail_closed_on:
+      - endpoint_incompatible
+      - model_incompatible
+      - json_format_incompatible
+  circuit_breaker:
+    consecutive_infra_errors_hard_stop: 10
+    rolling_window_requests: 50
+    rolling_infra_error_fraction_max: 0.20
+  fallback_endpoint_policy: no_silent_fallback_requires_request_only_approval
+  pricing_references:
+    - https://dev.opencode.ai/docs/zen
+    - https://api-docs.deepseek.com/quick_start/pricing
+
+cost_controls:
+  static_estimate_before_smoke: true
+  smoke_calibrated_forecast_before:
+    - dev_calibration
+    - locked_validation
+  forecast_quantiles:
+    - p50
+    - p90
+    - p95
+  locked_checkpoint_interval_requests: 10000
+  freeze_label_on_overrun: cost-exceeded partial locked
+  pass_claim_allowed_after_cost_freeze: false
+
 call_design:
   original_traces_per_problem: 3
   max_scored_spans_per_trace: 3
@@ -87,9 +125,15 @@ utility_target:
     numeric_proximity_formula: exp(-abs(log((pred_abs+1)/(ref_abs+1))))
     parse_failure_score: 0.0
   hotpotqa:
-    utility_formula: 0.45 * alias_token_f1 + 0.25 * reference_only_f1 + 0.20 * support_overlap + 0.10 * semantic_equivalence
-    semantic_judge_locked_before_smoke: true
-    semantic_judge_temperature: 0
+    utility_formula: 0.50 * alias_token_f1 + 0.2777777778 * reference_only_f1 + 0.2222222222 * support_overlap
+    weights:
+      alias_token_f1: 0.50
+      reference_only_f1: 0.2777777778
+      support_overlap: 0.2222222222
+    semantic_judge_gate: disabled_by_target_revision
+    surface_match_risk:
+      alias_token_f1_gt: 0.8
+      support_overlap_lt: 0.2
   reliability_gate:
     unique_utility_values_min: 10
     fractional_utility_fraction_min: 0.25
@@ -97,9 +141,8 @@ utility_target:
     nonzero_delta_fraction_min_by_task:
       gsm8k: 0.25
       hotpotqa: 0.35
-    semantic_judge_human_audit_pairs: 50
-    semantic_judge_cohen_kappa_min: 0.70
-    semantic_judge_length_bias_partial_abs_r_max: 0.20
+    hotpotqa_surface_match_risk_report: hotpotqa_surface_match_risk_report.json
+    semantic_judge_gate: disabled_by_target_revision
 
 w_struct:
   model_family: sklearn.linear_model.LogisticRegression
@@ -134,12 +177,17 @@ w_struct:
     - reference_similarity_after_generation
     - rank_metric
   stability_gate:
-    positive_raw_local_utility_folds_min: 4
-    positive_structural_necessity_folds_min: 4
+    raw_local_utility_positive_folds_min: 4
+    structural_profile_nonnegative_folds_min: 4
+    structural_profile_positive_ci_folds_min: 2
+    structural_profile_zero_rate_pooled_max: 0.90
+    structural_profile_zero_rate_per_task_max: 0.90
+    sparse_signal_warning_zero_rate: 0.80
     mean_spearman_diff_over_raw_min: 0.03
     brier_improvement_over_base_rate_min: 0.01
     calibration_slope_min: 0.7
     calibration_slope_max: 1.3
+  structural_profile_report: synthetic_vs_real_structural_profile_alignment.json
 
 baselines:
   diagnostic_must_have:
@@ -167,9 +215,13 @@ locked_validation_gate:
   paired_primary_test: ci_lower_w_struct_minus_raw_local_utility_gt_zero
   multiple_comparison_correction: holm_bonferroni
   scenario_a: gsm8k_pass_and_hotpotqa_pass_and_pooled_pass_and_w_struct_beats_raw
-  scenario_b: one_task_pass_one_task_fail_and_pooled_pass_task_specific_only
+  scenario_b: exactly_one_task_passes_pooled_passes_ci_lower_positive_no_failed_task_blocker_passing_task_holm_survives
   scenario_c: rank_gate_pass_downstream_gate_fail_diagnostic_only
   scenario_d: any_overlap_leakage_target_reliability_schema_transport_or_baseline_gate_fails_validation
+  locked_failure_audit_artifact: locked_validation_failure_audit
+  one_shot_locked_validation: true
+  no_rerun_after_locked_failure: true
+  cost_checkpoint_interval_requests: 10000
 
 downstream_gate:
   run_only_after:
