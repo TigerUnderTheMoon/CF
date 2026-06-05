@@ -1,0 +1,213 @@
+experiment:
+  name: real_task_v3
+  status: planned_preregistration_only
+  seed: 20260606
+  output_dir: outputs/real_task_v3
+  plan_file: paper/real_task_v3_preregistration_plan.md
+  current_task_scope: REAL_TASK_V3_PREREGISTRATION_ONLY
+  no_api_execution_without_user_approval: true
+  no_api_run_in_current_task: true
+  no_manifest_generation_in_current_task: true
+  no_full_api_generation_in_current_task: true
+  no_replay_in_current_task: true
+  no_scoring_in_current_task: true
+  no_prm_filtering_in_current_task: true
+  user_approved_budget_usd: null
+
+provenance_boundary:
+  current_project_status: PILOT_BLOCKED
+  source_routes:
+    - outputs/real_task_pilot/readiness_audit.json
+    - outputs/s_fma_v2_1_fresh_holdout/v2_1_full_validation_abandonment_audit.json
+    - outputs/s_fma_v2_2_fresh_holdout/stochastic_smoke_sparse_signal_failure_audit.json
+  allowed_uses:
+    - failure_provenance
+    - route_motivation
+    - overlap_exclusion
+  forbidden_uses:
+    - tune_v3_thresholds_from_failed_artifacts
+    - fit_v3_weights_from_failed_artifacts
+    - select_v3_rows_from_failed_artifacts
+    - relabel_failed_routes_as_success
+    - infer_downstream_prm_filtering_gain
+
+hard_caps:
+  route_api_calls_max: 90000
+  smoke_api_calls_max: 6500
+  dev_api_calls_max: 32000
+  locked_api_calls_max: 52000
+  downstream_api_calls_max: 10000
+  route_cost_usd_max: 5000
+  per_call_timeout_seconds: 90
+  max_repair_attempts_per_failed_request: 2
+  total_repair_fraction_max: 0.03
+
+call_design:
+  original_traces_per_problem: 3
+  max_scored_spans_per_trace: 3
+  replay_repeats_per_span: 3
+  high_variance_replay_repeats_per_span: 5
+  high_variance_rows_must_be_predeclared: true
+
+splits:
+  smoke:
+    sample_count_by_task:
+      gsm8k: 100
+      hotpotqa: 100
+  dev_calibration:
+    sample_count_by_task:
+      gsm8k: 500
+      hotpotqa: 500
+  locked_validation:
+    sample_count_by_task:
+      gsm8k: 1000
+      hotpotqa: 1000
+  non_overlap_required_before_execution: true
+  required_non_overlap_keys:
+    - sample_id
+    - task_id
+    - dataset_config_split_source_index
+    - normalized_question_hash
+    - reference_answer_hash
+    - non_empty_alias_hash
+  forbidden_selection_fields:
+    - correctness
+    - original_utility
+    - intervened_utility
+    - delta_u
+    - replay_outcome
+    - final_answer
+    - reference_similarity_after_generation
+    - rank_metric
+
+utility_target:
+  target_name: dense_real_task_delta_u_v3
+  gsm8k:
+    utility_formula: 0.60 * repeated_numeric_exact + 0.40 * numeric_proximity
+    numeric_proximity_formula: exp(-abs(log((pred_abs+1)/(ref_abs+1))))
+    parse_failure_score: 0.0
+  hotpotqa:
+    utility_formula: 0.45 * alias_token_f1 + 0.25 * reference_only_f1 + 0.20 * support_overlap + 0.10 * semantic_equivalence
+    semantic_judge_locked_before_smoke: true
+    semantic_judge_temperature: 0
+  reliability_gate:
+    unique_utility_values_min: 10
+    fractional_utility_fraction_min: 0.25
+    residual_variance_fraction_min: 0.15
+    nonzero_delta_fraction_min_by_task:
+      gsm8k: 0.25
+      hotpotqa: 0.35
+    semantic_judge_human_audit_pairs: 50
+    semantic_judge_cohen_kappa_min: 0.70
+    semantic_judge_length_bias_partial_abs_r_max: 0.20
+
+w_struct:
+  model_family: sklearn.linear_model.LogisticRegression
+  penalty: l1
+  c: 0.25
+  solver: liblinear
+  class_weight: balanced
+  target_label: task_stratified_top_20_percent_dense_delta_u
+  cross_validation:
+    method: GroupKFold
+    groups: sample_id
+    folds: 5
+  allowed_features:
+    - raw_local_utility
+    - structural_necessity
+    - raw_structural_interaction
+    - redundancy
+    - compensation
+    - bottleneck_flag
+    - span_type
+    - relative_position
+    - span_length
+    - task_type
+    - question_difficulty_proxy
+  forbidden_source_fields:
+    - correctness
+    - original_utility
+    - intervened_utility
+    - delta_u
+    - replay_outcome
+    - final_answer
+    - reference_similarity_after_generation
+    - rank_metric
+  stability_gate:
+    positive_raw_local_utility_folds_min: 4
+    positive_structural_necessity_folds_min: 4
+    mean_spearman_diff_over_raw_min: 0.03
+    brier_improvement_over_base_rate_min: 0.01
+    calibration_slope_min: 0.7
+    calibration_slope_max: 1.3
+
+baselines:
+  diagnostic_must_have:
+    - random
+    - span_length
+    - relative_position
+    - taxonomy_heuristic
+    - raw_local_utility
+    - structural_necessity_only
+    - token_occlusion_attribution
+    - heuristic_reflection_score
+    - frozen_reflection_weight
+  prm:
+    preferred_mode: frozen_public_prm_inference
+    preferred_candidate: Qwen2.5-Math-PRM
+    fallback_mode: lightweight_local_prm
+    fallback_label: lightweight local PRM, not SOTA
+    hidden_tuning_after_dev_forbidden: true
+  fairness_ledger_required: true
+
+locked_validation_gate:
+  bootstrap_resamples: 10000
+  confidence_level: 0.95
+  bootstrap_unit: sample_id
+  paired_primary_test: ci_lower_w_struct_minus_raw_local_utility_gt_zero
+  multiple_comparison_correction: holm_bonferroni
+  scenario_a: gsm8k_pass_and_hotpotqa_pass_and_pooled_pass_and_w_struct_beats_raw
+  scenario_b: one_task_pass_one_task_fail_and_pooled_pass_task_specific_only
+  scenario_c: rank_gate_pass_downstream_gate_fail_diagnostic_only
+  scenario_d: any_overlap_leakage_target_reliability_schema_transport_or_baseline_gate_fails_validation
+
+downstream_gate:
+  run_only_after:
+    - scenario_a
+    - explicit_task_specific_scenario_b
+  primary_metric: paired_task_utility_advantage
+  compare_against:
+    - raw_local_utility
+    - vanilla_prm
+    - length_calibrated_prm
+    - token_attribution
+    - heuristic_reflection_scorer
+  pass_criteria:
+    pooled_mean_advantage: strictly_greater_than_zero
+    per_task_advantage: nonnegative_each_task
+    pooled_paired_bootstrap_ci_lower: strictly_greater_than_zero
+
+execution_boundary:
+  api_execution_allowed: false
+  manifest_generation_authorized: false
+  replay_authorized: false
+  scoring_authorized: false
+  prm_filtering_authorized: false
+
+claim_policy:
+  current_status_remains: PILOT_BLOCKED
+  validation_or_pass_claim_allowed: false
+  prm_filtering_improvement_claim_allowed: false
+  allowed_before_execution:
+    - real_task_v3_preregistration
+    - failed_route_motivation
+    - hard_budget_cap_specification
+    - dense_target_reliability_gate_specification
+    - low_complexity_w_struct_specification
+  forbidden:
+    - real_task_v3_validation_success_assertion
+    - v2_1_or_v2_2_rescue_assertion
+    - same_locked_set_retry_until_pass_assertion
+    - deterministic_replay_claim
+    - top_tier_readiness_assertion
+    - prm_filtering_improvement_assertion
