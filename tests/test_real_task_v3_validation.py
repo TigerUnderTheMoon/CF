@@ -37,6 +37,12 @@ from scripts.generate_real_task_v3_manifest import (
     _load_gsm8k_extra_source_metadata,
     _write_manifest_generation_package,
 )
+from scripts.generate_governance_diagnostic_report import (
+    build_final_status_audit,
+    build_governance_diagnostic_report,
+    write_governance_diagnostic_outputs,
+)
+from scripts.plot_governance_diagnostic import build_governance_diagnostic_plot
 from scripts.prepare_real_task_v3_gsm8k_source import (
     DECLARED_GSM8K_REVISION,
     SourcePreparationBlocked,
@@ -158,6 +164,74 @@ def _run_manifest_gate(
 
 def _read_manifest_rows(path: Path) -> list[dict[str, Any]]:
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+
+
+def _sample_blocked_manifest_audit() -> dict[str, Any]:
+    return {
+        "status": "BLOCKED_OVERLAP_DETECTED",
+        "blocker": "overlap_detected",
+        "total_excluded_rows": 10,
+        "post_dedup_counts": {"gsm8k": 0, "hotpotqa": 0},
+        "overlap_counts": {
+            "pilot": {
+                "sample_id": 2,
+                "task_id": 0,
+                "dataset_config_split_source_index": 2,
+                "normalized_question_hash": 2,
+                "reference_answer_hash": 3,
+                "non_empty_alias_hash": 10,
+            },
+            "v2": {
+                "sample_id": 2,
+                "task_id": 2,
+                "dataset_config_split_source_index": 2,
+                "normalized_question_hash": 2,
+                "reference_answer_hash": 1,
+                "non_empty_alias_hash": 10,
+            },
+            "v2.1": {
+                "sample_id": 2,
+                "task_id": 2,
+                "dataset_config_split_source_index": 2,
+                "normalized_question_hash": 2,
+                "reference_answer_hash": 1,
+                "non_empty_alias_hash": 10,
+            },
+            "v2.2": {
+                "sample_id": 2,
+                "task_id": 2,
+                "dataset_config_split_source_index": 2,
+                "normalized_question_hash": 2,
+                "reference_answer_hash": 1,
+                "non_empty_alias_hash": 10,
+            },
+        },
+        "overlap_examples": {
+            "pilot": {
+                "non_empty_alias_hash": [
+                    {
+                        "sample_id": "gsm8k-train-00000",
+                        "task_type": "gsm8k",
+                        "overlap_key": "non_empty_alias_hash",
+                        "overlap_value": EMPTY_STRING_HASH,
+                    }
+                ],
+                "sample_id": [
+                    {
+                        "sample_id": "hotpotqa-00064",
+                        "task_type": "hotpotqa",
+                        "overlap_key": "sample_id",
+                        "overlap_value": "hotpotqa-00064",
+                    }
+                ],
+            }
+        },
+        "split_counts": {
+            "smoke": {"total": 200, "gsm8k": 100, "hotpotqa": 100},
+            "dev": {"total": 1000, "gsm8k": 500, "hotpotqa": 500},
+            "locked": {"total": 2000, "gsm8k": 1000, "hotpotqa": 1000},
+        },
+    }
 
 
 def test_real_task_v3_config_locks_budget_scale_and_claim_boundary() -> None:
@@ -1121,3 +1195,86 @@ def test_real_task_v3_manifest_script_rejects_execution_scope_drift() -> None:
         assert "api_execution_allowed" in str(exc)
     else:
         raise AssertionError("expected execution boundary drift to be rejected")
+
+
+def test_governance_diagnostic_report_contains_three_claim_safe_findings() -> None:
+    report = build_governance_diagnostic_report(_sample_blocked_manifest_audit())
+
+    assert report["status"] == "GOVERNANCE_DIAGNOSTIC_COMPLETE"
+    assert report["blocked_stage"] == "MANIFEST_GATE"
+    assert report["failure_mode"] == "BLOCKED_OVERLAP_DETECTED"
+    findings = {finding["finding_id"]: finding for finding in report["diagnostic_findings"]}
+    assert set(findings) == {"F1", "F2", "F3"}
+    assert findings["F1"]["severity"] == "TOTAL_COLLAPSE"
+    assert findings["F2"]["severity"] == "TOTAL_EXHAUSTION"
+    assert findings["F3"]["severity"] == "COMBINATORIAL_OVERFLOW"
+    assert report["claim_safe_boundary_evidence"] is True
+    assert report["row_level_intersections_recoverable_from_audit"] is False
+
+
+def test_governance_diagnostic_f1_records_empty_alias_collision_hash() -> None:
+    report = build_governance_diagnostic_report(_sample_blocked_manifest_audit())
+    f1 = {finding["finding_id"]: finding for finding in report["diagnostic_findings"]}["F1"]
+
+    assert f1["collision_hash"] == EMPTY_STRING_HASH
+    assert f1["hash_preimage"] == "SHA-256 of empty string"
+    assert f1["affected_dataset"] == "gsm8k"
+
+
+def test_governance_diagnostic_f3_exclusion_rate_math() -> None:
+    audit = _sample_blocked_manifest_audit()
+    report = build_governance_diagnostic_report(audit)
+    f3 = {finding["finding_id"]: finding for finding in report["diagnostic_findings"]}["F3"]
+
+    assert f3["total_candidates"] == 10
+    assert f3["total_excluded"] == 10
+    assert f3["exclusion_rate"] == pytest.approx(1.0)
+    assert f3["per_key_marginal_contribution"]["non_empty_alias_hash"] == 10
+    assert f3["per_key_marginal_contribution"]["reference_answer_hash"] == 3
+
+
+def test_governance_diagnostic_outputs_final_status_audit(tmp_path: Path) -> None:
+    audit_path = tmp_path / "manifest_overlap_audit.json"
+    output_dir = tmp_path / "real_task_v3"
+    _write_json(audit_path, _sample_blocked_manifest_audit())
+
+    result = write_governance_diagnostic_outputs(
+        audit_path=audit_path,
+        output_dir=output_dir,
+    )
+
+    report = json.loads(Path(result["report_path"]).read_text(encoding="utf-8"))
+    final_status = json.loads(Path(result["final_status_path"]).read_text(encoding="utf-8"))
+    assert report["status"] == "GOVERNANCE_DIAGNOSTIC_COMPLETE"
+    assert final_status["status"] == "REAL_TASK_V3_DATA_SCARCITY_BLOCKED"
+    assert final_status["blocked_stage"] == "MANIFEST_GATE"
+    assert final_status["failure_mode"] == "BLOCKED_OVERLAP_DETECTED"
+    assert final_status["diagnostic_finding_ids"] == ["F1", "F2", "F3"]
+    assert final_status["claim_registry_impact"].startswith("PILOT_BLOCKED remains")
+
+
+def test_governance_diagnostic_plot_generation(tmp_path: Path) -> None:
+    audit_path = tmp_path / "manifest_overlap_audit.json"
+    output_path = tmp_path / "governance_diagnostic_upset.png"
+    _write_json(audit_path, _sample_blocked_manifest_audit())
+
+    result = build_governance_diagnostic_plot(
+        audit_path=audit_path,
+        output_path=output_path,
+    )
+
+    assert result["status"] == "GOVERNANCE_DIAGNOSTIC_PLOT_WRITTEN"
+    assert output_path.exists()
+    assert output_path.stat().st_size > 0
+
+
+def test_real_task_v3_claim_registry_final_status_section_is_claim_safe() -> None:
+    text = Path("paper/claim_registry.md").read_text(encoding="utf-8")
+    assert "## Real-Task v3 Final Status (2026-06-06)" in text
+    section = text.split("## Real-Task v3 Final Status (2026-06-06)", maxsplit=1)[1]
+
+    assert "`PILOT_BLOCKED` remains" in section
+    assert "No real-task validation data was generated" in section
+    assert "No PRM/filtering improvement claim is permitted" in section
+    assert "REAL_TASK_V3_VALIDATION_PASS" not in section
+    assert "PRM_FILTERING_IMPROVEMENT_PASS" not in section

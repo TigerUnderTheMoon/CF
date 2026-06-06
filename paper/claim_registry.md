@@ -45,3 +45,20 @@ Additional v2.2 smoke provenance is limited to the smoke report and sparse-signa
 - `C_TRAJECTORY_CONTROLS` can move out of `pilot_blocked` only when every configured control has measured accuracy, token, validity, reflection-count, and cost metrics.
 - `C_PRM_FILTERING` can move out of `future_validation` only in a future project with a passing downstream validation artifact comparing against vanilla PRM, length-calibrated PRM, token-attribution baselines, and frozen reflection-weight baselines. The failed v2.1 mini downstream filtering diagnostic is explicitly not that pass.
 - No paper section should upgrade a claim beyond this registry.
+
+## Real-Task v3 Final Status (2026-06-06)
+
+**Status**: `REAL_TASK_V3_DATA_SCARCITY_BLOCKED`
+
+**Blocked At**: Manifest gate (`BLOCKED_OVERLAP_DETECTED`)
+
+**Root Cause**: Strict six-key deduplication against pilot/v2/v2.1/v2.2 produced `post_dedup_counts: {gsm8k: 0, hotpotqa: 0}`.
+
+**Diagnostic Findings**:
+- **F1 (Empty-Alias Hash Collision)**: GSM8K `non_empty_alias_hash` = SHA-256("") for all 7,473 rows, causing total collision with any historical empty-alias sample.
+- **F2 (Split Consumption)**: HotpotQA validation split was already represented in prior versions.
+- **F3 (Combinatorial Overflow)**: Six-key OR-logic produced 14,878 exclusions from the available candidate pool.
+
+**Methodological Contribution**: These findings constitute governance diagnostics that reveal a hidden data-availability ceiling in strict reproducibility frameworks. They inform future deduplication key design, split-level provenance, and marginal-contribution reporting.
+
+**Claim Boundary**: `PILOT_BLOCKED` remains. No real-task validation data was generated. No PRM/filtering improvement claim is permitted. The synthetic diagnostic core (Phase 5-7, Stage 2) remains the only completed empirical evidence.

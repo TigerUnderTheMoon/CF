@@ -168,3 +168,13 @@ The current paper package may claim only guarded diagnostic support:
 - PRM/filtering improvement remains future validation, not a completed result; the completed v2.1 mini filtering diagnostic failed and is abandoned.
 
 Do not mark the manuscript as downstream-validated or submission-ready for a PRM/filtering claim. The current submission path is diagnostic only, with real-task and downstream failures reported as boundary evidence.
+
+## Governance Diagnostic Contribution (v3 Blockage)
+
+The v3 real-task route was intentionally blocked by its own governance framework. Rather than treating this as a performance failure, we report it as a methodological boundary condition:
+
+1. **Dataset-aware deduplication**: Universal key schemas fail when datasets have structural heterogeneity, such as empty aliases.
+2. **Split-level provenance**: Dataset-level freshness declarations are insufficient when specific splits have been historically consumed.
+3. **Marginal contribution reporting**: Aggregate overlap counts obscure which keys drive exclusion; per-key marginal analysis is necessary.
+
+These diagnostics are reported in `outputs/real_task_v3/governance_diagnostic_report.json` and visualized in `outputs/real_task_v3/governance_diagnostic_upset.png`. They are offered as design constraints for future reproducibility frameworks, not as performance claims.
