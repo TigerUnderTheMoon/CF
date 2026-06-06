@@ -1,0 +1,52 @@
+project:
+  type: book
+  output-dir: _book
+
+book:
+  title: "Functional Metacognitive Attribution"
+  subtitle: "A Diagnostic Framework with Reproducibility Constraints for Reflection Utility Evaluation"
+  author: "Anonymous Author(s)"
+  date: "2026-06-06"
+  chapters:
+    - index.qmd
+    - chapters/01_introduction.qmd
+    - chapters/02_related_work.qmd
+    - chapters/03_methodology.qmd
+    - chapters/04_experiments.qmd
+    - chapters/05_results.qmd
+    - chapters/06_limitations.qmd
+    - chapters/07_conclusion.qmd
+  appendices:
+    - chapters/appendix.qmd
+  downloads:
+    - pdf
+
+bibliography: references.bib
+
+execute:
+  cache: true
+  echo: false
+  warning: false
+  message: false
+
+crossref:
+  chapters: true
+  fig-title: "Figure"
+  tbl-title: "Table"
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    number-sections: true
+    code-fold: true
+  pdf:
+    documentclass: scrreprt
+    papersize: a4
+    toc: true
+    number-sections: true
+    keep-tex: true
+    geometry:
+      - margin=1in
+    include-in-header:
+      - quarto-elsevier-compat.tex

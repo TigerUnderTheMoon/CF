@@ -1,0 +1,18 @@
+experiment:
+  name: fma_demo
+  description: "Offline demo for Phase 5 counterfactual attribution and Phase 6 structural diagnostics."
+
+phase5:
+  traces: data/synthetic_traces.jsonl
+  utility_annotations: outputs/utility_annotations.jsonl
+  output_dir: outputs/phase5
+  figures_dir: outputs/phase5/figures
+  seed: 42
+  utility_threshold: 0.9
+
+phase6:
+  traces: data/synthetic_traces.jsonl
+  output_dir: outputs/phase6
+  figures_dir: outputs/phase6/figures
+  utility_threshold: 0.9
+  removal_mode: PRUNE

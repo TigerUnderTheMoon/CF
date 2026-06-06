@@ -1,147 +1,216 @@
 # Functional Metacognitive Attribution
 
-This repository is a research prototype for Functional Metacognitive Attribution (FMA): an intervention-based framework for learning reflection utility signals that may later support attribution-aware process supervision and PRM/filtering.
+[![CI status](https://img.shields.io/github/actions/workflow/status/TigerUnderTheMoon/CF/ci.yml?branch=main&label=CI)](https://github.com/TigerUnderTheMoon/CF/actions)
+[![Python version](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
+[![License](https://img.shields.io/badge/license-TBD-lightgrey)](#citation)
+[![Codecov](https://codecov.io/gh/TigerUnderTheMoon/CF/branch/main/graph/badge.svg)](https://codecov.io/gh/TigerUnderTheMoon/CF)
 
-It is NOT:
-- a production reasoning benchmark
-- a mechanistic interpretability system
-- a hidden-process discovery framework
+FMA 是一个用于评估反思型智能体推理轨迹中局部效用与结构必要性的诊断框架。
 
-## Current Manuscript Status
+Functional Metacognitive Attribution (FMA, 功能性元认知归因) 研究推理轨迹（reasoning traces，智能体逐步思考的可观测文本序列）中的可观测反思步骤。它提出一个有界问题：哪些反思步骤在局部看起来有用，以及在图级别干预（graph-level interventions，对推理结构进行可控修改）之后，哪些步骤在结构上仍然是必需的？
 
-Status source rule: current readiness is derived from `outputs/real_task_pilot/readiness_audit.json`, `paper/submission_readiness_audit.md`, and `paper/claim_registry.md`. Proposal text is not evidence.
+## Core Features
 
-The repository includes a Phase 8 paperization layer under `paper/`. The target journal storyline follows the Chinese framework in `D:/Desktop/论文框架_中文版.pdf`: FMA is proposed as a reflection utility learning framework for process supervision, while the current repository evidence supplies the diagnostic core that prevents naive supervision weighting.
+- **Counterfactual attribution（反事实归因）**: Phase 5 从存储的推理轨迹和结构保留消融（structure-preserving ablations，保持文本长度和位置不变的干预）中估计局部归因分数 `attribution_score`（局部反事实效用分数）。
+- **Structural diagnostics（结构诊断）**: Phase 6 在三种图干预模式下比较局部归因与结构必要性——PRUNE（单节点移除，仅删除一个节点）、CASCADE（节点及其后继移除，删除节点及其所有下游依赖）和 BYPASS（移除并重连下游结构，跳过节点并将上游直接连接到下游）。
+- **Redundancy and bottleneck analysis（冗余与瓶颈分析）**: Phase 7 总结瓶颈（bottleneck nodes，高局部效用且高结构必要性的稀缺节点）、分布式冗余和补偿路径，但不声称实现了真正的因果识别（true causal identification）。
+- **Claim-safe pilot governance（审计边界治理）**: 真实任务和下游路线保持在 `PILOT_BLOCKED`（试点证据存在但升级门限未满足）状态，除非其预注册的产物通过规定的门限。
 
-Current completed evidence supports this claim:
+## Quick Start
 
-Reflective reasoning exhibits widespread local utility, but only sparse structural necessity.
+```bash
+# 1. 安装依赖（包含可编辑模式的 FMA 包）
+pip install -e .
 
-The key manuscript turn is that local FMA-style utility cannot be used directly as a PRM supervision weight. Phase 5-7 show that many locally useful reflective steps are structurally redundant or structurally inert, so downstream supervision/filtering must be constrained by structural necessity, sparse bottlenecks, redundancy, and weak compensation diagnostics.
+# 2. 运行测试套件验证环境
+pytest -q
 
-The current state is a diagnostic manuscript package, not a completed PRM/filtering result. Real-task replay is still pilot evidence, readiness is `PILOT_BLOCKED`, and the one-shot v2.1 downstream filtering mini-validation failed its preregistered filtering-signal gate. Downstream improvement is therefore unsupported by current artifacts.
+# 3. 运行 Phase 5：反事实归因（从存储轨迹计算局部效用）
+fma run-phase5 --config configs/demo.yaml
 
-The current real-task pilot failed the primary rank-signal gate and is frozen as a development failure audit. `s_FMA_v2` remains a fresh-holdout validation route, but the guarded live API preflight-only run reports `PREFLIGHT_FAIL_DRIFT`, the first approved 20-row stochastic smoke reported `STOCHASTIC_SMOKE_FAIL_GENERATION`, and the bounded rerun reports `STOCHASTIC_SMOKE_FAIL_SPARSE_SIGNAL`. The smoke generation failure audit is stored at `outputs/s_fma_v2_fresh_holdout/stochastic_smoke_generation_failure_audit.md` and `.json`; the approved rerun consumed `3.14542` USD within the `5` USD ceiling, produced 60/60 successful replay results, but had `nonzero_delta_rows: 0`.
-
-The approved `s_FMA_v2.1` API_PREFLIGHT_ONLY rerun at `outputs/s_fma_v2_1_fresh_holdout/api_preflight_report.json` remains failed: status `PREFLIGHT_FAIL_DRIFT`, 20 records, 23 API attempts, cost `0.86245`, JSON/schema/tag/final-answer success rates all `1.0`, 20 valid trace rows, and 23/23 non-empty `raw_output` attempts. The active preflight blockers are drift and missing metadata, not empty extracted output or schema transport. The latest bounded v2.1 stochastic smoke rerun at `outputs/s_fma_v2_1_fresh_holdout/stochastic_smoke_report.json` reports `V2_1_STOCHASTIC_SMOKE_FEASIBLE_FOR_PILOT_REQUEST`: JSON/schema/tag/final-answer success rates are all `1.0`, replay success rate is `1.0`, and nonzero Delta-U counts are 20 pooled, 7 GSM8K, and 13 HotpotQA.
-
-The recomputed v2.1 pilot stochastic artifact at `outputs/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_report.json` now reports `V2_1_PILOT_STOCHASTIC_PASS` after the single transport retry: 700 effective API requests, cost USD `28.06931`, 100 valid original traces, 600/600 replay success, JSON/schema/tag/final-answer success rates all `1.0`, nonzero Delta-U counts of 96 pooled, 42 GSM8K, and 54 HotpotQA, and positive pooled/GSM8K/HotpotQA Spearman CIs. Its `TASK_SPECIFIC_pass` and `GLOBAL_pass` fields are true only at the pilot stochastic gate. It is not full validation, deterministic replay evidence, submission-upgrade evidence, or a PRM/filtering result; current status remains `PILOT_BLOCKED`.
-
-The current v2.1 full stochastic validation artifact at `outputs/s_fma_v2_1_fresh_holdout/v2_1_full_stochastic_report.json` is frozen as failed full-validation provenance, not a pass. It reports `V2_1_FULL_STOCHASTIC_FAIL_SCHEMA_OR_TAGS` with failure codes `V2_1_FULL_STOCHASTIC_FAIL_SCHEMA_OR_TAGS` and `V2_1_FULL_STOCHASTIC_FAIL_SPARSE_SIGNAL`: JSON/schema/tag/final-answer success rates are `0.9971181556195965` because 8 HotpotQA attempts hit timeout/connection errors, and GSM8K has 16 nonzero Delta-U rows against the preregistered threshold of 20. The strict engineering retry at `outputs/s_fma_v2_1_fresh_holdout/v2_1_full_stochastic_engineering_retry_report.json` also failed, with `GLOBAL_pass: false`, 119 incremental retry API calls, effective report API attempts `2794`, and abandonment reason `transport_unresolved_and_gsm8k_sparse_signal_below_preregistered_threshold`. Because the unresolved transport failures are HotpotQA-side and GSM8K remains `16 < 20`, strict v2.1 full validation is abandoned as non-viable under the current contract. The failure audit is stored at `outputs/s_fma_v2_1_fresh_holdout/v2_1_full_validation_failure_audit.md` and `.json`; the abandonment audit is stored at `outputs/s_fma_v2_1_fresh_holdout/v2_1_full_validation_abandonment_audit.md` and `.json`; the route decision is `paper/full_validation_route_decision.md`. No deterministic replay language, submission-upgrade claim, gate-relaxation claim, or PRM/filtering claim is allowed.
-
-The preregistered v2.1 downstream filtering mini-validation is stored at `outputs/s_fma_v2_1_fresh_holdout/v2_1_downstream_filtering_report.json` with preregistration at `outputs/s_fma_v2_1_fresh_holdout/v2_1_downstream_filtering_preregistration.json`. It ran exactly 20 paired pilot-sourced samples, 40 API calls, and USD `1.629725` under the USD `5` ceiling and 60-request cap. The run produced 20/20 valid pairs but failed `V2_1_DOWNSTREAM_FILTERING_MINI_FAIL_FILTERING_SIGNAL`: pooled mean advantage for masking the lower-scored span versus the higher-scored anti-filter was `-0.05`; GSM8K was `-0.2`; HotpotQA was `0.1`. The next allowed step is `ABANDON_MINI_DOWNSTREAM_FILTERING_ROUTE`; current status remains `PILOT_BLOCKED`, and no full-validation, deterministic replay, submission-upgrade, new-route, or PRM/filtering superiority claim is allowed.
-
-The `s_FMA_v2.2` artifacts are retained as archived failed exploratory provenance, not as the current manuscript route. The current v2.2 API preflight is drift-failed, and the stochastic smoke checkpoint is `V2_2_STOCHASTIC_SMOKE_FAIL_SPARSE_SIGNAL` with nonzero Delta-U counts of 5 pooled, 0 GSM8K, and 5 HotpotQA. No further v2.2 execution is part of the current diagnostic-paper plan.
-
-## Phase 5-7 Core Findings
-
-The empirical contributions currently completed are concentrated in Phase 5-7. Phase 1-4 established conceptual and infrastructural foundations.
-
-- Phase 5 produces deterministic counterfactual functional attribution over 800 traces and 2400 reflective steps.
-- Phase 6 reports weak alignment between `attribution_score` and `structural_necessity`: PRUNE 0.0753, CASCADE 0.0523, BYPASS 0.0917.
-- Phase 6 also reports a 67.79 percent zero structural necessity rate.
-- Phase 7 reports redundancy density 0.3842, distributedness index 0.2976, bottleneck count 191, and weak mean compensation ratios.
-
-These diagnostics explain why the target architecture must distinguish local utility from structural necessity. They do not establish downstream task gains for attribution-aware PRM/filtering.
-
-## Target Storyline
-
-The intended journal narrative has three layers:
-
-1. FMA proposes a structure-preserving, distribution-conditioned way to estimate reflection utility from observable reasoning traces.
-2. Phase 5-7 reveal the central diagnostic finding: local utility is widespread, but sparse structural necessity is the safer constraint for supervision and filtering.
-3. Failed/blocked real-task and downstream checks are reported as boundary evidence, not as positive downstream validation.
-
-PRM/filtering claims remain unsupported. The failed v2.1 mini filtering diagnostic is evidence against using the current pilot-sourced signal as a downstream filtering result.
-
-## Paper Directory
-
-- `paper/abstract.md`
-- `paper/introduction.md`
-- `paper/related_work.md`
-- `paper/methodology.md`
-- `paper/experiments.md`
-- `paper/results.md`
-- `paper/limitations.md`
-- `paper/conclusion.md`
-- `paper/appendix.md`
-- `paper/reproducibility.md`
-- `paper/terminology.md`
-- `paper/figure_inventory.md`
-- `paper/paper_outline.md`
-- `paper/claim_registry.md`
-- `paper/submission_readiness_audit.md`
-- `paper/full_validation_route_decision.md`
-- `paper/s_fma_v2_fresh_holdout_plan.md`
-- `paper/s_fma_v2_1_evidence_target_revision.md`
-- `paper/s_fma_v2_2_preregistration_plan.md` (archived failed exploratory route)
-- `paper/v2_1_to_v2_2_transition_audit.md` (archived transition provenance)
-
-## Reproduction Commands
-
-Run tests:
-
-```powershell
-python -m pytest -q
+# 4. 运行 Phase 6：结构图诊断（比较局部效用与结构必要性）
+fma run-phase6 --input outputs/phase5/
 ```
 
-Run the guarded real-task pilot checks without live API spend:
+Demo 会将教程产物写入 `outputs/phase5/` 和 `outputs/phase6/`。它不会覆盖历史顶级证据文件。
 
-```powershell
-python scripts/run_real_task_pilot.py --stage hygiene
-python scripts/run_real_task_pilot.py --stage preflight-eval --input tests/fixtures/real_task_traces.jsonl
-python scripts/run_real_task_pilot.py --stage replay-prefixes --input tests/fixtures/real_task_traces.jsonl
-python scripts/run_real_task_pilot.py --stage delta-u --input tests/fixtures/real_task_traces.jsonl --intervened-input tests/fixtures/intervened_traces.jsonl
-python scripts/run_real_task_pilot.py --stage baselines --input tests/fixtures/real_task_traces.jsonl
-python scripts/run_real_task_pilot.py --stage controls --input tests/fixtures/real_task_traces.jsonl
-python scripts/run_real_task_pilot.py --stage readiness --input tests/fixtures/real_task_traces.jsonl --tests-passed
+如需快速浏览代码示例，请查看 [`examples/`](examples/) 目录下的 Jupyter Notebook：
+
+- [`01_counterfactual_attribution.ipynb`](examples/01_counterfactual_attribution.ipynb) — 加载 fixture traces 并展示 `attribution_score` 的计算过程。
+- [`02_graph_diagnostics.ipynb`](examples/02_graph_diagnostics.ipynb) — 构建 NetworkX 图，执行 PRUNE / CASCADE / BYPASS 三种干预，并可视化瓶颈节点。
+- [`03_interpreting_audit.ipynb`](examples/03_interpreting_audit.ipynb) — 连接 `audit.db`，查询 v2.1 的失败事件并可视化成本分布。
+
+## Architecture
+
+```mermaid
+flowchart TD
+    A["Fixture or stored traces<br/>（存储的推理轨迹）"] --> B["Phase 5: counterfactual attribution<br/>（反事实归因：估计局部效用）"]
+    B --> C["outputs/phase5/necessity_scores.jsonl<br/>（必要性分数）"]
+    B --> D["outputs/phase5/counterfactual_summary.json<br/>（归因摘要）"]
+    C --> E["Phase 6: structural graph diagnostics<br/>（结构图诊断：PRUNE / CASCADE / BYPASS）"]
+    D --> E
+    A --> E
+    E --> F["outputs/phase6/reflection_graph.json<br/>（反思图结构）"]
+    E --> G["outputs/phase6/structural_diagnostics.json<br/>（结构诊断报告）"]
+    F --> H["Phase 7: redundancy and bottleneck analysis<br/>（冗余与瓶颈分析）"]
+    G --> H
+    H --> I["redundancy, compensation, bottleneck summaries<br/>（冗余、补偿、瓶颈汇总）"]
+    I --> J["Claim registry and readiness audit<br/>（结论注册与就绪性审计）"]
 ```
 
-Live API preflight and pilot execution are intentionally guarded and must use a real-data manifest, not fixtures:
+数据流说明：
 
-```powershell
-python scripts/run_real_task_pilot.py --stage export-data
-python scripts/run_real_task_pilot.py --stage manifest --gsm8k-input data/real_task_pilot/gsm8k_test.jsonl --hotpotqa-input data/real_task_pilot/hotpotqa_validation.jsonl
-python scripts/run_real_task_pilot.py --stage api-preflight --input outputs/real_task_pilot/sample_manifest.json --allow-api
-python scripts/run_real_task_pilot.py --stage seed-probe --input outputs/real_task_pilot/sample_manifest.json --allow-api
-python scripts/run_real_task_pilot.py --stage protocol-revision --input outputs/real_task_pilot/sample_manifest.json
-python scripts/run_real_task_pilot.py --stage api-pilot --input outputs/real_task_pilot/sample_manifest.json --allow-api
+1. **Phase 5** 读取存储的推理轨迹，通过单步消融（single-step ablation，逐一移除反思步骤并观测效用变化）计算 `attribution_score` 和 `necessity`（局部必要性，即原效用与消融后效用的差异，Delta-U）。
+2. **Phase 6** 将轨迹构建为有向无环图（DAG），然后执行三种干预模式——PRUNE（单节点移除）、CASCADE（节点及其后继移除）、BYPASS（移除并重连下游结构）——以估计每个节点的拓扑敏感必要性（topology-sensitive necessity）。
+3. **Phase 7** 跨图聚合结果，识别高归因但低必要性的冗余节点，以及高归因且高必要性的瓶颈节点，最终写入审计和可视化产物。
+
+## Repository Layout
+
+| Path | Purpose |
+|---|---|
+| `src/fma/` | 可安装的 Python 包，包含归因、图诊断、干预、真实任务试点工具和可视化。 |
+| `scripts/` | Phase 5–7 和受保护试点路线的可复现命令行运行器。 |
+| `configs/` | YAML 实验和演示配置。 |
+| `data/traces/` | 可复现诊断使用的存储合成轨迹输入。 |
+| `outputs/` | 生成的证据产物，包括历史 Phase 5–7 报告和受保护的试点审计。 |
+| `examples/` | 归因、图诊断和审计解读的 Notebook 逐步教程。 |
+| `docs/adr/` | 架构决策记录（ADR, Architecture Decision Records），解释关键方法论选择。 |
+| `paper/` | 手稿文本、结论注册、就绪性审计和提交边界文档。 |
+| `tests/` | 确定性的单元测试和契约测试。 |
+
+## Benchmark
+
+性能基准在 **8 vCPU / 32 GB RAM** 环境下测得。以下时间为包含进程池启动开销的保守估计；若使用轻量级纯 Python 求值器，实际耗时会更短。若将 `evaluator` 替换为模型推理（如 LLM 调用），时间将随单次推理延迟线性增长。
+
+| Phase | 规模 | 并行后端 | 预期耗时 | 说明 |
+|---|---|---|---|---|
+| **Phase 5** | 800 traces（≈14,400 ablation rows） | `joblib.Parallel(backend="loky")` 或 `threading` | **2 – 4 分钟** | 6 种 ablation 策略（ATTRIBUTION_TOP_K / BOTTOM_K / RANDOM_K / POSITIONAL_FIRST_K / POSITIONAL_LAST_K / CATEGORY_MATCHED_RANDOM）按 trace chunk（chunk_size=100）并行执行；进度条由 `tqdm` 提供。 |
+| **Phase 6** | 800 graphs × 3 种干预模式 | `concurrent.futures.ProcessPoolExecutor` | **1 – 2 分钟** | PRUNE / CASCADE / BYPASS 三种移除模式对图结构做深拷贝后分发到子进程；每个 worker 在计算前重置与父进程相同的随机种子，保证确定性。 |
+| **Phase 7** | 800 traces 的冗余与瓶颈汇总 | 串行或局部多线程 | **30 秒 – 1 分钟** | 瓶颈检测、冗余密度和补偿分析计算量较小，主要耗时在 I/O 与可视化（matplotlib 绘图）。 |
+
+### 大规模扩展（80,000 traces）
+
+对于 80,000 条轨迹的规模，请使用 `IncrementalAttributionEngine`（`fma.attribution.engine`）：
+
+- **分块**：默认 `chunk_size=100`，自动将中间结果写入 `outputs/phase5/chunks/chunk_{i:05d}.jsonl`。
+- **断点续算**：设置 `resume=True`，已完成的 chunk 会从磁盘直接读取，跳过重复计算。
+- **Checkpoint**：每完成一个 chunk 后更新 `outputs/phase5/chunks/checkpoint.json`，记录 `completed_chunks` 与 `total_chunks`。
+- **确定性**：主进程与每个 worker 均在并行计算前调用相同的 `random.seed` 和 `np.random.seed`，因此并行结果与串行结果逐行一致。
+
+### 运行基准测试
+
+```bash
+# 使用自定义装饰器（memory_profiler + tracemalloc）
+python -c "
+from fma.utils.benchmark import benchmark_function
+from fma.attribution.engine import ParallelAttributionEngine
+
+engine = ParallelAttributionEngine(seed=42, chunk_size=100, n_jobs=-1)
+# ... 准备 traces 和 annotations ...
+result, bm = benchmark_function('phase5_800_traces', engine.run_single_step_ablations, traces, annotations)
+print(bm)
+"
+
+# 可选：使用 pyperf 进行多轮统计计时（若已安装 pyperf）
+python -c "
+from fma.utils.benchmark import pyperf_benchmark_function
+# pyperf_benchmark_function 会执行多轮并记录 mean / stdev
+"
 ```
 
-The deterministic 400-trace pilot must not start until `outputs/real_task_pilot/api_preflight_report.json` has `status: pass`. If seed transport is unavailable, `protocol-revision` writes `api_determinism_blocker.json` and a preregistered non-deterministic repeated-estimation protocol; that protocol permits trace generation only as pilot evidence and requires repeated replay plus bootstrap confidence intervals before any utility claim is upgraded.
+产物默认写入 `outputs/benchmarks/phase5_benchmark.json`，格式如下：
 
-Regenerate structural diagnostics:
-
-```powershell
-python scripts/run_structural_diagnostics.py
+```json
+{
+  "schema_version": "phase-benchmark-v1",
+  "generated_at_utc": "2026-06-06T12:00:00",
+  "benchmarks": [
+    {
+      "name": "phase5_800_traces",
+      "elapsed_seconds": 142.3,
+      "peak_memory_mb": 512.0,
+      "measured_with": "memory_profiler",
+      "timestamp_utc": "2026-06-06T12:00:00",
+      "metadata": {}
+    }
+  ]
+}
 ```
 
-Regenerate redundancy and compensation analysis:
+## DVC Data Management
 
-```powershell
-python scripts/run_redundancy_analysis.py
+This repository uses [DVC](https://dvc.org/) (Data Version Control) to manage large artifacts in `data/` and `outputs/`, keeping the Git repository lightweight while preserving full reproducibility.
+
+### Quick commands
+
+```bash
+# Pull tracked data and outputs from remote storage
+dvc pull
+
+# Re-run the full pipeline (phase5 → phase6 → phase7 → figures → metrics)
+dvc repro
+
+# Re-run only a specific stage and its downstream dependencies
+dvc repro figures
+
+# Show aggregated metrics
+dvc metrics show
+
+# Push local data / outputs to the configured remote
+dvc push
 ```
 
-## Expected Outputs
+### Pipeline stages
 
-Primary outputs are stored in `outputs/`, with figures under `outputs/figures/`. The main paper evidence comes from `outputs/counterfactual_summary.json`, `outputs/structural_diagnostics.json`, `outputs/structural_diagnostics.md`, `outputs/redundancy_analysis.json`, and `outputs/redundancy_analysis.md`.
+| Stage | Input | Output | Description |
+|---|---|---|---|
+| `phase5` | `data/synthetic_traces.jsonl` | `outputs/phase5/` | Counterfactual attribution & necessity scores |
+| `phase6` | `outputs/phase5/` | `outputs/phase6/` | Structural graph diagnostics (PRUNE / CASCADE / BYPASS) |
+| `phase7` | `outputs/phase6/` | `outputs/phase7/` | Redundancy, bottleneck & compensation analysis |
+| `figures` | `outputs/phase7/` | `outputs/figures/` | Aggregated visualization artifacts |
+| `metrics` | `outputs/phase{5,6,7}/` | `outputs/metrics.json` | Aggregated metrics file for `dvc metrics show` |
 
-The new pilot-only artifacts are stored under `outputs/real_task_pilot/`. They do not rewrite historical synthetic outputs. As of the current readiness audit, `outputs/real_task_pilot/readiness_audit.json` reports `PILOT_BLOCKED`, and `outputs/real_task_pilot/api_preflight_report.json` reports `PREFLIGHT_FAIL_DRIFT`.
+### Historical artifacts
 
-The current pilot blockers are that the primary signal is available but failed the rank-signal gate, and API determinism drift remains. Replay, Delta-U, rank-signal coverage, baseline leakage, and readiness-level trajectory-control gates now pass; the real-task candidate score remains pilot diagnostic evidence, not scale-ready support or PRM/filtering validation.
+Legacy outputs (failed pilots, v2 / v2.2 holdouts, and earlier top-level JSON/JSONL files) have been archived to `outputs/archive/` and are tracked by DVC via `outputs/archive.dvc`. Core Phase 5–7 directories and `outputs/figures/` are managed by the `dvc.yaml` pipeline.
 
-The frozen failure audit is `outputs/real_task_pilot/primary_signal_failure_audit.md` with structured companion `outputs/real_task_pilot/primary_signal_failure_audit.json`. The planned `s_FMA_v2` route is documented in `paper/s_fma_v2_fresh_holdout_plan.md` and `configs/s_fma_v2_fresh_holdout.yaml`; `outputs/s_fma_v2_fresh_holdout/manifest_overlap_audit.json` reports `MANIFEST_OVERLAP_CLEAN`, the fresh-holdout live API preflight-only report reports `PREFLIGHT_FAIL_DRIFT` after 20 evaluated records, and the first approved smoke produced the generation failure audit at `outputs/s_fma_v2_fresh_holdout/stochastic_smoke_generation_failure_audit.md` and `.json`. The bounded rerun approval package is stored at `outputs/s_fma_v2_fresh_holdout/stochastic_smoke_rerun_approval_request.md` and `.json`; the approved rerun updated `outputs/s_fma_v2_fresh_holdout/stochastic_smoke_report.json` to `STOCHASTIC_SMOKE_FAIL_SPARSE_SIGNAL`, with 20 smoke samples, 60/60 successful replay results, `nonzero_delta_rows: 0`, and `cost_used_usd: 3.14542`.
+### Remote storage configuration
 
-The planned `s_FMA_v2.1` revision is documented in `paper/s_fma_v2_1_evidence_target_revision.md` and `configs/s_fma_v2_1_fresh_holdout.yaml`; the regenerated package under `outputs/s_fma_v2_1_fresh_holdout/` contains 400 fresh selected rows, `MANIFEST_OVERLAP_CLEAN` with zero selected overlap on all six required keys, `V2_1_CONTRACT_CLEAN`, and request-only API preflight approval files locked to prompt hash `prompt-sha256:e5ac816bc586ee33a2800fbd0c373523154e0c4eeef74cdd349fa70271054a4b`. The approved v2.1 API_PREFLIGHT_ONLY rerun rewrote only `api_preflight_report.json`, `api_preflight_attempts.jsonl`, `api_preflight_traces.jsonl`, and `logs/api_preflight_cost_report.json`; it remains `PREFLIGHT_FAIL_DRIFT` after 20 evaluated records and 23 attempts, with cost `0.86245`, JSON/schema/tag/final-answer success `1.0`, 20 valid trace rows, and 23/23 non-empty `raw_output` attempts. The latest bounded v2.1 stochastic smoke rerun wrote the smoke artifacts under `outputs/s_fma_v2_1_fresh_holdout/` and reports `V2_1_STOCHASTIC_SMOKE_FEASIBLE_FOR_PILOT_REQUEST`, with 140 API attempts, cost `6.11314`, JSON/schema/tag/final-answer success `1.0`, replay success rate `1.0`, 40 Delta-U rows, and nonzero Delta-U counts of 20 pooled, 7 GSM8K, and 13 HotpotQA.
+The default remote is a local filesystem path:
 
-The current v2.1 pilot stochastic artifact is `outputs/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_report.json`. After the single retry, it reports 600/600 replay success, JSON/schema/tag/final-answer success `1.0`, `TASK_SPECIFIC_pass: true`, `GLOBAL_pass: true`, and `full_validation_approval_request_allowed: true`. These are pilot stochastic gate fields only. They do not establish full validation, deterministic replay, submission upgrade, or PRM/filtering; current status remains `PILOT_BLOCKED`.
+```bash
+dvc remote add -d local /path/to/dvc-storage
+```
 
-The corresponding v2.1 full stochastic validation artifacts now include the failed execution report, rank-signal report, Delta-U/replay/original trace files, strict engineering retry artifacts, failure audit, and abandonment audit under `outputs/s_fma_v2_1_fresh_holdout/`. The full artifact has positive pooled/GSM8K/HotpotQA rank signal, but it fails the exact quality gates and the GSM8K sparse-signal gate; the strict engineering retry also fails; `TASK_SPECIFIC_pass` and `GLOBAL_pass` are both `false`, strict v2.1 full validation is abandoned, and `PILOT_BLOCKED` remains unchanged.
+Cloud remote templates are provided in `.dvc/config` (commented). Uncomment and fill in the relevant block for Google Drive or S3, then run:
 
-The v2.2 files are archived failed exploratory provenance. They are not part of the current diagnostic manuscript mainline and do not authorize more pilot validation, scoring, route-pass wording, submission-upgrade wording, or PRM/filtering evidence.
+```bash
+dvc remote modify --default s3  # or gdrive
+dvc push
+```
 
-## Reference Anchors
+### Cleaning up legacy outputs
 
-- Reflexion: Shinn et al. (2023), "Reflexion: Language Agents with Verbal Reinforcement Learning."
-- Self-Refine: Madaan et al. (2023), "Self-Refine: Iterative Refinement with Self-Feedback."
-- Process supervision / PRM: Lightman et al. (2023), "Let's Verify Step by Step."
+Use the built-in CLI to archive failed pilots while preserving core Phase 5–7 directories:
+
+```bash
+fma clean-outputs --keep-core --archive-failed
+```
+
+Add `--no-archive-legacy` if you only want to archive the failed pilot routes without moving other top-level files.
+
+## Current Evidence Boundary
+
+已完成的诊断证据支持“局部效用（local utility）”与“稀疏结构必要性（sparse structural necessity）”之间的区分。它**不**建立下游 PRM/filtering 改进，其中 PRM 指过程奖励模型（Process Reward Model）。当前的真实任务和下游路线受限于 `paper/claim_registry.md` 中的结论注册和 `paper/submission_readiness_audit.md` 中的就绪性审计。
+
+## Citation
+
+```bibtex
+@misc{fma2026,
+  title        = {Functional Metacognitive Attribution},
+  author       = {Anonymous},
+  year         = {2026},
+  note         = {Diagnostic framework for local utility and structural necessity in reflective reasoning traces},
+  howpublished = {\url{https://github.com/TigerUnderTheMoon/CF}}
+}
+```

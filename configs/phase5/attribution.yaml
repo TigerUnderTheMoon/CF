@@ -1,0 +1,17 @@
+experiment:
+  name: phase5_attribution
+  objective: C_DIAG_LOCAL_STRUCTURAL
+claim_registry:
+  claim_id: C_DIAG_LOCAL_STRUCTURAL
+phase5:
+  ablation_strategies:
+    - mask_reflection_span
+    - replace_with_length_matched_span
+    - perturb_operation_type
+  scoring_rules:
+    local_utility:
+      outcome_delta: original_minus_intervened
+      label: diagnostic_proxy
+    attribution_selectivity:
+      group_by: operation_type
+      normalize: true

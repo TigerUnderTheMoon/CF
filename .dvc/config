@@ -1,0 +1,18 @@
+[core]
+    remote = local
+    autostage = false
+['remote "local"']
+    url = D:/dvc-storage/fma
+# Uncomment and configure one of the following cloud remotes as needed:
+#
+# ['remote "gdrive"']
+#     url = gdrive://<folder_id>
+#     gdrive_client_id = <client_id>
+#     gdrive_client_secret = <client_secret>
+#     # Run: dvc remote modify gdrive --local gdrive_user_credentials_file /path/to/token.json
+#
+# ['remote "s3"']
+#     url = s3://<bucket>/fma/dvc-storage
+#     region = us-east-1
+#     # For private buckets, set access keys via env vars:
+#     #   AWS_ACCESS_KEY_ID=... AWS_SECRET_ACCESS_KEY=... dvc push

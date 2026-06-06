@@ -1,0 +1,76 @@
+[tool.poetry]
+name = "fma"
+version = "0.1.0"
+description = "Functional Metacognitive Attribution research package."
+authors = ["FMA Project <fma@example.com>"]
+readme = "README.md"
+license = "TBD"
+packages = [{ include = "fma", from = "src" }]
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.13"
+# Core dependencies
+networkx = ">=3.2,<4.0"
+scipy = ">=1.11,<2.0"
+pandas = ">=2.0,<3.0"
+numpy = ">=1.26,<3.0"
+pydantic = ">=2.0,<3.0"
+omegaconf = ">=2.3,<3.0"
+# Visualization and I/O
+matplotlib = ">=3.8,<4.0"
+joblib = ">=1.4,<2.0"
+tqdm = ">=4.66,<5.0"
+PyYAML = ">=6.0,<7.0"
+jsonlines = ">=4.0,<5.0"
+jsonschema = ">=4.21,<5.0"
+# ML / NLP extras (optional, heavy)
+torch = { version = ">=2.0,<3.0", optional = true }
+transformers = { version = ">=4.38,<5.0", optional = true }
+datasets = { version = ">=2.18,<3.0", optional = true }
+peft = { version = ">=0.9,<1.0", optional = true }
+trl = { version = ">=0.8,<1.0", optional = true }
+accelerate = { version = ">=0.27,<1.0", optional = true }
+scikit-learn = { version = ">=1.4,<2.0", optional = true }
+openai = { version = ">=1.12,<2.0", optional = true }
+memory-profiler = { version = ">=0.61,<1.0", optional = true }
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=8.0,<10.0"
+pytest-cov = ">=5.0,<8.0"
+pytest-regressions = ">=2.5,<3.0"
+black = ">=24.0,<26.0"
+ruff = ">=0.6,<1.0"
+mypy = ">=1.8,<2.0"
+
+[tool.poetry.extras]
+ml = ["torch", "transformers", "datasets", "peft", "trl", "accelerate", "scikit-learn", "openai", "memory-profiler"]
+
+[tool.poetry.scripts]
+fma = "fma.cli:main"
+fma-structural-diagnostics = "fma.graph.diagnostics:main"
+
+[build-system]
+requires = ["poetry-core>=1.9.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 100
+target-version = ["py310", "py311", "py312"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+python_version = "3.10"
+packages = ["fma"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-ra -q --strict-markers"
+testpaths = ["tests"]

@@ -9,6 +9,7 @@ numpy
 matplotlib
 scikit-learn
 pydantic
+omegaconf
 jsonlines
 jsonschema
 openai

@@ -1,0 +1,11 @@
+experiment:
+  name: phase7_diagnostics
+  objective: C_DIAG_LOCAL_STRUCTURAL
+claim_registry:
+  claim_id: C_DIAG_LOCAL_STRUCTURAL
+phase7:
+  redundancy_threshold: 0.75
+  compensation_threshold: 0.10
+  bottleneck_threshold: 0.25
+  rerouting_entropy_threshold: 0.20
+  zero_inflation_warning_threshold: 0.50

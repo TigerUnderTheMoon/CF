@@ -1,0 +1,22 @@
+experiment:
+  name: phase6_graph
+  objective: C_DIAG_LOCAL_STRUCTURAL
+claim_registry:
+  claim_id: C_DIAG_LOCAL_STRUCTURAL
+phase6:
+  edge_rules:
+    - temporal_order
+    - taxonomy_compatibility
+    - utility_dependency
+  intervention_modes:
+    - PRUNE
+    - CASCADE
+    - BYPASS
+  default_intervention_mode: PRUNE
+  inputs:
+    traces: data/traces/synthetic_100x8.json
+    necessity_scores: outputs/necessity_scores.jsonl
+  outputs:
+    structural_diagnostics_json: structural_diagnostics.json
+    structural_diagnostics_md: structural_diagnostics.md
+    figures_dir: figures

@@ -1,0 +1,16 @@
+name: audit-check
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  audit-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Check structured audit failure rate
+        run: python scripts/check_audit_fail_rate.py --db outputs/audit.db --threshold 0.5

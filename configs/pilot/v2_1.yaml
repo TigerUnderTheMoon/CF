@@ -1,0 +1,26 @@
+experiment:
+  name: s_fma_v2_1_fresh_holdout
+  objective: C_S_FMA_V2_1_EVIDENCE_TARGET
+  status: failed_validation
+claim_registry:
+  claim_id: C_S_FMA_V2_1_EVIDENCE_TARGET
+pilot:
+  api_model: gpt-5.5
+  cost_ceiling_usd: 40.0
+  dedup_keys:
+    - sample_id
+    - task_id
+    - dataset_config_split_source_index
+    - normalized_question_hash
+    - reference_answer_hash
+    - non_empty_alias_hash
+  approval_required: true
+  api_execution_allowed: false
+  route_status: PILOT_BLOCKED
+model:
+  primary: gpt-5.5
+  fallback_order:
+    - gpt-5.5
+  temperature: 0.0
+  top_p: 1.0
+  max_output_tokens: 2048

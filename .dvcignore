@@ -1,0 +1,24 @@
+# Add patterns of files dvc should ignore, which could improve
+# the performance. Learn more at
+# https://dvc.org/doc/user-guide/dvcignore
+
+# NOTE: data/ and outputs/ are intentionally NOT ignored here,
+# because they are managed by DVC (either via `dvc add` or dvc.yaml pipelines).
+
+# Python caches
+__pycache__/
+*.py[cod]
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Jupyter
+.ipynb_checkpoints/

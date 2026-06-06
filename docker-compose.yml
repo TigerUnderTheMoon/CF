@@ -1,0 +1,42 @@
+services:
+  fma-core:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    image: fma:dev
+    working_dir: /app
+    volumes:
+      - ./outputs:/app/outputs
+    command:
+      - sh
+      - -lc
+      - |
+        python scripts/run_counterfactual_attribution.py &&
+        python scripts/run_structural_attribution.py &&
+        python scripts/run_structural_diagnostics.py &&
+        python scripts/run_redundancy_analysis.py
+
+  fma-pilot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    image: fma:dev
+    working_dir: /app
+    env_file:
+      - .env
+    environment:
+      OPENAI_MAX_RETRIES: "1"
+      OPENAI_TIMEOUT: "45"
+    volumes:
+      - ./outputs:/app/outputs
+    command:
+      - sh
+      - -lc
+      - |
+        test -n "$${OPENAI_API_KEY}" || { echo "OPENAI_API_KEY is required"; exit 2; }
+        test -n "$${COST_CEILING_USD}" || { echo "COST_CEILING_USD is required"; exit 2; }
+        python scripts/run_s_fma_v2_1_pilot_stochastic_validation.py \
+          --allow-pilot-stochastic-validation-only \
+          --approved-budget-usd "$${COST_CEILING_USD}"

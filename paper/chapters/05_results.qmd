@@ -1,0 +1,343 @@
+# Results
+
+This chapter is executable. The main diagnostic figures and tables are regenerated from stored repository artifacts during `quarto render`, so the paper surface stays synchronized with the current output contract. The code reads `outputs/counterfactual_summary.json`, `outputs/structural_diagnostics.json`, and the Phase 7 redundancy artifact used by the existing figure inventory.
+
+Figure @fig-attribution-prune and Table @tbl-core-diagnostics are the primary cross-referenced diagnostics for local attribution versus structural necessity. The rendering code preserves the current claim boundary: the figures report protocol-dependent diagnostics, not true causal identification or downstream PRM/filtering gains.
+
+```{python}
+#| label: results-data-setup
+#| cache: true
+#| include: false
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+import matplotlib
+import pandas as pd
+import seaborn as sns
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+
+sns.set_theme(style="whitegrid", context="paper")
+
+
+def find_repo_root() -> Path:
+    for candidate in [Path.cwd().resolve(), *Path.cwd().resolve().parents]:
+        if (candidate / "outputs" / "counterfactual_summary.json").exists():
+            return candidate
+    raise FileNotFoundError("Could not locate repository root containing outputs/counterfactual_summary.json")
+
+
+def load_json(relative_path: str) -> dict:
+    path = REPO_ROOT / relative_path
+    with path.open(encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def save_figure(fig: matplotlib.figure.Figure, filename: str) -> Path:
+    GENERATED_FIGURES.mkdir(parents=True, exist_ok=True)
+    path = GENERATED_FIGURES / filename
+    fig.savefig(path, dpi=220, bbox_inches="tight")
+    plt.close(fig)
+    return path
+
+
+def pct(value: float) -> str:
+    return f"{100.0 * value:.2f}%"
+
+
+def fixed(value: float, digits: int = 4) -> str:
+    return f"{value:.{digits}f}"
+
+
+REPO_ROOT = find_repo_root()
+PAPER_ROOT = REPO_ROOT / "paper"
+GENERATED_FIGURES = PAPER_ROOT / "generated" / "figures"
+
+counterfactual = load_json("outputs/counterfactual_summary.json")
+structural = load_json("outputs/structural_diagnostics.json")
+redundancy = load_json("outputs/redundancy_analysis.json")
+real_task_v3 = load_json("outputs/real_task_v3/real_task_v3_final_status.json")
+v2_1_abandonment = load_json(
+    "outputs/s_fma_v2_1_fresh_holdout/v2_1_full_validation_abandonment_audit.json"
+)
+downstream = load_json(
+    "outputs/s_fma_v2_1_fresh_holdout/v2_1_downstream_filtering_report.json"
+)
+```
+
+```{python}
+#| label: generate-main-figures
+#| cache: true
+#| include: false
+
+modes = ["PRUNE", "CASCADE", "BYPASS"]
+mode_rows = []
+for mode in modes:
+    payload = structural["modes"][mode]
+    mode_rows.append(
+        {
+            "mode": mode,
+            "pearson": payload["correlation"]["pearson"],
+            "spearman": payload["correlation"]["spearman"],
+            "zero_structural_necessity_fraction": payload["zero_inflation"][
+                "zero_structural_necessity_fraction"
+            ],
+            "positive_attribution_zero_necessity_fraction": payload["zero_inflation"][
+                "positive_attribution_zero_necessity_fraction"
+            ],
+            "mean_attribution": payload["scatter"]["attribution_score"]["mean"],
+            "mean_structural_necessity": payload["scatter"]["structural_necessity"]["mean"],
+        }
+    )
+mode_metrics = pd.DataFrame(mode_rows)
+
+prune_scatter = structural["modes"]["PRUNE"]["scatter"]
+prune_summary = pd.DataFrame(
+    [
+        {
+            "metric": "Attribution score",
+            "mean": prune_scatter["attribution_score"]["mean"],
+            "p25": prune_scatter["attribution_score"]["p25"],
+            "p75": prune_scatter["attribution_score"]["p75"],
+        },
+        {
+            "metric": "Structural necessity",
+            "mean": prune_scatter["structural_necessity"]["mean"],
+            "p25": prune_scatter["structural_necessity"]["p25"],
+            "p75": prune_scatter["structural_necessity"]["p75"],
+        },
+    ]
+)
+fig, ax = plt.subplots(figsize=(6.2, 3.4))
+sns.barplot(data=prune_summary, x="metric", y="mean", ax=ax, color="#4c78a8")
+ax.errorbar(
+    x=range(len(prune_summary)),
+    y=prune_summary["mean"],
+    yerr=[
+        prune_summary["mean"] - prune_summary["p25"],
+        prune_summary["p75"] - prune_summary["mean"],
+    ],
+    fmt="none",
+    ecolor="#222222",
+    elinewidth=1.2,
+    capsize=4,
+)
+ax.set_title("PRUNE summary: local attribution versus structural necessity")
+ax.set_xlabel("")
+ax.set_ylabel("Score")
+ax.set_ylim(0, 1)
+save_figure(fig, "structural_diagnostics_attribution_vs_necessity.png")
+
+fig, ax = plt.subplots(figsize=(6.2, 3.4))
+mode_long = mode_metrics.melt(
+    id_vars="mode",
+    value_vars=["pearson", "spearman"],
+    var_name="correlation",
+    value_name="value",
+)
+sns.barplot(data=mode_long, x="mode", y="value", hue="correlation", ax=ax)
+ax.set_title("Structural diagnostic alignment by mode")
+ax.set_xlabel("Mode")
+ax.set_ylabel("Correlation")
+ax.axhline(0, color="#222222", linewidth=0.8)
+save_figure(fig, "structural_diagnostics_mode_comparison.png")
+
+redundancy_density = pd.DataFrame(
+    [
+        {"task_id": task_id, "density": payload["density"]}
+        for task_id, payload in redundancy["redundancy"]["per_trajectory"].items()
+    ]
+)
+fig, ax = plt.subplots(figsize=(6.2, 3.4))
+sns.histplot(data=redundancy_density, x="density", bins=20, ax=ax, color="#59a14f")
+ax.set_title("Redundancy density distribution")
+ax.set_xlabel("Redundancy density")
+ax.set_ylabel("Trajectory count")
+save_figure(fig, "redundancy_density_histogram.png")
+
+compensation_rows = []
+for mode_key, mode_label in [("prune", "PRUNE"), ("cascade", "CASCADE"), ("bypass", "BYPASS")]:
+    distribution = redundancy["compensation"][mode_key]["distribution"]
+    compensation_rows.append(
+        {
+            "mode": mode_label,
+            "mean": distribution["mean"],
+            "p25": distribution["p25"],
+            "p75": distribution["p75"],
+            "median": distribution["median"],
+        }
+    )
+compensation_summary = pd.DataFrame(compensation_rows)
+fig, ax = plt.subplots(figsize=(6.2, 3.4))
+sns.pointplot(data=compensation_summary, x="mode", y="mean", ax=ax, color="#e15759")
+ax.errorbar(
+    x=range(len(compensation_summary)),
+    y=compensation_summary["mean"],
+    yerr=[
+        compensation_summary["mean"] - compensation_summary["p25"],
+        compensation_summary["p75"] - compensation_summary["mean"],
+    ],
+    fmt="none",
+    ecolor="#222222",
+    elinewidth=1.2,
+    capsize=4,
+)
+ax.set_title("Weak compensation summary by structural mode")
+ax.set_xlabel("Mode")
+ax.set_ylabel("Compensation ratio")
+save_figure(fig, "compensation_distribution.png")
+
+curve_rows = []
+for order, points in redundancy["resilience"]["curves"].items():
+    stride = max(1, len(points) // 300)
+    for point in points[::stride]:
+        curve_rows.append(
+            {
+                "removal_order": order.replace("_", " "),
+                "normalized_removal_step": point["normalized_removal_step"],
+                "remaining_total_necessity": point["remaining_total_necessity"],
+            }
+        )
+resilience_curves = pd.DataFrame(curve_rows)
+fig, ax = plt.subplots(figsize=(6.2, 3.8))
+sns.lineplot(
+    data=resilience_curves,
+    x="normalized_removal_step",
+    y="remaining_total_necessity",
+    hue="removal_order",
+    ax=ax,
+    linewidth=1.4,
+)
+ax.set_title("Resilience curves under ordered removal")
+ax.set_xlabel("Normalized removal step")
+ax.set_ylabel("Remaining total necessity")
+save_figure(fig, "resilience_curves.png")
+```
+
+![Attribution and structural necessity under the PRUNE diagnostic mode.](../generated/figures/structural_diagnostics_attribution_vs_necessity.png){#fig-attribution-prune}
+
+![Structural diagnostic alignment across PRUNE, CASCADE, and BYPASS.](../generated/figures/structural_diagnostics_mode_comparison.png){#fig-structural-mode-comparison}
+
+![Redundancy density distribution across stored reflective trajectories.](../generated/figures/redundancy_density_histogram.png){#fig-redundancy-density}
+
+![Compensation ratios remain weak across structural diagnostic modes.](../generated/figures/compensation_distribution.png){#fig-compensation-distribution}
+
+![Resilience curves compare necessity-first, attribution-first, sequential, and deterministic random removal.](../generated/figures/resilience_curves.png){#fig-resilience-curves}
+
+The regenerated figures match the main figure paths declared in `paper/figure_inventory.md`. Figure @fig-structural-mode-comparison summarizes the weak cross-mode relation between local attribution and structural necessity, while Figure @fig-redundancy-density, Figure @fig-compensation-distribution, and Figure @fig-resilience-curves preserve the Phase 7 redundancy interpretation without upgrading it into a downstream validation claim.
+
+```{python}
+#| label: table-core-diagnostics
+#| cache: true
+#| output: asis
+
+core_diagnostics = pd.DataFrame(
+    [
+        {
+            "Diagnostic": "Synthetic traces",
+            "Value": str(counterfactual["num_traces"]),
+            "Claim role": "Primary deterministic diagnostic population",
+        },
+        {
+            "Diagnostic": "Reflective steps",
+            "Value": str(structural["summary"]["num_phase5_scores"]),
+            "Claim role": "Node-level comparison population",
+        },
+        {
+            "Diagnostic": "PRUNE Pearson alignment",
+            "Value": fixed(structural["modes"]["PRUNE"]["correlation"]["pearson"]),
+            "Claim role": "Weak local-to-structural alignment",
+        },
+        {
+            "Diagnostic": "Mean zero structural necessity",
+            "Value": pct(structural["cross_mode"]["mean_zero_structural_necessity_fraction"]),
+            "Claim role": "Zero-inflated structural necessity",
+        },
+        {
+            "Diagnostic": "Positive attribution with zero necessity",
+            "Value": pct(
+                structural["modes"]["PRUNE"]["zero_inflation"][
+                    "positive_attribution_zero_necessity_fraction"
+                ]
+            ),
+            "Claim role": "Local utility is over-inclusive",
+        },
+        {
+            "Diagnostic": "Mean counterfactual necessity",
+            "Value": fixed(counterfactual["mean_necessity"]),
+            "Claim role": "Local functional attribution proxy",
+        },
+        {
+            "Diagnostic": "Redundancy density",
+            "Value": fixed(redundancy["redundancy"]["density"]),
+            "Claim role": "Moderate redundancy, not broad diffusion",
+        },
+        {
+            "Diagnostic": "Distributedness index",
+            "Value": fixed(redundancy["distributedness"]["global_index"]),
+            "Claim role": "Concentrated structural influence",
+        },
+        {
+            "Diagnostic": "Sparse bottlenecks",
+            "Value": str(redundancy["bottleneck"]["bottleneck_count"]),
+            "Claim role": "Rare structurally necessary candidates",
+        },
+    ]
+)
+print(core_diagnostics.to_markdown(index=False))
+print()
+print(": Core diagnostics generated from stored outputs. {#tbl-core-diagnostics}")
+```
+
+Table @tbl-core-diagnostics separates empirical observations from claim roles. The table is generated from the same artifacts used by the figures, so numeric drift is surfaced during render rather than copied by hand.
+
+```{python}
+#| label: table-boundary-governance
+#| cache: true
+#| output: asis
+
+boundary_rows = [
+    {
+        "Route or diagnostic": "Phase 5-7 synthetic diagnostics",
+        "Stored status": "completed stored evidence over "
+        f"{counterfactual['num_traces']} traces and {structural['summary']['num_phase5_scores']} steps",
+        "Claim role": "Primary empirical core",
+    },
+    {
+        "Route or diagnostic": "v2.1 full stochastic validation",
+        "Stored status": v2_1_abandonment["route_decision"],
+        "Claim role": v2_1_abandonment["engineering_retry_summary"]["current_status_remains"],
+    },
+    {
+        "Route or diagnostic": "v2.1 downstream filtering mini-validation",
+        "Stored status": downstream["status"],
+        "Claim role": "negative downstream boundary check; pooled advantage "
+        f"{downstream['paired_metrics']['pooled']['mean_advantage']}",
+    },
+    {
+        "Route or diagnostic": "Real-task v3 manifest gate",
+        "Stored status": real_task_v3["status"],
+        "Claim role": real_task_v3["claim_registry_impact"],
+    },
+    {
+        "Route or diagnostic": "F1-F3 manifest diagnostics",
+        "Stored status": ", ".join(real_task_v3["diagnostic_finding_ids"]),
+        "Claim role": "reproducibility design constraints",
+    },
+    {
+        "Route or diagnostic": "Future PRM/filtering validation",
+        "Stored status": "not completed in current artifacts",
+        "Claim role": "future application hypothesis",
+    },
+]
+boundary_table = pd.DataFrame(boundary_rows)
+print(boundary_table.to_markdown(index=False))
+print()
+print(": Boundary evidence and governance status generated from stored route artifacts. {#tbl-boundary-governance}")
+```
+
+Table @tbl-boundary-governance keeps blocked and failed routes in their current evidence roles. It should not be read as a positive downstream result; the stored route status remains `PILOT_BLOCKED` where the route artifacts say so.

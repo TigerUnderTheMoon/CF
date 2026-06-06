@@ -1,8 +1,0 @@
-{
-  "calls": 0,
-  "determinism_gate_pass": false,
-  "failure_reason": "seed transport was rejected by the API, so deterministic drift cannot be verified",
-  "max_token_diff_ratio": null,
-  "paper_disclosure_required": true,
-  "threshold": 0.05
-}

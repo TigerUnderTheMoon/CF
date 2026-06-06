@@ -1,0 +1,3 @@
+{{< include abstract.md >}}
+
+This executable Quarto book is the reproducible paper surface for the FMA diagnostic manuscript. The journal-ready Elsevier CAS/KBS LaTeX package remains in `paper/kbs_submission/`; this book keeps figures and tables synchronized with stored repository outputs before journal-template export.

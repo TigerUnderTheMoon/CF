@@ -1,0 +1,12 @@
+experiment:
+  name: fma_default
+  objective: C_DIAG_LOCAL_STRUCTURAL
+paths:
+  output_root: outputs
+  data_root: data
+  claim_registry: paper/claim_registry.md
+claim_registry:
+  path: paper/claim_registry.md
+  claim_id: C_DIAG_LOCAL_STRUCTURAL
+random_seed: 20260606
+logging_level: INFO
