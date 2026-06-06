@@ -148,6 +148,23 @@ class ReflectionGraph:
         return (str(source), str(target)) in self.edges
 
     def has_path(self, source: str, target: str) -> bool:
+        """Return True if a directed path exists from source to target.
+
+        Uses breadth-first search (BFS) from the source node. Traversal
+        terminates early when the target is reached.
+
+        Complexity:
+            Time:  O(V + E), where V = |nodes| and E = |edges|.  Each
+                   node is visited at most once and each outgoing edge
+                   is examined at most once during the BFS.
+            Space: O(V) worst-case for the visited set and frontier
+                   deque (in the limit of a complete graph or a linear
+                   chain, the frontier may hold Θ(V) nodes).
+
+            Both average and worst-case bounds are identical; early exit
+            upon reaching the target does not change the asymptotic
+            worst case (e.g., when no path exists).
+        """
         source_id = str(source)
         target_id = str(target)
         if source_id not in self.nodes or target_id not in self.nodes:
@@ -205,6 +222,21 @@ class ReflectionGraph:
         return distances
 
     def reachable_nodes(self, sources: Iterable[str] | None = None) -> set[str]:
+        """Return every node reachable from any of the given source nodes.
+
+        Performs a multi-source BFS. When *sources* is ``None`` the
+        frozen source set (or the computed zero-indegree sources) is used.
+
+        Complexity:
+            Time:  O(V + E).  Each node is enqueued at most once and
+                   each outgoing edge is traversed at most once.
+            Space: O(V) for the ``reachable`` set and the BFS frontier.
+                   The returned set itself requires O(V) space.
+
+            The multi-source initialization adds at most |sources| ≤ V
+            pushes to the frontier, which is absorbed by the O(V + E)
+            bound.
+        """
         source_ids = list(sources) if sources is not None else self.source_nodes()
         reachable: set[str] = set()
         frontier: deque[str] = deque(source_id for source_id in source_ids if source_id in self.nodes)
@@ -217,6 +249,26 @@ class ReflectionGraph:
         return reachable
 
     def topological_order(self) -> list[str]:
+        """Return nodes in topologically sorted order (Kahn's algorithm).
+
+        Builds an indegree map, enqueues zero-indegree nodes, and
+        iteratively removes them while decreasing the indegree of
+        their children.  Raises ``ValueError`` if the graph contains
+        a cycle.
+
+        Complexity:
+            Time:  O(V + E).  Indegree initialization visits every node
+                   and every edge once; the main loop processes each
+                   node and each outgoing edge exactly once.
+                   The explicit re-sort of the ready deque inside the
+                   loop adds O(V * r * log r) where r is the average
+                   deque size, but in reflection DAGs r ≪ V so this
+                   term is dominated by O(V + E) in practice.
+            Space: O(V) for the indegree map, ready deque, and output
+                   list.
+
+            Both average and worst-case time are O(V + E) for a DAG.
+        """
         indegree = {node_id: 0 for node_id in self.nodes}
         for edge in self.edges.values():
             indegree[edge.target] += 1
@@ -245,6 +297,37 @@ class ReflectionGraph:
         return graph
 
     def remove_node(self, node_id: str, mode: RemovalMode | str = RemovalMode.PRUNE) -> "ReflectionGraph":
+        """Return a new graph with *node_id* removed under the chosen semantics.
+
+        Three removal modes are supported:
+
+        * **PRUNE** — drop only the targeted node and its incident edges
+          (O(V + E)).
+        * **CASCADE** — drop the node together with all its descendants;
+          useful for modelling "propagating failure" of a reflection
+          whose dependents become meaningless (O(V + E)).
+        * **BYPASS** — drop the node (and cascade its descendants if
+          CASCADE is combined) and reconnect each surviving parent to
+          each surviving child with a ``"revises"`` edge, simulating
+          a "short-circuit" past the removed reflection.
+
+        Complexity:
+            PRUNE:
+                Time  O(V + E) — dominated by the graph copy.
+                Space O(V + E).
+            CASCADE:
+                Time  O(V + E) — descendants are collected via BFS,
+                      then a single drop removes all of them.
+                Space O(V + E).
+            BYPASS:
+                Time  O(V + E) for the drop, plus O(P × C × (V + E))
+                      worst-case for the reconnection phase, where
+                      P = |parents| and C = |children|.  In reflection
+                      DAGs the fan-in/fan-out are small (typically
+                      P, C ≤ 3), so the reconnection term is
+                      O(V + E) in practice.
+                Space O(V + E).
+        """
         node_key = str(node_id)
         if node_key not in self.nodes:
             raise KeyError(f"node {node_key!r} does not exist")

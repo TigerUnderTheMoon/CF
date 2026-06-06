@@ -9,6 +9,10 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from fma.utils.logging_config import get_logger
+
+logger = get_logger("fma.pilot.audit")
+
 
 AuditStatus = Literal["PASS", "FAIL", "WARN"]
 
@@ -67,12 +71,26 @@ class AuditLogger:
         self._initialize()
 
     def log_event(self, event: AuditEvent) -> int:
+        logger.debug(
+            "event_logged",
+            route_id=event.route_id,
+            stage=event.stage,
+            status=event.status,
+            event_type=event.event_type,
+        )
         with self._connect() as conn:
             event_id = self._insert_event(conn, event)
         self._append_jsonl(event)
         return event_id
 
     def log_failure(self, failure: FailureAudit) -> int:
+        logger.warning(
+            "failure_logged",
+            route_id=failure.route_id,
+            stage=failure.stage,
+            failure_codes=failure.failure_codes,
+            cost_usd=failure.cost_usd,
+        )
         with self._connect() as conn:
             event_id = self._insert_event(conn, failure)
             conn.execute(
@@ -251,6 +269,7 @@ class AuditLogger:
         return "\n".join(lines) + "\n"
 
     def _initialize(self) -> None:
+        logger.debug("audit_db_initialized", db_path=str(self.db_path), jsonl_path=str(self.jsonl_path))
         with self._connect() as conn:
             conn.executescript(
                 """

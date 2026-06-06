@@ -15,6 +15,10 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
+from fma.utils.logging_config import get_logger
+
+logger = get_logger("fma.graph.diagnostics")
+
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
 from fma.eval.diagnostics.topology_statistics import (
@@ -46,6 +50,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--output-json", type=Path, default=DEFAULT_OUTPUT_JSON)
     parser.add_argument("--output-md", type=Path, default=DEFAULT_OUTPUT_MD)
     parser.add_argument("--figures-dir", type=Path, default=DEFAULT_FIGURE_DIR)
+    parser.add_argument("--interactive", action="store_true", default=False)
     return parser.parse_args(argv)
 
 
@@ -88,6 +93,7 @@ def run_from_config(
         ),
         figures_dir=figures_dir,
         removal_mode=removal_mode,
+        interactive=bool(phase6.get("interactive", False)),
     )
     return run_structural_diagnostics(args)
 
@@ -111,14 +117,17 @@ def _project_path(value: str | Path) -> Path:
 
 def run_structural_diagnostics(args: argparse.Namespace) -> dict[str, Any]:
     """Run Phase 6 structural diagnostics and write configured artifacts."""
+    logger.info("diagnostics_start", traces=str(args.traces), scores=str(args.necessity_scores))
     traces = load_records(args.traces)
     phase5_scores = load_records(args.necessity_scores)
+    logger.debug("data_loaded", trace_count=len(traces), score_count=len(phase5_scores))
     graphs = build_reflection_graphs(traces, phase5_scores)
     source_node_ids = {
         node_id
         for graph in graphs
         for node_id in graph.source_nodes()
     }
+    logger.info("graphs_built", graph_count=len(graphs), source_node_count=len(source_node_ids))
 
     records_by_mode: dict[str, list[StructuralDiagnosticRecord]] = {}
     report: dict[str, Any] = {
@@ -141,6 +150,7 @@ def run_structural_diagnostics(args: argparse.Namespace) -> dict[str, Any]:
     }
 
     for removal_mode in RemovalMode:
+        logger.debug("processing_mode", mode=removal_mode.value)
         node_rows = []
         for graph in graphs:
             node_rows.extend(compute_node_necessity(graph, removal_mode=removal_mode))
@@ -155,11 +165,21 @@ def run_structural_diagnostics(args: argparse.Namespace) -> dict[str, Any]:
             "num_node_rows": len(node_rows),
             **mode_diagnostics(records, top_k_values=TOP_K_VALUES),
         }
+        logger.debug("mode_complete", mode=removal_mode.value, record_count=len(records))
 
     report["cross_mode"] = _cross_mode_summary(report["modes"])
     write_json(args.output_json, report)
     write_markdown(args.output_md, report)
     write_plots(records_by_mode, report, args.figures_dir)
+    logger.info(
+        "diagnostics_complete",
+        output_json=str(args.output_json),
+        output_md=str(args.output_md),
+        figures_dir=str(args.figures_dir),
+    )
+    if getattr(args, "interactive", False):
+        write_interactive_plots(records_by_mode, report, args.figures_dir)
+        logger.debug("interactive_plots_written", figures_dir=str(args.figures_dir))
     return report
 
 
@@ -339,6 +359,135 @@ def _plot_mode_comparison(report: Mapping[str, Any], save_path: Path) -> None:
     _save(fig, save_path)
 
 
+def write_interactive_plots(
+    records_by_mode: Mapping[str, Sequence[StructuralDiagnosticRecord]],
+    report: Mapping[str, Any],
+    figure_dir: Path,
+) -> None:
+    """Generate interactive Plotly HTML charts. Gracefully skips if plotly is missing."""
+    try:
+        import plotly.graph_objects as go
+        from plotly.subplots import make_subplots
+    except ImportError:
+        return
+
+    figure_dir.mkdir(parents=True, exist_ok=True)
+    _interactive_scatter(records_by_mode, report, figure_dir, go, make_subplots)
+    _interactive_mode_comparison(report, figure_dir, go, make_subplots)
+
+
+def _interactive_scatter(
+    records_by_mode: Mapping[str, Sequence[StructuralDiagnosticRecord]],
+    report: Mapping[str, Any],
+    figure_dir: Path,
+    go: Any,
+    make_subplots: Any,
+) -> None:
+    colors = {"PRUNE": "#4C78A8", "CASCADE": "#E45756", "BYPASS": "#54A24B"}
+    fig = go.Figure()
+    for mode in MODE_ORDER:
+        records = records_by_mode[mode]
+        if not records:
+            continue
+        hover_texts = [
+            f"trace_id: {r.trace_id}<br>node_id: {r.node_id}<br>taxonomy: {r.taxonomy_label}"
+            for r in records
+        ]
+        fig.add_trace(
+            go.Scatter(
+                x=[r.attribution_score for r in records],
+                y=[r.structural_necessity for r in records],
+                mode="markers",
+                name=mode,
+                marker=dict(color=colors.get(mode, "#999"), size=6, opacity=0.5),
+                text=hover_texts,
+                hoverinfo="text",
+            )
+        )
+    pearson_vals = " / ".join(
+        f"{m}: {report['modes'][m]['correlation']['pearson']:.3f}" for m in MODE_ORDER
+    )
+    fig.update_layout(
+        title=f"Attribution vs Necessity ({pearson_vals})",
+        xaxis_title="Phase 5 attribution_score",
+        yaxis_title="Phase 6 structural necessity",
+        template="plotly_white",
+        hovermode="closest",
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        margin=dict(t=80),
+    )
+    fig.write_html(
+        str(figure_dir / "structural_diagnostics_attribution_vs_necessity.html"),
+        include_plotlyjs="cdn",
+        full_html=True,
+    )
+
+
+def _interactive_mode_comparison(
+    report: Mapping[str, Any],
+    figure_dir: Path,
+    go: Any,
+    make_subplots: Any,
+) -> None:
+    fig = make_subplots(rows=1, cols=2, subplot_titles=("Alignment Metrics", "Zero-Inflation"))
+    metric_specs = (
+        ("pearson", "Pearson", "#4C78A8"),
+        ("spearman", "Spearman", "#F58518"),
+        ("kendall_tau", "Kendall Tau", "#72B7B2"),
+    )
+    for key, label, color in metric_specs:
+        fig.add_trace(
+            go.Bar(
+                name=label,
+                x=list(MODE_ORDER),
+                y=[report["modes"][m]["correlation"][key] for m in MODE_ORDER],
+                marker_color=color,
+            ),
+            row=1,
+            col=1,
+        )
+    fig.add_trace(
+        go.Bar(
+            name="Necessity = 0",
+            x=list(MODE_ORDER),
+            y=[
+                report["modes"][m]["zero_inflation"]["zero_structural_necessity_fraction"]
+                for m in MODE_ORDER
+            ],
+            marker_color="#B279A2",
+        ),
+        row=1,
+        col=2,
+    )
+    fig.add_trace(
+        go.Bar(
+            name="Attr > 0, necessity = 0",
+            x=list(MODE_ORDER),
+            y=[
+                report["modes"][m]["zero_inflation"][
+                    "positive_attribution_zero_necessity_fraction"
+                ]
+                for m in MODE_ORDER
+            ],
+            marker_color="#FF9DA6",
+        ),
+        row=1,
+        col=2,
+    )
+    fig.update_layout(
+        title="PRUNE / CASCADE / BYPASS Diagnostic Comparison",
+        template="plotly_white",
+        barmode="group",
+        margin=dict(t=80),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+    )
+    fig.write_html(
+        str(figure_dir / "structural_diagnostics_mode_comparison.html"),
+        include_plotlyjs="cdn",
+        full_html=True,
+    )
+
+
 def _stratified_lines(stratified: Mapping[str, Mapping[str, Mapping[str, float]]]) -> list[str]:
     lines: list[str] = []
     for group_name in ("taxonomy", "step_idx", "source_role"):
@@ -431,6 +580,7 @@ __all__ = [
     "parse_args",
     "run_from_config",
     "run_structural_diagnostics",
+    "write_interactive_plots",
     "write_json",
     "write_markdown",
     "write_plots",

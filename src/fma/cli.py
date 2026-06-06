@@ -11,6 +11,9 @@ from typing import Any, Mapping, Sequence
 import yaml
 
 from fma.utils.config import load_config
+from fma.utils.logging_config import get_logger
+
+logger = get_logger("fma.cli")
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -23,6 +26,10 @@ def main(argv: list[str] | None = None) -> int:
         if isinstance(exc.code, int):
             return exc.code
         return 1
+    except Exception as exc:
+        logger.error("cli_failed", error=str(exc), exc_info=True)
+        raise
+    logger.debug("cli_output", output_type=type(result).__name__)
     if isinstance(result, str):
         print(result, end="")
     else:
@@ -97,12 +104,14 @@ def run_config_command(
     overrides: Sequence[str],
     timestamp: str | None,
 ) -> dict[str, Any]:
+    logger.info("loading_config", config_name=args.config_name, overrides=list(overrides))
     config = load_config(
         args.config_name,
         overrides=overrides,
         create_run_dir=True,
         timestamp=timestamp,
     )
+    logger.info("config_loaded", experiment_name=config["experiment"]["name"], run_dir=config["paths"]["run_dir"])
     return {
         "command": args.command,
         "config_name": args.config_name,
@@ -119,6 +128,7 @@ def run_phase5_command(
     overrides: Sequence[str],
     timestamp: str | None,
 ) -> dict[str, Any]:
+    logger.info("phase5_start", config=str(args.config), dry_run=args.dry_run)
     config = _load_config(args.config)
     section = _section(config, "phase5")
     runner_args = argparse.Namespace(
@@ -136,6 +146,7 @@ def run_phase5_command(
     from scripts.run_counterfactual_attribution import run
 
     summary = run(runner_args)
+    logger.info("phase5_complete", output_dir=str(runner_args.output_dir))
     return {
         "phase": 5,
         "output_dir": str(runner_args.output_dir),
@@ -152,6 +163,7 @@ def run_clean_outputs_command(
     if not args.keep_core and not args.archive_failed:
         raise SystemExit(2)
 
+    logger.info("clean_outputs_start", repo_root=str(args.repo_root))
     from fma.utils.cleanup import cleanup_outputs
 
     report = cleanup_outputs(
@@ -160,6 +172,7 @@ def run_clean_outputs_command(
         archive_failed=args.archive_failed,
         archive_legacy=not args.no_archive_legacy,
     )
+    logger.info("clean_outputs_complete", archived=len(report.archived), preserved=len(report.preserved_core))
     return {
         "command": "clean-outputs",
         "archived": report.archived,
@@ -174,6 +187,7 @@ def run_phase6_command(
     overrides: Sequence[str],
     timestamp: str | None,
 ) -> dict[str, Any]:
+    logger.info("phase6_start", input_dir=str(args.input), dry_run=args.dry_run)
     config = _load_config(args.config)
     section = _section(config, "phase6")
     input_dir = _path(args.input)
@@ -208,6 +222,7 @@ def run_phase6_command(
     )
     diagnostics_summary = {} if args.dry_run else run_structural_diagnostics(diagnostics_args)
 
+    logger.info("phase6_complete", output_dir=str(output_dir))
     return {
         "phase": 6,
         "input_dir": str(input_dir),

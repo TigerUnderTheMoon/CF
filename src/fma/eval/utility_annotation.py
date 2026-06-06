@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from fma.io import write_records
+from fma.utils.common import trace_id_for_record
 
 
 class UtilityLabel(Enum):
@@ -305,12 +306,12 @@ def annotate_utility_records(
         raise ValueError("trace_records must not be None.")
 
     outcome_by_trace = {
-        _trace_id_for_record(record, index): record
+        trace_id_for_record(record, index): record
         for index, record in enumerate(outcome_records or ())
     }
     annotations: list[UtilityAnnotation] = []
     for trace_index, trace_record in enumerate(trace_records):
-        trace_id = _trace_id_for_record(trace_record, trace_index)
+        trace_id = trace_id_for_record(trace_record, trace_index)
         outcome_record = outcome_by_trace.get(trace_id, {})
         merged = {**dict(trace_record), **dict(outcome_record)}
         reflection_steps = _reflection_steps(trace_record)
@@ -505,10 +506,6 @@ def _reflection_steps(record: Mapping[str, Any]) -> list[dict[str, Any]]:
     if isinstance(text, str) and text.strip():
         return [{"text": text, "category": record.get("category", "OTHER")}]
     return []
-
-
-def _trace_id_for_record(record: Mapping[str, Any], index: int) -> str:
-    return str(record.get("trace_id") or record.get("sample_id") or record.get("task_id") or f"trace_{index:03d}")
 
 
 def _original_outcome(

@@ -8,7 +8,7 @@ from pathlib import Path
 import re
 from typing import Any, Mapping, MutableMapping, Sequence
 
-from pydantic import BaseModel, ConfigDict, Field, PositiveFloat
+from pydantic import BaseModel, ConfigDict, Field, PositiveFloat, field_validator
 import yaml
 
 
@@ -51,16 +51,45 @@ class PilotConfig(BaseModel):
 class Phase5Config(BaseModel):
     model_config = ConfigDict(extra="allow")
 
+    traces: Path | None = None
+    utility_annotations: Path | None = None
+    output_dir: Path | None = None
+    figures_dir: Path | None = None
+    seed: int = 42
+    utility_threshold: float = 0.9
     ablation_strategies: list[str] = Field(default_factory=list)
     scoring_rules: dict[str, Any] = Field(default_factory=dict)
+
+    @field_validator("traces", "utility_annotations", "output_dir", "figures_dir", mode="before")
+    @classmethod
+    def _resolve_paths(cls, value: Any) -> Any:
+        if value is None:
+            return None
+        if isinstance(value, str):
+            return Path(value)
+        return value
 
 
 class Phase6Config(BaseModel):
     model_config = ConfigDict(extra="allow")
 
+    traces: Path | None = None
+    output_dir: Path | None = None
+    figures_dir: Path | None = None
+    utility_threshold: float = 0.9
+    removal_mode: str | None = None
     edge_rules: list[str] = Field(default_factory=list)
     intervention_modes: list[str] = Field(default_factory=list)
     default_intervention_mode: str | None = None
+
+    @field_validator("traces", "output_dir", "figures_dir", mode="before")
+    @classmethod
+    def _resolve_paths(cls, value: Any) -> Any:
+        if value is None:
+            return None
+        if isinstance(value, str):
+            return Path(value)
+        return value
 
 
 class Phase7Config(BaseModel):
@@ -99,11 +128,19 @@ def load_config(
 
     ``config_name`` accepts either a Hydra-style name such as ``phase6/graph`` or
     a direct YAML path for legacy callers.
+
+    If ``config_name`` is already a dict (e.g. from a caller that pre-loaded
+    YAML), it is used directly without file I/O.
     """
 
     overrides = list(overrides or [])
-    config_root = Path(configs_dir)
-    payload = _compose_config(config_name, config_root)
+
+    if isinstance(config_name, dict):
+        payload = deepcopy(config_name)
+    else:
+        config_root = Path(configs_dir)
+        payload = _compose_config(config_name, config_root)
+
     for override in overrides:
         _apply_override(payload, override)
 
@@ -315,7 +352,11 @@ def _slug(value: str) -> str:
 
 
 __all__ = [
+    "ExperimentConfig",
     "FMAConfig",
+    "Phase5Config",
+    "Phase6Config",
+    "Phase7Config",
     "flatten_config",
     "load_config",
     "validate_config",

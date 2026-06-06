@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import numpy as np
 
@@ -45,16 +45,16 @@ class AttributionRecord:
     utility_delta: float
     intervention_type: str
     is_local: bool
-    necessity_score: Optional[float] = None
-    necessity_normalized: Optional[float] = None
-    redundancy_ratio: Optional[float] = None
+    necessity_score: float | None = None
+    necessity_normalized: float | None = None
+    redundancy_ratio: float | None = None
 
 
 @dataclass(frozen=True)
 class StratifiedInput:
-    records: List[AttributionRecord]
-    annotations: Dict[str, ReflectionAnnotation]
-    traces: Optional[Dict[str, ReflectionTrace]] = None
+    records: list[AttributionRecord]
+    annotations: dict[str, ReflectionAnnotation]
+    traces: dict[str, ReflectionTrace] | None = None
 
 
 __all__ = [

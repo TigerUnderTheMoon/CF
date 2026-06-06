@@ -8,6 +8,7 @@ from .benchmark import (
     write_benchmark_result,
 )
 from .cleanup import CleanupReport, cleanup_outputs
+from .common import trace_id_for_record
 from .config import FMAConfig, flatten_config, load_config, validate_config
 
 __all__ = [
@@ -19,6 +20,7 @@ __all__ = [
     "cleanup_outputs",
     "flatten_config",
     "load_config",
+    "trace_id_for_record",
     "validate_config",
     "write_benchmark_result",
 ]

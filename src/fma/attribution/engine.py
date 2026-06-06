@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import random
+import sys
 from dataclasses import asdict
 from pathlib import Path
 from typing import Any, Literal, Mapping, Sequence
@@ -27,6 +28,10 @@ from fma.eval.counterfactual_attribution import (
     strategy_order,
 )
 from fma.eval.utility_annotation import UtilityAnnotation
+from fma.utils.common import trace_id_for_record
+from fma.utils.logging_config import get_logger
+
+logger = get_logger("fma.attribution.engine")
 
 ParallelBackend = Literal["loky", "threading"]
 
@@ -58,13 +63,43 @@ class ParallelAttributionEngine:
         annotations: Sequence[UtilityAnnotation],
         strategies: Sequence[str] = ABLATION_STRATEGIES,
     ) -> list[CounterfactualAblationResult]:
-        """Run ablation strategies in parallel while preserving serial output order."""
+        """Run ablation strategies in parallel while preserving serial output order.
+
+        Traces are partitioned into fixed-size chunks; each (chunk,
+        strategy) pair becomes an independent task submitted to a
+        ``joblib.Parallel`` worker pool.  Results are gathered and
+        re-sorted by a stable sort key so the output is deterministic
+        and ordering-equivalent to a serial run.
+
+        Complexity:
+            Let T = number of traces, C = chunk_size, S = max steps
+            per trace, K = |strategies|, and J = n_jobs.
+
+            *Work* (total CPU): O(T × S² × K), same as the serial
+             algorithm, because the chunking does not reduce the
+             total number of ablation evaluations.
+            *Span* (wall-clock with J workers): O((⌈T/C⌉ × K) ×
+             (C × S²) / J), which is O(T × S² × K / J) when the
+             chunk-level work distributes evenly.
+            *Space*: O(T × S × K) for the aggregated result list
+             plus O(C × S) per-chunk working memory.
+
+            The sorting step at the end is O(R log R) where
+            R = T × S × K, but this is dominated by the ablation work.
+        """
         _set_seed(self.seed)
         strategy_values = tuple(str(strategy) for strategy in strategies)
         chunks = _trace_chunks(traces, annotations, self.chunk_size)
         if not chunks or not strategy_values:
+            logger.warning("no_chunks_or_strategies", chunk_count=len(chunks), strategy_count=len(strategy_values))
             return []
 
+        logger.info(
+            "ablation_start",
+            chunk_count=len(chunks),
+            strategy_count=len(strategy_values),
+            total_tasks=len(chunks) * len(strategy_values),
+        )
         tasks = [
             (
                 chunk_index,
@@ -81,7 +116,7 @@ class ParallelAttributionEngine:
             tasks,
             total=len(tasks),
             desc="Phase 5 ablation chunks",
-            disable=not self.show_progress,
+            disable=not self.show_progress or not sys.stdout.isatty(),
         )
         parallel = Parallel(n_jobs=self.n_jobs, backend=self.backend)
         rows = parallel(delayed(_run_ablation_strategy_chunk)(*task) for task in task_iter)
@@ -90,6 +125,8 @@ class ParallelAttributionEngine:
         for chunk_rows in rows:
             ordered.extend(chunk_rows)
         ordered.sort(key=lambda item: item[0])
+        result_count = len(ordered)
+        logger.info("ablation_complete", result_count=result_count)
         return [row for _sort_key, row in ordered]
 
 
@@ -121,24 +158,63 @@ class IncrementalAttributionEngine:
         strategies: Sequence[str] = ABLATION_STRATEGIES,
         resume: bool = True,
     ) -> list[CounterfactualAblationResult]:
-        """Run all chunks, reusing existing chunk files when ``resume`` is true."""
+        """Run all chunks, reusing existing chunk files when ``resume`` is true.
+
+        Each chunk is processed independently with the same parallel
+        engine used by ``ParallelAttributionEngine``.  Completed chunk
+        results are persisted to disk (JSONL) so that interrupted runs
+        can skip already-finished chunks on the next invocation.
+
+        I/O Complexity:
+            *Writes*:  Each chunk produces a JSONL file on disk.
+             Total data written = O(R) records, where
+             R = T × S × K (T = traces, S = steps, K = strategies).
+             Each record is ≈200 bytes → roughly R/5 KiB on disk.
+
+            *Reads*:  On resume, only uncompleted chunks are recomputed.
+             In the worst case (no prior progress) no files are read; in
+             the best case (all chunks complete) the entire result is
+             read back from disk at O(R) read cost with zero recomputation.
+             Reads are sequential line-by-line JSON parsing, O(R) total.
+
+            *Space*:  O(R) for the accumulated in-memory result list.
+             Per-chunk disk files are independent and can be cleaned up
+             after the final aggregation.
+
+        The underlying per-chunk computational complexity follows
+        ``ParallelAttributionEngine.run_single_step_ablations``
+        (O(C × S² × K) work per chunk).
+        """
         _set_seed(self.seed)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         chunks = _trace_chunks(traces, annotations, self.chunk_size)
         all_results: list[CounterfactualAblationResult] = []
         completed: list[int] = []
 
+        logger.info(
+            "incremental_start",
+            chunk_count=len(chunks),
+            output_dir=str(self.output_dir),
+            resume=resume,
+        )
         chunk_iter = tqdm(
             list(enumerate(chunks)),
             total=len(chunks),
             desc="Phase 5 incremental chunks",
-            disable=not self.show_progress,
+            disable=not self.show_progress or not sys.stdout.isatty(),
         )
         for chunk_index, (chunk_traces, chunk_annotations) in chunk_iter:
             chunk_path = self._chunk_path(chunk_index)
             if resume and chunk_path.exists():
+                logger.debug("chunk_resumed", chunk_index=chunk_index, path=str(chunk_path))
                 chunk_results = _read_chunk_results(chunk_path)
             else:
+                logger.debug(
+                    "chunk_processing",
+                    chunk_index=chunk_index,
+                    trace_count=len(chunk_traces),
+                    annotation_count=len(chunk_annotations),
+                )
                 engine = ParallelAttributionEngine(
                     seed=self.seed,
                     chunk_size=self.chunk_size,
@@ -152,10 +228,17 @@ class IncrementalAttributionEngine:
                     strategies=strategies,
                 )
                 _write_chunk_results(chunk_path, chunk_results)
+                logger.debug("chunk_complete", chunk_index=chunk_index, result_count=len(chunk_results))
             all_results.extend(chunk_results)
             completed.append(chunk_index)
 
         self._write_checkpoint(completed_chunks=completed, total_chunks=len(chunks))
+        logger.info(
+            "incremental_complete",
+            total_results=len(all_results),
+            completed_chunks=len(completed),
+            total_chunks=len(chunks),
+        )
         return all_results
 
     def _chunk_path(self, chunk_index: int) -> Path:
@@ -182,7 +265,7 @@ def _run_ablation_strategy_chunk(
     seed: int,
 ) -> list[tuple[tuple[int, int, int, int], CounterfactualAblationResult]]:
     _set_seed(seed)
-    trace_by_id = {_trace_id_for_record(trace, index): trace for index, trace in enumerate(traces)}
+    trace_by_id = {trace_id_for_record(trace, index): trace for index, trace in enumerate(traces)}
     grouped = group_annotations_by_trace(annotations)
     rows: list[tuple[tuple[int, int, int, int], CounterfactualAblationResult]] = []
 
@@ -220,7 +303,7 @@ def _trace_chunks(
     chunk_size: int,
 ) -> list[tuple[list[Mapping[str, Any]], list[UtilityAnnotation]]]:
     grouped = group_annotations_by_trace(annotations)
-    trace_by_id = {_trace_id_for_record(trace, index): trace for index, trace in enumerate(traces)}
+    trace_by_id = {trace_id_for_record(trace, index): trace for index, trace in enumerate(traces)}
     trace_ids = list(grouped)
     for trace_id in trace_by_id:
         if trace_id not in grouped:
@@ -237,10 +320,6 @@ def _trace_chunks(
         ]
         chunks.append((chunk_traces, chunk_annotations))
     return chunks
-
-
-def _trace_id_for_record(record: Mapping[str, Any], index: int) -> str:
-    return str(record.get("trace_id") or record.get("sample_id") or record.get("task_id") or f"trace_{index:03d}")
 
 
 def _set_seed(seed: int) -> None:
