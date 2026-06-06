@@ -2,7 +2,7 @@
 %% Generated from paper/manuscript.md without changing experiment artifacts.
 \documentclass[a4paper,fleqn]{cas-sc}
 
-\usepackage[authoryear,longnamesfirst]{natbib}
+\usepackage[numbers,sort&compress]{natbib}
 \usepackage{amsmath}
 \usepackage{booktabs}
 \usepackage{array}
@@ -17,7 +17,7 @@
 \shorttitle{Functional Metacognitive Attribution}
 \shortauthors{Anonymous Author(s)}
 
-\title[mode=title]{Functional Metacognitive Attribution as a Diagnostic Framework for Reflective Trace Structure}
+\title[mode=title]{Functional Metacognitive Attribution: A Diagnostic Framework with Reproducibility Constraints for Reflection Utility Evaluation}
 
 \author[1]{Anonymous Author(s)}
 \affiliation[1]{organization={Anonymous Institution},
@@ -25,7 +25,7 @@
             country={Anonymous}}
 
 \begin{abstract}
-Reflective language agents use self-evaluation, error diagnosis, uncertainty monitoring, and plan revision to improve reasoning traces. These operations are natural candidates for process supervision, but a local signal that appears useful in one trace does not necessarily mark a step as structurally necessary. This paper consolidates Functional Metacognitive Attribution (FMA) as a reflection utility learning framework over observable traces. FMA estimates intervention-sensitive local utility for reflective spans, then asks whether those spans remain important under graph-based structural diagnostics. The current evidence is diagnostic rather than downstream-validating. Across 800 synthetic trajectories and 2400 reflective steps, local attribution signals are widespread, while measured structural necessity is sparse and zero-inflated. Phase 6 diagnostics show weak alignment between \texttt{attribution\_score} and \texttt{structural\_necessity} across PRUNE, CASCADE, and BYPASS structural modes. Phase 7 reports moderate redundancy density, low distributedness, 191 sparse bottlenecks, and weak compensation ratios. Stage 2 held-out evaluation adds a low-magnitude aggregate rank signal, but generalization remains stratum-dependent. Real-task and downstream extensions bound the claim further: guarded pilot evidence remains blocked, v2.1 full stochastic validation failed preregistered gates, and the one-shot downstream filtering mini-validation produced a negative pooled filtering advantage. The resulting contribution is a claim-safe diagnostic: reflective reasoning exhibits widespread local utility but sparse structural necessity, so raw local utility should not be treated directly as a supervision or filtering weight without structural calibration.
+Reflective language agents use self-evaluation, error diagnosis, uncertainty monitoring, and plan revision to improve reasoning traces. These operations are natural candidates for process supervision, but a local signal that appears useful in one trace does not necessarily mark a step as structurally necessary. This paper consolidates Functional Metacognitive Attribution (FMA) as a reflection utility learning framework over observable traces. FMA estimates intervention-sensitive local utility for reflective spans, then asks whether those spans remain important under graph-based structural diagnostics. The current evidence is diagnostic rather than downstream-validating. Across 800 synthetic trajectories and 2400 reflective steps, local attribution signals are widespread, while measured structural necessity is sparse and zero-inflated. Phase 6 diagnostics show weak alignment between \texttt{attribution\_score} and \texttt{structural\_necessity} across PRUNE, CASCADE, and BYPASS structural modes. Phase 7 reports moderate redundancy density, low distributedness, 191 sparse bottlenecks, and weak compensation ratios. Stage 2 held-out evaluation adds a low-magnitude aggregate rank signal, but generalization remains stratum-dependent. The resulting contribution is a claim-safe diagnostic: reflective reasoning exhibits widespread local utility but sparse structural necessity, so raw local utility should not be treated directly as a supervision or filtering weight without structural calibration. Real-task validation attempts under strict deduplication were blocked by data-availability constraints, revealing that reproducibility frameworks for reflection utility must include split-level consumption audit and dataset-aware hash key design.
 \end{abstract}
 
 \begin{highlights}
@@ -50,6 +50,8 @@ Functional Metacognitive Attribution addresses that question as an operational f
 
 The paper's diagnostic mainline is compact. Phase 5 estimates local attribution over 800 synthetic reflective trajectories and 2400 reflective steps. Phase 6 builds graph-structured reflective traces and evaluates topology-sensitive dependence under PRUNE, CASCADE, and BYPASS modes. Phase 7 analyzes whether weak alignment between local utility and structural necessity can be explained by redundancy, compensation, rerouting, bottlenecks, resilience, and distributedness. Stage 2 supplies a held-out consistency check rather than a new claim of broad transfer.
 
+Section 7 reports why real-task validation routes were blocked by strict reproducibility governance, yielding reproducibility design constraints---empty-alias hash collision, split consumption, and combinatorial key exclusion---that inform future benchmark construction.
+
 The resulting pattern is consistent: reflective reasoning exhibits widespread local utility but sparse structural necessity. Phase 6 reports weak Pearson alignment between local attribution and structural necessity: 0.0753 for PRUNE, 0.0523 for CASCADE, and 0.0917 for BYPASS. Structural necessity is zero-inflated, with 67.79 percent of node-level values equal to zero. Nearly half of the step population, 49.54 percent, has positive local attribution but zero measured structural necessity. Phase 7 reinforces this distinction through low compensation and low distributedness: redundancy density is 0.3842, distributedness index is 0.2976, and sparse bottlenecks account for 191 of 2400 reflective nodes.
 
 This finding does not say that reflective attribution fails. It says that local utility and topology-sensitive necessity are different operational proxy measurements. The distinction matters for attribution-aware supervision. A naive rule such as weighting all reflective spans by normalized local utility would over-emphasize fluent but structurally inert reflection and may underweight rare bottleneck operations. A structurally calibrated signal should instead combine local utility with structural necessity, redundancy, bottleneck status, compensation, and concentration.
@@ -66,17 +68,23 @@ The manuscript also distinguishes between compact paper prose and repository pro
 
 \section{Related Work}
 
-Reflection-oriented agent methods motivate the study of explicit reflective operations. Reflexion \citep{shinn2023reflexion} and Self-Refine \citep{madaan2023selfrefine} evaluate whether critique, feedback, and revision improve trajectory-level task performance. Their emphasis is practical improvement through iterative self-feedback. FMA asks a narrower structural question: once reflective steps appear in a trace, how do individual reflective spans behave under deterministic attribution and structural perturbation?
+Reflection-oriented agent methods motivate the study of explicit reflective operations. Reflexion \cite{shinn2023reflexion} and Self-Refine \cite{madaan2023selfrefine} evaluate whether critique, feedback, and revision improve trajectory-level task performance. Their emphasis is practical improvement through iterative self-feedback. FMA asks a narrower structural question: once reflective steps appear in a trace, how do individual reflective spans behave under deterministic attribution and structural perturbation?
 
 This distinction changes the level of analysis. Reflection methods usually evaluate whole trajectories or iterative policies. FMA treats reflective spans as observable intervention units and separates local utility from topology-sensitive necessity. A model may generate a useful self-checking sentence without making that sentence a structural bottleneck in the trace. The paper therefore complements reflection methods rather than replacing them. It characterizes the organization of reflective trace components after they have been produced.
 
-Process Reward Models provide a second comparison point. Process supervision, as in \citet{lightman2023verify}, assigns value below the final-answer level. FMA shares the step-level motivation, but it does not treat every useful intermediate step as an immediately valid supervision target. The repository's diagnostics show that local attribution and structural necessity diverge. A process reward signal that ignores that divergence may reward redundant reflection or penalize steps whose structural role is not captured by local utility alone.
+Process Reward Models provide a second comparison point. Process supervision, as in \cite{lightman2023verify}, assigns value below the final-answer level. Alternative process-supervision formulations, such as advantage-weighted regression \cite{uesato2022solving}, share the step-level motivation but differ in credit assignment. Recent PRM extensions attempt to reduce annotation cost through automated step verification \cite{wang2024mathshepherd}, but they do not address the structural necessity of reflective spans. FMA shares the step-level motivation, but it does not treat every useful intermediate step as an immediately valid supervision target. The repository's diagnostics show that local attribution and structural necessity diverge. A process reward signal that ignores that divergence may reward redundant reflection or penalize steps whose structural role is not captured by local utility alone.
 
 The comparison also clarifies what is not claimed. The current work does not train a reward model, tune a policy, or demonstrate a downstream process-supervision gain. It proposes a diagnostic constraint for future supervision: if reflection utility is used as a candidate signal, it should be calibrated against structural necessity, redundancy, and bottleneck evidence. This is weaker than a reward-model performance claim, but it is the claim supported by the artifacts.
 
 Counterfactual and intervention-based interpretability methods provide the broad methodological background. They use controlled perturbations to ask whether a component changes an outcome. FMA follows that general logic while avoiding a stronger identification reading. Perturbations in this paper are operational manipulations of observable trace or graph objects. They do not expose internal model computation. The framework reports measured behavior under fixed protocols and treats the resulting values as protocol-dependent evidence.
 
 Token attribution and attention-style explanations form another contrast. Those methods often operate at token, feature, or activation level. FMA operates over explicit reflective spans, such as self-evaluation, error correction, planning, verification, and uncertainty monitoring. This unit choice is deliberate. The paper studies metacognitive operations in recorded reasoning traces, not arbitrary textual fragments. That unit of analysis makes the framework readable for process supervision while preserving a conservative interpretation.
+
+Reproducibility and reporting work motivates the paper's treatment of repository artifacts as part of the claim boundary. Reproducibility checklists, variance-aware reporting, and experimental-reporting standards show that results depend on documented data, code, seeds, and evaluation choices \cite{pineau2021reproducibility,dodge2019show,bouthillier2019unreproducible}. FMA therefore reports prompt locks, manifest gates, failure audits, and stored outputs as reproducibility constraints rather than as background implementation details.
+
+Benchmark design work provides a second governance anchor. GLUE and SuperGLUE helped standardize language-understanding comparison, while Dynabench, HELM, and benchmark-governance critiques emphasize coverage, scenario design, benchmark saturation, and the limits of single-score claims \cite{wang2018glue,wang2019superglue,kiela2021dynabench,liang2022helm,raji2021benchmark}. This paper adopts the same caution at the trace level. Local reflection utility is interpreted only relative to a task distribution, perturbation protocol, and structural diagnostic layer.
+
+Dataset versioning, contamination, and deduplication studies motivate the real-task governance diagnostics. Hugging Face Datasets supports loading datasets at pinned revisions, and the Datasets library provides a community infrastructure for dataset sharing and provenance \cite{lhoest2021datasets,huggingface2026datasetsrevision}. Deduplication and corpus-documentation work show that repeated or poorly documented data can distort language-model training and evaluation \cite{lee2022deduplicating,dodge2021documenting}. Recent contamination diagnostics further caution that benchmark freshness cannot be assumed from dataset names alone, especially when test material may be memorized, rephrased, or consumed across prior artifacts \cite{golchin2023dcq,yang2023rephrased,zhang2024gsm1k}. The blocked real-task v3 route is therefore reported as a reproducibility-governance result, not as a failed performance run.
 
 \section{Framework}
 
@@ -161,7 +169,7 @@ The main result is the divergence between local attribution and structural neces
 
 \begin{figure}
 \centering
-\includegraphics[width=\linewidth]{../../outputs/figures/structural_diagnostics_attribution_vs_necessity.png}
+\includegraphics[width=\linewidth]{structural_diagnostics_attribution_vs_necessity.png}
 \caption{Local attribution versus topology-sensitive structural necessity. Stored Phase 6 diagnostics compare \texttt{attribution\_score} with \texttt{structural\_necessity} under PRUNE, CASCADE, and BYPASS graph perturbation modes.}
 \label{fig:local-attribution-versus-topology-sensitive-s}
 \end{figure}
@@ -191,7 +199,7 @@ Structural necessity is sparse. In every structural mode, 67.79 percent of node-
 
 \begin{figure}
 \centering
-\includegraphics[width=\linewidth]{../../outputs/figures/structural_diagnostics_mode_comparison.png}
+\includegraphics[width=\linewidth]{structural_diagnostics_mode_comparison.png}
 \caption{Structural diagnostic summary by perturbation mode. Stored Phase 6 summaries report alignment, overlap, and zero-inflation diagnostics across PRUNE, CASCADE, and BYPASS modes.}
 \label{fig:structural-diagnostic-summary-by-perturbation}
 \end{figure}
@@ -206,14 +214,14 @@ Phase 7 explains the mismatch through limited structural redistribution. Redunda
 
 \begin{figure}
 \centering
-\includegraphics[width=\linewidth]{../../outputs/figures/redundancy_density_histogram.png}
+\includegraphics[width=\linewidth]{redundancy_density_histogram.png}
 \caption{Redundancy density distribution. Stored Phase 7 redundancy diagnostics report the distribution of redundancy density values over reflective graph records.}
 \label{fig:redundancy-density-distribution-stored-phase-}
 \end{figure}
 
 \begin{figure}
 \centering
-\includegraphics[width=\linewidth]{../../outputs/figures/compensation_distribution.png}
+\includegraphics[width=\linewidth]{compensation_distribution.png}
 \caption{Weak compensation distribution. Stored Phase 7 compensation diagnostics show near-zero compensation ratios after structural perturbations, with distributions reported by mode.}
 \label{fig:weak-compensation-distribution-stored-phase-7}
 \end{figure}
@@ -224,7 +232,7 @@ Distributedness is low. The global distributedness index is 0.2976, indicating c
 
 \begin{figure}
 \centering
-\includegraphics[width=\linewidth]{../../outputs/figures/resilience_curves.png}
+\includegraphics[width=\linewidth]{resilience_curves.png}
 \caption{Resilience curves under ordered removal. Stored Phase 7 resilience diagnostics compare necessity-first, attribution-first, sequential, and deterministic random removal orders over the same graph records.}
 \label{fig:resilience-curves-under-ordered-removal-store}
 \end{figure}
@@ -237,43 +245,52 @@ The bottleneck result provides the complementary under-inclusive risk. A small s
 
 The resilience curves make the same point through degradation behavior. Necessity-first removal degrades the graph sharply, while attribution-first removal is much closer to sequential and deterministic random removal. If attribution were a sufficient substitute for structural necessity, attribution-first removal would be expected to resemble necessity-first removal more closely. The observed gap is another sign that the two rankings should remain distinct.
 
-\section{Boundary Evidence}
+\section{Boundary Evidence and Governance Diagnostics}
 
-The boundary evidence prevents the diagnostic result from being overstated. Real-task pilot artifacts for GSM8K and HotpotQA are guarded pilot evidence only. The current candidate score exists and is leakage-safe, but the readiness layer remains blocked by signal and drift gates. This means the real-task layer can motivate failure analysis and future design, but it cannot be treated as validated real-task support for the utility claim.
+Boundary evidence prevents the diagnostic result from being overstated. The completed empirical core remains Phase 5--7, where stored synthetic traces support the distinction between local utility and sparse structural necessity. Real-task and downstream routes are reported only as boundary evidence because they either remain blocked or failed preregistered gates. This section therefore treats failed routes as reproducibility diagnostics rather than as attempted upgrades to the main claim.
 
-The fresh-holdout route is also bounded. A clean manifest and overlap audit do not themselves validate a scoring rule. Smoke diagnostics and pilot feasibility artifacts are not full validation. They can reveal transport, drift, output-format, or sparse-signal problems, but they do not authorize a stronger paper claim. The current manuscript should therefore use the fresh-holdout material as provenance for why the diagnostic framing remains appropriate.
+\subsection{Boundary Evidence from Failed Routes}
 
-The v2.1 route is the clearest example. It produced a recomputed pilot stochastic artifact that passed pilot gates only. The later full stochastic validation failed preregistered gates. The quality gate fell short of the exact success requirement because of timeout and connection failures, and the GSM8K sparse-signal gate remained below threshold. A strict engineering retry did not rescue the route. The route was abandoned under its current contract and should be reported as failed full-scale boundary evidence rather than converted into success language.
+The v2.1 route illustrates the claim boundary. It produced a recomputed pilot stochastic artifact that passed pilot gates only. The later full stochastic validation failed its preregistered quality and sparse-signal gates: exact JSON/schema/tag/final-answer success fell below the required value because of timeout and connection failures, and GSM8K nonzero Delta-U remained below threshold. A strict engineering retry did not rescue the route, so strict v2.1 full validation was abandoned under its current contract.
 
-The downstream filtering mini-validation is also negative. It used paired pilot-sourced comparisons and completed valid pairs, but it failed its filtering-signal gate. The pooled mean advantage for masking the lower-scored span rather than the higher-scored anti-filter was -0.05, with GSM8K at -0.2 and HotpotQA at 0.1. This is negative pooled filtering advantage, not preliminary downstream support.
+The downstream filtering mini-validation is also negative boundary evidence. It used paired pilot-sourced comparisons and completed 20/20 valid pairs, but it failed its filtering-signal gate. The pooled mean advantage for masking the lower-scored span rather than the higher-scored anti-filter was -0.05, with GSM8K at -0.2 and HotpotQA at 0.1. This is not preliminary downstream support. It is evidence that the current pilot-sourced signal should not be converted into a PRM/filtering claim.
+
+\subsection{Governance Diagnostics from Blocked Manifest}
+
+The real-task v3 route was blocked before live validation at the manifest gate. Under strict six-key deduplication against prior pilot, v2, v2.1, and v2.2 artifacts, both GSM8K and HotpotQA had zero post-dedup rows. The final route status is \texttt{REAL\_TASK\_V3\_DATA\_SCARCITY\_BLOCKED}, with no API execution, no replay, no scoring, and no real-task validation data generated.
+
+The blocked manifest produced three governance diagnostics. F1, empty-alias hash collision, shows that a universal \texttt{non\_empty\_alias\_hash} key can collapse GSM8K rows when empty aliases map to the SHA-256 hash of an empty string. F2, split consumption, shows that HotpotQA validation rows were already represented in prior artifacts. Dataset-level freshness declarations are insufficient; split-level consumption tracking aligns with dataset documentation standards \cite{gebru2021datasheets}. F3, combinatorial overflow, shows that six-key OR-composition can exclude the entire candidate pool and therefore needs per-key marginal contribution reporting rather than only aggregate overlap counts.
+
+The supplementary archive includes the corresponding governance diagnostic visualization and machine-readable report. Supplementary Figure S1 shows the six-key exclusion contribution pattern. Supplementary Data S1 provides the structured diagnostic findings, severity labels, and future-work recommendations. The supplementary manifest records the exact filenames and source artifacts. These supplementary files document why the route stopped at the manifest gate; they do not add validation data or change the \texttt{PILOT\_BLOCKED} status.
 
 \begin{table}
-\caption{Boundary evidence and claim status.}
-\label{tab:table-3-boundary-evidence-and-claim-status}
+\caption{Boundary evidence and governance status.}
+\label{tab:table-3-boundary-evidence-and-governance-status}
 \centering
 \small
-\begin{tabular}{>{\raggedright\arraybackslash}p{0.27\linewidth} >{\raggedright\arraybackslash}p{0.30\linewidth} >{\raggedright\arraybackslash}p{0.33\linewidth}}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.25\linewidth} >{\raggedright\arraybackslash}p{0.39\linewidth} >{\raggedright\arraybackslash}p{0.26\linewidth}}
 \toprule
-Route & Stored status & Claim role \\
+Route or diagnostic & Stored status & Claim role \\
 \midrule
-Real-task pilot & Guarded pilot evidence; readiness remains blocked by signal and drift gates & Boundary evidence only \\
-Fresh-holdout route & Manifest and smoke diagnostics without full validation & Provenance and feasibility evidence \\
-v2.1 full stochastic validation & Failed preregistered quality and sparse-signal gates & Failed full-scale boundary evidence \\
-v2.1 downstream filtering mini-validation & Negative pooled filtering advantage (-0.05), GSM8K -0.2, HotpotQA 0.1 & Negative downstream boundary check \\
+Phase 5--7 synthetic diagnostics & Completed stored evidence over 800 traces and 2400 reflective steps & Primary empirical core \\
+v2.1 full stochastic validation & Failed preregistered quality and sparse-signal gates; strict retry did not rescue the route & Failed full-scale boundary evidence \\
+v2.1 downstream filtering mini-validation & 20/20 valid pairs but negative pooled filtering advantage (-0.05) & Negative downstream boundary check \\
+Real-task v3 manifest gate & \texttt{REAL\_TASK\_V3\_DATA\_SCARCITY\_BLOCKED}; GSM8K and HotpotQA post-dedup counts are zero & Governance diagnostic \\
+F1--F3 manifest diagnostics & Empty-alias collision, split consumption, and six-key OR exclusion & Reproducibility design constraints \\
 Future PRM/filtering validation & Not completed in current artifacts & Future application hypothesis \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-These boundary results are useful precisely because they constrain interpretation. The diagnostic core says that local utility is broader than structural necessity. The boundary evidence says that the current downstream signal does not yet produce a gain under the mini check and that real-task readiness remains blocked. Together they support a conservative paper: structural calibration is necessary before local reflective utility can become a credible supervision signal, and the current repository has not yet validated that downstream application.
+\subsection{Implications for Process Supervision Benchmarks}
 
-This boundary evidence should remain short in the main paper. The reader needs to know that pilot and downstream routes were examined and did not unlock stronger claims. The reader does not need a chronological account of every route package. The polished interpretation is that the deterministic diagnostic core is positive for the local-versus-structural distinction, while the real-task and downstream checks prevent conversion of that distinction into a process-supervision result.
+These boundary results sharpen the benchmark requirement. A process supervision benchmark cannot rely only on local reflection utility or on a clean-looking manifest. It needs structural calibration, explicit split-level consumption audit, dataset-aware hash key design, and marginal reporting for multi-key exclusion. Without those constraints, a benchmark can either overweight structurally inert reflection or silently exhaust its validation data under strict reproducibility rules.
 
-The same rule applies to future work. A future validation can build on the diagnostic by testing structurally calibrated scoring against explicit baselines. It should not reuse failed boundary artifacts as if they were positive evidence. It should define fresh data, frozen scoring rules, repeated replay or equivalent uncertainty reporting where needed, and downstream metrics before evaluation. Until such evidence exists, the current manuscript should close at diagnostic support.
+The diagnostic contribution is therefore two-sided. Phase 5--7 show why local utility should be separated from structural necessity. The failed and blocked real-task routes show why reproducibility governance must be part of reflection utility evaluation. Future validation should define fresh data, frozen scoring rules, structural calibration, repeated replay or equivalent uncertainty reporting where needed, baseline fairness checks, and downstream metrics before evaluation. Until such evidence exists, the current manuscript should close at diagnostic support and governance diagnostics, not downstream process-supervision validation.
 
 \section{Limitations}
 
-The first limitation is the operational nature of the measurements. \texttt{attribution\_score}, \texttt{structural\_necessity}, \texttt{compensation\_ratio}, and \texttt{distributedness\_index} are protocol-dependent proxies. They summarize how stored traces and graph abstractions behave under deterministic perturbation rules. They do not expose hidden reasoning, semantic understanding, internal mechanisms, or universal structural roles.
+The first limitation is the operational nature of the measurements. The local attribution, structural necessity, compensation, and distributedness quantities are protocol-dependent proxies. They summarize how stored traces and graph abstractions behave under deterministic perturbation rules. They do not expose hidden reasoning, semantic understanding, internal mechanisms, or universal structural roles.
 
 The second limitation is the synthetic benchmark. The deterministic 800-trace benchmark improves reproducibility, but it does not guarantee external validity on open-ended reasoning tasks, deployed agent traces, human-authored rationales, or other models. The held-out Stage 2 audit supports only a small aggregate signal with heterogeneous strata. Larger and more varied trace collections are required before the pattern can be treated as robust across settings.
 
@@ -299,14 +316,14 @@ This paper consolidates FMA as a diagnostic framework for reflective trace struc
 
 Phase 5 shows that many reflective steps receive local attribution signals. Phase 6 shows that those signals align weakly with topology-sensitive structural necessity and that necessity is zero-inflated. Phase 7 refines the initial distributed-compensation hypothesis by reporting moderate redundancy, weak compensation, low distributedness, and sparse bottlenecks. Stage 2 adds a low-magnitude, stratum-dependent held-out relation.
 
-The implication for supervision is direct but bounded. Raw local utility should not be used directly as a process-supervision or filtering weight. A structurally calibrated signal should account for structural necessity, bottleneck status, redundancy, and compensation. The current repository does not prove that such a signal improves downstream behavior. The mini filtering check is negative, and the real-task route remains bounded. The defensible contribution is diagnostic: it identifies why local reflection utility needs structural calibration before it can support reliable attribution-aware supervision.
+The implication for supervision is direct but bounded. Raw local utility should not be used directly as a process-supervision or filtering weight. A structurally calibrated signal should account for structural necessity, bottleneck status, redundancy, and compensation. The current repository does not prove that such a signal improves downstream behavior. The mini filtering check is negative, and the real-task route remains bounded. The defensible contribution is two-sided. Phase 5--7 identify why local reflection utility needs structural calibration before it can support reliable attribution-aware supervision. The blocked real-task routes identify why reproducibility governance must include split-level consumption audit and dataset-aware hash key design before reflection utility benchmarks can claim external validity. Until both calibrations are satisfied, the current manuscript closes at diagnostic support and governance diagnostics, not downstream process-supervision validation.
 
 
 \section*{Declaration of competing interest}
 The anonymous authors declare no known competing financial interests or personal relationships that could have appeared to influence the work reported in this paper.
 
 \section*{Data and code availability}
-For double-blind review, the source code, stored traces, diagnostic outputs, and figure artifacts are provided in the anonymous submission package or supplementary archive. The Phase 5--7 diagnostic core can be reproduced locally from stored artifacts without external API calls. Real-task pilot, fresh-holdout, and downstream filtering routes are reported only as boundary evidence and are not required to reproduce the main diagnostic results.
+For double-blind review, the source code, stored traces, diagnostic outputs, and figure artifacts are provided in the anonymous submission package or supplementary archive. The Phase 5--7 diagnostic core can be reproduced locally from stored artifacts without external API calls. Real-task pilot, fresh-holdout, and downstream filtering routes are reported only as boundary evidence and are not required to reproduce the main diagnostic results. The supplementary archive also provides Supplementary Figure S1 and Supplementary Data S1 for the governance diagnostic report described in Section 7.
 
 \section*{Author contributions}
 Author contribution details are omitted for double-blind review.

@@ -1,8 +1,8 @@
-# Functional Metacognitive Attribution as a Diagnostic Framework for Reflective Trace Structure
+# Functional Metacognitive Attribution: A Diagnostic Framework with Reproducibility Constraints for Reflection Utility Evaluation
 
 ## Abstract
 
-Reflective language agents use self-evaluation, error diagnosis, uncertainty monitoring, and plan revision to improve reasoning traces. These operations are natural candidates for process supervision, but a local signal that appears useful in one trace does not necessarily mark a step as structurally necessary. This paper consolidates Functional Metacognitive Attribution (FMA) as a reflection utility learning framework over observable traces. FMA estimates intervention-sensitive local utility for reflective spans, then asks whether those spans remain important under graph-based structural diagnostics. The current evidence is diagnostic rather than downstream-validating. Across 800 synthetic trajectories and 2400 reflective steps, local attribution signals are widespread, while measured structural necessity is sparse and zero-inflated. Phase 6 diagnostics show weak alignment between `attribution_score` and `structural_necessity` across PRUNE, CASCADE, and BYPASS structural modes. Phase 7 reports moderate redundancy density, low distributedness, 191 sparse bottlenecks, and weak compensation ratios. Stage 2 held-out evaluation adds a low-magnitude aggregate rank signal, but generalization remains stratum-dependent. Real-task and downstream extensions bound the claim further: guarded pilot evidence remains blocked, v2.1 full stochastic validation failed preregistered gates, and the one-shot downstream filtering mini-validation produced a negative pooled filtering advantage. The resulting contribution is a claim-safe diagnostic: reflective reasoning exhibits widespread local utility but sparse structural necessity, so raw local utility should not be treated directly as a supervision or filtering weight without structural calibration.
+Reflective language agents use self-evaluation, error diagnosis, uncertainty monitoring, and plan revision to improve reasoning traces. These operations are natural candidates for process supervision, but a local signal that appears useful in one trace does not necessarily mark a step as structurally necessary. This paper consolidates Functional Metacognitive Attribution (FMA) as a reflection utility learning framework over observable traces. FMA estimates intervention-sensitive local utility for reflective spans, then asks whether those spans remain important under graph-based structural diagnostics. The current evidence is diagnostic rather than downstream-validating. Across 800 synthetic trajectories and 2400 reflective steps, local attribution signals are widespread, while measured structural necessity is sparse and zero-inflated. Phase 6 diagnostics show weak alignment between `attribution_score` and `structural_necessity` across PRUNE, CASCADE, and BYPASS structural modes. Phase 7 reports moderate redundancy density, low distributedness, 191 sparse bottlenecks, and weak compensation ratios. Stage 2 held-out evaluation adds a low-magnitude aggregate rank signal, but generalization remains stratum-dependent. The resulting contribution is a claim-safe diagnostic: reflective reasoning exhibits widespread local utility but sparse structural necessity, so raw local utility should not be treated directly as a supervision or filtering weight without structural calibration. Real-task validation attempts under strict deduplication were blocked by data-availability constraints, revealing that reproducibility frameworks for reflection utility must include split-level consumption audit and dataset-aware hash key design.
 
 ## 1. Introduction
 
@@ -41,6 +41,12 @@ The comparison also clarifies what is not claimed. The current work does not tra
 Counterfactual and intervention-based interpretability methods provide the broad methodological background. They use controlled perturbations to ask whether a component changes an outcome. FMA follows that general logic while avoiding a stronger identification reading. Perturbations in this paper are operational manipulations of observable trace or graph objects. They do not expose internal model computation. The framework reports measured behavior under fixed protocols and treats the resulting values as protocol-dependent evidence.
 
 Token attribution and attention-style explanations form another contrast. Those methods often operate at token, feature, or activation level. FMA operates over explicit reflective spans, such as self-evaluation, error correction, planning, verification, and uncertainty monitoring. This unit choice is deliberate. The paper studies metacognitive operations in recorded reasoning traces, not arbitrary textual fragments. That unit of analysis makes the framework readable for process supervision while preserving a conservative interpretation.
+
+Reproducibility and reporting work motivates the paper's treatment of repository artifacts as part of the claim boundary. Reproducibility checklists, variance-aware reporting, and experimental-reporting standards show that results depend on documented data, code, seeds, and evaluation choices (Pineau et al., 2021; Dodge et al., 2019; Bouthillier et al., 2019). FMA therefore reports prompt locks, manifest gates, failure audits, and stored outputs as reproducibility constraints rather than as background implementation details.
+
+Benchmark design work provides a second governance anchor. GLUE and SuperGLUE helped standardize language-understanding comparison, while Dynabench, HELM, and benchmark-governance critiques emphasize coverage, scenario design, benchmark saturation, and the limits of single-score claims (Wang et al., 2018; Wang et al., 2019; Kiela et al., 2021; Liang et al., 2022; Raji et al., 2021). This paper adopts the same caution at the trace level. Local reflection utility is interpreted only relative to a task distribution, perturbation protocol, and structural diagnostic layer.
+
+Dataset versioning, contamination, and deduplication studies motivate the real-task governance diagnostics. Hugging Face Datasets supports loading datasets at pinned revisions, and the Datasets library provides a community infrastructure for dataset sharing and provenance (Lhoest et al., 2021; Hugging Face, 2026). Deduplication and corpus-documentation work show that repeated or poorly documented data can distort language-model training and evaluation (Lee et al., 2022; Dodge et al., 2021). Recent contamination diagnostics further caution that benchmark freshness cannot be assumed from dataset names alone, especially when test material may be memorized, rephrased, or consumed across prior artifacts (Golchin and Surdeanu, 2023; Yang et al., 2023; Zhang et al., 2024). The blocked real-task v3 route is therefore reported as a reproducibility-governance result, not as a failed performance run.
 
 ## 3. Framework
 
@@ -170,35 +176,44 @@ The bottleneck result provides the complementary under-inclusive risk. A small s
 
 The resilience curves make the same point through degradation behavior. Necessity-first removal degrades the graph sharply, while attribution-first removal is much closer to sequential and deterministic random removal. If attribution were a sufficient substitute for structural necessity, attribution-first removal would be expected to resemble necessity-first removal more closely. The observed gap is another sign that the two rankings should remain distinct.
 
-## 7. Boundary Evidence
+## 7. Boundary Evidence and Governance Diagnostics
 
-The boundary evidence prevents the diagnostic result from being overstated. Real-task pilot artifacts for GSM8K and HotpotQA are guarded pilot evidence only. The current candidate score exists and is leakage-safe, but the readiness layer remains blocked by signal and drift gates. This means the real-task layer can motivate failure analysis and future design, but it cannot be treated as validated real-task support for the utility claim.
+Boundary evidence prevents the diagnostic result from being overstated. The completed empirical core remains Phase 5-7, where stored synthetic traces support the distinction between local utility and sparse structural necessity. Real-task and downstream routes are reported only as boundary evidence because they either remain blocked or failed preregistered gates. This section therefore treats failed routes as reproducibility diagnostics rather than as attempted upgrades to the main claim.
 
-The fresh-holdout route is also bounded. A clean manifest and overlap audit do not themselves validate a scoring rule. Smoke diagnostics and pilot feasibility artifacts are not full validation. They can reveal transport, drift, output-format, or sparse-signal problems, but they do not authorize a stronger paper claim. The current manuscript should therefore use the fresh-holdout material as provenance for why the diagnostic framing remains appropriate.
+### 7.1 Boundary Evidence from Failed Routes
 
-The v2.1 route is the clearest example. It produced a recomputed pilot stochastic artifact that passed pilot gates only. The later full stochastic validation failed preregistered gates. The quality gate fell short of the exact success requirement because of timeout and connection failures, and the GSM8K sparse-signal gate remained below threshold. A strict engineering retry did not rescue the route. The route was abandoned under its current contract and should be reported as failed full-scale boundary evidence rather than converted into success language.
+The v2.1 route illustrates the claim boundary. It produced a recomputed pilot stochastic artifact that passed pilot gates only. The later full stochastic validation failed its preregistered quality and sparse-signal gates: exact JSON/schema/tag/final-answer success fell below the required value because of timeout and connection failures, and GSM8K nonzero Delta-U remained below threshold. A strict engineering retry did not rescue the route, so strict v2.1 full validation was abandoned under its current contract.
 
-The downstream filtering mini-validation is also negative. It used paired pilot-sourced comparisons and completed valid pairs, but it failed its filtering-signal gate. The pooled mean advantage for masking the lower-scored span rather than the higher-scored anti-filter was -0.05, with GSM8K at -0.2 and HotpotQA at 0.1. This is negative pooled filtering advantage, not preliminary downstream support.
+The downstream filtering mini-validation is also negative boundary evidence. It used paired pilot-sourced comparisons and completed 20/20 valid pairs, but it failed its filtering-signal gate. The pooled mean advantage for masking the lower-scored span rather than the higher-scored anti-filter was -0.05, with GSM8K at -0.2 and HotpotQA at 0.1. This is not preliminary downstream support. It is evidence that the current pilot-sourced signal should not be converted into a PRM/filtering claim.
 
-**Table 3. Boundary evidence and claim status.**
+### 7.2 Governance Diagnostics from Blocked Manifest
 
-| Route | Stored status | Claim role |
+The real-task v3 route was blocked before live validation at the manifest gate. Under strict six-key deduplication against prior pilot, v2, v2.1, and v2.2 artifacts, both GSM8K and HotpotQA had zero post-dedup rows. The final route status is `REAL_TASK_V3_DATA_SCARCITY_BLOCKED`, with no API execution, no replay, no scoring, and no real-task validation data generated.
+
+The blocked manifest produced three governance diagnostics. F1, empty-alias hash collision, shows that a universal `non_empty_alias_hash` key can collapse GSM8K rows when empty aliases map to the SHA-256 hash of an empty string. F2, split consumption, shows that HotpotQA validation rows were already represented in prior artifacts, so dataset-level freshness is insufficient without split-level consumption tracking. F3, combinatorial overflow, shows that six-key OR-composition can exclude the entire candidate pool and therefore needs per-key marginal contribution reporting rather than only aggregate overlap counts.
+
+The supplementary archive includes the corresponding governance diagnostic visualization and machine-readable report. Supplementary Figure S1 shows the six-key exclusion contribution pattern. Supplementary Data S1 provides the structured diagnostic findings, severity labels, and future-work recommendations. The supplementary manifest records the exact filenames and source artifacts. These supplementary files document why the route stopped at the manifest gate; they do not add validation data or change the `PILOT_BLOCKED` status.
+
+**Table 3. Boundary evidence and governance status.**
+
+| Route or diagnostic | Stored status | Claim role |
 |---|---|---|
-| Real-task pilot | Guarded pilot evidence; readiness remains blocked by signal and drift gates | Boundary evidence only |
-| Fresh-holdout route | Manifest and smoke diagnostics without full validation | Provenance and feasibility evidence |
-| v2.1 full stochastic validation | Failed preregistered quality and sparse-signal gates | Failed full-scale boundary evidence |
-| v2.1 downstream filtering mini-validation | Negative pooled filtering advantage (-0.05), GSM8K -0.2, HotpotQA 0.1 | Negative downstream boundary check |
+| Phase 5-7 synthetic diagnostics | Completed stored evidence over 800 traces and 2400 reflective steps | Primary empirical core |
+| v2.1 full stochastic validation | Failed preregistered quality and sparse-signal gates; strict retry did not rescue the route | Failed full-scale boundary evidence |
+| v2.1 downstream filtering mini-validation | 20/20 valid pairs but negative pooled filtering advantage (-0.05) | Negative downstream boundary check |
+| Real-task v3 manifest gate | `REAL_TASK_V3_DATA_SCARCITY_BLOCKED`; GSM8K and HotpotQA post-dedup counts are zero | Governance diagnostic |
+| F1-F3 manifest diagnostics | Empty-alias collision, split consumption, and six-key OR exclusion | Reproducibility design constraints |
 | Future PRM/filtering validation | Not completed in current artifacts | Future application hypothesis |
 
-These boundary results are useful precisely because they constrain interpretation. The diagnostic core says that local utility is broader than structural necessity. The boundary evidence says that the current downstream signal does not yet produce a gain under the mini check and that real-task readiness remains blocked. Together they support a conservative paper: structural calibration is necessary before local reflective utility can become a credible supervision signal, and the current repository has not yet validated that downstream application.
+### 7.3 Implications for Process Supervision Benchmarks
 
-This boundary evidence should remain short in the main paper. The reader needs to know that pilot and downstream routes were examined and did not unlock stronger claims. The reader does not need a chronological account of every route package. The polished interpretation is that the deterministic diagnostic core is positive for the local-versus-structural distinction, while the real-task and downstream checks prevent conversion of that distinction into a process-supervision result.
+These boundary results sharpen the benchmark requirement. A process supervision benchmark cannot rely only on local reflection utility or on a clean-looking manifest. It needs structural calibration, explicit split-level consumption audit, dataset-aware hash key design, and marginal reporting for multi-key exclusion. Without those constraints, a benchmark can either overweight structurally inert reflection or silently exhaust its validation data under strict reproducibility rules.
 
-The same rule applies to future work. A future validation can build on the diagnostic by testing structurally calibrated scoring against explicit baselines. It should not reuse failed boundary artifacts as if they were positive evidence. It should define fresh data, frozen scoring rules, repeated replay or equivalent uncertainty reporting where needed, and downstream metrics before evaluation. Until such evidence exists, the current manuscript should close at diagnostic support.
+The diagnostic contribution is therefore two-sided. Phase 5-7 show why local utility should be separated from structural necessity. The failed and blocked real-task routes show why reproducibility governance must be part of reflection utility evaluation. Future validation should define fresh data, frozen scoring rules, structural calibration, repeated replay or equivalent uncertainty reporting where needed, baseline fairness checks, and downstream metrics before evaluation. Until such evidence exists, the current manuscript should close at diagnostic support and governance diagnostics, not downstream process-supervision validation.
 
 ## 8. Limitations
 
-The first limitation is the operational nature of the measurements. `attribution_score`, `structural_necessity`, `compensation_ratio`, and `distributedness_index` are protocol-dependent proxies. They summarize how stored traces and graph abstractions behave under deterministic perturbation rules. They do not expose hidden reasoning, semantic understanding, internal mechanisms, or universal structural roles.
+The first limitation is the operational nature of the measurements. The local attribution, structural necessity, compensation, and distributedness quantities are protocol-dependent proxies. They summarize how stored traces and graph abstractions behave under deterministic perturbation rules. They do not expose hidden reasoning, semantic understanding, internal mechanisms, or universal structural roles.
 
 The second limitation is the synthetic benchmark. The deterministic 800-trace benchmark improves reproducibility, but it does not guarantee external validity on open-ended reasoning tasks, deployed agent traces, human-authored rationales, or other models. The held-out Stage 2 audit supports only a small aggregate signal with heterogeneous strata. Larger and more varied trace collections are required before the pattern can be treated as robust across settings.
 
@@ -233,3 +248,33 @@ Noah Shinn, Federico Cassano, Ashwin Gopinath, Karthik Narasimhan, and Shunyu Ya
 Aman Madaan, Niket Tandon, Prakhar Gupta, Skyler Hallinan, Luyu Gao, Sarah Wiegreffe, Uri Alon, Nouha Dziri, Shrimai Prabhumoye, Yiming Yang, Shashank Gupta, Bodhisattwa Prasad Majumder, Katherine Hermann, Sean Welleck, Amir Yazdanbakhsh, and Peter Clark. 2023. "Self-Refine: Iterative Refinement with Self-Feedback." *Advances in Neural Information Processing Systems 36 (NeurIPS 2023)*.
 
 Hunter Lightman, Vineet Kosaraju, Yura Burda, Harri Edwards, Bowen Baker, Teddy Lee, Jan Leike, John Schulman, Ilya Sutskever, and Karl Cobbe. 2023. "Let's Verify Step by Step." arXiv:2305.20050. https://doi.org/10.48550/arXiv.2305.20050.
+
+Joelle Pineau, Philippe Vincent-Lamarre, Koustuv Sinha, Vincent Lariviere, Alina Beygelzimer, Florence d'Alche-Buc, Emily Fox, and Hugo Larochelle. 2021. "Improving Reproducibility in Machine Learning Research: A Report from the NeurIPS 2019 Reproducibility Program." *Journal of Machine Learning Research* 22(164):1-20.
+
+Jesse Dodge, Suchin Gururangan, Dallas Card, Roy Schwartz, and Noah A. Smith. 2019. "Show Your Work: Improved Reporting of Experimental Results." *Proceedings of EMNLP-IJCNLP 2019*, 2185-2194.
+
+Xavier Bouthillier, Cesar Laurent, and Pascal Vincent. 2019. "Unreproducible Research is Reproducible." *Proceedings of the 36th International Conference on Machine Learning*, PMLR 97:725-734.
+
+Alex Wang, Amanpreet Singh, Julian Michael, Felix Hill, Omer Levy, and Samuel R. Bowman. 2018. "GLUE: A Multi-Task Benchmark and Analysis Platform for Natural Language Understanding." *Proceedings of the 2018 EMNLP Workshop BlackboxNLP*, 353-355.
+
+Alex Wang, Yada Pruksachatkun, Nikita Nangia, Amanpreet Singh, Julian Michael, Felix Hill, Omer Levy, and Samuel R. Bowman. 2019. "SuperGLUE: A Stickier Benchmark for General-Purpose Language Understanding Systems." *Advances in Neural Information Processing Systems 32*.
+
+Douwe Kiela, Max Bartolo, Yixin Nie, Divyansh Kaushik, Atticus Geiger, Zhengxuan Wu, Bertie Vidgen, Grusha Prasad, Amanpreet Singh, Pratik Ringshia, Zhiyi Ma, Tristan Thrush, Sebastian Riedel, Zeerak Waseem, Pontus Stenetorp, Robin Jia, Mohit Bansal, Christopher Potts, and Adina Williams. 2021. "Dynabench: Rethinking Benchmarking in NLP." *Proceedings of NAACL-HLT 2021*, 4110-4124.
+
+Percy Liang, Rishi Bommasani, Tony Lee, Dimitris Tsipras, Dilara Soylu, Michihiro Yasunaga, Yian Zhang, and coauthors. 2022. "Holistic Evaluation of Language Models." arXiv:2211.09110. https://doi.org/10.48550/arXiv.2211.09110.
+
+Inioluwa Deborah Raji, Emily M. Bender, Amandalynne Paullada, Emily Denton, and Alex Hanna. 2021. "AI and the Everything in the Whole Wide World Benchmark." *NeurIPS Datasets and Benchmarks*.
+
+Quentin Lhoest, Albert Villanova del Moral, Yacine Jernite, Abhishek Thakur, Patrick von Platen, Suraj Patil, Julien Chaumond, Mariama Drame, Julien Plu, Lewis Tunstall, Joe Davison, Mario Sasko, Gunjan Chhablani, Bhavitvya Malik, Simon Brandeis, Teven Le Scao, Victor Sanh, Canwen Xu, Nicolas Patry, Angelina McMillan-Major, Philipp Schmid, Sylvain Gugger, Clement Delangue, Theo Matussiere, Lysandre Debut, Stas Bekman, Pierric Cistac, Thibault Goehringer, Victor Mustar, Francois Lagunas, Alexander M. Rush, and Thomas Wolf. 2021. "Datasets: A Community Library for Natural Language Processing." *Proceedings of EMNLP 2021: System Demonstrations*, 175-184.
+
+Hugging Face. 2026. "Datasets Documentation: Load a Dataset with a Specific Revision." Accessed June 6, 2026. https://huggingface.co/docs/datasets/v3.4.0/en/loading.
+
+Katherine Lee, Daphne Ippolito, Andrew Nystrom, Chiyuan Zhang, Douglas Eck, Chris Callison-Burch, and Nicholas Carlini. 2022. "Deduplicating Training Data Makes Language Models Better." *Proceedings of ACL 2022*, 8424-8445.
+
+Jesse Dodge, Maarten Sap, Ana Marasovic, William Agnew, Gabriel Ilharco, Dirk Groeneveld, Margaret Mitchell, and Matt Gardner. 2021. "Documenting Large Webtext Corpora: A Case Study on the Colossal Clean Crawled Corpus." *Proceedings of EMNLP 2021*, 1286-1305.
+
+Shahriar Golchin and Mihai Surdeanu. 2023. "Data Contamination Quiz: A Tool to Detect and Estimate Contamination in Large Language Models." arXiv:2311.06233. https://doi.org/10.48550/arXiv.2311.06233.
+
+Shuo Yang, Wei-Lin Chiang, Lianmin Zheng, Joseph E. Gonzalez, and Ion Stoica. 2023. "Rethinking Benchmark and Contamination for Language Models with Rephrased Samples." arXiv:2311.04850. https://doi.org/10.48550/arXiv.2311.04850.
+
+Hugh Zhang, Jeff Da, Dean Lee, Vaughn Robinson, Catherine Wu, Will Song, Tiffany Zhao, Pranav Raja, Charlotte Zhuang, Dylan Slack, Qin Lyu, Sean Hendryx, Russell Kaplan, Michele Lunati, and Summer Yue. 2024. "A Careful Examination of Large Language Model Performance on Grade School Arithmetic." arXiv:2405.00332. https://doi.org/10.48550/arXiv.2405.00332.
