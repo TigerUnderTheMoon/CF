@@ -1,6 +1,7 @@
 # Python artifacts
 __pycache__/
 *.py[cod]
+.coverage*
 .pytest_cache/
 .env
 .venv/
@@ -9,7 +10,7 @@ __pycache__/
 # DVC-tracked directories (contents via DVC, .dvc files via Git)
 data/
 !data.dvc
-outputs/***
+outputs/**
 !outputs/*.dvc
 
 # IDE

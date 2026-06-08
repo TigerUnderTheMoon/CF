@@ -76,7 +76,9 @@ def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, sort_keys=True), encoding="utf-8")
 
 
-def _write_declared_gsm8k_pair(tmp_path: Path, row_count: int) -> tuple[Path, Path, list[dict[str, Any]]]:
+def _write_declared_gsm8k_pair(
+    tmp_path: Path, row_count: int
+) -> tuple[Path, Path, list[dict[str, Any]]]:
     jsonl_path = tmp_path / "gsm8k_openai_main_train_declared.jsonl"
     provenance_path = tmp_path / "gsm8k_openai_main_train_declared_provenance.json"
     rows = build_declared_gsm8k_rows(
@@ -165,7 +167,9 @@ def _run_manifest_gate(
 
 
 def _read_manifest_rows(path: Path) -> list[dict[str, Any]]:
-    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    return [
+        json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()
+    ]
 
 
 def _sample_blocked_manifest_audit() -> dict[str, Any]:
@@ -271,7 +275,9 @@ def test_real_task_v3_config_records_final_execution_guards() -> None:
         "reference_only_f1": 0.2777777778,
         "support_overlap": 0.2222222222,
     }
-    assert config["utility_target"]["hotpotqa"]["semantic_judge_gate"] == "disabled_by_target_revision"
+    assert (
+        config["utility_target"]["hotpotqa"]["semantic_judge_gate"] == "disabled_by_target_revision"
+    )
     assert config["utility_target"]["hotpotqa"]["surface_match_risk"] == {
         "alias_token_f1_gt": 0.8,
         "support_overlap_lt": 0.2,
@@ -286,8 +292,7 @@ def test_v3_dense_utility_scoring_uses_locked_weights() -> None:
     )
 
     assert gsm_score["utility"] == (
-        0.60 * (1 / 3)
-        + 0.40 * ((1.0 + math.exp(-abs(math.log(81 / 101))) + 0.0) / 3)
+        0.60 * (1 / 3) + 0.40 * ((1.0 + math.exp(-abs(math.log(81 / 101))) + 0.0) / 3)
     )
     assert gsm_score["repeated_numeric_exact"] == 1 / 3
 
@@ -453,12 +458,9 @@ def test_v3_route_manifests_are_disjoint_across_splits() -> None:
 
     assert audit["status"] == "MANIFEST_OVERLAP_CLEAN"
     selected_ids_by_split = {
-        split: {row["sample_id"] for row in rows}
-        for split, rows in manifests.items()
+        split: {row["sample_id"] for row in rows} for split, rows in manifests.items()
     }
-    assert selected_ids_by_split["smoke"].isdisjoint(
-        selected_ids_by_split["dev_calibration"]
-    )
+    assert selected_ids_by_split["smoke"].isdisjoint(selected_ids_by_split["dev_calibration"])
     assert selected_ids_by_split["dev_calibration"].isdisjoint(
         selected_ids_by_split["locked_validation"]
     )
@@ -494,9 +496,7 @@ def test_declared_gsm8k_source_requires_full_revision_and_stable_row_indices() -
 
 
 def test_declared_gsm8k_source_provenance_hashes_rows_and_previous_sources() -> None:
-    declared_rows = build_declared_gsm8k_rows(
-        [{"question": "What is 3 + 3?", "answer": "#### 6"}]
-    )
+    declared_rows = build_declared_gsm8k_rows([{"question": "What is 3 + 3?", "answer": "#### 6"}])
 
     provenance = build_declared_source_provenance(
         rows=declared_rows,
@@ -659,7 +659,9 @@ def test_real_task_v3_manifest_gate_blocks_insufficient_fresh_rows_without_parti
     )
 
     assert result.returncode == 1
-    assert "REAL_TASK_V3_MANIFEST_BLOCKED: insufficient_fresh_rows" in (result.stdout + result.stderr)
+    assert "REAL_TASK_V3_MANIFEST_BLOCKED: insufficient_fresh_rows" in (
+        result.stdout + result.stderr
+    )
     audit = json.loads((output_dir / "manifest_overlap_audit.json").read_text(encoding="utf-8"))
     assert audit["status"] == "BLOCKED_INSUFFICIENT_FRESH_ROWS"
     assert audit["post_dedup_counts"]["gsm8k"] == 50
@@ -735,12 +737,7 @@ def test_real_task_v3_manifest_gate_enforces_split_disjointness_and_six_keys(
         seen_task_ids.update(task_ids)
         assert all(six_keys.issubset(row) for row in rows)
         assert all(row["split"] in {"smoke", "dev", "locked"} for row in rows)
-    gsm8k_rows = [
-        row
-        for rows in rows_by_split
-        for row in rows
-        if row["task_type"] == "gsm8k"
-    ]
+    gsm8k_rows = [row for rows in rows_by_split for row in rows if row["task_type"] == "gsm8k"]
     assert all(row["non_empty_alias_hash"] == "__EMPTY_ALIAS_EXCLUDED__" for row in gsm8k_rows)
 
 
@@ -835,9 +832,7 @@ def test_prematerialized_validation_accepts_valid_source_and_rejects_hash_mismat
     pre_jsonl = tmp_path / "provided.jsonl"
     pre_provenance = tmp_path / "provided_provenance.json"
     output_dir = tmp_path / "declared"
-    rows = build_declared_gsm8k_rows(
-        [{"question": "What is 7 + 7?", "answer": "#### 14"}]
-    )
+    rows = build_declared_gsm8k_rows([{"question": "What is 7 + 7?", "answer": "#### 14"}])
     write_records(rows, pre_jsonl)
     provenance = build_declared_source_provenance(
         rows=rows,
@@ -1117,9 +1112,7 @@ def test_v3_decision_tree_separates_global_task_specific_and_downstream_claims()
 
 
 def test_circuit_breaker_uses_consecutive_and_rolling_error_limits() -> None:
-    consecutive = build_circuit_breaker_report(
-        [{"error_class": "infra_error"} for _ in range(10)]
-    )
+    consecutive = build_circuit_breaker_report([{"error_class": "infra_error"} for _ in range(10)])
     rolling = build_circuit_breaker_report(
         [{"error_class": "infra_error"} for _ in range(11)]
         + [{"error_class": "success"} for _ in range(39)]
@@ -1139,21 +1132,24 @@ def test_chat_completions_adapter_normalizes_fake_response() -> None:
         return {
             "id": "chatcmpl-test",
             "model": "deepseek-v4-flash",
-            "choices": [{"message": {"content": "{\"ok\": true}"}}],
+            "choices": [{"message": {"content": '{"ok": true}'}}],
             "usage": {"prompt_tokens": 10, "completion_tokens": 5},
         }
 
     adapter = ChatCompletionsAdapter(api_key="test-key", transport=fake_transport)
     result = adapter.create_trace(
         prompt="Return JSON",
-        config={"model": {"temperature": 0, "max_output_tokens": 16}, "api": {"request_timeout_seconds": 5}},
+        config={
+            "model": {"temperature": 0, "max_output_tokens": 16},
+            "api": {"request_timeout_seconds": 5},
+        },
         model_name="deepseek-v4-flash",
     )
 
     assert calls[0][0] == DEFAULT_CHAT_COMPLETIONS_ENDPOINT
     assert calls[0][1]["response_format"] == {"type": "json_object"}
     assert calls[0][2]["Authorization"] == "Bearer test-key"
-    assert result.output_text == "{\"ok\": true}"
+    assert result.output_text == '{"ok": true}'
     assert result.usage == {"prompt_tokens": 10, "completion_tokens": 5}
     assert result.response_id == "chatcmpl-test"
     assert result.request_metadata["endpoint"] == DEFAULT_CHAT_COMPLETIONS_ENDPOINT
@@ -1184,7 +1180,9 @@ def test_smoke_calibrated_cost_forecast_and_locked_checkpoint_freeze_on_cost_ris
 def test_real_task_v3_manifest_script_rejects_execution_scope_drift() -> None:
     config = load_pilot_config(Path("configs/real_task_v3_validation.yaml"))
 
-    assert _assert_current_task_boundary(config, task_scope=REAL_TASK_V3_PREREGISTRATION_ONLY) is None
+    assert (
+        _assert_current_task_boundary(config, task_scope=REAL_TASK_V3_PREREGISTRATION_ONLY) is None
+    )
 
     bad = dict(config)
     bad["execution_boundary"] = {
@@ -1217,7 +1215,9 @@ def _v3_smoke_manifest_rows(per_task: int = 100) -> list[dict[str, Any]]:
     return rows
 
 
-def _v3_trace_record(sample_id: str, *, span_count: int, task_type: str = "gsm8k") -> dict[str, Any]:
+def _v3_trace_record(
+    sample_id: str, *, span_count: int, task_type: str = "gsm8k"
+) -> dict[str, Any]:
     trace_parts = ["Initial observable work without final answer."]
     for span_index in range(span_count):
         trace_parts.append(
@@ -1301,9 +1301,7 @@ def test_v3_prefix_builder_scores_first_three_spans_only_and_records_delete_cont
         for prefix in prefixes
     )
     assert all("[REASONING_MASK]" in prefix["observable_prefix"] for prefix in prefixes)
-    assert all(
-        "Visible check 3" not in prefix["observable_prefix"] for prefix in prefixes
-    )
+    assert all("Visible check 3" not in prefix["observable_prefix"] for prefix in prefixes)
 
 
 def test_v3_smoke_report_uses_delta_epsilon_and_requests_v3_1_replace_after_sparse_delete() -> None:
@@ -1450,11 +1448,12 @@ def test_governance_diagnostic_plot_generation(tmp_path: Path) -> None:
 
 def test_real_task_v3_claim_registry_final_status_section_is_claim_safe() -> None:
     text = Path("paper/claim_registry.md").read_text(encoding="utf-8")
-    assert "## Real-Task v3 Final Status (2026-06-06)" in text
-    section = text.split("## Real-Task v3 Final Status (2026-06-06)", maxsplit=1)[1]
+    assert "## Real-Task v3/v3.1 Final Status (2026-06-08)" in text
+    section = text.split("## Real-Task v3/v3.1 Final Status (2026-06-08)", maxsplit=1)[1]
 
-    assert "`PILOT_BLOCKED` remains" in section
-    assert "No real-task validation data was generated" in section
-    assert "No PRM/filtering improvement claim is permitted" in section
+    assert "`PILOT_BLOCKED`" in section
+    assert "v3 and v3.1 are negative boundary evidence only" in section
+    assert "threshold retuning" in section
+    assert "downstream PRM/filtering gain claims" in section
     assert "REAL_TASK_V3_VALIDATION_PASS" not in section
     assert "PRM_FILTERING_IMPROVEMENT_PASS" not in section

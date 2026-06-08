@@ -28,7 +28,9 @@ from scripts.run_s_fma_v2_2_single_transport_retry import merge_single_retry_att
 V2_2_GENERATION_PROMPT_PATH = Path("prompts/s_fma_v2_2_reflection_generation.txt")
 V2_2_REPLAY_PROMPT_PATH = Path("prompts/s_fma_v2_2_replay.txt")
 V2_2_CONTRACT_AUDIT_PATH = Path("outputs/s_fma_v2_2_fresh_holdout/v2_2_contract_audit.json")
-V2_2_APPROVAL_REQUEST_PATH = Path("outputs/s_fma_v2_2_fresh_holdout/api_preflight_approval_request.json")
+V2_2_APPROVAL_REQUEST_PATH = Path(
+    "outputs/s_fma_v2_2_fresh_holdout/api_preflight_approval_request.json"
+)
 
 
 def _v2_2_prompt_bundle_hash() -> str:
@@ -135,7 +137,8 @@ def _v2_2_config(sample_count: int = 1) -> dict:
         "prompt_lock": {
             "generation_prompt_file": "prompts/s_fma_v2_2_reflection_generation.txt",
             "replay_prompt_file": "prompts/s_fma_v2_2_replay.txt",
-            "prompt_version": "prompt-sha256:test",
+            "prompt_version": _v2_2_prompt_bundle_hash(),
+            "prompt_lock_status": "CURRENT_PACKAGE_PROMPT_LOCK",
             "prompt_hash_scope": "generation_and_replay_prompt_bundle",
             "allowed_reflection_types": [
                 "self-reflection",
@@ -148,6 +151,8 @@ def _v2_2_config(sample_count: int = 1) -> dict:
                 "uncertainty_monitoring",
                 "other",
             ],
+            "model_must_not_invent_new_types": True,
+            "utility_target_supported": "graded_stochastic_delta_u_v2_2",
         },
         "schema_transport_policy": {
             "bounded_repair_policy": {
@@ -158,7 +163,12 @@ def _v2_2_config(sample_count: int = 1) -> dict:
             }
         },
         "rank_signal_reporting": {
-            "metrics": ["spearman", "kendall_tau_b", "ndcg_at_3", "top_10_percent_high_utility_auc"],
+            "metrics": [
+                "spearman",
+                "kendall_tau_b",
+                "ndcg_at_3",
+                "top_10_percent_high_utility_auc",
+            ],
             "uncertainty": {
                 "bootstrap_ci_required": True,
                 "bootstrap_standard_error_required": True,
@@ -468,7 +478,7 @@ def test_v2_2_api_preflight_readiness_requires_scope_budget_and_failed_v2_1_boun
         current_readiness={"status": "PILOT_BLOCKED", "pilot_pass": False},
         allow_api_preflight_only=True,
         approved_budget_usd=2,
-        current_prompt_version="prompt-sha256:test",
+        current_prompt_version=_v2_2_prompt_bundle_hash(),
     )
 
     assert readiness["scope"] == V2_2_API_PREFLIGHT_ONLY
@@ -481,7 +491,9 @@ def test_v2_2_api_preflight_readiness_requires_scope_budget_and_failed_v2_1_boun
     assert readiness["current_status_remains"] == "PILOT_BLOCKED"
 
 
-def test_v2_2_preflight_report_allows_only_stochastic_smoke_request_after_clean_schema_with_drift() -> None:
+def test_v2_2_preflight_report_allows_only_stochastic_smoke_request_after_clean_schema_with_drift() -> (
+    None
+):
     readiness = {
         "approved_budget_usd": 2,
         "max_api_requests": 25,
@@ -492,8 +504,8 @@ def test_v2_2_preflight_report_allows_only_stochastic_smoke_request_after_clean_
         for index in range(20)
     ]
     drift_outputs = [
-        "Trace one <reflection type=\"verification\">check</reflection> Final Answer: 5",
-        "Trace two <reflection type=\"verification\">check differently</reflection> Final Answer: 5",
+        'Trace one <reflection type="verification">check</reflection> Final Answer: 5',
+        'Trace two <reflection type="verification">check differently</reflection> Final Answer: 5',
     ]
 
     report = build_v2_2_preflight_report(
@@ -531,8 +543,8 @@ def test_v2_2_preflight_report_keeps_metadata_disclosure_missing_as_blocker() ->
         attempts,
         selected_records=_v2_2_manifest_rows(per_task=10),
         drift_outputs=[
-            "Trace one <reflection type=\"verification\">check</reflection> Final Answer: 5",
-            "Trace two <reflection type=\"verification\">check differently</reflection> Final Answer: 5",
+            'Trace one <reflection type="verification">check</reflection> Final Answer: 5',
+            'Trace two <reflection type="verification">check differently</reflection> Final Answer: 5',
         ],
         config=build_v2_2_generation_config(_v2_2_config(sample_count=200), readiness=readiness),
         readiness=readiness,
@@ -630,11 +642,11 @@ def _v2_2_clean_contract_audit() -> dict:
         "scoring_allowed": False,
         "prm_filtering_allowed": False,
         "v2_1_failed_full_artifacts_used_as_tuning_source": False,
-        "prompt_version": "prompt-sha256:test",
+        "prompt_version": _v2_2_prompt_bundle_hash(),
         "checks": {
             "prompt_lock": {
                 "status": "clean",
-                "details": {"prompt_version": "prompt-sha256:test"},
+                "details": {"prompt_version": _v2_2_prompt_bundle_hash()},
             }
         },
         "blockers": [],
@@ -652,7 +664,7 @@ def _v2_2_approval_request() -> dict:
         "records_per_task": {"gsm8k": 10, "hotpotqa": 10},
         "recommended_budget_ceiling_usd": 2,
         "max_api_requests": 25,
-        "prompt_version": "prompt-sha256:test",
+        "prompt_version": _v2_2_prompt_bundle_hash(),
     }
 
 

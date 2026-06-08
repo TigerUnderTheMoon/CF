@@ -4,14 +4,14 @@ install:
 	poetry install
 
 test:
-	poetry run pytest -q
+	python -m pytest -q tests
 
 coverage:
-	poetry run pytest -q --cov=src/fma --cov-report=term-missing --cov-report=xml --cov-fail-under=80
+	python -m pytest -q tests --cov=src/fma --cov-report=term-missing --cov-report=xml --cov-fail-under=80
 
 lint:
-	poetry run ruff check .
-	poetry run black --check .
+	python -m ruff check .
+	python -m black --check .
 
 docker-core:
 	docker compose run --rm fma-core

@@ -79,7 +79,9 @@ def build_v2_2_fresh_holdout_manifest(
 
     overlap_index = build_current_pilot_overlap_index(overlap_sources)
     seed = int(config.get("experiment", {}).get("seed", 0))
-    target_name = str(config.get("utility_target", {}).get("target_name") or "graded_stochastic_delta_u_v2_2")
+    target_name = str(
+        config.get("utility_target", {}).get("target_name") or "graded_stochastic_delta_u_v2_2"
+    )
     tasks_config = config.get("fresh_split_policy", {}).get("tasks", {})
 
     selected_by_task: dict[str, list[dict[str, Any]]] = {}
@@ -122,7 +124,9 @@ def build_v2_2_fresh_holdout_manifest(
             eligible.append(item)
 
         ordered = sort_v2_2_eligible_items(eligible)
-        sample_count = int(task_config.get("planned_sample_count", task_config.get("sample_count", 0)))
+        sample_count = int(
+            task_config.get("planned_sample_count", task_config.get("sample_count", 0))
+        )
         selected = ordered[:sample_count]
         selected_by_task[task_type] = selected
         for item in selected:
@@ -146,7 +150,9 @@ def build_v2_2_fresh_holdout_manifest(
             "excluded_overlap_count": excluded,
             "eligible_count": len(eligible),
             "selected_count": len(selected),
-            "selection_policy": str(task_config.get("selection_policy") or "deterministic_manifest_order"),
+            "selection_policy": str(
+                task_config.get("selection_policy") or "deterministic_manifest_order"
+            ),
             "status": task_status,
         }
 
@@ -262,6 +268,7 @@ def build_v2_2_contract_audit(
         "utility_target_policy": _check_utility_target_policy(config),
         "schema_transport_policy": _check_schema_transport_policy(config),
         "rank_signal_reporting_policy": _check_rank_signal_policy(config),
+        "prompt_lock": _check_prompt_lock(config),
         "claim_policy": _check_claim_policy(config),
         "preregistration_plan_boundary": _check_preregistration_plan(preregistration_plan_text),
         "manifest_overlap_audit": _status_check(
@@ -278,6 +285,8 @@ def build_v2_2_contract_audit(
     }
     blockers = [name for name, check in checks.items() if check["status"] != "clean"]
     status = V2_2_CONTRACT_CLEAN if not blockers else V2_2_CONTRACT_BLOCKED
+    prompt_lock = config.get("prompt_lock", {})
+    prompt_version = _prompt_bundle_hash(prompt_lock)
     return {
         "status": status,
         "current_status_remains": "PILOT_BLOCKED",
@@ -287,7 +296,9 @@ def build_v2_2_contract_audit(
         "manifest_generation_authorized_by_task_scope": task_scope
         == S_FMA_V2_2_MANIFEST_ONLY_NON_OVERLAP_AUDIT,
         "manifest_generation_authorized_by_config": bool(
-            config.get("fresh_split_policy", {}).get("manifest_generation_authorized_by_this_config")
+            config.get("fresh_split_policy", {}).get(
+                "manifest_generation_authorized_by_this_config"
+            )
         ),
         "api_execution_allowed": False,
         "replay_allowed": False,
@@ -295,6 +306,11 @@ def build_v2_2_contract_audit(
         "prm_filtering_allowed": False,
         "validation_or_pass_claim_allowed": False,
         "claim_upgrade_allowed": False,
+        "prompt_file": str(prompt_lock.get("generation_prompt_file") or ""),
+        "replay_prompt_file": str(prompt_lock.get("replay_prompt_file") or ""),
+        "prompt_version": prompt_version,
+        "prompt_lock_status": str(prompt_lock.get("prompt_lock_status") or ""),
+        "prompt_hash_scope": str(prompt_lock.get("prompt_hash_scope") or ""),
         "v2_1_failed_full_artifacts_used_as_tuning_source": False,
         "v2_1_failed_full_artifacts_used_for_row_selection": False,
         "api_preflight_approval_request_generated": False,
@@ -379,7 +395,9 @@ def render_v2_2_overlap_audit_markdown(audit: Mapping[str, Any]) -> str:
             "The v2.2 manifest is clean at the manifest-only layer. The only allowed next step is a separate API preflight approval request; API execution, replay, scoring, validation/pass claims, and PRM/filtering remain forbidden."
         )
     elif audit["status"] == BLOCKED_INSUFFICIENT_FRESH_ROWS:
-        lines.append("The v2.2 manifest is blocked by insufficient fresh rows after the required overlap exclusions.")
+        lines.append(
+            "The v2.2 manifest is blocked by insufficient fresh rows after the required overlap exclusions."
+        )
     else:
         lines.append("The v2.2 manifest is blocked by selected-row overlap.")
     lines.append("")
@@ -495,7 +513,9 @@ def _candidate_manifest_item(
         "target_name": target_name,
         "primary_score_field": _primary_score_field(config, task_type),
         "selection_seed": seed,
-        "selection_policy": str(task_config.get("selection_policy") or "deterministic_manifest_order"),
+        "selection_policy": str(
+            task_config.get("selection_policy") or "deterministic_manifest_order"
+        ),
         "selection_source_fields_used": selection_source_fields_used,
         "forbidden_selection_fields_used": sorted(
             set(selection_source_fields_used).intersection(V2_2_FORBIDDEN_SELECTION_FIELDS)
@@ -551,7 +571,11 @@ def _primary_score_field(config: Mapping[str, Any], task_type: str) -> str:
         .get("tasks", {})
         .get(task_type, {})
         .get("primary_score_field")
-        or ("normalized_token_f1" if task_type == "hotpotqa" else "repeated_numeric_success_probability")
+        or (
+            "normalized_token_f1"
+            if task_type == "hotpotqa"
+            else "repeated_numeric_success_probability"
+        )
     )
 
 
@@ -581,9 +605,13 @@ def _check_no_api_replay_scoring_prm_boundary(config: Mapping[str, Any]) -> dict
     experiment = config.get("experiment", {})
     future = config.get("future_execution_boundary", {})
     required_true = {
-        "no_api_execution_without_user_approval": experiment.get("no_api_execution_without_user_approval"),
+        "no_api_execution_without_user_approval": experiment.get(
+            "no_api_execution_without_user_approval"
+        ),
         "no_api_run_in_current_task": experiment.get("no_api_run_in_current_task"),
-        "no_full_api_generation_in_current_task": experiment.get("no_full_api_generation_in_current_task"),
+        "no_full_api_generation_in_current_task": experiment.get(
+            "no_full_api_generation_in_current_task"
+        ),
         "no_replay_in_current_task": experiment.get("no_replay_in_current_task"),
         "no_scoring_in_current_task": experiment.get("no_scoring_in_current_task"),
         "no_prm_filtering_in_current_task": experiment.get("no_prm_filtering_in_current_task"),
@@ -612,7 +640,8 @@ def _check_failed_v2_1_provenance(
         and config.get("provenance_boundary", {}).get("source_status")
         == "V2_1_FULL_STOCHASTIC_FAIL_SCHEMA_OR_TAGS"
         and failure_audit.get("provenance_status") == "failed_full_validation_provenance"
-        and failure_audit.get("source_full_validation_status") == "V2_1_FULL_STOCHASTIC_FAIL_SCHEMA_OR_TAGS"
+        and failure_audit.get("source_full_validation_status")
+        == "V2_1_FULL_STOCHASTIC_FAIL_SCHEMA_OR_TAGS"
         and boundary.get("full_validation_task_specific_pass") is False
         and boundary.get("full_validation_global_pass") is False
         and boundary.get("current_status_remains") == "PILOT_BLOCKED"
@@ -622,7 +651,9 @@ def _check_failed_v2_1_provenance(
         {
             "config_source_status": config.get("provenance_boundary", {}).get("source_status"),
             "failure_provenance_status": failure_audit.get("provenance_status"),
-            "full_validation_task_specific_pass": boundary.get("full_validation_task_specific_pass"),
+            "full_validation_task_specific_pass": boundary.get(
+                "full_validation_task_specific_pass"
+            ),
             "full_validation_global_pass": boundary.get("full_validation_global_pass"),
         },
     )
@@ -637,11 +668,11 @@ def _check_v2_1_non_use_policy(config: Mapping[str, Any], transition_text: str) 
     }
     lower_transition = transition_text.lower()
     clean = (
-        required.issubset(forbidden)
-        and "failed" in lower_transition
-        and "tune" in lower_transition
+        required.issubset(forbidden) and "failed" in lower_transition and "tune" in lower_transition
     )
-    return _status_check(clean, {"required_forbidden_uses": sorted(required), "configured": sorted(forbidden)})
+    return _status_check(
+        clean, {"required_forbidden_uses": sorted(required), "configured": sorted(forbidden)}
+    )
 
 
 def _check_fresh_split_policy(config: Mapping[str, Any]) -> dict[str, Any]:
@@ -701,13 +732,60 @@ def _check_rank_signal_policy(config: Mapping[str, Any]) -> dict[str, Any]:
     metrics = set(policy.get("metrics", []))
     uncertainty = policy.get("uncertainty", {})
     clean = (
-        {"spearman", "kendall_tau_b", "ndcg_at_3", "top_10_percent_high_utility_auc"}.issubset(metrics)
+        {"spearman", "kendall_tau_b", "ndcg_at_3", "top_10_percent_high_utility_auc"}.issubset(
+            metrics
+        )
         and uncertainty.get("bootstrap_ci_required") is True
         and uncertainty.get("bootstrap_standard_error_required") is True
         and uncertainty.get("bootstrap_variance_required") is True
         and uncertainty.get("bootstrap_unit") == "sample_id"
     )
     return _status_check(clean, {"metrics": sorted(metrics), "uncertainty": uncertainty})
+
+
+def _check_prompt_lock(config: Mapping[str, Any]) -> dict[str, Any]:
+    prompt_lock = config.get("prompt_lock", {})
+    observed = _prompt_bundle_hash(prompt_lock)
+    configured = str(prompt_lock.get("prompt_version") or "")
+    clean = (
+        bool(observed)
+        and configured == observed
+        and prompt_lock.get("prompt_lock_status") == "CURRENT_PACKAGE_PROMPT_LOCK"
+        and prompt_lock.get("prompt_hash_scope") == "generation_and_replay_prompt_bundle"
+        and prompt_lock.get("model_must_not_invent_new_types") is True
+        and prompt_lock.get("utility_target_supported") == "graded_stochastic_delta_u_v2_2"
+    )
+    return _status_check(
+        clean,
+        {
+            "generation_prompt_file": str(prompt_lock.get("generation_prompt_file") or ""),
+            "replay_prompt_file": str(prompt_lock.get("replay_prompt_file") or ""),
+            "prompt_version": observed,
+            "configured_prompt_version": configured,
+            "prompt_lock_status": str(prompt_lock.get("prompt_lock_status") or ""),
+            "prompt_hash_scope": str(prompt_lock.get("prompt_hash_scope") or ""),
+            "allowed_reflection_types": list(prompt_lock.get("allowed_reflection_types") or []),
+            "model_must_not_invent_new_types": prompt_lock.get("model_must_not_invent_new_types"),
+            "utility_target_supported": prompt_lock.get("utility_target_supported"),
+        },
+    )
+
+
+def _prompt_bundle_hash(prompt_lock: Mapping[str, Any]) -> str:
+    generation_prompt_file = str(prompt_lock.get("generation_prompt_file") or "")
+    replay_prompt_file = str(prompt_lock.get("replay_prompt_file") or "")
+    generation_path = Path(generation_prompt_file)
+    replay_path = Path(replay_prompt_file)
+    if not generation_path.exists() or not replay_path.exists():
+        return ""
+    payload = {
+        "generation_prompt_file": generation_path.as_posix(),
+        "generation_prompt_text": generation_path.read_text(encoding="utf-8"),
+        "replay_prompt_file": replay_path.as_posix(),
+        "replay_prompt_text": replay_path.read_text(encoding="utf-8"),
+    }
+    canonical = json.dumps(payload, ensure_ascii=True, sort_keys=True, separators=(",", ":"))
+    return "prompt-sha256:" + hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
 def _check_claim_policy(config: Mapping[str, Any]) -> dict[str, Any]:
@@ -721,7 +799,9 @@ def _check_claim_policy(config: Mapping[str, Any]) -> dict[str, Any]:
         "no_prm_filtering_claim",
     }
     clean = required.issubset(current)
-    return _status_check(clean, {"required_current_status": sorted(required), "configured": sorted(current)})
+    return _status_check(
+        clean, {"required_current_status": sorted(required), "configured": sorted(current)}
+    )
 
 
 def _check_preregistration_plan(plan_text: str) -> dict[str, Any]:

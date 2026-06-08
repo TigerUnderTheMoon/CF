@@ -59,3 +59,52 @@ def test_structural_diagnostics_cli_delegates_to_package_runner(monkeypatch) -> 
 
     assert cli.run(args) == {"delegated": True}
     assert calls == [args]
+
+
+def test_pilot_run_wrapper_builds_cli_arguments(monkeypatch, tmp_path: Path) -> None:
+    import fma.cli as cli
+    from fma.pilot import PilotRunConfig, run_pilot
+
+    calls: list[tuple[list[str], str | None]] = []
+
+    def fake_run_cli(argv, *, timestamp=None):
+        calls.append((list(argv), timestamp))
+        return {"command": "run-pilot", "run_dir": str(tmp_path)}
+
+    monkeypatch.setattr(cli, "run_cli", fake_run_cli)
+
+    result = run_pilot(
+        PilotRunConfig(
+            config_name="pilot/v2_1",
+            output_root=tmp_path,
+            overrides=("experiment.seed=7",),
+        ),
+        timestamp="20260608_180000",
+    )
+
+    assert result["command"] == "run-pilot"
+    assert calls == [
+        (
+            [
+                "run-pilot",
+                "--config-name=pilot/v2_1",
+                "experiment.seed=7",
+                f"paths.output_root={tmp_path.as_posix()}",
+            ],
+            "20260608_180000",
+        )
+    ]
+
+
+def test_pilot_run_wrapper_rejects_non_mapping_result(monkeypatch) -> None:
+    import fma.cli as cli
+    from fma.pilot import run_pilot
+
+    monkeypatch.setattr(cli, "run_cli", lambda argv, *, timestamp=None: "not-json")
+
+    try:
+        run_pilot()
+    except TypeError as exc:
+        assert "non-mapping" in str(exc)
+    else:
+        raise AssertionError("run_pilot should reject non-mapping CLI results")

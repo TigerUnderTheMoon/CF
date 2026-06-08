@@ -4,16 +4,15 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+if TYPE_CHECKING:
+    import torch
+    from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
 REFLECTION_RE = re.compile(
-    r"<reflection(?:\s+type=[\"'](?P<type>[^\"']+)[\"'])?\s*>"
-    r"(?P<content>.*?)"
-    r"</reflection>",
+    r"<reflection(?:\s+type=[\"'](?P<type>[^\"']+)[\"'])?\s*>" r"(?P<content>.*?)" r"</reflection>",
     flags=re.IGNORECASE | re.DOTALL,
 )
 FINAL_ANSWER_RE = re.compile(r"final\s+answer\s*:\s*(?P<answer>.+)", re.IGNORECASE)
@@ -215,6 +214,11 @@ def generate_continuation_from_ids(
     model: AutoModelForCausalLM,
     config: ReplayConfig,
 ) -> tuple[list[int], str]:
+    try:
+        import torch
+    except ImportError as exc:
+        raise RuntimeError("torch is required for counterfactual replay generation.") from exc
+
     input_ids = torch.tensor([context_ids], dtype=torch.long, device=model_input_device(model))
     attention_mask = torch.ones_like(input_ids)
 

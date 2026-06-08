@@ -23,7 +23,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && pip install --no-cache-dir poetry==${POETRY_VERSION}
 
 # 2. Copy dependency declarations first → layer cache
-COPY pyproject.toml ./
+COPY pyproject.toml poetry.lock* ./
 
 # 3. Lock & install production dependencies only (no dev, no root)
 RUN poetry lock --no-interaction \

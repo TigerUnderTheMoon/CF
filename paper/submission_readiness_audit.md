@@ -1,4 +1,4 @@
-﻿# Submission Readiness Audit
+# Submission Readiness Audit
 
 Scope: repository-level readiness check against the current real-task pilot artifacts. This audit summarizes stored evidence only. The v2.1 downstream filtering mini-validation has run separately and failed; this audit records that stored result without rerunning API generation, replay, baseline scoring, or PRM/filtering validation.
 
