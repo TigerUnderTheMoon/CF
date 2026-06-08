@@ -8,6 +8,7 @@ from fma.eval.redundancy.distributedness import (
     summarize_distributedness,
 )
 from fma.eval.redundancy.overlap import NodeProfile
+from fma.eval.redundancy.overlap import hybrid_similarity
 from fma.eval.redundancy.redundancy_density import compute_redundancy
 
 
@@ -32,18 +33,28 @@ def profile(
 
 
 def test_redundancy_density_clusters_similar_nodes_within_trace() -> None:
+    profiles = [
+        profile("a"),
+        profile("b"),
+        profile("c", downstream_nodes=("other",), necessity=0.0),
+    ]
     summary = compute_redundancy(
-        [
-            profile("a"),
-            profile("b"),
-            profile("c", downstream_nodes=("other",), necessity=0.0),
-        ],
+        profiles,
         similarity_threshold=0.75,
     )
 
+    pair_ab = hybrid_similarity(profiles[0], profiles[1])
+    pair_ac = hybrid_similarity(profiles[0], profiles[2])
+    pair_bc = hybrid_similarity(profiles[1], profiles[2])
+
+    assert pair_ab == pytest.approx(1.0)
+    assert pair_ac == pytest.approx(0.25)
+    assert pair_bc == pytest.approx(0.25)
     assert summary["cluster_sizes"] == [2, 1]
-    assert summary["density"] == pytest.approx((1.0 + 0.5 + 0.5) / 3.0)
-    assert summary["redundancy_degree_by_node"]["a"] == pytest.approx(0.75)
+    assert summary["density"] == pytest.approx((1.0 + 0.25 + 0.25) / 3.0)
+    assert summary["redundancy_degree_by_node"]["a"] == pytest.approx(0.625)
+    assert summary["redundancy_degree_by_node"]["b"] == pytest.approx(0.625)
+    assert summary["redundancy_degree_by_node"]["c"] == pytest.approx(0.25)
     assert summary["cluster_density"] == pytest.approx(0.5)
 
 

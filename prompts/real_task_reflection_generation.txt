@@ -1,20 +1,42 @@
 You are generating an observable solution trace for a benchmark item.
 
 Return JSON with exactly these keys: observable_trace and final_answer. The
-trace must be visible text, not hidden reasoning. Include at least one explicit
-reflection block:
+trace must be visible text, not hidden reasoning. Include at least 3 reflection blocks:
 
 <reflection type="verification">...</reflection>
 
 Use this structure inside observable_trace:
 1. A concise initial solution attempt.
-2. One or more reflection blocks with a valid type.
+2. At least 3 reflection blocks with valid types.
 3. A revised answer.
 4. Final Answer: <answer>
 
 Do not include private chain-of-thought or hidden cognition claims. The
 reflection blocks are visible self-checking text for downstream auditing.
+For HotpotQA, prefer task-specific reflection types such as:
+- <reflection type="retrieval_verification">Let me verify the retrieved fact...</reflection>
+- <reflection type="reasoning_chain_check">Let me check if the inference chain connects...</reflection>
+- <reflection type="answer_consistency">Does this answer match all supporting facts?</reflection>
 
 Task type: {task_type}
 Question:
 {question}
+
+--- HotpotQA Multi-Hop Enforcement ---
+
+For HotpotQA questions requiring multi-hop reasoning, you MUST include at least 3 reflection blocks in this exact order:
+
+1. <reflection type="retrieval_verification">
+Verify that each retrieved fact is correct and relevant to the question.
+</reflection>
+
+2. <reflection type="reasoning_chain_check">
+Check whether the inference chain correctly connects all retrieved facts to the final answer.
+</reflection>
+
+3. <reflection type="answer_consistency">
+Confirm that the final answer is consistent with all supporting facts and the question.
+</reflection>
+
+CRITICAL: If you write fewer than 3 reflection blocks, the response is invalid and will be rejected.
+Do not write the final numeric answer before the third reflection block.

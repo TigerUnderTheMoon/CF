@@ -1,10 +1,14 @@
 # Supplementary Material Manifest
 
-This supplementary package documents the real-task v3 governance diagnostic. It is boundary evidence for manifest-level reproducibility governance, not validation evidence and not a downstream PRM/filtering result.
+This supplementary package documents failed boundary evidence for the diagnostic KBS manuscript. It is not validation evidence and not a downstream PRM/filtering result.
 
-| Supplementary item | File | Source artifact | Description |
-|---|---|---|---|
-| Supplementary Figure S1 | `Supplementary_Figure_S1_governance_diagnostic_upset.png` | `outputs/real_task_v3/governance_diagnostic_upset.png` | Six-key exclusion contribution visualization for the blocked real-task v3 manifest route. |
-| Supplementary Data S1 | `Supplementary_Data_S1_governance_diagnostic_report.json` | `outputs/real_task_v3/governance_diagnostic_report.json` | Machine-readable governance diagnostic report with findings F1-F3, severity labels, and future-work recommendations. |
+| Supplementary item | Source artifact | Description |
+|---|---|---|
+| v2.1 full-validation failure audit | `outputs/s_fma_v2_1_fresh_holdout/v2_1_full_validation_failure_audit.json` | Failed full stochastic validation provenance. |
+| v2.1 abandonment audit | `outputs/s_fma_v2_1_fresh_holdout/v2_1_full_validation_abandonment_audit.json` | Strict v2.1 route abandonment provenance. |
+| v2.1 downstream mini report | `outputs/s_fma_v2_1_fresh_holdout/v2_1_downstream_filtering_report.json` | Failed downstream filtering mini diagnostic. |
+| v3 DELETE smoke report | `outputs/real_task_v3/qwen36_delete_hotfix_20260607/smoke_report.json` | Failed sparse-signal boundary evidence: GSM8K 1/25 and HotpotQA 28/35. |
+| v3.1 REPLACE/masked-span smoke report | `outputs/real_task_v3_1/qwen36_replace_smoke_20260608/smoke_report.json` | Failed sparse-signal boundary evidence: GSM8K 8/25 and HotpotQA 14/35. |
+| v3.1 companion audit | `outputs/real_task_v3_1/qwen36_replace_smoke_20260608/v3_1_replace_smoke_consistency_audit.json` | Records implementation/status/next-step inconsistencies in the raw v3.1 report. |
 
-Claim boundary: the route stopped at the manifest gate with `REAL_TASK_V3_DATA_SCARCITY_BLOCKED`. These files do not add API execution, replay, scoring, validation data, deterministic replay support, downstream validation, or PRM/filtering improvement evidence.
+Claim boundary: current status remains `PILOT_BLOCKED`. These files do not add locked validation, downstream filtering support, claim upgrade, or any stronger readiness status.

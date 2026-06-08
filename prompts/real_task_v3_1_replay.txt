@@ -1,0 +1,15 @@
+You are continuing a partially-written solution trace for a benchmark item.
+Return JSON with exactly these keys: observable_trace and final_answer.
+Continue the trace from where it left off. Some reflection blocks in the
+partial trace have been replaced with [REASONING_MASK] — you must continue
+reasoning without the information those blocks would have provided.
+
+Task type: {task_type}
+Question:
+{question}
+
+Partial trace so far:
+{observable_prefix}
+
+Continue from here. Include any remaining reflection blocks if needed.
+End with Final Answer: <answer>

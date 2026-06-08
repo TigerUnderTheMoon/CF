@@ -12,6 +12,7 @@ import pytest
 
 from fma.io import write_records
 from fma.real_task_pilot.config import load_pilot_config
+from fma.real_task_pilot.parsing import extract_reflection_spans
 from fma.real_task_pilot.validation_v3 import (
     EXPECTED_V3_HARD_CAPS,
     HOTPOTQA_SURFACE_MATCH_THRESHOLDS,
@@ -62,6 +63,7 @@ from fma.real_task_pilot.chat_completions import (
     DEFAULT_V3_MODEL,
     ChatCompletionsAdapter,
 )
+from scripts import run_real_task_v3_smoke as v3_smoke_runner
 from scripts.generate_real_task_v3_manifest import _assert_current_task_boundary
 
 
@@ -256,11 +258,12 @@ def test_real_task_v3_config_records_final_execution_guards() -> None:
 
     assert config["model"]["primary"] == DEFAULT_V3_MODEL
     assert config["api"]["chat_completions_endpoint"] == DEFAULT_CHAT_COMPLETIONS_ENDPOINT
+    assert config["api"]["api_key_env"] == "OPENCODE_GO_KEY"
     assert config["api"]["health_check"]["counted_json_requests"] == 3
     assert config["api"]["circuit_breaker"] == {
-        "consecutive_infra_errors_hard_stop": 10,
+        "consecutive_infra_errors_hard_stop": 20,
         "rolling_window_requests": 50,
-        "rolling_infra_error_fraction_max": 0.20,
+        "rolling_infra_error_fraction_max": 0.25,
     }
     assert config["cost_controls"]["locked_checkpoint_interval_requests"] == 10000
     assert config["utility_target"]["hotpotqa"]["weights"] == {
@@ -738,7 +741,7 @@ def test_real_task_v3_manifest_gate_enforces_split_disjointness_and_six_keys(
         for row in rows
         if row["task_type"] == "gsm8k"
     ]
-    assert all(row["non_empty_alias_hash"] == EMPTY_STRING_HASH for row in gsm8k_rows)
+    assert all(row["non_empty_alias_hash"] == "__EMPTY_ALIAS_EXCLUDED__" for row in gsm8k_rows)
 
 
 def test_real_task_v3_manifest_gate_requires_guarded_cli_flag(tmp_path: Path) -> None:
@@ -1195,6 +1198,183 @@ def test_real_task_v3_manifest_script_rejects_execution_scope_drift() -> None:
         assert "api_execution_allowed" in str(exc)
     else:
         raise AssertionError("expected execution boundary drift to be rejected")
+
+
+def _v3_smoke_manifest_rows(per_task: int = 100) -> list[dict[str, Any]]:
+    rows = []
+    for task_type in ("gsm8k", "hotpotqa"):
+        for index in range(per_task):
+            rows.append(
+                {
+                    "sample_id": f"{task_type}-{index:05d}",
+                    "task_id": f"{task_type}-task-{index:05d}",
+                    "task_type": task_type,
+                    "question": f"{task_type} question {index}",
+                    "reference_answer": "#### 5" if task_type == "gsm8k" else "Entity",
+                    "aliases": [] if task_type == "gsm8k" else ["Entity alias"],
+                }
+            )
+    return rows
+
+
+def _v3_trace_record(sample_id: str, *, span_count: int, task_type: str = "gsm8k") -> dict[str, Any]:
+    trace_parts = ["Initial observable work without final answer."]
+    for span_index in range(span_count):
+        trace_parts.append(
+            f'<reflection type="verification">Visible check {span_index}</reflection>'
+        )
+    trace_parts.append("Final Answer: 5")
+    trace = "\n".join(trace_parts)
+    return {
+        "sample_id": sample_id,
+        "task_id": sample_id,
+        "task_type": task_type,
+        "question": "What is 2 + 3?",
+        "observable_trace": trace,
+        "reflection_spans": extract_reflection_spans(trace),
+        "final_answer": "5",
+        "reference_answer": "#### 5",
+        "aliases": [],
+    }
+
+
+def test_v3_smoke_rejects_underpowered_max_samples_without_diagnostic_flag() -> None:
+    manifest = _v3_smoke_manifest_rows(per_task=100)
+
+    with pytest.raises(RuntimeError, match="underpowered diagnostic"):
+        v3_smoke_runner.select_smoke_manifest_rows(
+            manifest,
+            max_samples=50,
+            allow_underpowered_diagnostic=False,
+        )
+
+
+def test_v3_smoke_underpowered_diagnostic_uses_stratified_round_robin_selection() -> None:
+    manifest = _v3_smoke_manifest_rows(per_task=100)
+
+    selected, selection_report = v3_smoke_runner.select_smoke_manifest_rows(
+        manifest,
+        max_samples=50,
+        allow_underpowered_diagnostic=True,
+    )
+
+    assert len(selected) == 50
+    assert selection_report["underpowered_diagnostic"] is True
+    assert selection_report["selected_count_by_task"] == {"gsm8k": 25, "hotpotqa": 25}
+    assert [row["task_type"] for row in selected[:4]] == [
+        "gsm8k",
+        "hotpotqa",
+        "gsm8k",
+        "hotpotqa",
+    ]
+
+
+def test_v3_prompt_requires_at_least_three_reflections_and_hotpotqa_examples() -> None:
+    prompt = Path("prompts/real_task_reflection_generation.txt").read_text(encoding="utf-8")
+
+    assert "at least 3 reflection blocks" in prompt
+    assert "exactly 3" not in prompt.lower()
+    assert "retrieval_verification" in prompt
+    assert "reasoning_chain_check" in prompt
+    assert "answer_consistency" in prompt
+
+
+def test_v3_original_trace_requires_three_reflection_spans_before_replay() -> None:
+    too_sparse = _v3_trace_record("gsm8k-00001", span_count=2)
+    valid = _v3_trace_record("gsm8k-00002", span_count=3)
+
+    assert v3_smoke_runner.original_trace_validation_errors(too_sparse) == [
+        "reflection_spans: at least 3 reflection blocks required for V3 smoke"
+    ]
+    assert v3_smoke_runner.original_trace_validation_errors(valid) == []
+
+
+def test_v3_prefix_builder_scores_first_three_spans_only_and_records_delete_contract() -> None:
+    record = _v3_trace_record("gsm8k-00003", span_count=4)
+
+    prefixes = v3_smoke_runner.build_v3_smoke_prefixes([record])
+
+    assert [prefix["span_index"] for prefix in prefixes] == [0, 1, 2]
+    assert all(prefix["intervention_type"] == "DELETE" for prefix in prefixes)
+    assert all(
+        prefix["intervention_implementation"] == "length_preserving_masked_delete"
+        for prefix in prefixes
+    )
+    assert all("[REASONING_MASK]" in prefix["observable_prefix"] for prefix in prefixes)
+    assert all(
+        "Visible check 3" not in prefix["observable_prefix"] for prefix in prefixes
+    )
+
+
+def test_v3_smoke_report_uses_delta_epsilon_and_requests_v3_1_replace_after_sparse_delete() -> None:
+    records = [
+        _v3_trace_record("gsm8k-00001", span_count=3, task_type="gsm8k"),
+        _v3_trace_record("hotpotqa-00001", span_count=3, task_type="hotpotqa"),
+    ]
+    prefixes = v3_smoke_runner.build_v3_smoke_prefixes(records)
+    delta_rows = [
+        {"sample_id": "gsm8k-00001", "task_type": "gsm8k", "delta_u": 1e-19},
+        {"sample_id": "hotpotqa-00001", "task_type": "hotpotqa", "delta_u": 0.0},
+    ]
+
+    report = v3_smoke_runner.build_smoke_report_for_test(
+        original_records=[*_v3_smoke_manifest_rows(per_task=100)],
+        original_attempts=[
+            {"sample_id": row["sample_id"], "task_type": row["task_type"], "valid": True}
+            for row in _v3_smoke_manifest_rows(per_task=100)
+        ],
+        replay_prefixes=prefixes * 100,
+        replay_results=[{"status": "success"} for _ in range(600)],
+        replay_attempts=[{"valid": True} for _ in range(600)],
+        delta_rows=delta_rows,
+        cost_usd=0.0,
+        approved_budget_usd=50.0,
+        selection_report={"underpowered_diagnostic": False},
+    )
+
+    assert report["nonzero_delta_gsm8k"] == 0
+    assert report["next_allowed_step"] == "REQUEST_V3_1_REPLACE_PREREGISTRATION"
+    assert report["intervention_type"] == "DELETE"
+    assert report["v3_1_replace_preregistration"]["replace_evidence_mixed_with_v3_delete"] is False
+
+
+def test_v3_delta_rows_do_not_execute_replace_intervention() -> None:
+    original = _v3_trace_record("gsm8k-00004", span_count=3)
+    replay = {
+        "sample_id": "gsm8k-00004",
+        "span_index": 0,
+        "repeat_index": 0,
+        "task_type": "gsm8k",
+        "reference_answer": "#### 5",
+        "aliases": [],
+        "final_answer": "4",
+        "status": "success",
+    }
+
+    rows = v3_smoke_runner.compute_v3_delta_rows_for_test([original], [replay])
+
+    assert rows[0]["intervention_type"] == "DELETE"
+    assert rows[0]["intervention_implementation"] == "length_preserving_masked_delete"
+    assert "REPLACE" not in json.dumps(rows)
+
+
+def test_v3_smoke_resume_guard_rejects_missing_or_mismatched_metadata(tmp_path: Path) -> None:
+    metadata = {
+        "prompt_sha256": "prompt-a",
+        "manifest_sha256": "manifest-a",
+        "intervention_contract": v3_smoke_runner.V3_INTERVENTION_CONTRACT,
+    }
+    (tmp_path / "smoke_original_traces.jsonl").write_text("{}", encoding="utf-8")
+
+    with pytest.raises(RuntimeError, match="smoke_run_metadata.json"):
+        v3_smoke_runner.assert_smoke_resume_allowed(tmp_path, metadata)
+
+    (tmp_path / "smoke_run_metadata.json").write_text(
+        json.dumps({**metadata, "prompt_sha256": "prompt-b"}),
+        encoding="utf-8",
+    )
+    with pytest.raises(RuntimeError, match="does not match"):
+        v3_smoke_runner.assert_smoke_resume_allowed(tmp_path, metadata)
 
 
 def test_governance_diagnostic_report_contains_three_claim_safe_findings() -> None:

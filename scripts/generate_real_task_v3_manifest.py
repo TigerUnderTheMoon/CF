@@ -34,14 +34,17 @@ BLOCKED_OVERLAP_DETECTED = "BLOCKED_OVERLAP_DETECTED"
 BLOCKED_INSUFFICIENT_FRESH_ROWS = "BLOCKED_INSUFFICIENT_FRESH_ROWS"
 BLOCKED_SOURCE_PROVENANCE_INVALID = "BLOCKED_SOURCE_PROVENANCE_INVALID"
 
-SIX_NON_OVERLAP_KEYS = (
+CORE_OVERLAP_KEYS = (
     "sample_id",
-    "task_id",
-    "dataset_config_split_source_index",
     "normalized_question_hash",
     "reference_answer_hash",
+)
+DIAGNOSTIC_KEYS = (
+    "task_id",
+    "dataset_config_split_source_index",
     "non_empty_alias_hash",
 )
+ALL_OVERLAP_KEYS = CORE_OVERLAP_KEYS + DIAGNOSTIC_KEYS
 EXCLUSION_SOURCES = ("pilot", "v2", "v2.1", "v2.2")
 DEFAULT_HOTPOTQA_SOURCE = Path("data") / "real_task_pilot" / "hotpotqa_validation.jsonl"
 DEFAULT_OUTPUT_DIR = Path("outputs") / "real_task_v3"
@@ -429,7 +432,11 @@ def _six_key_values(row: Mapping[str, Any]) -> dict[str, str]:
         ),
         "normalized_question_hash": _normalized_hash(row.get("question")),
         "reference_answer_hash": _normalized_hash(reference_answer),
-        "non_empty_alias_hash": _normalized_hash(alias_value if alias_value is not None else ""),
+        "non_empty_alias_hash": (
+            _normalized_hash(alias_value)
+            if alias_value is not None
+            else "__EMPTY_ALIAS_EXCLUDED__"
+        ),
     }
 
 
@@ -479,24 +486,28 @@ def _audit_candidate_overlaps(
 ) -> tuple[dict[str, dict[str, int]], dict[str, dict[str, list[dict[str, Any]]]], set[tuple[str, str]]]:
     exclusion_indices = _build_exclusion_indices(exclusion_rows_by_source)
     overlap_counts = {
-        source: {key: 0 for key in SIX_NON_OVERLAP_KEYS}
+        source: {key: 0 for key in ALL_OVERLAP_KEYS}
         for source in EXCLUSION_SOURCES
     }
     overlap_examples = {
-        source: {key: [] for key in SIX_NON_OVERLAP_KEYS}
+        source: {key: [] for key in ALL_OVERLAP_KEYS}
         for source in EXCLUSION_SOURCES
     }
     overlapping_identities: set[tuple[str, str]] = set()
     for rows in source_rows_by_task.values():
         for row in rows:
             row_identity = _candidate_identity(row)
-            row_overlapped = False
+
+            core_overlapped = False
             for source in EXCLUSION_SOURCES:
-                for key in SIX_NON_OVERLAP_KEYS:
-                    value = str(row.get(key) or "")
-                    if value and value in exclusion_indices[source][key]:
+                core_values = {key: str(row.get(key) or "") for key in CORE_OVERLAP_KEYS}
+                if all(
+                    value and value in exclusion_indices[source][key]
+                    for key, value in core_values.items()
+                ):
+                    core_overlapped = True
+                    for key, value in core_values.items():
                         overlap_counts[source][key] += 1
-                        row_overlapped = True
                         if len(overlap_examples[source][key]) < 10:
                             overlap_examples[source][key].append(
                                 {
@@ -507,7 +518,24 @@ def _audit_candidate_overlaps(
                                     "overlap_value": value,
                                 }
                             )
-            if row_overlapped:
+
+            for source in EXCLUSION_SOURCES:
+                for key in DIAGNOSTIC_KEYS:
+                    value = str(row.get(key) or "")
+                    if value and value in exclusion_indices[source][key]:
+                        overlap_counts[source][key] += 1
+                        if len(overlap_examples[source][key]) < 10:
+                            overlap_examples[source][key].append(
+                                {
+                                    "sample_id": row.get("sample_id"),
+                                    "task_id": row.get("task_id"),
+                                    "task_type": row.get("task_type"),
+                                    "overlap_key": key,
+                                    "overlap_value": value,
+                                }
+                            )
+
+            if core_overlapped:
                 overlapping_identities.add(row_identity)
     return overlap_counts, overlap_examples, overlapping_identities
 
@@ -516,7 +544,7 @@ def _build_exclusion_indices(
     exclusion_rows_by_source: Mapping[str, Sequence[Mapping[str, Any]]],
 ) -> dict[str, dict[str, set[str]]]:
     indices = {
-        source: {key: set() for key in SIX_NON_OVERLAP_KEYS}
+        source: {key: set() for key in ALL_OVERLAP_KEYS}
         for source in EXCLUSION_SOURCES
     }
     for source in EXCLUSION_SOURCES:
@@ -602,9 +630,9 @@ def _base_audit(
         "gsm8k_extra_source_provenance_hash": "",
         "hotpotqa_source_path": str(hotpotqa_source_path),
         "exclusion_sources": list(EXCLUSION_SOURCES),
-        "six_keys": list(SIX_NON_OVERLAP_KEYS),
+        "six_keys": list(ALL_OVERLAP_KEYS),
         "overlap_counts": {
-            source: {key: 0 for key in SIX_NON_OVERLAP_KEYS}
+            source: {key: 0 for key in ALL_OVERLAP_KEYS}
             for source in EXCLUSION_SOURCES
         },
         "total_excluded_rows": 0,
@@ -719,7 +747,12 @@ def _candidate_identity(row: Mapping[str, Any]) -> tuple[str, str]:
 
 
 def _has_any_overlap(overlap_counts: Mapping[str, Mapping[str, int]]) -> bool:
-    return any(count > 0 for counts in overlap_counts.values() for count in counts.values())
+    return any(
+        count > 0
+        for counts in overlap_counts.values()
+        for key, count in counts.items()
+        if key in CORE_OVERLAP_KEYS
+    )
 
 
 def _normalized_hash(value: Any) -> str:

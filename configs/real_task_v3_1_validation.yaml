@@ -1,10 +1,10 @@
 experiment:
-  name: real_task_v3
+  name: real_task_v3_1
   status: planned_preregistration_only
   seed: 20260606
-  output_dir: outputs/real_task_v3
-  plan_file: paper/real_task_v3_preregistration_plan.md
-  current_task_scope: REAL_TASK_V3_PREREGISTRATION_ONLY
+  output_dir: outputs/real_task_v3_1
+  plan_file: paper/real_task_v3_1_preregistration_plan.md
+  current_task_scope: REAL_TASK_V3_1_PREREGISTRATION_ONLY
   max_workers: 10
   no_api_execution_without_user_approval: true
   no_api_run_in_current_task: true
@@ -20,16 +20,18 @@ provenance_boundary:
   - outputs/real_task_pilot/readiness_audit.json
   - outputs/s_fma_v2_1_fresh_holdout/v2_1_full_validation_abandonment_audit.json
   - outputs/s_fma_v2_2_fresh_holdout/stochastic_smoke_sparse_signal_failure_audit.json
+  - outputs/real_task_v3/qwen36_delete_hotfix_20260607/smoke_report.json
   allowed_uses:
   - failure_provenance
   - route_motivation
   - overlap_exclusion
   forbidden_uses:
-  - tune_v3_thresholds_from_failed_artifacts
-  - fit_v3_weights_from_failed_artifacts
-  - select_v3_rows_from_failed_artifacts
+  - tune_v3_1_thresholds_from_failed_artifacts
+  - fit_v3_1_weights_from_failed_artifacts
+  - select_v3_1_rows_from_failed_artifacts
   - relabel_failed_routes_as_success
   - infer_downstream_prm_filtering_gain
+  - mix_delete_evidence_with_replace_evidence
 hard_caps:
   route_api_calls_max: 90000
   smoke_api_calls_max: 6500
@@ -128,7 +130,7 @@ splits:
   - reference_similarity_after_generation
   - rank_metric
 utility_target:
-  target_name: dense_real_task_delta_u_v3
+  target_name: dense_real_task_delta_u_v3_1
   gsm8k:
     utility_formula: 0.60 * repeated_numeric_exact + 0.40 * numeric_proximity
     numeric_proximity_formula: exp(-abs(log((pred_abs+1)/(ref_abs+1))))
@@ -255,14 +257,14 @@ claim_policy:
   validation_or_pass_claim_allowed: false
   prm_filtering_improvement_claim_allowed: false
   allowed_before_execution:
-  - real_task_v3_preregistration
+  - real_task_v3_1_preregistration
   - failed_route_motivation
   - hard_budget_cap_specification
   - dense_target_reliability_gate_specification
   - low_complexity_w_struct_specification
   forbidden:
-  - real_task_v3_validation_success_assertion
-  - v2_1_or_v2_2_rescue_assertion
+  - real_task_v3_1_validation_success_assertion
+  - v3_delete_smoke_rescue_assertion
   - same_locked_set_retry_until_pass_assertion
   - deterministic_replay_claim
   - top_tier_readiness_assertion

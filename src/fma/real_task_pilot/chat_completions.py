@@ -13,7 +13,7 @@ from .openai_client import ApiCallResult
 
 
 DEFAULT_CHAT_COMPLETIONS_ENDPOINT = "https://opencode.ai/zen/go/v1/chat/completions"
-DEFAULT_V3_MODEL = "deepseek-v4-flash"
+DEFAULT_V3_MODEL = "qwen3.6-plus"
 
 
 @dataclass(frozen=True)
