@@ -1,4 +1,9 @@
-"""Deterministic construction of reflection DAGs from Phase 5 artifacts."""
+"""Deterministic construction of reflection DAGs from Phase 5 artifacts.
+
+Edge weights and quality scores are derived from text-content similarity.
+When similarity is disabled (``similarity_method=None``) the behaviour is
+identical to the prior fixed-weight construction.
+"""
 
 from __future__ import annotations
 
@@ -6,17 +11,37 @@ from collections import OrderedDict
 from typing import Any, Mapping, Sequence
 
 from fma.graph.reflection_graph import ReflectionEdge, ReflectionGraph, ReflectionNode
+from fma.graph.similarity import TextSimilarity
 
 
 def build_reflection_graphs(
     traces: Sequence[Mapping[str, Any]],
     necessity_records: Sequence[Mapping[str, Any]] | None = None,
+    similarity_method: str | None = None,
+    similarity_threshold: float = 0.15,
+    prune_threshold: float = 0.0,
+    max_long_range: int = 5,
 ) -> list[ReflectionGraph]:
-    """Build one acyclic reflection graph per trace."""
+    """Build one acyclic reflection graph per trace.
+
+    When *similarity_method* is ``"tfidf"`` or ``"jaccard"``, edge weights
+    and quality scores are derived from text-content similarity rather than
+    fixed constants.  Long-range edges are also discovered via similarity
+    instead of only label-pattern matching.
+    """
     necessity_by_key = _necessity_by_key(necessity_records or [])
+    similarity = _fit_similarity(traces, similarity_method)
     graphs: list[ReflectionGraph] = []
     for index, trace in enumerate(traces):
-        graph = build_reflection_graph(trace, index=index, necessity_by_key=necessity_by_key)
+        graph = build_reflection_graph(
+            trace,
+            index=index,
+            necessity_by_key=necessity_by_key,
+            similarity=similarity,
+            similarity_threshold=similarity_threshold,
+            prune_threshold=prune_threshold,
+            max_long_range=max_long_range,
+        )
         if graph.nodes:
             graphs.append(graph)
     return graphs
@@ -26,14 +51,24 @@ def build_reflection_graph(
     trace: Mapping[str, Any],
     index: int = 0,
     necessity_by_key: Mapping[tuple[str, int], Mapping[str, Any]] | None = None,
+    similarity: TextSimilarity | None = None,
+    similarity_threshold: float = 0.15,
+    prune_threshold: float = 0.0,
+    max_long_range: int = 5,
 ) -> ReflectionGraph:
-    """Build a single trace DAG with deterministic local dependency edges."""
+    """Build a single trace DAG with deterministic local dependency edges.
+
+    When *similarity* is provided, sequential edge weights are set to the
+    content-similarity score and long-range edges are discovered for all
+    node pairs whose similarity exceeds *similarity_threshold*.
+    """
     trace_id = _trace_id(trace, index)
     steps = _reflection_steps(trace)
     graph = ReflectionGraph(trace_id)
     necessity_lookup = necessity_by_key or {}
 
     node_ids: list[str] = []
+    step_texts: list[str] = []
     for step_index, step in enumerate(steps):
         label = _taxonomy_label(step)
         content = _step_content(step)
@@ -52,23 +87,54 @@ def build_reflection_graph(
             )
         )
         node_ids.append(node_id)
+        step_texts.append(content)
+
+    use_similarity = similarity is not None
 
     for position in range(len(node_ids) - 1):
-        _add_edge_if_absent(
-            graph,
-            node_ids[position],
-            node_ids[position + 1],
-            _infer_edge_type(steps[position], steps[position + 1]),
-        )
+        edge_type = _infer_edge_type(steps[position], steps[position + 1])
+        if use_similarity:
+            sim = similarity.pairwise(step_texts[position], step_texts[position + 1])
+            _add_edge_if_absent(
+                graph,
+                node_ids[position],
+                node_ids[position + 1],
+                edge_type,
+                weight=sim,
+                quality=sim,
+            )
+        else:
+            _add_edge_if_absent(graph, node_ids[position], node_ids[position + 1], edge_type)
 
-    for left in range(len(node_ids)):
-        for right in range(left + 2, len(node_ids)):
-            edge_type = _long_range_edge_type(steps[left], steps[right])
-            if edge_type is not None:
-                _add_edge_if_absent(graph, node_ids[left], node_ids[right], edge_type, weight=0.75)
+    if use_similarity and max_long_range > 1:
+        for left in range(len(node_ids)):
+            right_limit = min(len(node_ids), left + max_long_range + 1)
+            for right in range(left + 2, right_limit):
+                sim = similarity.pairwise(step_texts[left], step_texts[right])
+                if sim >= similarity_threshold:
+                    label_edge_type = _long_range_edge_type(steps[left], steps[right])
+                    edge_type = label_edge_type if label_edge_type is not None else _infer_edge_type(steps[left], steps[right])
+                    _add_edge_if_absent(
+                        graph,
+                        node_ids[left],
+                        node_ids[right],
+                        edge_type,
+                        weight=sim,
+                        quality=sim,
+                    )
+    else:
+        for left in range(len(node_ids)):
+            for right in range(left + 2, len(node_ids)):
+                edge_type = _long_range_edge_type(steps[left], steps[right])
+                if edge_type is not None:
+                    _add_edge_if_absent(graph, node_ids[left], node_ids[right], edge_type, weight=0.75)
 
     if node_ids:
         graph.freeze_sources([node_ids[0]])
+
+    if use_similarity and prune_threshold > 0.0:
+        graph = graph.prune_edges(prune_threshold)
+
     return graph
 
 
@@ -83,7 +149,7 @@ def combine_reflection_graphs(
         for node in graph.sorted_nodes():
             combined.add_node(ReflectionNode(**node.__dict__))
         for edge in graph.sorted_edges():
-            combined.add_edge(edge.source, edge.target, edge.edge_type, edge.weight)
+            combined.add_edge(edge.source, edge.target, edge.edge_type, edge.weight, edge.quality)
         source_ids.extend(graph.source_nodes())
     combined.freeze_sources(source_ids)
     return combined
@@ -96,6 +162,23 @@ def graph_records(graphs: Sequence[ReflectionGraph]) -> list[dict[str, Any]]:
 
 def node_id_for(trace_id: str, step_index: int) -> str:
     return f"{trace_id}::r{step_index:03d}"
+
+
+def _fit_similarity(
+    traces: Sequence[Mapping[str, Any]],
+    method: str | None,
+) -> TextSimilarity | None:
+    if method is None:
+        return None
+    all_texts: list[str] = []
+    for trace in traces:
+        for step in _reflection_steps(trace):
+            text = _step_content(step)
+            if text:
+                all_texts.append(text)
+    sim = TextSimilarity(method=method)
+    sim.fit_corpus(all_texts)
+    return sim
 
 
 def _necessity_by_key(
@@ -214,10 +297,11 @@ def _add_edge_if_absent(
     target: str,
     edge_type: str,
     weight: float = 1.0,
+    quality: float = 1.0,
 ) -> None:
     if graph.has_edge(source, target):
         return
-    graph.add_edge(source, target, edge_type, weight)
+    graph.add_edge(source, target, edge_type, weight, quality)
 
 
 def _has_any(label: str, *needles: str) -> bool:

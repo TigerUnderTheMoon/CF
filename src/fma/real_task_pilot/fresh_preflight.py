@@ -156,7 +156,7 @@ def summarize_fresh_preflight(
     config: Mapping[str, Any],
     cost_attempts: Sequence[Mapping[str, Any]] | None = None,
 ) -> dict[str, Any]:
-    """Summarize fresh-holdout API preflight attempts into claim-safe status codes."""
+    """Summarize fresh-holdout API preflight attempts into conservative status codes."""
 
     cost_inputs = list(cost_attempts or attempts)
     eval_config = _preflight_only_cost_config(config, request_count=len(cost_inputs))

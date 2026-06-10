@@ -50,7 +50,7 @@ def topology_resilience(curve: Sequence[dict[str, float]]) -> float:
         return 0.0
     xs = [point["normalized_removal_step"] for point in curve]
     ys = [point["remaining_total_necessity"] for point in curve]
-    return float(np.trapz(ys, xs))
+    return float(np.trapezoid(ys, xs))
 
 
 def summarize_resilience(profiles: Sequence[NodeProfile]) -> dict[str, Any]:

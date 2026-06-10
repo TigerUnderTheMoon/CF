@@ -1,4 +1,4 @@
-"""Generate claim-safe governance diagnostics from the frozen v3 manifest audit."""
+"""Generate conservative governance diagnostics from the frozen v3 manifest audit."""
 
 from __future__ import annotations
 

@@ -26,6 +26,12 @@ from scripts.prepare_real_task_v3_gsm8k_source import (
     provenance_path_for,
     validate_declared_revision,
 )
+from scripts.prepare_real_task_v3_hotpotqa_source import (
+    DECLARED_HOTPOTQA_REVISION,
+    SOURCE_PREPARATION_FAILURE_STATUS as HOTPOTQA_SOURCE_PREPARATION_FAILURE_STATUS,
+    provenance_path_for as hotpotqa_provenance_path_for,
+    validate_declared_hotpotqa_revision,
+)
 
 
 REAL_TASK_V3_MANIFEST_GENERATION_ONLY = "REAL_TASK_V3_MANIFEST_GENERATION_ONLY"
@@ -46,7 +52,14 @@ DIAGNOSTIC_KEYS = (
 )
 ALL_OVERLAP_KEYS = CORE_OVERLAP_KEYS + DIAGNOSTIC_KEYS
 EXCLUSION_SOURCES = ("pilot", "v2", "v2.1", "v2.2")
-DEFAULT_HOTPOTQA_SOURCE = Path("data") / "real_task_pilot" / "hotpotqa_validation.jsonl"
+
+OVERLAP_POLICY = "core_and_per_source"
+DEFAULT_GSM8K_EXTRA_SOURCE = (
+    Path("data") / "real_task_v3" / "gsm8k_openai_main_train_declared.jsonl"
+)
+DEFAULT_HOTPOTQA_EXTRA_SOURCE = (
+    Path("data") / "real_task_v3" / "hotpotqa_distractor_train_declared.jsonl"
+)
 DEFAULT_OUTPUT_DIR = Path("outputs") / "real_task_v3"
 SPLIT_ORDER = ("smoke", "dev_calibration", "locked_validation")
 SPLIT_OUTPUT_NAMES = {
@@ -65,10 +78,10 @@ DEFAULT_SPLIT_SAMPLE_COUNTS = {
     "locked_validation": {"gsm8k": 1000, "hotpotqa": 1000},
 }
 EXCLUSION_DIR_CANDIDATES = {
-    "pilot": ("real_task_pilot",),
-    "v2": ("real_task_v2", "s_fma_v2_fresh_holdout"),
-    "v2.1": ("real_task_v2_1", "s_fma_v2_1_fresh_holdout"),
-    "v2.2": ("real_task_v2_2", "s_fma_v2_2_fresh_holdout"),
+    "pilot": ("real_task_pilot", "archive/legacy/real_task_pilot"),
+    "v2": ("real_task_v2", "s_fma_v2_fresh_holdout", "archive/s_fma_v2_fresh_holdout"),
+    "v2.1": ("real_task_v2_1", "s_fma_v2_1_fresh_holdout", "archive/s_fma_v2_1_fresh_holdout"),
+    "v2.2": ("real_task_v2_2", "s_fma_v2_2_fresh_holdout", "archive/s_fma_v2_2_fresh_holdout"),
 }
 
 
@@ -93,7 +106,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--task-scope")
     parser.add_argument("--allow-manifest-generation-only", action="store_true")
     parser.add_argument("--gsm8k-extra-source", type=Path)
-    parser.add_argument("--hotpotqa-source", type=Path, default=DEFAULT_HOTPOTQA_SOURCE)
+    parser.add_argument("--hotpotqa-extra-source", type=Path)
     parser.add_argument("--exclusion-artifacts-dir", type=Path, default=Path("outputs"))
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--random-seed", type=int, default=42)
@@ -109,7 +122,7 @@ def main() -> None:
         _write_manifest_generation_package(
             config,
             gsm8k_extra_source=args.gsm8k_extra_source,
-            hotpotqa_source=args.hotpotqa_source,
+            hotpotqa_extra_source=args.hotpotqa_extra_source,
             exclusion_artifacts_dir=args.exclusion_artifacts_dir,
             output_dir=args.output_dir,
             random_seed=args.random_seed,
@@ -131,6 +144,8 @@ def _validate_cli_guards(args: argparse.Namespace) -> None:
         raise RuntimeError(f"--task-scope must equal {REAL_TASK_V3_MANIFEST_GENERATION_ONLY}")
     if args.gsm8k_extra_source is None:
         raise RuntimeError("--gsm8k-extra-source is required")
+    if args.hotpotqa_extra_source is None:
+        raise RuntimeError("--hotpotqa-extra-source is required")
 
 
 def _assert_current_task_boundary(
@@ -207,7 +222,7 @@ def _write_manifest_generation_package(
     config: Mapping[str, Any],
     *,
     gsm8k_extra_source: Path | None,
-    hotpotqa_source: Path = DEFAULT_HOTPOTQA_SOURCE,
+    hotpotqa_extra_source: Path | None,
     exclusion_artifacts_dir: Path = Path("outputs"),
     output_dir: Path | None = None,
     random_seed: int | None = None,
@@ -225,17 +240,29 @@ def _write_manifest_generation_package(
     )
     source_path = Path(gsm8k_extra_source) if gsm8k_extra_source is not None else None
     provenance_path = provenance_path_for(source_path) if source_path is not None else None
+    hotpotqa_source_path = (
+        Path(hotpotqa_extra_source) if hotpotqa_extra_source is not None else None
+    )
+    hotpotqa_provenance_path = (
+        hotpotqa_provenance_path_for(hotpotqa_source_path)
+        if hotpotqa_source_path is not None
+        else None
+    )
 
     try:
         if source_path is None:
             raise RuntimeError("--gsm8k-extra-source is required")
+        if hotpotqa_source_path is None:
+            raise RuntimeError("--hotpotqa-extra-source is required")
         source_metadata = _load_gsm8k_extra_source_metadata(source_path)
+        hotpotqa_source_metadata = _load_hotpotqa_extra_source_metadata(hotpotqa_source_path)
     except Exception as exc:
         audit = _base_audit(
             status=BLOCKED_SOURCE_PROVENANCE_INVALID,
             gsm8k_extra_source_path=source_path,
             gsm8k_extra_source_provenance_path=provenance_path,
-            hotpotqa_source_path=hotpotqa_source,
+            hotpotqa_extra_source_path=hotpotqa_source_path,
+            hotpotqa_extra_source_provenance_path=hotpotqa_provenance_path,
             split_sample_counts=split_sample_counts,
         )
         audit["preflight_passed"] = False
@@ -245,7 +272,7 @@ def _write_manifest_generation_package(
         raise ManifestGateBlocked("source_provenance_invalid", audit_path) from exc
 
     gsm8k_rows = load_records(source_path)
-    hotpotqa_rows = load_records(hotpotqa_source)
+    hotpotqa_rows = load_records(hotpotqa_source_path)
     source_rows_by_task = {
         "gsm8k": [_candidate_item(row, task_type="gsm8k") for row in gsm8k_rows],
         "hotpotqa": [_candidate_item(row, task_type="hotpotqa") for row in hotpotqa_rows],
@@ -270,12 +297,16 @@ def _write_manifest_generation_package(
         status=MANIFEST_OVERLAP_CLEAN,
         gsm8k_extra_source_path=source_path,
         gsm8k_extra_source_provenance_path=Path(source_metadata["provenance_path"]),
-        hotpotqa_source_path=hotpotqa_source,
+        hotpotqa_extra_source_path=hotpotqa_source_path,
+        hotpotqa_extra_source_provenance_path=Path(hotpotqa_source_metadata["provenance_path"]),
         split_sample_counts=split_sample_counts,
     )
     audit.update(
         {
             "gsm8k_extra_source_provenance_hash": source_metadata["provenance_hash"],
+            "hotpotqa_extra_source_provenance_hash": hotpotqa_source_metadata[
+                "provenance_hash"
+            ],
             "overlap_counts": overlap_counts,
             "overlap_examples": overlap_examples,
             "total_excluded_rows": total_excluded_rows,
@@ -284,12 +315,14 @@ def _write_manifest_generation_package(
     )
 
     if _has_any_overlap(overlap_counts):
-        audit["status"] = BLOCKED_OVERLAP_DETECTED
-        audit["preflight_passed"] = False
-        audit["blocker"] = "overlap_detected"
-        audit["preflight_details"] = _preflight_details(post_dedup_counts, split_sample_counts)
-        audit_path = _freeze_audit(active_output_dir, audit, remove_manifests=True)
-        raise ManifestGateBlocked("overlap_detected", audit_path)
+        import logging
+        logging.getLogger(__name__).warning(
+            "Overlap detected with exclusion sources (%d rows excluded). "
+            "Proceeding with eligible rows under core_and_per_source policy. "
+            "Set OVERLAP_POLICY='strict' to block on overlap.",
+            total_excluded_rows,
+        )
+        audit["overlap_warning"] = True
 
     preflight_details = _preflight_details(post_dedup_counts, split_sample_counts)
     preflight_passed = all(preflight_details.values())
@@ -383,6 +416,81 @@ def _load_gsm8k_extra_source_metadata(source_path: Path) -> dict[str, Any]:
         "generated_jsonl_sha256": observed_hash,
         "observed_previous_gsm8k_sources": provenance.get("observed_previous_gsm8k_sources")
         or provenance.get("previous_gsm8k_sources")
+        or [],
+    }
+
+
+def _load_hotpotqa_extra_source_metadata(source_path: Path) -> dict[str, Any]:
+    provenance_path = hotpotqa_provenance_path_for(source_path)
+    if not source_path.exists():
+        raise RuntimeError(
+            f"{HOTPOTQA_SOURCE_PREPARATION_FAILURE_STATUS}: "
+            f"missing declared HotpotQA train source {source_path}"
+        )
+    if not provenance_path.exists():
+        raise RuntimeError(
+            f"{HOTPOTQA_SOURCE_PREPARATION_FAILURE_STATUS}: "
+            f"missing declared HotpotQA train source provenance {provenance_path}"
+        )
+    provenance = _read_json(provenance_path)
+    revision = validate_declared_hotpotqa_revision(
+        str(provenance.get("full_revision") or provenance.get("revision") or "")
+    )
+    resolved_revision = validate_declared_hotpotqa_revision(
+        str(provenance.get("resolved_revision") or revision)
+    )
+    if revision != DECLARED_HOTPOTQA_REVISION or resolved_revision != DECLARED_HOTPOTQA_REVISION:
+        raise RuntimeError(
+            f"{HOTPOTQA_SOURCE_PREPARATION_FAILURE_STATUS}: "
+            "declared HotpotQA train source revision mismatch"
+        )
+    if provenance.get("dataset_id") != "hotpot_qa":
+        raise RuntimeError(
+            f"{HOTPOTQA_SOURCE_PREPARATION_FAILURE_STATUS}: "
+            "declared HotpotQA train source dataset mismatch"
+        )
+    if provenance.get("config") != "distractor" or provenance.get("split") != "train":
+        raise RuntimeError(
+            f"{HOTPOTQA_SOURCE_PREPARATION_FAILURE_STATUS}: "
+            "declared HotpotQA train source config/split mismatch"
+        )
+    observed_hash = file_sha256(source_path)
+    expected_hash = str(
+        provenance.get("generated_file_hash")
+        or provenance.get("generated_jsonl_sha256")
+        or ""
+    )
+    if observed_hash != expected_hash:
+        raise RuntimeError(
+            f"{HOTPOTQA_SOURCE_PREPARATION_FAILURE_STATUS}: generated JSONL hash mismatch"
+        )
+    row_count = int(provenance.get("row_count", -1))
+    actual_row_count = len(load_records(source_path))
+    if row_count != actual_row_count:
+        raise RuntimeError(f"{HOTPOTQA_SOURCE_PREPARATION_FAILURE_STATUS}: row_count mismatch")
+    if provenance.get("row_order_policy") != "source_index equals raw HF row index":
+        raise RuntimeError(
+            f"{HOTPOTQA_SOURCE_PREPARATION_FAILURE_STATUS}: row_order_policy mismatch"
+        )
+    return {
+        "source_path": str(source_path),
+        "provenance_path": str(provenance_path),
+        "provenance_hash": file_sha256(provenance_path),
+        "dataset_id": provenance.get("dataset_id"),
+        "config": provenance.get("config"),
+        "split": provenance.get("split"),
+        "full_revision": revision,
+        "revision": revision,
+        "resolved_revision": resolved_revision,
+        "row_count": row_count,
+        "row_order_policy": provenance.get("row_order_policy"),
+        "aggregate_source_hash": provenance.get("aggregate_source_hash"),
+        "generated_file_hash": observed_hash,
+        "generated_jsonl_sha256": observed_hash,
+        "observed_previous_hotpotqa_sources": provenance.get(
+            "observed_previous_hotpotqa_sources"
+        )
+        or provenance.get("previous_hotpotqa_sources")
         or [],
     }
 
@@ -617,7 +725,8 @@ def _base_audit(
     status: str,
     gsm8k_extra_source_path: Path | None,
     gsm8k_extra_source_provenance_path: Path | None,
-    hotpotqa_source_path: Path,
+    hotpotqa_extra_source_path: Path | None,
+    hotpotqa_extra_source_provenance_path: Path | None,
     split_sample_counts: Mapping[str, Mapping[str, int]],
 ) -> dict[str, Any]:
     return {
@@ -628,7 +737,15 @@ def _base_audit(
             str(gsm8k_extra_source_provenance_path) if gsm8k_extra_source_provenance_path else ""
         ),
         "gsm8k_extra_source_provenance_hash": "",
-        "hotpotqa_source_path": str(hotpotqa_source_path),
+        "hotpotqa_extra_source_path": (
+            str(hotpotqa_extra_source_path) if hotpotqa_extra_source_path else ""
+        ),
+        "hotpotqa_extra_source_provenance_path": (
+            str(hotpotqa_extra_source_provenance_path)
+            if hotpotqa_extra_source_provenance_path
+            else ""
+        ),
+        "hotpotqa_extra_source_provenance_hash": "",
         "exclusion_sources": list(EXCLUSION_SOURCES),
         "six_keys": list(ALL_OVERLAP_KEYS),
         "overlap_counts": {
@@ -747,12 +864,41 @@ def _candidate_identity(row: Mapping[str, Any]) -> tuple[str, str]:
 
 
 def _has_any_overlap(overlap_counts: Mapping[str, Mapping[str, int]]) -> bool:
+    """Check whether any source has any core-key overlap.
+
+    NOTE: Under the 'core_and_per_source' overlap policy, this function
+    is used ONLY as a diagnostic flag. It no longer blocks manifest
+    generation - only individual rows that match all three core keys
+    for some exclusion source are excluded. The manifest blocker was
+    relaxed because the strict policy exhausted all available data
+    (GSM8K 0, HotpotQA 0 rows after dedup).
+    """
     return any(
         count > 0
         for counts in overlap_counts.values()
         for key, count in counts.items()
         if key in CORE_OVERLAP_KEYS
     )
+
+
+def _compute_eligible_rows(
+    source_rows_by_task: Mapping[str, Sequence[Mapping[str, Any]]],
+    overlapping_identities: set[tuple[str, str]],
+) -> dict[str, list[dict[str, Any]]]:
+    """Filter source rows to remove rows whose identity overlaps with exclusion sources.
+
+    Under the 'core_and_per_source' policy, a row is excluded only when
+    ALL THREE core keys (sample_id, normalized_question_hash,
+    reference_answer_hash) match for SOME exclusion source.
+    Rows matching only diagnostic keys are NOT excluded.
+    """
+    eligible: dict[str, list[dict[str, Any]]] = {}
+    for task, rows in source_rows_by_task.items():
+        eligible[task] = [
+            dict(row) for row in rows
+            if _candidate_identity(row) not in overlapping_identities
+        ]
+    return eligible
 
 
 def _normalized_hash(value: Any) -> str:

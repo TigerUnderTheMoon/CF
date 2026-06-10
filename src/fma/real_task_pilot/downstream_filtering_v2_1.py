@@ -66,14 +66,14 @@ def build_downstream_filtering_preregistration() -> dict[str, Any]:
         },
         "source_artifacts": {
             "original_traces": (
-                "outputs/s_fma_v2_1_fresh_holdout/"
+                "outputs/archive/s_fma_v2_1_fresh_holdout/"
                 "v2_1_pilot_stochastic_original_traces.jsonl"
             ),
             "pilot_report": (
-                "outputs/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_report.json"
+                "outputs/archive/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_report.json"
             ),
             "full_abandonment_audit": (
-                "outputs/s_fma_v2_1_fresh_holdout/"
+                "outputs/archive/s_fma_v2_1_fresh_holdout/"
                 "v2_1_full_validation_abandonment_audit.json"
             ),
             "structural_diagnostics": "outputs/structural_diagnostics.json",
@@ -273,7 +273,7 @@ def build_downstream_filtering_report(
     budget_stop_triggered: bool = False,
     request_stop_triggered: bool = False,
 ) -> dict[str, Any]:
-    """Build a claim-safe paired filtering diagnostic report."""
+    """Build a conservative paired filtering diagnostic report."""
 
     originals_by_id = {str(row.get("sample_id") or ""): row for row in original_records}
     replay_by_key = {

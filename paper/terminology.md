@@ -1,6 +1,6 @@
 # Terminology
 
-This paper uses fixed terminology to avoid drift between attribution analysis, structural analysis, and redundancy analysis. The project studies intervention-based functional attribution for reflective cognition dynamics. It does not claim access to hidden reasoning, semantic understanding, internal mechanisms, or strong identification.
+This paper uses fixed terminology to avoid drift between attribution analysis, structural analysis, and redundancy analysis. The project studies intervention-based functional attribution for reflective cognition dynamics. The current evidence does not support access to hidden reasoning, semantic understanding, internal mechanisms, or strong identification.
 
 ## Canonical Claim
 
@@ -21,6 +21,8 @@ Functional vs structural: functional metrics estimate outcome-linked local utili
 Diagnostic vs downstream validation: Phase 5-7 diagnose why structural calibration is needed. The current mini downstream filtering validation failed, so PRM/filtering improvement is not supported.
 
 Scope disclaimer: all reported quantities are deterministic operational proxies. They are not protocol-independent effects, hidden reasoning states, internal-process explanations, or universal importance scores.
+
+Empirical null hypothesis: `H0: local utility is an adequate proxy for structural necessity`. The stored protocol provides evidence against this null because local attribution and structural necessity align weakly and because positive local attribution frequently co-occurs with zero measured structural necessity.
 
 ## Proxy Ontology
 
@@ -63,4 +65,6 @@ Speculative implications must be labeled as possible interpretation, hypothesis,
 
 Do not write downstream robustness or generalization claims for attribution-aware PRM/filtering unless real downstream training or filtering artifacts pass their gates. Current wording should use `failed mini validation`, `target application`, `candidate signal`, or `future experiment`.
 
-Do not describe `local utility` as interchangeable with `structural necessity`. Do not describe `Normalize(FMA)` as the current validated supervision weight. The claim-safe term is `structurally calibrated supervision weight`.
+Do not describe `local utility` as interchangeable with `structural necessity`. Do not describe `Normalize(FMA)` as the current validated supervision weight. The conservative term is `structurally calibrated supervision weight`.
+
+Do not describe PRUNE, CASCADE, and BYPASS as an exhaustive theory of reasoning. Their conservative interpretation is a minimal graph-stress-test basis: PRUNE tests direct node indispensability, CASCADE tests downstream propagation dependence, and BYPASS tests substitutability or rerouting.

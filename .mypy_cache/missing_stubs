@@ -1,0 +1,7 @@
+types-PyYAML
+types-cachetools
+types-decorator
+types-protobuf
+types-simplejson
+types-tabulate
+types-ujson

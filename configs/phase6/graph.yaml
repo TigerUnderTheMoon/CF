@@ -7,7 +7,15 @@ phase6:
   edge_rules:
     - temporal_order
     - taxonomy_compatibility
+    - content_similarity
     - utility_dependency
+  similarity:
+    method: tfidf
+    long_range_threshold: 0.15
+    long_range_max_distance: 5
+  pruning:
+    enabled: false
+    threshold: 0.05
   intervention_modes:
     - PRUNE
     - CASCADE

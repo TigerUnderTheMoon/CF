@@ -4,8 +4,8 @@ from fma.utils.logging_config import configure_logging, get_logger
 
 configure_logging()
 
-from fma.attribution import AttributionResult, compute_attribution
-from fma.diagnostics import DiagnosticResult, summarize_diagnostics
+from fma.attribution import AttributionResult
+from fma.diagnostics import DiagnosticResult
 from fma.graph import (
     GraphIntervention,
     GraphInterventionBatch,
@@ -61,12 +61,10 @@ __all__ = [
     "VLLMClient",
     "benchmark",
     "cleanup_outputs",
-    "compute_attribution",
     "configure_logging",
     "get_logger",
     "load_config",
     "run_structural_diagnostics",
-    "summarize_diagnostics",
     "validate_config",
     "__version__",
 ]

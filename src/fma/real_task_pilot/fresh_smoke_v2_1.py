@@ -368,7 +368,7 @@ def build_v2_1_stochastic_smoke_report(
     cost_used_usd: float,
     expected_replay_jobs: int,
 ) -> dict[str, Any]:
-    """Build a claim-safe v2.1 stochastic smoke report."""
+    """Build a conservative v2.1 stochastic smoke report."""
 
     all_attempts = [*original_attempts, *replay_attempts]
     actual_requests = len(all_attempts)

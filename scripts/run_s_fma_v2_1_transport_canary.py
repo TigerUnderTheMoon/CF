@@ -14,6 +14,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from fma.io import load_records, write_records
+from fma.real_task_pilot.archive_paths import v2_1_failed_provenance_root
 from fma.real_task_pilot.config import load_pilot_config
 from fma.real_task_pilot.fresh_preflight import (
     attempt_payloads_from_results,
@@ -63,7 +64,13 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     config = load_pilot_config(args.config)
-    output_root = Path(config.get("experiment", {}).get("output_dir", "outputs/s_fma_v2_1_fresh_holdout"))
+    output_root = v2_1_failed_provenance_root(
+        Path(
+            config.get("experiment", {}).get(
+                "output_dir", "outputs/s_fma_v2_1_fresh_holdout"
+            )
+        )
+    )
     paths = {
         "manifest": output_root / "fresh_manifest.json",
         "overlap": output_root / "manifest_overlap_audit.json",

@@ -132,7 +132,7 @@ NUMBER_RE = re.compile(r"[-+]?\d[\d,]*(?:\.\d+)?")
 
 
 def audit_v3_config_contract(config: Mapping[str, Any]) -> dict[str, Any]:
-    """Check that the v3 config remains preregistration-only and claim-safe."""
+    """Check that the v3 config remains preregistration-only and conservative."""
 
     experiment = _mapping(config.get("experiment"))
     hard_caps = _mapping(config.get("hard_caps"))
@@ -293,10 +293,11 @@ def build_v3_split_manifest(
 
     selected_by_task: dict[str, list[dict[str, Any]]] = {}
     task_reports: dict[str, dict[str, Any]] = {}
-    overlap_counts = {key: 0 for key in V3_REQUIRED_NON_OVERLAP_KEYS}
-    selected_overlap_counts = {key: 0 for key in V3_REQUIRED_NON_OVERLAP_KEYS}
+    v3_overlap_keys = tuple(f"core:{k}" for k in ("sample_id", "normalized_question_hash", "reference_answer_hash")) + tuple(f"diagnostic:{k}" for k in ("task_id", "dataset_config_split_source_index", "non_empty_alias_hash"))
+    overlap_counts = {key: 0 for key in v3_overlap_keys}
+    selected_overlap_counts = {key: 0 for key in v3_overlap_keys}
     overlap_examples: dict[str, list[dict[str, Any]]] = {
-        key: [] for key in V3_REQUIRED_NON_OVERLAP_KEYS
+        key: [] for key in v3_overlap_keys
     }
 
     for task_type in sorted(sample_count_by_task):
@@ -315,7 +316,11 @@ def build_v3_split_manifest(
         excluded = 0
         for item in candidates:
             overlaps = _v3_overlaps_for_item(item, overlap_index)
-            if overlaps:
+            # Core-and-per-source policy: exclude only when ALL THREE core keys overlap
+            core_overlap_keys = [k for k in overlaps if k.startswith("core:")]
+            core_overlaps = dict((k, overlaps[k]) for k in core_overlap_keys)
+            all_core_keys_hit = len(core_overlap_keys) == 3
+            if all_core_keys_hit:
                 excluded += 1
                 for key, hits in overlaps.items():
                     overlap_counts[key] += 1
@@ -340,7 +345,7 @@ def build_v3_split_manifest(
 
         if len(eligible) < required:
             task_status = BLOCKED_INSUFFICIENT_FRESH_ROWS
-        elif any(selected_overlap_counts.values()):
+        elif any(v for k, v in selected_overlap_counts.items() if k.startswith("core:")):
             task_status = OVERLAP_AUDIT_FAIL
         else:
             task_status = MANIFEST_OVERLAP_CLEAN
@@ -392,9 +397,9 @@ def build_v3_split_manifest(
         "tasks": task_reports,
         "overlap_sources": overlap_index["source_reports"],
         "overlap_summary": {
-            "candidate_pool_overlaps_by_key": overlap_counts,
-            "selected_overlaps_by_key": selected_overlap_counts,
-            "total_overlaps_by_key": overlap_counts,
+            "candidate_pool_overlaps_by_key": {k.removeprefix("core:").removeprefix("diagnostic:"): v for k, v in overlap_counts.items()},
+            "selected_overlaps_by_key": {k.removeprefix("core:").removeprefix("diagnostic:"): v for k, v in selected_overlap_counts.items()},
+            "total_overlaps_by_key": {k.removeprefix("core:").removeprefix("diagnostic:"): v for k, v in overlap_counts.items()},
         },
         "overlap_examples": overlap_examples,
     }
@@ -812,21 +817,40 @@ def _v3_overlaps_for_item(
     item: Mapping[str, Any],
     overlap_index: Mapping[str, Any],
 ) -> dict[str, list[str]]:
+    """Check whether an item overlaps with prior artifacts under core_and_per_source policy.
+
+    Under the previous 6-key OR policy, any single key match triggered exclusion.
+    Under the new core_and_per_source policy, a row is only excluded when ALL THREE
+    core keys (sample_id, normalized_question_hash, reference_answer_hash) match for
+    the same exclusion source.
+
+    Diagnostic key matches are recorded but do NOT trigger exclusion.
+    Returns a dict with keys prefixed by 'core:' or 'diagnostic:'.
+    """
     index = overlap_index["index"]
-    keys = {
+    core_keys_and_values = {
         "sample_id": str(item.get("sample_id") or ""),
-        "task_id": str(item.get("task_id") or ""),
-        "dataset_config_split_source_index": str(item.get("dataset_config_split_source_index") or ""),
         "normalized_question_hash": str(item.get("normalized_question_hash") or ""),
         "reference_answer_hash": str(item.get("reference_answer_hash") or ""),
     }
+
+    overlaps: dict[str, list[str]] = {}
+    for key, value in core_keys_and_values.items():
+        if value and value in index.get(key, {}):
+            overlaps[f"core:{key}"] = sorted(index[key][value])
+
+    diagnostic_keys_and_values: dict[str, str] = {
+        "task_id": str(item.get("task_id") or ""),
+        "dataset_config_split_source_index": str(item.get("dataset_config_split_source_index") or ""),
+    }
     if has_non_empty_aliases(item.get("aliases")):
-        keys["non_empty_alias_hash"] = str(item.get("non_empty_alias_hash") or "")
-    overlaps = {}
-    for key, value in keys.items():
-        index_key = "alias_hash" if key == "non_empty_alias_hash" else key
+        diagnostic_keys_and_values["non_empty_alias_hash"] = str(item.get("non_empty_alias_hash") or "")
+
+    for source_key, value in diagnostic_keys_and_values.items():
+        index_key = "alias_hash" if source_key == "non_empty_alias_hash" else source_key
         if value and value in index.get(index_key, {}):
-            overlaps[key] = sorted(index[index_key][value])
+            overlaps[f"diagnostic:{source_key}"] = sorted(index[index_key][value])
+
     return overlaps
 
 

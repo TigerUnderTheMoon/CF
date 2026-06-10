@@ -7,6 +7,7 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from .archive_paths import v2_1_failed_provenance_root
 from .fresh_holdout_v2_1 import V2_1_CONTRACT_CLEAN
 from .fresh_preflight import (
     FreshPreflightError,
@@ -39,6 +40,7 @@ class TransportCanaryError(FreshPreflightError):
 def transport_canary_paths(output_root: Path) -> dict[str, Path]:
     """Return canary output paths independent of API preflight artifacts."""
 
+    output_root = v2_1_failed_provenance_root(output_root)
     return {
         "report": output_root / "transport_canary_report.json",
         "attempts": output_root / "transport_canary_attempts.jsonl",

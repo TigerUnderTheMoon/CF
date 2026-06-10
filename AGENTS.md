@@ -26,28 +26,74 @@ Correct framing:
 
 ## 2. Code Architecture
 
-Current implementation lives under `fma/`. Older `src/...` paths in the Chinese framework are target-architecture names, not current repository paths. Planned modules must not be described as completed evidence until files and artifacts exist.
+Implementation lives under `src/fma/`. The import path is `fma.*` (configured via `pyproject.toml: packages = [{include = "fma", from = "src"}]`).
 
-| Theory Component | Module | Responsibility |
+> **Convention**: Throughout this document, file system paths use the `src/fma/...` prefix. Import paths use `fma.*`.
+
+### 2.1 Implemented Modules
+
+| Theory Component | File System Path | Import Path | Responsibility |
+|---|---|---|---|
+| Reflection Extraction | `src/fma/taxonomy/`, `src/fma/real_task_pilot/parsing.py` | `fma.taxonomy`, `fma.real_task_pilot.parsing` | observable span and taxonomy extraction |
+| Structure-Preserving Intervention | `src/fma/intervention/`, `src/fma/replay/` | `fma.intervention`, `fma.replay` | masking, replacement, replay helpers |
+| Reflection Graph | `src/fma/graph/` | `fma.graph` | structural graph construction, motif analysis, diagnostics |
+| CIU Estimation | `src/fma/ciu/` | `fma.ciu` | local interventional utility estimation (simple outcome difference) |
+| Attribution Engine | `src/fma/attribution/` | `fma.attribution` | attribution result container + IncrementalAttributionEngine, ParallelAttributionEngine |
+| Pilot / Validation | `src/fma/pilot/`, `src/fma/real_task_pilot/` | `fma.pilot`, `fma.real_task_pilot` | API client, audit, caching, resilience, v2/v2.1/v2.2/v3 validation pipeline |
+| Evaluation | `src/fma/eval/` | `fma.eval` | attribution metrics, stratified eval, structural validation, redundancy, locality, stability |
+| Visualization | `src/fma/visualization/` | `fma.visualization` | plots, DAGs, intervention traces |
+| Generation | `src/fma/generation/` | `fma.generation` | diverse reflection generation, template pools |
+| FMA Aggregation | `src/fma/fma/` | `fma.fma` | distribution-conditioned CIU aggregation (simplified; no temperature-based softmax weights) |
+| Counterfactual Replay | `src/fma/replay/` | `fma.replay` | counterfactual replay with masked reflection |
+| Open-source Data Ingestion | `src/fma/data/` | `fma.data` | PRM800K, ProcessBench, GSM8K CoT loader + step parsing + taxonomy classification |
+| Frozen PRM Scoring | `src/fma/prm/` | `fma.prm` | frozen public PRM inference wrapper (Qwen2.5-Math-PRM, Math-Shepherd, RLVR-PRM) |
+| Downstream Comparison | `src/fma/utility/` | `fma.utility` | filtering A/B experiment, FMA vs PRM vs baseline comparison, reporting |
+| Utils | `src/fma/utils/` | `fma.utils` | config loading, logging, benchmarking, cleanup |
+
+### 2.2 Planned Modules (NOT YET IMPLEMENTED)
+
+The following modules are described in Sections 3-4 as design targets. No implementation code exists. They MUST NOT be described as completed evidence.
+
+| Planned Component | Target Path | Note |
 |---|---|---|
-| Trajectory Processing | `fma/data/` | reasoning trajectory loading and normalization |
-| Reflection Extraction | `fma/real_task_pilot/parsing.py`, `fma/taxonomy/` | observable span and taxonomy extraction |
-| Structure-Preserving Intervention | `fma/intervention/`, `fma/replay/`, `fma/real_task_pilot/replay.py` | masking, replay, and intervention helpers |
-| Conditional Intervention Distribution | planned, not current evidence | conditional replacement sampling |
-| CIU Estimation | `fma/ciu/` | local interventional utility estimation |
-| Counterfactual Matching | planned, not current evidence | matched pair construction |
-| Doubly Robust Estimation | planned, not current evidence | robust utility estimation |
-| FMA Aggregation | `fma/fma/` | distribution-conditioned aggregation |
-| Attribution-Aware Supervision | `fma/prm/` / planned validation | process weighting and downstream validation |
-| Evaluation | `fma/eval/`, `fma/real_task_pilot/` | attribution, robustness, pilot, and readiness metrics |
-| Visualization | `fma/visualization/` | plots, DAGs, intervention traces |
-| Experiment Runner | `scripts/` | experiment orchestration |
+| Conditional Intervention Distribution | `src/fma/conditional/` | No files. Current replacement uses random template swap. |
+| Counterfactual Matching | `src/fma/matching/` | No files. Algorithm template in Section 4.2 only. |
+| Doubly Robust Estimation | `src/fma/dr/` | No files. Algorithm template in Section 4.3 only. |
+| Attribution Computation | `src/fma/attribution/__init__.py` | `compute_attribution()` removed (was NotImplementedError). Engine classes are implemented. |
+| Diagnostic Summarization | `src/fma/diagnostics/__init__.py` | `summarize_diagnostics()` removed (was NotImplementedError). DiagnosticResult dataclass retained. |
+
+### 2.3 Actual Running Pipeline
+
+The operational pipeline uses deterministic scripts, not the ABC interface architecture:
+
+- **Phase 5**: `scripts/run_counterfactual_attribution.py` -> `fma/eval/counterfactual_attribution.py`
+- **Phase 6**: `scripts/run_structural_attribution.py` -> `fma/graph/` modules
+- **Phase 7**: `scripts/run_redundancy_analysis.py` -> `fma/eval/redundancy/` modules
+- **Real-task pilot**: `scripts/run_real_task_pilot.py` -> `fma/real_task_pilot/` modules
+- **Fresh holdout**: `scripts/s_fma_v2_*.py`, `scripts/run_real_task_v3_smoke.py` etc.
+
+### 2.4 Gap: Planned vs Implemented
+
+| Interface or Feature | AGENTS.md Status | Actual Status |
+|---|---|---|
+| `Intervention` ABC (masking, replacement, perturbation) | 3 subclasses defined | Only masking fully implemented (`replay/counterfactual.py`). Replacement uses random category swap (`intervention/structural_interventions.py`). Perturbation has `_contradict()` only. |
+| `ConditionalDistribution.sample()` | ABC defined | **Not implemented.** No `fma/conditional/` directory. Current replacement uses template pool, not conditional sampling. |
+| `UtilityEstimator.estimate()` | ABC defined | **Not implemented.** CIU uses `ciu/estimator.py` with simple outcome difference, not the ABC pattern. |
+| `Matcher.match()` | ABC defined | **Not implemented.** No `fma/matching/` directory. No counterfactual matching in the pipeline. |
+| `DoublyRobustEstimator.estimate()` | ABC defined | **Not implemented.** No `fma/dr/` directory. All CIU estimates are raw differences, not DR-corrected. |
+| `FMAAggregator.aggregate()` | ABC defined | Partially implemented. `fma/fma/aggregator.py` does group-mean aggregation, lacks temperature-based softmax weights. |
+| Data scale | 800 traces / 2400 reflective steps | Synthetic-only. Real-task validation: **all 6 routes failed** (v2, v2.1, v2.2, v3, v3.1). External validity limited to synthetic data. |
+| Open-source data ingestion | Planned (no files) | **Implemented.** `src/fma/data/` loads PRM800K, ProcessBench, GSM8K CoT, normalizes to internal format. |
+| Frozen PRM scoring | Planned (no files) | **Implemented.** `src/fma/prm/` wraps Qwen2.5-Math-PRM, Math-Shepherd, RLVR-PRM (frozen inference only). |
+| Downstream comparison | Planned (no files) | **Implemented.** `src/fma/utility/` provides filtering A/B experiment, FMA vs PRM vs heuristic comparison report. |
+| CIU three-value restriction | CIU restricted to {-1, 0, 1} | **Lifted.** `ciu/estimator.py` now accepts continuous CIU in [-1, 1]. |
+| CoT step parsing | Only `<reflection>` XML | **Extended.** `parsing.py` has `parse_cot_steps()` for free-text CoT segmentation. |
 
 ---
 
 ## 3. Core Implementation Contracts
 
-All core components MUST follow abstract interface contracts.
+The following abstract interface contracts define the **planned target architecture**. They are NOT all currently implemented — see Section 2.4 for the gap analysis. Implementations SHOULD follow these contracts when built, but existing working code (Phase 5-7 pipeline scripts) takes precedence over unimplemented ABCs.
 
 ### 3.1 Data Structures
 
@@ -663,6 +709,8 @@ Replacement spans MUST originate from:
 
 Random unrelated replacement is forbidden.
 
+**Current status**: ConditionalDistribution is NOT implemented. The pipeline uses random template swap, which is a known deviation. This deviation MUST be explicitly labeled as proxy evidence until conditional sampling is implemented.
+
 ### 6.3 No Overclaiming Raw Scores As Matched/DR Estimates
 
 Final utility claims that invoke matched or doubly robust estimation MUST include:
@@ -855,3 +903,36 @@ The framework studies:
 > functional organization of reflective cognition.
 
 PRM improvement is treated only as a downstream application.
+
+---
+
+## 10. Data Validation Status
+
+### 10.1 Synthetic Data
+
+- 800 traces / 2400 reflective steps (synthetic)
+- Phase 5-7 and Stage 2 confirmatory results are limited to synthetic data
+- External validity is unconfirmed
+
+### 10.2 Real-Task Validation
+
+All 6 real-task validation routes have failed:
+
+| Route | Status | Outcome |
+|---|---|---|
+| v2 (s_FMA stochastic smoke) | **FAILED** | Sparse signal (0 nonzero GSM8K delta) |
+| v2.1 (evidence target) | **ABANDONED** | Full validation failed quality gate; downstream filtering signal negative |
+| v2.2 (exploratory) | **FAILED** | Sparse signal (0 nonzero GSM8K delta) |
+| v3 (real-task DELETE) | **FAILED** | Data scarcity: strict deduplication exhausted all rows (GSM8K 0, HotpotQA 0) |
+| v3.1 (real-task REPLACE) | **FAILED** | Sparse signal on both tasks |
+| Legacy pilot | **BLOCKED** | Preflight drift failure |
+
+No real-task validation evidence may be claimed. All claims involving real-task data MUST be labeled `failed_validation` or `pilot_blocked`.
+
+### 10.3 Deduplication Root Cause
+
+The v3 route uses 6-key OR-logic deduplication against prior artifacts. This, combined with:
+- GSM8K rows having empty aliases (causing sentinel hash collisions)
+- HotpotQA validation split fully consumed by prior v2/v2.1/v2.2 routes
+
+results in 0 eligible rows after deduplication. An AND-logic core dedup (3-key: sample_id, question_hash, answer_hash) is implemented in the manifest generator but still produces 0 rows because the same data splits were used across all prior routes.

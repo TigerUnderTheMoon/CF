@@ -1,0 +1,94 @@
+# Downstream comparison experiment configuration.
+# FMA vs PRM vs heuristic baselines on open-source reasoning traces.
+#
+# CLAIMS CONSTRAINT: This experiment may only report correlations
+# and ranking agreement.  PRM superiority and FMA superiority
+# claims are FORBIDDEN.
+
+experiment:
+  name: fma_vs_prm_downstream_v1
+  version: "1.0.0"
+  mode: comparison_only
+  seed: 42
+  description: >
+    Downstream filtering A/B experiment comparing FMA attribution,
+    frozen public PRM scoring, and heuristic baselines (random,
+    span length, taxonomy prior, relative position).  All data
+    comes from open-source reasoning trace datasets.  No API keys
+    required -- PRM inference is fully local.
+
+data:
+  source: prm800k
+  split: test
+  max_samples: 500
+  models: []
+  trace_dir: null
+  parse_strategy: auto
+  classify_operations: true
+
+scorers:
+  fma:
+    method: ciu_attribution
+    config: configs/phase5.yaml
+
+  prm:
+    model: Qwen2.5-Math-PRM-1.5B
+    mode: frozen_inference
+    quantization: 4bit
+    device: auto
+    step_separator: " kb "
+    score_aggregation: mean
+    normalization: sigmoid
+
+  baselines:
+    - random
+    - span_length
+    - taxonomy_prior
+    - relative_position
+    - question_difficulty_proxy
+
+filtering:
+  structure_preserving: true
+  mask_token: "[REASONING_MASK]"
+
+comparison:
+  keep_ratios:
+    - 0.25
+    - 0.50
+    - 0.75
+  n_bootstrap: 1000
+  significance_threshold: 0.05
+  answer_extraction: last_number
+
+  claims_allowed:
+    prm_superiority: false
+    fma_superiority: false
+    prm_filtering_improvement: false
+    correlation_report: true
+    ranking_agreement: true
+    agreement_kappa: true
+
+  forbidden_claims:
+    - true_causal_effect
+    - average_treatment_effect
+    - prm_better_than_fma
+    - fma_better_than_prm
+
+  compare_against:
+    - raw_local_utility
+    - heuristic_baselines
+    - frozen_prm
+    - length_calibrated_prm
+
+logging:
+  save_outputs: true
+  save_config: true
+
+output:
+  base_dir: outputs/downstream_comparison_v1
+  subdirs:
+    traces: traces
+    scores: scores
+    report: report
+    figures: figures
+    prm_cache: prm_cache

@@ -14,7 +14,7 @@ The synthetic benchmark records generation configuration with seed 42. Phase 5 r
 
 Dataset provenance is treated as part of the reproducibility contract. Any future external dataset materialization should record dataset name, config, split, source index, revision or commit identifier, and access date. This follows the practical model used by Hugging Face Datasets, where dataset loading can be pinned to a specific revision, and by dataset-documentation work that treats corpus construction choices as part of the research artifact.
 
-The real-task v3 manifest blockage is therefore retained as diagnostic evidence. Its findings show that split-level consumption, dataset-aware deduplication keys, and marginal contribution reporting are required before fresh validation can be claimed. The governance diagnostic report and upset figure are supplied as supplementary material so the exclusion logic can be inspected without rerunning any API, replay, or scoring stage.
+Real-task manifest and readiness blockages are therefore retained as diagnostic evidence. Their findings show that split-level consumption, dataset-aware deduplication keys, and marginal contribution reporting are required before fresh validation can be claimed. Governance diagnostic reports are supplied as supplementary material so exclusion logic can be inspected without rerunning any API, replay, or scoring stage.
 
 ## Commands
 

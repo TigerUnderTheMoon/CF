@@ -14,6 +14,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from fma.io import load_records, write_records
+from fma.real_task_pilot.archive_paths import v2_1_failed_provenance_root
 from fma.real_task_pilot.config import load_pilot_config
 from fma.real_task_pilot.downstream_filtering_v2_1 import (
     DEFAULT_BUDGET_USD,
@@ -75,6 +76,7 @@ def main(argv: Sequence[str] | None = None) -> None:
             "output_dir", "outputs/s_fma_v2_1_fresh_holdout"
         )
     )
+    output_root = v2_1_failed_provenance_root(output_root)
     paths = v2_1_downstream_filtering_paths(output_root)
 
     if args.write_preregistration_only:
@@ -225,6 +227,7 @@ def main(argv: Sequence[str] | None = None) -> None:
 
 
 def v2_1_downstream_filtering_paths(output_root: Path) -> dict[str, Path]:
+    output_root = v2_1_failed_provenance_root(output_root)
     return {
         "preregistration": output_root / "v2_1_downstream_filtering_preregistration.json",
         "preregistration_md": output_root / "v2_1_downstream_filtering_preregistration.md",

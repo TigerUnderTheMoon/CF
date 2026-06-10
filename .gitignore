@@ -33,3 +33,4 @@ Thumbs.db
 # Lock files (optional, depending on team preference)
 # poetry.lock
 # pdm.lock
+/data

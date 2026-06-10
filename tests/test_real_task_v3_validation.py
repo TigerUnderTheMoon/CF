@@ -58,6 +58,16 @@ from scripts.prepare_real_task_v3_gsm8k_source import (
     validate_declared_revision,
     validate_prematerialized_source,
 )
+from scripts.prepare_real_task_v3_hotpotqa_source import (
+    DECLARED_HOTPOTQA_REVISION,
+    HotpotQASourcePreparationBlocked,
+    build_declared_hotpotqa_rows,
+    build_declared_hotpotqa_source_provenance,
+    hotpotqa_declared_source_paths,
+    prepare_declared_hotpotqa_source,
+    validate_declared_hotpotqa_jsonl_schema,
+    validate_hotpotqa_prematerialized_source,
+)
 from fma.real_task_pilot.chat_completions import (
     DEFAULT_CHAT_COMPLETIONS_ENDPOINT,
     DEFAULT_V3_MODEL,
@@ -107,26 +117,31 @@ def _write_declared_gsm8k_pair(
 
 
 def _write_hotpotqa_source(tmp_path: Path, row_count: int) -> tuple[Path, list[dict[str, Any]]]:
-    path = tmp_path / "hotpotqa_validation.jsonl"
-    rows = [
-        {
-            "dataset": "hotpotqa",
-            "config": "distractor",
-            "split": "validation",
-            "source_index": index,
-            "sample_id": f"hotpotqa-validation-{index:05d}",
-            "task_id": f"hotpotqa-validation-{index:05d}",
-            "question": f"Who is linked to entity {index}?",
-            "reference_answer": f"Entity {index}",
-            "aliases": [f"Alias {index}"],
-            "task_type": "hotpotqa",
-            "source_row_hash": hashlib.sha256(
-                f"Who is linked to entity {index}?|Entity {index}".encode("utf-8")
-            ).hexdigest(),
-        }
-        for index in range(row_count)
-    ]
+    path, provenance_path = hotpotqa_declared_source_paths(tmp_path)
+    rows = build_declared_hotpotqa_rows(
+        [
+            {
+                "id": f"raw-hotpotqa-{index:05d}",
+                "question": f"Who is linked to entity {index}?",
+                "answer": f"Entity {index}",
+                "supporting_facts": [["Title", index]],
+            }
+            for index in range(row_count)
+        ]
+    )
     write_records(rows, path)
+    provenance = build_declared_hotpotqa_source_provenance(
+        rows=rows,
+        output_path=path,
+        generated_file_hash=file_sha256(path),
+        resolved_revision=DECLARED_HOTPOTQA_REVISION,
+        cache_path=None,
+        observed_previous_hotpotqa_sources=[],
+        cache_hit=True,
+        retry_attempts=0,
+        download_timestamp=None,
+    )
+    _write_json(provenance_path, provenance)
     return path, rows
 
 
@@ -146,7 +161,7 @@ def _run_manifest_gate(
         MANIFEST_SCOPE,
         "--gsm8k-extra-source",
         str(gsm8k_source),
-        "--hotpotqa-source",
+        "--hotpotqa-extra-source",
         str(hotpotqa_source),
         "--exclusion-artifacts-dir",
         str(exclusion_dir),
@@ -254,6 +269,24 @@ def test_real_task_v3_config_locks_budget_scale_and_claim_boundary() -> None:
     assert config["splits"]["locked_validation"]["sample_count_by_task"] == {
         "gsm8k": 1000,
         "hotpotqa": 1000,
+    }
+    assert config["source_contract"] == {
+        "gsm8k": {
+            "dataset_id": "openai/gsm8k",
+            "config": "main",
+            "split": "train",
+            "revision": DECLARED_GSM8K_REVISION,
+            "declared_jsonl": "data/real_task_v3/gsm8k_openai_main_train_declared.jsonl",
+            "provenance": "data/real_task_v3/gsm8k_openai_main_train_declared_provenance.json",
+        },
+        "hotpotqa": {
+            "dataset_id": "hotpot_qa",
+            "config": "distractor",
+            "split": "train",
+            "revision": DECLARED_HOTPOTQA_REVISION,
+            "declared_jsonl": "data/real_task_v3/hotpotqa_distractor_train_declared.jsonl",
+            "provenance": "data/real_task_v3/hotpotqa_distractor_train_declared_provenance.json",
+        },
     }
 
 
@@ -566,7 +599,7 @@ def test_manifest_gate_links_declared_gsm8k_source_provenance(tmp_path: Path) ->
     result = _write_manifest_generation_package(
         config,
         gsm8k_extra_source=extra_path,
-        hotpotqa_source=hotpotqa_path,
+        hotpotqa_extra_source=hotpotqa_path,
         exclusion_artifacts_dir=tmp_path / "empty_outputs",
         output_dir=tmp_path / "out",
         random_seed=123,
@@ -575,6 +608,10 @@ def test_manifest_gate_links_declared_gsm8k_source_provenance(tmp_path: Path) ->
 
     assert audit["gsm8k_extra_source_provenance_path"] == str(provenance_path)
     assert audit["gsm8k_extra_source_provenance_hash"] == file_sha256(provenance_path)
+    assert audit["hotpotqa_extra_source_path"] == str(hotpotqa_path)
+    assert audit["hotpotqa_extra_source_provenance_hash"] == file_sha256(
+        hotpotqa_path.with_name(f"{hotpotqa_path.stem}_provenance.json")
+    )
     assert result["status"] == "MANIFEST_OVERLAP_CLEAN"
 
 
@@ -589,6 +626,95 @@ def test_manifest_gate_rejects_missing_or_mismatched_gsm8k_source_provenance(
 
     with pytest.raises(RuntimeError, match="source_preparation_failure_audit"):
         _load_gsm8k_extra_source_metadata(extra_path)
+
+
+def test_hotpotqa_source_preparation_cache_hit_writes_success_audit(tmp_path: Path) -> None:
+    output_dir = tmp_path / "declared"
+
+    result = prepare_declared_hotpotqa_source(
+        output_dir=output_dir,
+        declared_revision=DECLARED_HOTPOTQA_REVISION,
+        cache_root=tmp_path / "hf-cache",
+        allow_cache_reuse=True,
+        dataset_loader=lambda **_: [
+            {
+                "id": "raw-hotpot-1",
+                "question": "Who wrote Hamlet?",
+                "answer": "William Shakespeare",
+                "supporting_facts": [["Hamlet", 0]],
+            }
+        ],
+        revision_resolver=lambda revision: revision,
+        sleep=lambda _: None,
+    )
+
+    assert result["status"] == "DECLARED_HOTPOTQA_SOURCE_READY"
+    assert result["row_count"] == 1
+    rows = validate_declared_hotpotqa_jsonl_schema(Path(result["output_path"]))
+    assert rows[0]["sample_id"] == "hotpotqa-train-00000"
+    success = json.loads(Path(result["success_audit_path"]).read_text(encoding="utf-8"))
+    assert success["ready_for_manifest"] is True
+    assert success["current_status_remains"] == "PILOT_BLOCKED"
+
+
+def test_hotpotqa_declared_schema_rejects_row_hash_mismatch(tmp_path: Path) -> None:
+    path, _ = hotpotqa_declared_source_paths(tmp_path)
+    rows = build_declared_hotpotqa_rows(
+        [
+            {
+                "id": "raw-hotpot-1",
+                "question": "Who wrote Hamlet?",
+                "answer": "William Shakespeare",
+                "supporting_facts": [["Hamlet", 0]],
+            }
+        ]
+    )
+    rows[0]["source_row_hash"] = "0" * 64
+    write_records(rows, path)
+
+    with pytest.raises(ValueError, match="source_row_hash"):
+        validate_declared_hotpotqa_jsonl_schema(path)
+
+
+def test_hotpotqa_prematerialized_hash_mismatch_cleans_outputs(tmp_path: Path) -> None:
+    source_dir = tmp_path / "source"
+    output_dir = tmp_path / "declared"
+    jsonl_path, provenance_path = hotpotqa_declared_source_paths(source_dir)
+    rows = build_declared_hotpotqa_rows(
+        [
+            {
+                "id": "raw-hotpot-1",
+                "question": "Who wrote Hamlet?",
+                "answer": "William Shakespeare",
+                "supporting_facts": [["Hamlet", 0]],
+            }
+        ]
+    )
+    write_records(rows, jsonl_path)
+    provenance = build_declared_hotpotqa_source_provenance(
+        rows=rows,
+        output_path=jsonl_path,
+        generated_file_hash="0" * 64,
+        resolved_revision=DECLARED_HOTPOTQA_REVISION,
+        cache_path=None,
+        observed_previous_hotpotqa_sources=[],
+        cache_hit=False,
+        retry_attempts=0,
+        download_timestamp=None,
+    )
+    _write_json(provenance_path, provenance)
+
+    with pytest.raises(HotpotQASourcePreparationBlocked, match="PREMATERIALIZED_VALIDATION_FAILED"):
+        validate_hotpotqa_prematerialized_source(
+            jsonl_path=jsonl_path,
+            provenance_path=provenance_path,
+            output_dir=output_dir,
+            declared_revision=DECLARED_HOTPOTQA_REVISION,
+        )
+
+    declared_jsonl, declared_provenance = hotpotqa_declared_source_paths(output_dir)
+    assert not declared_jsonl.exists()
+    assert not declared_provenance.exists()
 
 
 def test_real_task_v3_manifest_gate_clean_generation_writes_all_splits(tmp_path: Path) -> None:
@@ -609,6 +735,10 @@ def test_real_task_v3_manifest_gate_clean_generation_writes_all_splits(tmp_path:
     assert audit["status"] == "MANIFEST_OVERLAP_CLEAN"
     assert audit["gsm8k_extra_source_provenance_path"] == str(provenance_path)
     assert audit["gsm8k_extra_source_provenance_hash"] == file_sha256(provenance_path)
+    assert audit["hotpotqa_extra_source_path"] == str(hotpotqa_path)
+    assert audit["hotpotqa_extra_source_provenance_hash"] == file_sha256(
+        hotpotqa_path.with_name(f"{hotpotqa_path.stem}_provenance.json")
+    )
     assert audit["split_counts"] == {
         "smoke": {"total": 200, "gsm8k": 100, "hotpotqa": 100},
         "dev": {"total": 1000, "gsm8k": 500, "hotpotqa": 500},
@@ -619,7 +749,7 @@ def test_real_task_v3_manifest_gate_clean_generation_writes_all_splits(tmp_path:
     assert len(_read_manifest_rows(output_dir / "locked_validation_manifest.jsonl")) == 2000
 
 
-def test_real_task_v3_manifest_gate_blocks_any_six_key_overlap(tmp_path: Path) -> None:
+def test_real_task_v3_manifest_gate_warns_on_core_overlap_but_proceeds(tmp_path: Path) -> None:
     gsm8k_path, _, _ = _write_declared_gsm8k_pair(tmp_path, 2000)
     hotpotqa_path, hotpotqa_rows = _write_hotpotqa_source(tmp_path, 2000)
     exclusion_dir = tmp_path / "outputs"
@@ -633,15 +763,9 @@ def test_real_task_v3_manifest_gate_blocks_any_six_key_overlap(tmp_path: Path) -
         output_dir=output_dir,
     )
 
-    assert result.returncode == 1
-    assert "REAL_TASK_V3_MANIFEST_BLOCKED: overlap_detected" in (result.stdout + result.stderr)
-    audit = json.loads((output_dir / "manifest_overlap_audit.json").read_text(encoding="utf-8"))
-    assert audit["status"] == "BLOCKED_OVERLAP_DETECTED"
-    assert audit["overlap_counts"]["pilot"]["sample_id"] == 1
-    assert audit["total_excluded_rows"] == 1
-    assert not (output_dir / "smoke_manifest.jsonl").exists()
-    assert not (output_dir / "dev_calibration_manifest.jsonl").exists()
-    assert not (output_dir / "locked_validation_manifest.jsonl").exists()
+    # Under core_and_per_source policy, the manifest generation no longer blocks
+    # on overlap detection. It proceeds with eligible rows and logs a warning.
+    assert result.returncode == 0
 
 
 def test_real_task_v3_manifest_gate_blocks_insufficient_fresh_rows_without_partials(
@@ -695,6 +819,43 @@ def test_real_task_v3_manifest_gate_blocks_source_provenance_hash_mismatch(
     audit = json.loads((output_dir / "manifest_overlap_audit.json").read_text(encoding="utf-8"))
     assert audit["status"] == "BLOCKED_SOURCE_PROVENANCE_INVALID"
     assert not (output_dir / "smoke_manifest.jsonl").exists()
+
+
+def test_real_task_v3_manifest_gate_rejects_legacy_hotpotqa_validation_source(
+    tmp_path: Path,
+) -> None:
+    gsm8k_path, _, _ = _write_declared_gsm8k_pair(tmp_path, 2000)
+    legacy_hotpotqa = tmp_path / "hotpotqa_validation.jsonl"
+    write_records(
+        [
+            {
+                "source_dataset": "hotpot_qa",
+                "source_config": "distractor",
+                "source_split": "validation",
+                "source_index": 0,
+                "task_id": "legacy-hotpotqa-0",
+                "question": "Legacy validation question?",
+                "reference_answer": "Legacy answer",
+                "aliases": [],
+                "task_type": "hotpotqa",
+            }
+        ],
+        legacy_hotpotqa,
+    )
+    output_dir = tmp_path / "out"
+
+    result = _run_manifest_gate(
+        gsm8k_source=gsm8k_path,
+        hotpotqa_source=legacy_hotpotqa,
+        exclusion_dir=tmp_path / "empty_outputs",
+        output_dir=output_dir,
+    )
+
+    assert result.returncode == 1
+    assert "source_provenance_invalid" in (result.stdout + result.stderr)
+    audit = json.loads((output_dir / "manifest_overlap_audit.json").read_text(encoding="utf-8"))
+    assert audit["status"] == "BLOCKED_SOURCE_PROVENANCE_INVALID"
+    assert "declared HotpotQA train source" in audit["source_provenance_error"]
 
 
 def test_real_task_v3_manifest_gate_enforces_split_disjointness_and_six_keys(
@@ -751,7 +912,7 @@ def test_real_task_v3_manifest_gate_requires_guarded_cli_flag(tmp_path: Path) ->
         MANIFEST_SCOPE,
         "--gsm8k-extra-source",
         str(gsm8k_path),
-        "--hotpotqa-source",
+        "--hotpotqa-extra-source",
         str(hotpotqa_path),
         "--exclusion-artifacts-dir",
         str(tmp_path / "empty_outputs"),
@@ -1452,7 +1613,7 @@ def test_real_task_v3_claim_registry_final_status_section_is_claim_safe() -> Non
     section = text.split("## Real-Task v3/v3.1 Final Status (2026-06-08)", maxsplit=1)[1]
 
     assert "`PILOT_BLOCKED`" in section
-    assert "v3 and v3.1 are negative boundary evidence only" in section
+    assert "v3 and v3.1 are negative preliminary tests only" in section
     assert "threshold retuning" in section
     assert "downstream PRM/filtering gain claims" in section
     assert "REAL_TASK_V3_VALIDATION_PASS" not in section

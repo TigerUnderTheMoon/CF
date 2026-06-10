@@ -12,6 +12,8 @@ Figure @fig-attribution-prune and Table @tbl-core-diagnostics are the primary cr
 from __future__ import annotations
 
 import json
+import sys
+from argparse import Namespace
 from pathlib import Path
 
 import matplotlib
@@ -60,6 +62,7 @@ GENERATED_FIGURES = PAPER_ROOT / "generated" / "figures"
 counterfactual = load_json("outputs/counterfactual_summary.json")
 structural = load_json("outputs/structural_diagnostics.json")
 redundancy = load_json("outputs/redundancy_analysis.json")
+stage2 = load_json("outputs/stage2_holdout_validation.json")
 real_task_v3 = load_json("outputs/real_task_v3/real_task_v3_final_status.json")
 v2_1_abandonment = load_json(
     "outputs/s_fma_v2_1_fresh_holdout/v2_1_full_validation_abandonment_audit.json"
@@ -75,6 +78,25 @@ downstream = load_json(
 #| include: false
 
 modes = ["PRUNE", "CASCADE", "BYPASS"]
+
+sys.path.insert(0, str(REPO_ROOT / "src"))
+from fma.graph.diagnostics import run_structural_diagnostics
+
+structural = run_structural_diagnostics(
+    Namespace(
+        traces=REPO_ROOT / "data/traces/synthetic_100x8.json",
+        necessity_scores=REPO_ROOT / "outputs/necessity_scores.jsonl",
+        output_json=GENERATED_FIGURES.parent / "structural_diagnostics.json",
+        output_md=GENERATED_FIGURES.parent / "structural_diagnostics.md",
+        figures_dir=GENERATED_FIGURES,
+        similarity_method="tfidf",
+        similarity_threshold=0.15,
+        prune_threshold=0.0,
+        max_long_range=5,
+        interactive=False,
+    )
+)
+
 mode_rows = []
 for mode in modes:
     payload = structural["modes"][mode]
@@ -95,43 +117,6 @@ for mode in modes:
     )
 mode_metrics = pd.DataFrame(mode_rows)
 
-prune_scatter = structural["modes"]["PRUNE"]["scatter"]
-prune_summary = pd.DataFrame(
-    [
-        {
-            "metric": "Attribution score",
-            "mean": prune_scatter["attribution_score"]["mean"],
-            "p25": prune_scatter["attribution_score"]["p25"],
-            "p75": prune_scatter["attribution_score"]["p75"],
-        },
-        {
-            "metric": "Structural necessity",
-            "mean": prune_scatter["structural_necessity"]["mean"],
-            "p25": prune_scatter["structural_necessity"]["p25"],
-            "p75": prune_scatter["structural_necessity"]["p75"],
-        },
-    ]
-)
-fig, ax = plt.subplots(figsize=(6.2, 3.4))
-sns.barplot(data=prune_summary, x="metric", y="mean", ax=ax, color="#4c78a8")
-ax.errorbar(
-    x=range(len(prune_summary)),
-    y=prune_summary["mean"],
-    yerr=[
-        prune_summary["mean"] - prune_summary["p25"],
-        prune_summary["p75"] - prune_summary["mean"],
-    ],
-    fmt="none",
-    ecolor="#222222",
-    elinewidth=1.2,
-    capsize=4,
-)
-ax.set_title("PRUNE summary: local attribution versus structural necessity")
-ax.set_xlabel("")
-ax.set_ylabel("Score")
-ax.set_ylim(0, 1)
-save_figure(fig, "structural_diagnostics_attribution_vs_necessity.png")
-
 fig, ax = plt.subplots(figsize=(6.2, 3.4))
 mode_long = mode_metrics.melt(
     id_vars="mode",
@@ -139,7 +124,14 @@ mode_long = mode_metrics.melt(
     var_name="correlation",
     value_name="value",
 )
-sns.barplot(data=mode_long, x="mode", y="value", hue="correlation", ax=ax)
+sns.barplot(
+    data=mode_long,
+    x="mode",
+    y="value",
+    hue="correlation",
+    ax=ax,
+    palette=["#0072B2", "#E69F00"],
+)
 ax.set_title("Structural diagnostic alignment by mode")
 ax.set_xlabel("Mode")
 ax.set_ylabel("Correlation")
@@ -218,15 +210,15 @@ ax.set_ylabel("Remaining total necessity")
 save_figure(fig, "resilience_curves.png")
 ```
 
-![Attribution and structural necessity under the PRUNE diagnostic mode.](../generated/figures/structural_diagnostics_attribution_vs_necessity.png){#fig-attribution-prune}
+![Local attribution versus topology-sensitive structural necessity across PRUNE, CASCADE, and BYPASS. The diagonal reference line marks `y=x`; the pooled density panel summarizes all 2400 reflective nodes and the 67.79 percent zero-necessity rate.](../generated/figures/structural_diagnostics_attribution_vs_necessity.png){#fig-attribution-prune}
 
-![Structural diagnostic alignment across PRUNE, CASCADE, and BYPASS.](../generated/figures/structural_diagnostics_mode_comparison.png){#fig-structural-mode-comparison}
+![Structural diagnostic alignment across PRUNE, CASCADE, and BYPASS demonstrates stable weak local-to-structural alignment and zero-inflated necessity across perturbation modes.](../generated/figures/structural_diagnostics_mode_comparison.png){#fig-structural-mode-comparison}
 
-![Redundancy density distribution across stored reflective trajectories.](../generated/figures/redundancy_density_histogram.png){#fig-redundancy-density}
+![Redundancy density distribution demonstrates moderate substitutability among reflective verification steps without broad diffusion.](../generated/figures/redundancy_density_histogram.png){#fig-redundancy-density}
 
-![Compensation ratios remain weak across structural diagnostic modes.](../generated/figures/compensation_distribution.png){#fig-compensation-distribution}
+![Compensation ratios demonstrate limited downstream recovery after PRUNE, CASCADE, and BYPASS perturbations.](../generated/figures/compensation_distribution.png){#fig-compensation-distribution}
 
-![Resilience curves compare necessity-first, attribution-first, sequential, and deterministic random removal.](../generated/figures/resilience_curves.png){#fig-resilience-curves}
+![Resilience curves demonstrate that necessity-first removal degrades remaining graph support faster than attribution-first or sequential removal.](../generated/figures/resilience_curves.png){#fig-resilience-curves}
 
 The regenerated figures match the main figure paths declared in `paper/figure_inventory.md`. Figure @fig-structural-mode-comparison summarizes the weak cross-mode relation between local attribution and structural necessity, while Figure @fig-redundancy-density, Figure @fig-compensation-distribution, and Figure @fig-resilience-curves preserve the Phase 7 redundancy interpretation without upgrading it into a downstream validation claim.
 
@@ -241,21 +233,25 @@ core_diagnostics = pd.DataFrame(
             "Diagnostic": "Synthetic traces",
             "Value": str(counterfactual["num_traces"]),
             "Claim role": "Primary deterministic diagnostic population",
+            "Implication for KBS": "Use the benchmark as a controlled audit population, not as broad deployment evidence.",
         },
         {
             "Diagnostic": "Reflective steps",
             "Value": str(structural["summary"]["num_phase5_scores"]),
             "Claim role": "Node-level comparison population",
+            "Implication for KBS": "Treat reflective spans as auditable knowledge-system units before assigning weights.",
         },
         {
             "Diagnostic": "PRUNE Pearson alignment",
             "Value": fixed(structural["modes"]["PRUNE"]["correlation"]["pearson"]),
             "Claim role": "Weak local-to-structural alignment",
+            "Implication for KBS": "Do not substitute local reflection utility for topology-sensitive verification importance.",
         },
         {
             "Diagnostic": "Mean zero structural necessity",
             "Value": pct(structural["cross_mode"]["mean_zero_structural_necessity_fraction"]),
             "Claim role": "Zero-inflated structural necessity",
+            "Implication for KBS": "Prioritize structural stress tests before assigning persistent supervision weight.",
         },
         {
             "Diagnostic": "Positive attribution with zero necessity",
@@ -265,35 +261,67 @@ core_diagnostics = pd.DataFrame(
                 ]
             ),
             "Claim role": "Local utility is over-inclusive",
+            "Implication for KBS": "Treat locally useful reflections as candidate signals until graph checks show necessity.",
+        },
+        {
+            "Diagnostic": "Stage 2 held-out relation",
+            "Value": (
+                "Spearman "
+                + fixed(stage2["claim_gating"]["full_stage2_rho_gate"]["rho_mean"])
+                + "; 95% CI ["
+                + fixed(stage2["claim_gating"]["full_stage2_rho_gate"]["rho_ci95"][0])
+                + ", "
+                + fixed(stage2["claim_gating"]["full_stage2_rho_gate"]["rho_ci95"][1])
+                + "]"
+            ),
+            "Claim role": "Low-magnitude, stratum-dependent support",
+            "Implication for KBS": "Use as weak audit support, not as broad deployment evidence.",
         },
         {
             "Diagnostic": "Mean counterfactual necessity",
             "Value": fixed(counterfactual["mean_necessity"]),
             "Claim role": "Local functional attribution proxy",
+            "Implication for KBS": "Keep intervention-sensitive utility as an input to calibration, not the final supervision rule.",
         },
         {
             "Diagnostic": "Redundancy density",
             "Value": fixed(redundancy["redundancy"]["density"]),
             "Claim role": "Moderate redundancy, not broad diffusion",
+            "Implication for KBS": "Knowledge verification steps exhibit moderate substitutability; avoid over-investing in redundant monitoring.",
         },
         {
             "Diagnostic": "Distributedness index",
             "Value": fixed(redundancy["distributedness"]["global_index"]),
             "Claim role": "Concentrated structural influence",
+            "Implication for KBS": "Expect concentrated influence; protect sparse support nodes instead of assuming broad diffusion.",
         },
         {
             "Diagnostic": "Sparse bottlenecks",
             "Value": str(redundancy["bottleneck"]["bottleneck_count"]),
             "Claim role": "Rare structurally necessary candidates",
+            "Implication for KBS": "Reserve stronger supervision or audit attention for rare topology-sensitive operations.",
+        },
+        {
+            "Diagnostic": "Mean compensation ratio",
+            "Value": (
+                "PRUNE "
+                + fixed(redundancy["compensation"]["prune"]["distribution"]["mean"])
+                + "; CASCADE "
+                + fixed(redundancy["compensation"]["cascade"]["distribution"]["mean"])
+                + "; BYPASS "
+                + fixed(redundancy["compensation"]["bypass"]["distribution"]["mean"])
+            ),
+            "Claim role": "Weak compensation",
+            "Implication for KBS": "Do not rely on automatic downstream recovery after removing reflective checks.",
         },
     ]
 )
 print(core_diagnostics.to_markdown(index=False))
 print()
-print(": Core diagnostics generated from stored outputs. {#tbl-core-diagnostics}")
+print(": Core diagnostics generated from stored outputs and translated into knowledge-system design implications. {#tbl-core-diagnostics}")
 ```
 
-Table @tbl-core-diagnostics separates empirical observations from claim roles. The table is generated from the same artifacts used by the figures, so numeric drift is surfaced during render rather than copied by hand.
+Table @tbl-core-diagnostics separates empirical observations from claim roles and KBS design implications. The table is generated from the same artifacts used by the figures, so numeric drift is surfaced during render rather than copied by hand.
 
 ```{python}
 #| label: table-boundary-governance

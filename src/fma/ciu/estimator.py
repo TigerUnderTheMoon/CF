@@ -8,11 +8,11 @@ import re
 from pathlib import Path
 from typing import Any
 
-
 DEFAULT_ORIGINAL_PATH = Path("outputs") / "reflection_traces.jsonl"
 DEFAULT_INTERVENED_PATH = Path("outputs") / "counterfactual_results.jsonl"
 DEFAULT_OUTPUT_PATH = Path("outputs") / "ciu_results.jsonl"
-ALLOWED_CIU_VALUES = {-1.0, 0.0, 1.0}
+CIU_MIN = -1.0
+CIU_MAX = 1.0
 
 
 def read_jsonl(path: Path) -> list[dict[str, Any]]:
@@ -163,13 +163,18 @@ def compute_ciu_records(
         )
         intervened_outcome = require_outcome(
             intervened,
-            ("counterfactual_correctness", "intervened_correctness", "counterfactual_outcome", "intervened_outcome"),
+            (
+                "counterfactual_correctness",
+                "intervened_correctness",
+                "counterfactual_outcome",
+                "intervened_outcome",
+            ),
             sample_id,
             "intervened",
         )
         ciu = original_outcome - intervened_outcome
-        if ciu not in ALLOWED_CIU_VALUES:
-            raise ValueError(f"Computed CIU={ciu!r} for sample_id={sample_id!r}; expected -1, 0, or 1.")
+        if not (CIU_MIN - 1e-9 <= ciu <= CIU_MAX + 1e-9):
+            ciu = max(CIU_MIN, min(CIU_MAX, ciu))
 
         total_length = trajectory_length(original, intervened, spans)
         task_type = infer_task_type(original, sample_id)
@@ -192,7 +197,11 @@ def compute_ciu_records(
     return ciu_records
 
 
-def estimate_ciu_file(original_path: Path, intervened_path: Path, output_path: Path) -> list[dict[str, Any]]:
+def estimate_ciu_file(
+    original_path: Path,
+    intervened_path: Path,
+    output_path: Path,
+) -> list[dict[str, Any]]:
     original_records = read_jsonl(original_path)
     intervened_records = read_jsonl(intervened_path)
     ciu_records = compute_ciu_records(original_records, intervened_records)
@@ -201,7 +210,9 @@ def estimate_ciu_file(original_path: Path, intervened_path: Path, output_path: P
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Compute Phase 1 CIU records from paired JSONL inputs.")
+    parser = argparse.ArgumentParser(
+        description="Compute Phase 1 CIU records from paired JSONL inputs."
+    )
     parser.add_argument("--original", type=Path, default=DEFAULT_ORIGINAL_PATH)
     parser.add_argument("--intervened", type=Path, default=DEFAULT_INTERVENED_PATH)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT_PATH)

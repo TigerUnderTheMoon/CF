@@ -50,6 +50,10 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--output-json", type=Path, default=DEFAULT_OUTPUT_JSON)
     parser.add_argument("--output-md", type=Path, default=DEFAULT_OUTPUT_MD)
     parser.add_argument("--figures-dir", type=Path, default=DEFAULT_FIGURE_DIR)
+    parser.add_argument("--similarity-method", choices=["none", "tfidf", "jaccard"], default="tfidf")
+    parser.add_argument("--similarity-threshold", type=float, default=0.15)
+    parser.add_argument("--prune-threshold", type=float, default=0.0)
+    parser.add_argument("--max-long-range", type=int, default=5)
     parser.add_argument("--interactive", action="store_true", default=False)
     return parser.parse_args(argv)
 
@@ -93,6 +97,10 @@ def run_from_config(
         ),
         figures_dir=figures_dir,
         removal_mode=removal_mode,
+        similarity_method=phase6.get("similarity", {}).get("method", "tfidf") if isinstance(phase6, dict) else "tfidf",
+        similarity_threshold=float(phase6.get("similarity", {}).get("long_range_threshold", 0.15)) if isinstance(phase6, dict) else 0.15,
+        prune_threshold=float(phase6.get("pruning", {}).get("threshold", 0.0)) if isinstance(phase6, dict) else 0.0,
+        max_long_range=int(phase6.get("similarity", {}).get("long_range_max_distance", 5)) if isinstance(phase6, dict) else 5,
         interactive=bool(phase6.get("interactive", False)),
     )
     return run_structural_diagnostics(args)
@@ -108,6 +116,10 @@ def _uses_hydra_config(argv: Sequence[str]) -> bool:
     )
 
 
+def _none_if_none_str(value: str | None) -> str | None:
+    return None if value in (None, "none") else value
+
+
 def _project_path(value: str | Path) -> Path:
     path = value if isinstance(value, Path) else Path(str(value))
     if path.is_absolute():
@@ -121,7 +133,14 @@ def run_structural_diagnostics(args: argparse.Namespace) -> dict[str, Any]:
     traces = load_records(args.traces)
     phase5_scores = load_records(args.necessity_scores)
     logger.debug("data_loaded", trace_count=len(traces), score_count=len(phase5_scores))
-    graphs = build_reflection_graphs(traces, phase5_scores)
+    graphs = build_reflection_graphs(
+        traces,
+        phase5_scores,
+        similarity_method=_none_if_none_str(getattr(args, "similarity_method", None)),
+        similarity_threshold=getattr(args, "similarity_threshold", 0.15),
+        prune_threshold=getattr(args, "prune_threshold", 0.0),
+        max_long_range=getattr(args, "max_long_range", 5),
+    )
     source_node_ids = {
         node_id
         for graph in graphs
@@ -266,7 +285,7 @@ def write_markdown(path: Path, report: Mapping[str, Any]) -> None:
             "- Structural necessity is topology-sensitive: bridge nodes, source reachability, and downstream dependencies can dominate local scalar scores.",
             "- Zero-inflated necessity distributions make linear correlation conservative because many positive local scores have no structural removal effect.",
             "- CASCADE is especially sensitive to propagation because it removes descendants as well as the selected node.",
-            "- The framework does not claim true causal identification; Phase 6 studies topology-mediated functional influence under deterministic graph interventions.",
+            "- The current evidence does not support true causal identification; Phase 6 studies topology-mediated functional influence under deterministic graph interventions.",
         ]
     )
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -295,23 +314,63 @@ def _plot_attribution_vs_necessity(
     save_path: Path,
 ) -> None:
     _apply_style()
-    fig, axes = plt.subplots(1, len(MODE_ORDER), figsize=(13.5, 4.2), sharex=True, sharey=True)
-    colors = {"PRUNE": "#4C78A8", "CASCADE": "#E45756", "BYPASS": "#54A24B"}
-    for axis, mode in zip(axes, MODE_ORDER):
+    fig, axes = plt.subplots(2, 2, figsize=(8.2, 7.0), sharex=True, sharey=True)
+    flat_axes = list(axes.ravel())
+    colors = {"PRUNE": "#0072B2", "CASCADE": "#D55E00", "BYPASS": "#009E73"}
+    for axis, mode in zip(flat_axes[:3], MODE_ORDER):
         records = records_by_mode[mode]
         xs = [record.attribution_score for record in records]
         ys = [record.structural_necessity for record in records]
         if xs:
-            axis.scatter(xs, ys, s=14, alpha=0.35, color=colors[mode], edgecolors="none")
+            axis.scatter(xs, ys, s=10, alpha=0.28, color=colors[mode], edgecolors="none")
         else:
             axis.text(0.5, 0.5, "No samples", ha="center", va="center")
         pearson = report["modes"][mode]["correlation"]["pearson"]
-        axis.set_title(f"{mode} (Pearson {pearson:.3f})")
-        axis.set_xlabel("Phase 5 attribution_score")
-        axis.set_xlim(-0.03, 0.93)
+        zero_rate = report["modes"][mode]["zero_inflation"][
+            "zero_structural_necessity_fraction"
+        ]
+        axis.plot([0.0, 1.0], [0.0, 1.0], color="#333333", linewidth=0.9, linestyle="--")
+        axis.set_title(f"{mode}: r={pearson:.3f}, zero={zero_rate:.1%}")
+        axis.set_xlim(-0.03, 1.03)
         axis.set_ylim(-0.03, 1.03)
-    axes[0].set_ylabel("Phase 6 structural necessity")
-    fig.suptitle("Local Attribution vs Topology-Sensitive Necessity", y=1.03)
+
+    pooled_axis = flat_axes[3]
+    pooled_xs = [
+        record.attribution_score
+        for mode in MODE_ORDER
+        for record in records_by_mode[mode]
+    ]
+    pooled_ys = [
+        record.structural_necessity
+        for mode in MODE_ORDER
+        for record in records_by_mode[mode]
+    ]
+    if pooled_xs:
+        density = pooled_axis.hexbin(
+            pooled_xs,
+            pooled_ys,
+            gridsize=28,
+            mincnt=1,
+            cmap="viridis",
+            linewidths=0.0,
+        )
+        fig.colorbar(density, ax=pooled_axis, fraction=0.046, pad=0.04).set_label("Count")
+    else:
+        pooled_axis.text(0.5, 0.5, "No samples", ha="center", va="center")
+    pooled_axis.plot([0.0, 1.0], [0.0, 1.0], color="#333333", linewidth=0.9, linestyle="--")
+    pooled_axis.set_title("Mode-pooled density")
+
+    for axis in flat_axes:
+        axis.set_xlabel("Phase 5 attribution_score")
+        axis.grid(alpha=0.25, linewidth=0.6)
+    flat_axes[0].set_ylabel("Phase 6 structural necessity")
+    flat_axes[2].set_ylabel("Phase 6 structural necessity")
+    sample_n = report["modes"][MODE_ORDER[0]]["correlation"]["num_samples"]
+    zero_fraction = report["cross_mode"]["mean_zero_structural_necessity_fraction"]
+    fig.suptitle(
+        f"Local Attribution vs Topology-Sensitive Necessity (n={sample_n}, zero={zero_fraction:.1%})",
+        y=0.995,
+    )
     fig.tight_layout()
     _save(fig, save_path)
 
@@ -323,9 +382,9 @@ def _plot_mode_comparison(report: Mapping[str, Any], save_path: Path) -> None:
     width = 0.24
 
     metric_specs = (
-        ("pearson", "Pearson", "#4C78A8"),
-        ("spearman", "Spearman", "#F58518"),
-        ("kendall_tau", "Kendall Tau", "#72B7B2"),
+        ("pearson", "Pearson", "#0072B2"),
+        ("spearman", "Spearman", "#E69F00"),
+        ("kendall_tau", "Kendall Tau", "#009E73"),
     )
     for offset, (key, label, color) in enumerate(metric_specs):
         values = [report["modes"][mode]["correlation"][key] for mode in MODE_ORDER]
@@ -345,8 +404,8 @@ def _plot_mode_comparison(report: Mapping[str, Any], save_path: Path) -> None:
         report["modes"][mode]["zero_inflation"]["positive_attribution_zero_necessity_fraction"]
         for mode in MODE_ORDER
     ]
-    axes[1].bar(x_values - width / 2, zero_values, width=width, label="Necessity = 0", color="#B279A2")
-    axes[1].bar(x_values + width / 2, mismatch_values, width=width, label="Attr > 0, necessity = 0", color="#FF9DA6")
+    axes[1].bar(x_values - width / 2, zero_values, width=width, label="Necessity = 0", color="#CC79A7")
+    axes[1].bar(x_values + width / 2, mismatch_values, width=width, label="Attr > 0, necessity = 0", color="#D55E00")
     axes[1].set_xticks(x_values)
     axes[1].set_xticklabels(MODE_ORDER)
     axes[1].set_ylim(0.0, 1.0)
@@ -383,7 +442,7 @@ def _interactive_scatter(
     go: Any,
     make_subplots: Any,
 ) -> None:
-    colors = {"PRUNE": "#4C78A8", "CASCADE": "#E45756", "BYPASS": "#54A24B"}
+    colors = {"PRUNE": "#0072B2", "CASCADE": "#D55E00", "BYPASS": "#009E73"}
     fig = go.Figure()
     for mode in MODE_ORDER:
         records = records_by_mode[mode]
@@ -431,9 +490,9 @@ def _interactive_mode_comparison(
 ) -> None:
     fig = make_subplots(rows=1, cols=2, subplot_titles=("Alignment Metrics", "Zero-Inflation"))
     metric_specs = (
-        ("pearson", "Pearson", "#4C78A8"),
-        ("spearman", "Spearman", "#F58518"),
-        ("kendall_tau", "Kendall Tau", "#72B7B2"),
+        ("pearson", "Pearson", "#0072B2"),
+        ("spearman", "Spearman", "#E69F00"),
+        ("kendall_tau", "Kendall Tau", "#009E73"),
     )
     for key, label, color in metric_specs:
         fig.add_trace(
@@ -454,7 +513,7 @@ def _interactive_mode_comparison(
                 report["modes"][m]["zero_inflation"]["zero_structural_necessity_fraction"]
                 for m in MODE_ORDER
             ],
-            marker_color="#B279A2",
+            marker_color="#CC79A7",
         ),
         row=1,
         col=2,
@@ -469,7 +528,7 @@ def _interactive_mode_comparison(
                 ]
                 for m in MODE_ORDER
             ],
-            marker_color="#FF9DA6",
+            marker_color="#D55E00",
         ),
         row=1,
         col=2,
@@ -542,6 +601,7 @@ def _apply_style() -> None:
             "xtick.labelsize": 9,
             "ytick.labelsize": 9,
             "legend.fontsize": 9,
+            "figure.titlesize": 12,
         }
     )
 

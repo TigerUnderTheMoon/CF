@@ -1,6 +1,6 @@
 # Paper Outline
 
-Target format: diagnostic journal manuscript outline. The mainline is FMA reflection utility learning, Phase 5-7 structural necessity diagnostics, and failed real-task/downstream boundary evidence.
+Target format: diagnostic journal manuscript outline. The mainline is FMA reflection utility learning, Phase 5-7 structural necessity diagnostics, and failed real-task/downstream preliminary tests.
 
 ## 1. Introduction
 
@@ -100,7 +100,7 @@ Referenced outputs: `outputs/phase6_readme.md`, `outputs/phase6_sensitivity.json
 
 ## 10. Conclusion
 
-Section purpose: state the final current paper claim compactly and identify the failed downstream boundary.
+Section purpose: state the final current paper claim compactly and identify the unvalidated downstream preliminary routes.
 
 Key claim: reflective reasoning contains widespread local utility, but sparse structural necessity; current artifacts do not support downstream process-supervision gains.
 

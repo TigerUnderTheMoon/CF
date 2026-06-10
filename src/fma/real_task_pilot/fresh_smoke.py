@@ -130,7 +130,7 @@ def build_stochastic_smoke_report(
     expected_original_records: int = 20,
     expected_replay_jobs: int = 60,
 ) -> dict[str, Any]:
-    """Build a claim-safe engineering-only smoke report."""
+    """Build a conservative engineering-only smoke report."""
 
     valid_originals = len(original_records)
     successful_replays = [

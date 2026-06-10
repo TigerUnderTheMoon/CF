@@ -35,6 +35,38 @@ from scripts import run_s_fma_v2_1_fresh_holdout_preflight as v2_1_preflight_run
 from scripts.generate_s_fma_v2_1_fresh_holdout_manifest import _assert_current_task_boundary
 
 
+def test_v2_1_archive_integrity_contains_required_failed_provenance_files() -> None:
+    archive = Path("outputs/archive/s_fma_v2_1_fresh_holdout")
+    required_files = [
+        "fresh_manifest.json",
+        "manifest_overlap_audit.json",
+        "v2_1_contract_audit.json",
+        "api_preflight_report.json",
+        "stochastic_smoke_report.json",
+        "v2_1_pilot_stochastic_report.json",
+        "v2_1_pilot_stochastic_rank_signal_report.json",
+        "v2_1_full_stochastic_report.json",
+        "v2_1_full_stochastic_rank_signal_report.json",
+        "v2_1_full_stochastic_delta_u.jsonl",
+        "v2_1_full_validation_failure_audit.json",
+        "v2_1_full_validation_abandonment_audit.json",
+        "v2_1_downstream_filtering_report.json",
+        "logs/v2_1_downstream_filtering_cost_report.json",
+    ]
+
+    missing = [name for name in required_files if not (archive / name).exists()]
+    assert missing == []
+    assert not (archive / "README.md").exists()
+    assert len([path for path in archive.rglob("*") if path.is_file()]) >= 91
+
+    audit_path = Path("outputs/archive/s_fma_v2_1_archive_integrity_audit.json")
+    audit = json.loads(audit_path.read_text(encoding="utf-8"))
+    assert audit["status"] == "V2_1_ARCHIVE_INTEGRITY_RESTORED"
+    assert audit["archive_file_count"] >= 91
+    assert audit["live_path_recreated"] is False
+    assert audit["claim_status_remains"] == "failed_validation"
+
+
 def _v2_1_config(sample_count: int = 1) -> dict:
     return {
         "experiment": {
@@ -902,7 +934,7 @@ def test_v2_1_preflight_report_classifies_all_empty_raw_output_as_transport_fail
 
 def test_current_v2_1_preflight_report_remains_drift_failed_not_ready() -> None:
     report = json.loads(
-        Path("outputs/s_fma_v2_1_fresh_holdout/api_preflight_report.json").read_text(
+        Path("outputs/archive/s_fma_v2_1_fresh_holdout/api_preflight_report.json").read_text(
             encoding="utf-8"
         )
     )
@@ -944,10 +976,10 @@ def test_v2_1_transport_canary_runner_contract_exists_and_uses_independent_paths
 
     paths = runner.transport_canary_paths(Path("outputs") / "s_fma_v2_1_fresh_holdout")
 
-    assert paths["report"] == Path("outputs/s_fma_v2_1_fresh_holdout/transport_canary_report.json")
-    assert paths["attempts"] == Path("outputs/s_fma_v2_1_fresh_holdout/transport_canary_attempts.jsonl")
-    assert paths["traces"] == Path("outputs/s_fma_v2_1_fresh_holdout/transport_canary_traces.jsonl")
-    assert paths["cost"] == Path("outputs/s_fma_v2_1_fresh_holdout/logs/transport_canary_cost_report.json")
+    assert paths["report"] == Path("outputs/archive/s_fma_v2_1_fresh_holdout/transport_canary_report.json")
+    assert paths["attempts"] == Path("outputs/archive/s_fma_v2_1_fresh_holdout/transport_canary_attempts.jsonl")
+    assert paths["traces"] == Path("outputs/archive/s_fma_v2_1_fresh_holdout/transport_canary_traces.jsonl")
+    assert paths["cost"] == Path("outputs/archive/s_fma_v2_1_fresh_holdout/logs/transport_canary_cost_report.json")
 
 
 def test_v2_1_transport_canary_readiness_requires_guard_budget_and_clean_package() -> None:
@@ -1103,25 +1135,25 @@ def test_v2_1_stochastic_smoke_runner_contract_exists_and_uses_allowed_paths() -
         Path("outputs") / "s_fma_v2_1_fresh_holdout"
     )
 
-    assert paths["report"] == Path("outputs/s_fma_v2_1_fresh_holdout/stochastic_smoke_report.json")
+    assert paths["report"] == Path("outputs/archive/s_fma_v2_1_fresh_holdout/stochastic_smoke_report.json")
     assert paths["original_attempts"] == Path(
-        "outputs/s_fma_v2_1_fresh_holdout/stochastic_smoke_original_attempts.jsonl"
+        "outputs/archive/s_fma_v2_1_fresh_holdout/stochastic_smoke_original_attempts.jsonl"
     )
     assert paths["original_traces"] == Path(
-        "outputs/s_fma_v2_1_fresh_holdout/stochastic_smoke_original_traces.jsonl"
+        "outputs/archive/s_fma_v2_1_fresh_holdout/stochastic_smoke_original_traces.jsonl"
     )
     assert paths["prefixes"] == Path(
-        "outputs/s_fma_v2_1_fresh_holdout/stochastic_smoke_replay_prefixes.jsonl"
+        "outputs/archive/s_fma_v2_1_fresh_holdout/stochastic_smoke_replay_prefixes.jsonl"
     )
     assert paths["replay_attempts"] == Path(
-        "outputs/s_fma_v2_1_fresh_holdout/stochastic_smoke_replay_attempts.jsonl"
+        "outputs/archive/s_fma_v2_1_fresh_holdout/stochastic_smoke_replay_attempts.jsonl"
     )
     assert paths["replay_results"] == Path(
-        "outputs/s_fma_v2_1_fresh_holdout/stochastic_smoke_replay_results.jsonl"
+        "outputs/archive/s_fma_v2_1_fresh_holdout/stochastic_smoke_replay_results.jsonl"
     )
-    assert paths["delta_u"] == Path("outputs/s_fma_v2_1_fresh_holdout/stochastic_smoke_delta_u.jsonl")
+    assert paths["delta_u"] == Path("outputs/archive/s_fma_v2_1_fresh_holdout/stochastic_smoke_delta_u.jsonl")
     assert paths["cost"] == Path(
-        "outputs/s_fma_v2_1_fresh_holdout/logs/stochastic_smoke_cost_report.json"
+        "outputs/archive/s_fma_v2_1_fresh_holdout/logs/stochastic_smoke_cost_report.json"
     )
 
 
@@ -1415,31 +1447,31 @@ def test_v2_1_pilot_stochastic_runner_contract_exists_and_uses_separate_paths() 
     )
 
     assert paths["report"] == Path(
-        "outputs/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_report.json"
+        "outputs/archive/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_report.json"
     )
     assert paths["rank_signal"] == Path(
-        "outputs/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_rank_signal_report.json"
+        "outputs/archive/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_rank_signal_report.json"
     )
     assert paths["original_attempts"] == Path(
-        "outputs/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_original_attempts.jsonl"
+        "outputs/archive/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_original_attempts.jsonl"
     )
     assert paths["original_traces"] == Path(
-        "outputs/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_original_traces.jsonl"
+        "outputs/archive/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_original_traces.jsonl"
     )
     assert paths["prefixes"] == Path(
-        "outputs/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_replay_prefixes.jsonl"
+        "outputs/archive/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_replay_prefixes.jsonl"
     )
     assert paths["replay_attempts"] == Path(
-        "outputs/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_replay_attempts.jsonl"
+        "outputs/archive/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_replay_attempts.jsonl"
     )
     assert paths["replay_results"] == Path(
-        "outputs/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_replay_results.jsonl"
+        "outputs/archive/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_replay_results.jsonl"
     )
     assert paths["delta_u"] == Path(
-        "outputs/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_delta_u.jsonl"
+        "outputs/archive/s_fma_v2_1_fresh_holdout/v2_1_pilot_stochastic_delta_u.jsonl"
     )
     assert paths["cost"] == Path(
-        "outputs/s_fma_v2_1_fresh_holdout/logs/v2_1_pilot_stochastic_cost_report.json"
+        "outputs/archive/s_fma_v2_1_fresh_holdout/logs/v2_1_pilot_stochastic_cost_report.json"
     )
 
 
@@ -1684,31 +1716,31 @@ def test_v2_1_full_stochastic_runner_contract_exists_and_uses_separate_paths() -
     )
 
     assert paths["report"] == Path(
-        "outputs/s_fma_v2_1_fresh_holdout/v2_1_full_stochastic_report.json"
+        "outputs/archive/s_fma_v2_1_fresh_holdout/v2_1_full_stochastic_report.json"
     )
     assert paths["rank_signal"] == Path(
-        "outputs/s_fma_v2_1_fresh_holdout/v2_1_full_stochastic_rank_signal_report.json"
+        "outputs/archive/s_fma_v2_1_fresh_holdout/v2_1_full_stochastic_rank_signal_report.json"
     )
     assert paths["original_attempts"] == Path(
-        "outputs/s_fma_v2_1_fresh_holdout/v2_1_full_stochastic_original_attempts.jsonl"
+        "outputs/archive/s_fma_v2_1_fresh_holdout/v2_1_full_stochastic_original_attempts.jsonl"
     )
     assert paths["original_traces"] == Path(
-        "outputs/s_fma_v2_1_fresh_holdout/v2_1_full_stochastic_original_traces.jsonl"
+        "outputs/archive/s_fma_v2_1_fresh_holdout/v2_1_full_stochastic_original_traces.jsonl"
     )
     assert paths["prefixes"] == Path(
-        "outputs/s_fma_v2_1_fresh_holdout/v2_1_full_stochastic_replay_prefixes.jsonl"
+        "outputs/archive/s_fma_v2_1_fresh_holdout/v2_1_full_stochastic_replay_prefixes.jsonl"
     )
     assert paths["replay_attempts"] == Path(
-        "outputs/s_fma_v2_1_fresh_holdout/v2_1_full_stochastic_replay_attempts.jsonl"
+        "outputs/archive/s_fma_v2_1_fresh_holdout/v2_1_full_stochastic_replay_attempts.jsonl"
     )
     assert paths["replay_results"] == Path(
-        "outputs/s_fma_v2_1_fresh_holdout/v2_1_full_stochastic_replay_results.jsonl"
+        "outputs/archive/s_fma_v2_1_fresh_holdout/v2_1_full_stochastic_replay_results.jsonl"
     )
     assert paths["delta_u"] == Path(
-        "outputs/s_fma_v2_1_fresh_holdout/v2_1_full_stochastic_delta_u.jsonl"
+        "outputs/archive/s_fma_v2_1_fresh_holdout/v2_1_full_stochastic_delta_u.jsonl"
     )
     assert paths["cost"] == Path(
-        "outputs/s_fma_v2_1_fresh_holdout/logs/v2_1_full_stochastic_cost_report.json"
+        "outputs/archive/s_fma_v2_1_fresh_holdout/logs/v2_1_full_stochastic_cost_report.json"
     )
 
 

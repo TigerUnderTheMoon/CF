@@ -11,7 +11,6 @@ def test_requested_src_package_layout_exists() -> None:
         "src/fma/attribution/__init__.py",
         "src/fma/graph/__init__.py",
         "src/fma/graph/diagnostics.py",
-        "src/fma/diagnostics/__init__.py",
         "src/fma/pilot/__init__.py",
         "src/fma/utils/__init__.py",
     ]
@@ -22,16 +21,14 @@ def test_requested_src_package_layout_exists() -> None:
 
 
 def test_public_skeleton_exports_are_importable() -> None:
-    from fma.attribution import AttributionResult, compute_attribution
-    from fma.diagnostics import DiagnosticResult, summarize_diagnostics
+    from fma.attribution import AttributionResult
+    from fma.diagnostics import DiagnosticResult
     from fma.graph import GraphIntervention, run_structural_diagnostics
     from fma.pilot import PilotRunConfig, run_pilot
     from fma.utils import load_config
 
     assert AttributionResult is not None
-    assert compute_attribution is not None
     assert DiagnosticResult is not None
-    assert summarize_diagnostics is not None
     assert GraphIntervention is not None
     assert run_structural_diagnostics is not None
     assert PilotRunConfig is not None

@@ -27,7 +27,7 @@ The intended interpretation is weak structural alignment or local-to-structural 
 
 Local utility is a candidate signal for process supervision, not a validated supervision weight. A direct rule such as `w_k = Normalize(FMA(m_k; D))` would over-read the current evidence because Phase 6-7 show that many locally attributed reflective steps have zero measured structural necessity.
 
-The claim-safe downstream object is a structurally calibrated supervision weight:
+The conservative downstream object is a structurally calibrated supervision weight:
 
 ```text
 w_k = Normalize(Calibrate(FMA, structural necessity, bottleneck status, redundancy, compensation))

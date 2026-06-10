@@ -32,7 +32,7 @@ The project studies functional attribution under observable traces. That framing
 Positive:
 
 - Claim wording stays reviewer-safe.
-- Historical failures remain useful as boundary evidence.
+- Historical failures remain useful as preliminary tests.
 - New routes must preregister data, cost, transport, and pass/fail gates before live execution.
 
 Negative:

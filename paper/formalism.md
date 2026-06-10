@@ -92,7 +92,7 @@ Functional Reflective Attribution is an intervention-sensitive operational analy
 
 The framework is bounded to observable traces, controlled perturbations, utility degradation analysis, and operational attribution. It addresses questions such as which reflection units are utility-sensitive under a given protocol, which groups of units have collective degradation under joint perturbation, and whether utility is concentrated or distributed under progressive stress. These questions are empirical and protocol-dependent.
 
-The framework is not a causal inference framework, a mechanistic interpretability framework, or a cognition discovery framework. It does not claim that perturbation results expose the model's internal operations. It does not generalize beyond the intervention distribution, task distribution, evaluator, and trace segmentation procedure without additional evidence.
+The framework is not a causal inference framework, a mechanistic interpretability framework, or a cognition discovery framework. The current evidence does not support that perturbation results expose the model's internal operations. It does not generalize beyond the intervention distribution, task distribution, evaluator, and trace segmentation procedure without additional evidence.
 
 Reports using this framework specify the following elements: the trace source, the reflection-unit segmentation rule, the perturbation operators, the utility metric, the normalization procedure, the perturbation ordering for \(\mathcal{R}(k)\), and the aggregation rule for task-level summaries. These details define the operational meaning of the reported quantities. Reported values are protocol-dependent rather than protocol-independent properties of reasoning.
 
@@ -125,7 +125,7 @@ Reflection-unit segmentation is operational and should not be treated as unique.
 
 ### C. Perturbation Dependence
 
-Attribution depends on the perturbation operators used to alter reflection units. Masking, removal, replacement, bypass, and grouped perturbation can expose different sensitivities because each changes the trace or structure in a different way. The framework does not claim perturbation-invariant attribution. When multiple operators are used, their results should be reported as related protocol views rather than collapsed into an operator-free claim.
+Attribution depends on the perturbation operators used to alter reflection units. Masking, removal, replacement, bypass, and grouped perturbation can expose different sensitivities because each changes the trace or structure in a different way. The current evidence does not support perturbation-invariant attribution. When multiple operators are used, their results should be reported as related protocol views rather than collapsed into an operator-free claim.
 
 ### D. Utility-Metric Dependence
 

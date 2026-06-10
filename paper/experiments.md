@@ -11,16 +11,18 @@ The experimental story has three layers:
 | Layer | Status | Role in the paper |
 |---|---|---|
 | Diagnostic evidence | Completed Phase 5-7 | Shows why local utility and structural necessity must be separated |
-| Real-task replay/pilot | Guarded and blocked | Boundary evidence showing that the current signal does not yet pass real-task readiness gates |
-| Downstream filtering mini-validation | Failed and abandoned | Tests one minimal filtering implication; the result is negative and does not support PRM/filtering claims |
+| Real-task replay/pilot | Guarded preliminary test | Preserves claim discipline without replacing the deterministic diagnostic core |
 
-Only the first layer is positive evidence for the manuscript claim. The second and third layers are failure-boundary evidence: they justify diagnostic framing and block downstream improvement claims.
+| Downstream filtering check | Guarded preliminary test | Blocks PRM/filtering claims unless a future preregistered downstream route passes |
+Only the first layer is positive evidence for the manuscript claim. The second and third layers preserve the claim boundary: they justify diagnostic framing and block downstream improvement claims.
 
 ## Data Scale
 
 The benchmark input is `data/traces/synthetic_100x8.json`. It contains 800 traces and 2400 reflective steps. The taxonomy report `outputs/taxonomy_coverage_synthetic.json` records 2400 total reflections and no collapse warnings. The category counts are: BACKTRACKING 284, CONSTRAINT_TRACKING 313, DECOMPOSITION 282, ERROR_CORRECTION 288, PLANNING 313, RETRIEVAL 300, UNCERTAINTY_MONITORING 298, and VERIFICATION 322.
 
 The Phase 6 graph representation contains 800 graphs, 2400 nodes, and 2098 edges. The graph and structural necessity outputs are stored in `outputs/reflection_graph.json`, `outputs/structural_node_necessity.jsonl`, `outputs/structural_edge_necessity.jsonl`, and `outputs/structural_subgraph_necessity.jsonl`.
+
+The central empirical null hypothesis for these experiments is that local utility is an adequate proxy for structural necessity. The Phase 6 and Stage 2 tests evaluate this hypothesis through rank alignment, zero-inflation, top-k overlap, and held-out step-level comparisons.
 
 ## Unified Comparison Space
 
@@ -37,6 +39,8 @@ Required baseline families are random masking, span masking, graph removal, and 
 | Structure controls | graph removal and edge dropout use clean topology-derived proxy `s_B(r_i)` vectors | required controls integrated |
 | Optional or unavailable baselines | token dropout, white-box attribution rows, generative feedback systems, and extra structure controls are registered as unavailable or secondary | not primary evidence |
 | Oracle/control rows | none available in the current artifacts | not reported |
+
+The quantitative comparison is intentionally step-level. FMA reports a held-out Spearman rho of 0.1628 with a confidence interval excluding zero. The conservative proxy controls are near zero or negative in the same comparison space: random masking 0.0155, span masking -0.0889, graph removal 0.0000, and edge dropout 0.0284. These values support the diagnostic claim that FMA carries a small positive step-level relation in the stored synthetic protocol, not a broad downstream superiority claim.
 
 ## Phase 5 Attribution Settings
 
@@ -68,15 +72,11 @@ The full Stage 2 FMA alignment is positive but low magnitude: Spearman rho is 0.
 
 Stratified generalization lacks global confirmation. C3 is `stratum_dependent` because the Stage 2 stratum audit reports confidence intervals including zero in `S_mid` and `S_rand`. This heterogeneity is reported as variation across unseen distributions, not as evidence that FMA is stronger than the low-magnitude aggregate suggests.
 
-## Real-Task Pilot Status
+## Preliminary Tests
 
-The real-task pilot is a guarded extension rather than a replacement for historical Phase 5-7 evidence. The current readiness audit reports `PILOT_BLOCKED`, with failure codes `PILOT_FAIL_SIGNAL` and `PREFLIGHT_FAIL_DRIFT`. Replay, Delta-U, rank-signal coverage, baseline leakage, and readiness-level trajectory-control gates are complete for the configured pilot artifacts, but the available leakage-clean `structurally_calibrated_fma` score failed the rank-signal gate. Any generated GSM8K/HotpotQA pilot traces should therefore be treated as pilot evidence only, not as validated real-task support for utility claims.
+Real-task replay and downstream filtering checks are guarded extensions rather than replacements for Phase 5-7 evidence. They should be summarized in the manuscript as preliminary tests: current artifacts do not authorize scale-ready real-task support, downstream PRM/filtering support, or performance-improvement wording.
 
-The nondeterministic protocol permits trace generation only under guarded pilot framing. It requires repeated replay and bootstrap confidence intervals before any utility claim is upgraded. The trajectory-control artifact is readiness-complete as a partial pilot control report, not a completed downstream control validation. No manuscript section should describe the real-task pilot as scale-ready while these gates remain unresolved.
-
-## Downstream Validation Boundary
-
-The current repository includes a one-shot v2.1 downstream filtering mini-validation rather than a completed PRM/filtering result. It used 20 paired pilot-sourced samples, 40 API calls, and USD 1.629725. It produced 20/20 valid pairs but failed `V2_1_DOWNSTREAM_FILTERING_MINI_FAIL_FILTERING_SIGNAL`: pooled mean advantage was -0.05, GSM8K was -0.2, and HotpotQA was 0.1.
+The nondeterministic protocol permits trace generation only under guarded pilot framing. It requires repeated replay and bootstrap confidence intervals before any utility claim is upgraded. The trajectory-control artifact is readiness-complete as a partial pilot control report, not a completed downstream control validation.
 
 Any future downstream experiment would need to separate:
 

@@ -27,9 +27,9 @@ from scripts.run_s_fma_v2_2_single_transport_retry import merge_single_retry_att
 
 V2_2_GENERATION_PROMPT_PATH = Path("prompts/s_fma_v2_2_reflection_generation.txt")
 V2_2_REPLAY_PROMPT_PATH = Path("prompts/s_fma_v2_2_replay.txt")
-V2_2_CONTRACT_AUDIT_PATH = Path("outputs/s_fma_v2_2_fresh_holdout/v2_2_contract_audit.json")
+V2_2_CONTRACT_AUDIT_PATH = Path("outputs/archive/s_fma_v2_2_fresh_holdout/v2_2_contract_audit.json")
 V2_2_APPROVAL_REQUEST_PATH = Path(
-    "outputs/s_fma_v2_2_fresh_holdout/api_preflight_approval_request.json"
+    "outputs/archive/s_fma_v2_2_fresh_holdout/api_preflight_approval_request.json"
 )
 
 
@@ -50,7 +50,7 @@ def _v2_2_config(sample_count: int = 1) -> dict:
             "name": "s_fma_v2_2_fresh_holdout",
             "status": "planned_preregistration_only",
             "seed": 20260605,
-            "output_dir": "outputs/s_fma_v2_2_fresh_holdout",
+            "output_dir": "outputs/archive/s_fma_v2_2_fresh_holdout",
             "plan_file": "paper/s_fma_v2_2_preregistration_plan.md",
             "transition_audit_file": "paper/v2_1_to_v2_2_transition_audit.md",
             "current_task_scope": "S_FMA_V2_2_PREREGISTRATION_ONLY_AFTER_FULL_VALIDATION_FAILURE",

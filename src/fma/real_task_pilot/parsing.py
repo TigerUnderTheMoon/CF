@@ -6,7 +6,6 @@ import json
 import re
 from typing import Any
 
-
 REFLECTION_RE = re.compile(
     r"<reflection(?:\s+type=[\"'](?P<type>[^\"']+)[\"'])?\s*>"
     r"(?P<content>.*?)"
@@ -79,3 +78,80 @@ def extract_reflection_spans(text: str) -> list[dict[str, Any]]:
 def extract_final_answer(text: str) -> str:
     matches = list(FINAL_ANSWER_RE.finditer(text))
     return matches[-1].group("answer").strip() if matches else ""
+
+
+_NUMBERED_STEP_RE = re.compile(
+    r"(?:^|\n)"
+    r"(?P<marker>"
+    r"Step\s+\d+\s*[:.)]\s*"
+    r"|"
+    r"\d+\s*[:.)]\s+"
+    r"|"
+    r"第[一二三四五六七八九十\d]+步\s*[:：]?\s*"
+    r")",
+    re.IGNORECASE,
+)
+
+
+def parse_cot_steps(text: str, strategy: str = "auto") -> list[dict[str, Any]]:
+    """Parse free-text chain-of-thought into reasoning steps.
+
+    Unlike ``extract_reflection_spans`` which looks for ``<reflection>`` tags,
+    this function splits unstructured CoT text into steps using heuristic
+    boundaries (numbered markers, double newlines, or sentence boundaries).
+
+    Args:
+        text: Full reasoning trace text.
+        strategy: One of ``"auto"``, ``"numbered"``, ``"newline"``, ``"sentence"``.
+
+    Returns:
+        List of span dicts compatible with the internal record format.
+    """
+    if not text.strip():
+        return []
+
+    if strategy == "auto":
+        if _NUMBERED_STEP_RE.search(text):
+            strategy = "numbered"
+        elif "\n\n" in text:
+            strategy = "newline"
+        else:
+            strategy = "sentence"
+
+    if strategy == "numbered":
+        raw_steps = [p.strip() for p in _NUMBERED_STEP_RE.split(text) if p.strip()]
+    elif strategy == "newline":
+        raw_steps = [p.strip() for p in re.split(r"\n{2,}", text) if p.strip()]
+        if not raw_steps:
+            raw_steps = [line.strip() for line in text.split("\n") if line.strip()]
+    else:
+        raw_steps = [s.strip() for s in re.split(r"(?<=[.!?])\s+(?=[A-Z])", text) if s.strip()]
+
+    if not raw_steps:
+        raw_steps = [text]
+
+    spans: list[dict[str, Any]] = []
+    char_offset = 0
+    for index, step_text in enumerate(raw_steps):
+        if len(step_text) >= 30:
+            start_char = text.find(step_text[:30], char_offset)
+        else:
+            start_char = text.find(step_text, char_offset)
+        if start_char < 0:
+            start_char = char_offset
+        end_char = start_char + len(step_text)
+        spans.append(
+            {
+                "span_index": index,
+                "start_char": start_char,
+                "end_char": end_char,
+                "content_start_char": start_char,
+                "content_end_char": end_char,
+                "start_token": _proxy_token_start(text, start_char),
+                "end_token": _proxy_token_start(text, end_char),
+                "operation_type": "reasoning",
+                "content": step_text,
+            }
+        )
+        char_offset = end_char
+    return spans

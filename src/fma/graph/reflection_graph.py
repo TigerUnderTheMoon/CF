@@ -50,6 +50,7 @@ class ReflectionEdge:
     target: str
     edge_type: str
     weight: float = 1.0
+    quality: float = 1.0
 
 
 class ReflectionGraph:
@@ -86,6 +87,7 @@ class ReflectionGraph:
         target: str,
         edge_type: str,
         weight: float = 1.0,
+        quality: float = 1.0,
     ) -> None:
         source_id = str(source)
         target_id = str(target)
@@ -100,7 +102,9 @@ class ReflectionGraph:
             raise ValueError(f"duplicate ordered edge {source_id!r}->{target_id!r}")
         if self.has_path(target_id, source_id):
             raise ValueError(f"edge {source_id!r}->{target_id!r} would create a cycle")
-        self.edges[key] = ReflectionEdge(source_id, target_id, str(edge_type), float(weight))
+        self.edges[key] = ReflectionEdge(
+            source_id, target_id, str(edge_type), float(weight), float(quality)
+        )
 
     def copy(self) -> "ReflectionGraph":
         return ReflectionGraph(
@@ -359,6 +363,26 @@ class ReflectionGraph:
                     if graph.has_path(child, parent):
                         continue
                     graph.add_edge(parent, child, "revises", 1.0)
+        return graph
+
+    def prune_edges(self, threshold: float) -> "ReflectionGraph":
+        """Return a new graph with edges whose *quality* is below *threshold* removed.
+
+        Edges are removed in ascending quality order. The frozen source set and
+        all nodes are preserved. If all outgoing edges from a source are pruned
+        the source remains in the graph but its descendants become unreachable,
+        which is intentional (the edge contributed no meaningful signal).
+        """
+        if threshold <= 0.0:
+            return self.copy()
+        graph = self.copy()
+        to_remove = sorted(
+            ((source, target) for (source, target), edge in graph.edges.items() if edge.quality < threshold),
+            key=lambda key: graph.edges[key].quality,
+        )
+        for source, target in to_remove:
+            if (source, target) in graph.edges:
+                del graph.edges[(source, target)]
         return graph
 
     def subgraph(self, node_ids: Iterable[str], graph_id: str | None = None) -> "ReflectionGraph":

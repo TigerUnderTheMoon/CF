@@ -1,6 +1,6 @@
 # Functional Metacognitive Attribution
 
-Functional Metacognitive Attribution (FMA) is a diagnostic framework for studying reflective reasoning traces. It separates local functional utility from topology-sensitive structural necessity, then uses failed real-task and downstream routes as boundary evidence for reproducibility governance.
+Functional Metacognitive Attribution (FMA) is a diagnostic and design framework for studying reflective reasoning traces. It separates local functional utility from topology-sensitive structural necessity, then uses failed real-task and downstream routes as preliminary tests for reproducibility governance.
 
 Current package status: `PILOT_BLOCKED`.
 
@@ -98,6 +98,6 @@ latexmk -pdf -interaction=nonstopmode -halt-on-error main.tex
   title        = {Functional Metacognitive Attribution},
   author       = {Anonymous},
   year         = {2026},
-  note         = {Diagnostic framework for local utility and structural necessity in reflective reasoning traces}
+  note         = {Diagnostic and design framework for local utility and structural necessity in reflective reasoning traces}
 }
 ```

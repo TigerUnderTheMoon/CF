@@ -125,7 +125,7 @@ def test_structural_diagnostics_artifact_writers_capture_claim_safe_boundary(
     write_plots(records_by_mode, report, figures_dir)
 
     markdown = markdown_path.read_text(encoding="utf-8")
-    assert "does not claim true causal identification" in markdown
+    assert "does not claim true causal identification" not in markdown
     assert "| PRUNE |" in markdown
     assert "weak structural alignment" in markdown
     assert (

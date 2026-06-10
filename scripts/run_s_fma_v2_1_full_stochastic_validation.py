@@ -15,6 +15,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from fma.io import load_records, write_records
+from fma.real_task_pilot.archive_paths import v2_1_failed_provenance_root
 from fma.real_task_pilot.config import load_pilot_config
 from fma.real_task_pilot.fresh_holdout_v2_1 import V2_1_CONTRACT_CLEAN
 from fma.real_task_pilot.fresh_preflight import (
@@ -100,6 +101,7 @@ def main() -> None:
             "output_dir", "outputs/s_fma_v2_1_fresh_holdout"
         )
     )
+    output_root = v2_1_failed_provenance_root(output_root)
     full_paths = v2_1_full_stochastic_paths(output_root)
     paths = {
         "manifest": output_root / "fresh_manifest.json",
@@ -346,6 +348,7 @@ def main() -> None:
 def v2_1_full_stochastic_paths(output_root: Path) -> dict[str, Path]:
     """Return only the approved v2.1 full stochastic output paths."""
 
+    output_root = v2_1_failed_provenance_root(output_root)
     return {
         "original_attempts": output_root / "v2_1_full_stochastic_original_attempts.jsonl",
         "original_traces": output_root / "v2_1_full_stochastic_original_traces.jsonl",
@@ -573,7 +576,7 @@ def build_v2_1_full_stochastic_report(
     cost_used_usd: float,
     expected_replay_jobs: int,
 ) -> dict[str, Any]:
-    """Build a claim-safe v2.1 full stochastic report."""
+    """Build a conservative v2.1 full stochastic report."""
 
     all_attempts = [*original_attempts, *replay_attempts]
     attempt_quality = _attempt_quality(all_attempts)

@@ -52,6 +52,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--figures-dir", type=Path, default=DEFAULT_FIGURE_DIR)
     parser.add_argument("--utility-threshold", type=float, default=0.9)
     parser.add_argument("--removal-mode", choices=[mode.value for mode in RemovalMode], default=RemovalMode.PRUNE.value)
+    parser.add_argument("--similarity-method", choices=["none", "tfidf", "jaccard"], default="tfidf")
+    parser.add_argument("--similarity-threshold", type=float, default=0.15)
+    parser.add_argument("--prune-threshold", type=float, default=0.0)
+    parser.add_argument("--max-long-range", type=int, default=5)
     parser.add_argument("--dry-run", action="store_true")
     return parser.parse_args()
 
@@ -61,7 +65,14 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     necessity_records = load_records(args.necessity_scores)
     phase5_summary = _read_json(args.counterfactual_summary)
 
-    graphs = build_reflection_graphs(traces, necessity_records)
+    graphs = build_reflection_graphs(
+        traces,
+        necessity_records,
+        similarity_method=None if args.similarity_method == "none" else args.similarity_method,
+        similarity_threshold=args.similarity_threshold,
+        prune_threshold=args.prune_threshold,
+        max_long_range=args.max_long_range,
+    )
     node_rows = []
     edge_rows = []
     subgraph_rows = []
