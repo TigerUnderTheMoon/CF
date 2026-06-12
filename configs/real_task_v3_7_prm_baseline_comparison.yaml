@@ -1,0 +1,117 @@
+route:
+  id: real_task_v3_7_prm_baseline_comparison
+  version: "3.7"
+  description: "Offline bidirectional PRM800K contamination audit for frozen PRM baseline comparison."
+  claim_scope: "M_STEP_RANKING / M_BASELINE_COMPARISON context only"
+
+source_route:
+  id: real_task_v3_6_prm800k_hash
+  locked_manifest: outputs/real_task_v3_6_prm800k_hash/locked_sample_manifest.jsonl
+  dev_model: outputs/real_task_v3_6_prm800k_hash/dev_w_struct_model.json
+  decision_report: outputs/real_task_v3_6_prm800k_hash/decision_report.json
+
+data:
+  target_dataset: openai/prm800k/phase2_train.jsonl
+  target_dataset_provenance:
+    dataset: openai/prm800k
+    file: phase2_train.jsonl
+    source_url: https://media.githubusercontent.com/media/openai/prm800k/main/prm800k/data/phase2_train.jsonl
+    official_repo_url: https://github.com/openai/prm800k
+    lfs_sha256: "1110237feeb51d1bc200cb37b8f965cfdc1036eac7d506094049366fe7dc1089"
+    row_range: "5000-16999"
+    split: v3.6_hash_locked
+    source_kind: real_prm800k_phase2
+  oracle_label_policy:
+    source_field: label.steps[*].completions[chosen_completion].rating
+    fallback: first rated and unflagged completion if chosen_completion is absent or unrated
+    transform: label = clip((rating + 1) / 2, 0, 1)
+    min_labeled_steps_per_sample: 3
+    require_nonconstant_labels_per_sample: true
+    labels_used_only_as_targets: true
+
+candidate_prm_models:
+  - model_name: Qwen2.5-Math-7B-PRM800K
+    hf_id: Qwen/Qwen2.5-Math-7B-PRM800K
+    uses_prm800k: known_yes
+    usage_mode: fine_tuning_training_set
+    evidence_type: model_card
+    evidence_strength: primary
+    source_url: https://huggingface.co/Qwen/Qwen2.5-Math-7B-PRM800K
+    claim_boundary: in_distribution_only
+  - model_name: Qwen2.5-Math-PRM-7B
+    hf_id: Qwen/Qwen2.5-Math-PRM-7B
+    uses_prm800k: known_yes_or_unclear_by_public_sources
+    usage_mode: must_be_verified_before_locked_claim
+    evidence_type: model_card
+    evidence_strength: primary
+    source_url: https://huggingface.co/Qwen/Qwen2.5-Math-PRM-7B
+    claim_boundary: in_distribution_or_unknown_overlap_only
+
+reverse_prm800k_usage_scan:
+  - public_model_or_dataset: Qwen2.5-Math-7B-PRM800K
+    artifact_type: model
+    hf_or_repo_id: Qwen/Qwen2.5-Math-7B-PRM800K
+    uses_prm800k: known_yes
+    usage_mode: fine_tuning_training_set
+    evidence_type: model_card
+    evidence_strength: primary
+    source_url: https://huggingface.co/Qwen/Qwen2.5-Math-7B-PRM800K
+    notes: "Model card states this PRM variant is fine-tuned on the PRM800K training set."
+  - public_model_or_dataset: Qwen2.5-Math-PRM-7B
+    artifact_type: model
+    hf_or_repo_id: Qwen/Qwen2.5-Math-PRM-7B
+    uses_prm800k: known_yes_or_unclear_by_public_sources
+    usage_mode: must_be_verified_before_locked_claim
+    evidence_type: model_card
+    evidence_strength: primary
+    source_url: https://huggingface.co/Qwen/Qwen2.5-Math-PRM-7B
+    notes: "Public sources do not support treating this as PRM800K-clean for external-generalization claims."
+  - public_model_or_dataset: Math-Shepherd
+    artifact_type: model_or_dataset
+    hf_or_repo_id: MathShepherd/math-shepherd-mistral-7b-rl
+    uses_prm800k: not_claimed_by_current_primary_sources
+    usage_mode: "machine-annotated process labels; P2 only"
+    evidence_type: paper
+    evidence_strength: primary
+    source_url: https://arxiv.org/abs/2312.08935
+    notes: "P2 appendix candidate; absence does not block the v3.7 main timeline."
+  - public_model_or_dataset: ProcessBench
+    artifact_type: benchmark
+    hf_or_repo_id: processbench/ProcessBench
+    uses_prm800k: benchmark_reports_prm800k-trained baselines
+    usage_mode: evaluation context, not v3.7 locked training source
+    evidence_type: paper
+    evidence_strength: primary
+    source_url: https://huggingface.co/papers/2412.06559
+    notes: "Useful for future process-supervision baseline mapping, not a v3.7 training source."
+
+secondary_context_sources:
+  - name: Qwen2.5-Math-PRM blog
+    source_url: https://qwenlm.github.io/blog/qwen2.5-math-prm/
+    evidence_strength: secondary_context
+    notes: "Can contextualize PRM verifier framing but cannot independently clear overlap risk."
+
+outputs:
+  root: outputs/real_task_v3_7_prm_baseline_comparison
+  training_overlap_audit: training_overlap_audit.json
+  reverse_usage_scan_csv: reverse_prm800k_usage_scan.csv
+  decision_report: decision_report.json
+  summary: submission_prm_baseline_summary.md
+
+claim_policy:
+  external_generalization_claim_allowed: false
+  in_distribution_prm_baseline_context_allowed: true
+  required_claim_text: "This PRM comparison is reported as an in-distribution baseline comparison with acknowledged PRM800K overlap risk. It strengthens the baseline context for real PRM800K step-ranking, but does not establish external generalization beyond PRM800K-like process-supervision data."
+  forbidden_claims:
+    - external PRM generalization
+    - beats public PRMs generally
+    - validates PRM training
+    - validates GSM8K/HotpotQA replay
+    - F_PRM_TRAINING
+    - F_REAL_TASK_SC_FMA
+    - causal identification
+
+cost_policy:
+  api_calls_allowed: false
+  max_api_cost_usd: 0.0
+  model_inference_required_for_this_audit: false

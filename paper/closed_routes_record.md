@@ -1,6 +1,6 @@
 # Closed Validation Routes Record
 
-This document consolidates the outcomes of attempted real-task validation routes. GSM8K/HotpotQA replay routes remain failed, blocked, or abandoned. A later PRM800K hash-split route passed for real step-label ranking only; it does not validate GSM8K/HotpotQA replay or downstream PRM training.
+This document consolidates the outcomes of attempted real-task validation routes. GSM8K/HotpotQA replay routes remain failed, blocked, or abandoned. A later PRM800K hash-split route passed for real step-label ranking only, and a frozen PRM scorer comparison passed as in-distribution baseline context only. These do not validate GSM8K/HotpotQA replay or downstream PRM training.
 
 ---
 
@@ -56,6 +56,22 @@ This document consolidates the outcomes of attempted real-task validation routes
 - **Cost**: 0 API calls; estimated API cost USD `0.0`.
 - **Status**: Supports only `M_STEP_RANKING` / `M_STEP_RANKING_REAL_PRM800K`. It does not support `F_REAL_TASK_SC_FMA`, `F_PRM_TRAINING`, GSM8K/HotpotQA replay validation, deterministic replay validation, or causal identification claims.
 
+## v3.7: PRM Baseline Contamination Audit
+
+- **Plan**: `real_task_v3_7_prm_baseline_comparison_preregistration_plan.md`
+- **Route**: Bidirectional PRM800K contamination audit for public PRM/process-supervision baselines
+- **Outcome**: **PASSED WITH IN-DISTRIBUTION LIMITATION** - Qwen PRM800K and unresolved public PRM overlap risk block external-generalization wording.
+- **Cost**: 0 API calls; estimated API cost USD `0.0`.
+- **Status**: Permits only in-distribution PRM baseline context. It does not support broad public-PRM superiority, `F_PRM_TRAINING`, `F_REAL_TASK_SC_FMA`, GSM8K/HotpotQA replay validation, deterministic replay validation, or causal identification claims.
+
+## v3.8: Frozen PRM Locked Scoring Route
+
+- **Plan**: `configs/real_task_v3_8_prm_locked_scoring.yaml`
+- **Route**: Frozen public PRM scorer comparison on the v3.6 locked PRM800K hash split
+- **Outcome**: **PASSED FOR IN-DISTRIBUTION BASELINE CONTEXT ONLY** - Locked scoring used 4417 samples and 34219 steps; frozen PRM prefix-score mean Spearman was `0.2515662235547571`, `w_struct` mean Spearman was `0.6113401179642559`, `w_struct - prm` bootstrap CI was `[0.34499208448462026, 0.3745467544914783]`, and Holm correction passed.
+- **Cost**: 0 API calls; estimated API cost USD `0.0`.
+- **Status**: Supports only `M_BASELINE_COMPARISON_CONTEXT_ONLY` under the v3.7 overlap limitation. It does not support external PRM generalization, `F_PRM_TRAINING`, `F_REAL_TASK_SC_FMA`, GSM8K/HotpotQA replay validation, deterministic replay validation, or causal identification claims.
+
 ## v2.1 Full Validation Route Decision
 
 - **Document**: `full_validation_route_decision.md` (archived)
@@ -75,6 +91,8 @@ This document consolidates the outcomes of attempted real-task validation routes
 | v3.1 (real-task REPLACE) | FAILED | Sparse signal both tasks |
 | v3.5 (PRM800K contiguous) | FAILED | Row-order distribution drift |
 | v3.6 (PRM800K hash split) | PASSED STEP-RANKING ONLY | Supports real PRM800K step-label ranking; not replay |
+| v3.7 (PRM contamination audit) | PASSED WITH LIMITATION | PRM800K overlap risk blocks external PRM generalization |
+| v3.8 (frozen PRM scoring) | PASSED CONTEXT ONLY | Supports in-distribution PRM baseline context; not PRM training |
 | Legacy pilot | BLOCKED | Preflight drift failure |
 
-**No GSM8K/HotpotQA replay validation evidence exists.** Claims involving real-task replay MUST remain `failed_validation`, `pilot_blocked`, or `future_validation`. The only positive real-data validation currently recorded here is the v3.6 PRM800K step-ranking methodological claim.
+**No GSM8K/HotpotQA replay validation evidence exists.** Claims involving real-task replay MUST remain `failed_validation`, `pilot_blocked`, or `future_validation`. The positive real-data evidence currently recorded here is limited to v3.6 PRM800K step-ranking and v3.8 overlap-limited PRM baseline context.

@@ -27,6 +27,8 @@ The intended interpretation is weak structural alignment or local-to-structural 
 
 Local utility is a candidate signal for process supervision, not a validated supervision weight. A direct rule such as `w_k = Normalize(FMA(m_k; D))` would over-read the current evidence because Phase 6-7 show that many locally attributed reflective steps have zero measured structural necessity.
 
+Frozen PRM scores and SC-FMA weights also have different meanings. A PRM scorer outputs a correctness-oriented step score or reward probability under its training distribution. SC-FMA outputs a structure-calibrated weight derived from local utility, graph structure, redundancy, and bottleneck constraints. The v3.8 frozen PRM comparison should therefore be read as an overlap-limited baseline context for PRM800K step ranking, not as proof that SC-FMA trains a better PRM or externally generalizes beyond PRM800K-like process-supervision data.
+
 The conservative downstream object is a structurally calibrated supervision weight:
 
 ```text
@@ -140,7 +142,7 @@ Future work can extend this layer without changing the current deterministic Pha
 
 These directions should preserve the distinction between local reflective attribution and structural reflective necessity.
 
-Current readiness caveat: GSM8K/HotpotQA generation-replay evidence remains guarded pilot evidence while `readiness_audit.json` reports `PILOT_BLOCKED` and API preflight reports `PREFLIGHT_FAIL_DRIFT`. Separately, `real_task_v3_6_prm800k_hash` passes real PRM800K step-label ranking validation for the SC-FMA methodological claim only; it does not validate replay, PRM training, or causal identification claims.
+Current readiness caveat: GSM8K/HotpotQA generation-replay evidence remains guarded pilot evidence while `readiness_audit.json` reports `PILOT_BLOCKED` and API preflight reports `PREFLIGHT_FAIL_DRIFT`. Separately, `real_task_v3_6_prm800k_hash` passes real PRM800K step-label ranking validation for the SC-FMA methodological claim only, and `real_task_v3_8_prm_locked_scoring` passes as an in-distribution frozen PRM baseline context under the v3.7 overlap limitation. These routes do not validate replay, PRM training, external PRM generalization, or causal identification claims.
 
 ## Section 8 - Phase 7: Redundancy and Compensation
 

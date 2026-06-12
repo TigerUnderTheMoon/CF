@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex main"] 1781160666.93527 "main.aux" "main.bbl" "main" 1781160667.58837 2
+["bibtex main"] 1781272815.81005 "main.aux" "main.bbl" "main" 1781272823.74929 0
   "./cas-model2-names.bst" 1714792130 31802 28b630660245c09f173aac55be552b29 ""
   "./references.bib" 1781160657 35133 8320e8f446f1057423bb53af5a3d7353 ""
-  "main.aux" 1781160658 32 3985256e7290058c681f74d7a3565a19 "pdflatex"
+  "main.aux" 1781272820 36304 cd3c3a8782a18ae25c0b7b6a35c504ad "pdflatex"
   (generated)
   "main.bbl"
   "main.blg"
   (rewritten before read)
-["pdflatex"] 1781160598.99899 "main.tex" "main.pdf" "main" 1781160603.69223 0
+["pdflatex"] 1781272816.96728 "main.tex" "main.pdf" "main" 1781272823.75238 0
   "cas-common.sty" 1714793202 76688 c602be3da196cb506acc84d1fa26b134 ""
   "cas-sc.cls" 1714793356 4410 65b518b1d7581e9c4ebe84b81471ee59 ""
   "d:/DevelopTools/texlive/2026/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc" 1779287267 2971 def0b6c1f0b107b3b936def894055589 ""
@@ -176,12 +176,11 @@
   "d:/DevelopTools/texlive/2026/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1779297540 5619428 546a5b62fda785c67d89e9d9b20cf0fa ""
   "d:/DevelopTools/texlive/2026/texmf-var/web2c/pdftex/pdflatex.fmt" 1779297760 3651021 ea1bf93b6b842534e3ddbfdc7b2290d6 ""
   "d:/DevelopTools/texlive/2026/texmf.cnf" 1779297493 713 e69b156964470283e0530f5060668171 ""
-  "main.abs" 1781160600 1764 0a03b739f41bbb6580ad545081cce1fa "pdflatex"
-  "main.aux" 1781160658 32 3985256e7290058c681f74d7a3565a19 "pdflatex"
-  "main.bbl" 1781160667 0 d41d8cd98f00b204e9800998ecf8427e "bibtex main"
-  "main.out" 1781160600 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
-  "main.tex" 1781160449 159233 306a1ba85b0890eeac70886a1c47afe9 ""
-  "task_comparison.png" 1781110879 96603 aca5718a6995fd4f4387d1ca429e8a84 ""
+  "main.abs" 1781272819 1770 d56c824ed65be9b831c3eb3355e972d6 "pdflatex"
+  "main.aux" 1781272820 36304 cd3c3a8782a18ae25c0b7b6a35c504ad "pdflatex"
+  "main.bbl" 1781272816 30368 b8b7a6534bb7ddbc43453d6111e6bf96 "bibtex main"
+  "main.out" 1781272819 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
+  "main.tex" 1781270883 159407 9e2d20ca18bf3f2ea07a2be90da28760 ""
   (generated)
   "main.abs"
   "main.aux"

@@ -1,4 +1,4 @@
-\begin{thebibliography}{57}
+\begin{thebibliography}{56}
 \expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
 \providecommand{\url}[1]{\texttt{#1}}
 \providecommand{\href}[2]{#2}
@@ -524,19 +524,6 @@
   Information Processing Systems}, pp. \bibinfo{pages}{2319--2328}.
 \newblock \URLprefix
   \url{https://papers.nips.cc/paper_files/paper/2017/hash/0e55666a4ad822e0e34299df3591d979-Abstract.html}.
-%Type = Inproceedings
-\bibitem[{Yang et~al.(2018)Yang, Qi, Zhang, Bengio, Cohen, Salakhutdinov and
-  Manning}]{yang2018hotpotqa}
-\bibinfo{author}{Yang, Z.}, \bibinfo{author}{Qi, P.}, \bibinfo{author}{Zhang,
-  S.}, \bibinfo{author}{Bengio, Y.}, \bibinfo{author}{Cohen, W.W.},
-  \bibinfo{author}{Salakhutdinov, R.}, \bibinfo{author}{Manning, C.D.},
-  \bibinfo{year}{2018}.
-\newblock \bibinfo{title}{{HotpotQA}: A dataset for diverse, explainable
-  multi-hop question answering}, in: \bibinfo{booktitle}{Proceedings of the
-  2018 Conference on Empirical Methods in Natural Language Processing}, pp.
-  \bibinfo{pages}{2369--2380}.
-\newblock \URLprefix \url{https://aclanthology.org/D18-1259/},
-  \DOIprefix\doi{10.18653/v1/D18-1259}.
 %Type = Inproceedings
 \bibitem[{Yao et~al.(2023)Yao, Yu, Zhao, Shafran, Griffiths, Cao and
   Narasimhan}]{yao2023treeofthoughts}
