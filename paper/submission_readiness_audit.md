@@ -2,10 +2,15 @@
 
 Scope: repository-level readiness check against the current real-task pilot artifacts. This audit summarizes stored evidence only. The v2.1 downstream filtering mini-validation has run separately and failed; this audit records that stored result without rerunning API generation, replay, baseline scoring, or PRM/filtering validation.
 
-status: `SYNTHETIC_ONLY`
+status: `SYNTHETIC_DIAGNOSTICS_PLUS_REAL_PRM800K_STEP_RANKING`
 pilot_pass: `false`
-submission_recommendation: `blocked_pending_real_task`
-failure_type: evidence-complete but signal-failed; real-task validation unavailable
+submission_recommendation: `methodological_submission_possible_with_claim_boundaries`
+failure_type: GSM8K/HotpotQA replay remains blocked; real PRM800K step-ranking validation passed for the methodological claim only
+real_prm800k_step_ranking_route: `real_task_v3_6_prm800k_hash`
+real_prm800k_step_ranking_status: `pass`; locked validation over `4417` real PRM800K samples and `34219` steps; `w_struct` mean Spearman `0.6113401179642559`; raw local utility mean Spearman `-0.07745914322519368`; `w_struct - raw_local_utility` bootstrap CI `[0.6732614322543506, 0.7045869106196779]`; Holm correction passed; API calls `0`; estimated API cost USD `0.0`
+real_prm800k_step_ranking_summary: `outputs/real_task_v3_6_prm800k_hash/submission_evidence_summary.md`
+real_prm800k_step_ranking_claim_boundary: permits `M_STEP_RANKING` and `M_STEP_RANKING_REAL_PRM800K` only; forbids `F_REAL_TASK_SC_FMA`, `F_PRM_TRAINING`, deterministic replay validation, GSM8K/HotpotQA replay validation, and causal identification claims
+real_prm800k_v3_5_failure_provenance: `outputs/real_task_v3_5_prm800k/failure_audit.json`; contiguous PRM800K row split caused row-order distribution drift and remains failed validation provenance
 fresh_holdout_route: `s_FMA_v2` planned-only; fresh manifest/audit clean
 fresh_holdout_formula_hash: `sha256:6971b23562be690e5fd58dc4dfbbcf972d2137c719b1b68a440d9ec4a216b628`
 fresh_holdout_audit_status: `MANIFEST_OVERLAP_CLEAN`
@@ -108,22 +113,23 @@ real_task_v3_current_status: `PILOT_BLOCKED`
 | v2.1 downstream filtering mini-validation | failed / abandoned mini diagnostic | `outputs/archive/s_fma_v2_1_fresh_holdout/v2_1_downstream_filtering_preregistration.json` preregistered exactly 20 paired pilot-sourced samples, 40 planned API calls, 60 max API requests, and USD `5`; `outputs/archive/s_fma_v2_1_fresh_holdout/v2_1_downstream_filtering_report.json` reports 40 API calls, USD `1.629725`, 20/20 valid pairs, `GLOBAL_pass=false`, failure code `V2_1_DOWNSTREAM_FILTERING_MINI_FAIL_FILTERING_SIGNAL`, pooled mean advantage `-0.05`, GSM8K `-0.2`, HotpotQA `0.1`, and next allowed step `ABANDON_MINI_DOWNSTREAM_FILTERING_ROUTE`; no full-validation, deterministic replay, submission-upgrade, new-route, or PRM/filtering superiority claim is allowed |
 | s_FMA_v2.2 exploratory route | archived failed exploratory provenance | `outputs/archive/s_fma_v2_2_fresh_holdout/fresh_manifest.json` has 400 rows, 200 GSM8K and 200 HotpotQA; `outputs/archive/s_fma_v2_2_fresh_holdout/manifest_overlap_audit.json` reports `MANIFEST_OVERLAP_CLEAN` with zero selected overlap on all six hard keys; `outputs/archive/s_fma_v2_2_fresh_holdout/v2_2_contract_audit.json` reports `V2_2_CONTRACT_CLEAN`; the current preflight remains failed with `PREFLIGHT_FAIL_DRIFT`; the current smoke completed after approved second-provider retry/resume with 20/20 valid originals and 120/120 successful replay results, but reports `V2_2_STOCHASTIC_SMOKE_FAIL_SPARSE_SIGNAL` with nonzero Delta-U counts of 5 pooled, 0 GSM8K, and 5 HotpotQA. This is archived preliminary test only; it does not authorize further v2.2 execution, scoring, validation, route-pass wording, submission-readiness upgrade, or PRM/filtering. |
 | real_task_v3 and v3.1 smoke routes | failed sparse-signal preliminary test | v3 DELETE smoke report `outputs/archive/real_task_v3/qwen36_delete_hotfix_20260607/smoke_report.json` failed sparse-signal gates with GSM8K `1/25` and HotpotQA `28/35` nonzero Delta-U. v3.1 REPLACE/masked-span smoke report `outputs/archive/real_task_v3_1/qwen36_replace_smoke_20260608/smoke_report.json` failed sparse-signal gates with GSM8K `8/25` and HotpotQA `14/35` nonzero Delta-U. The companion audit `outputs/archive/real_task_v3_1/qwen36_replace_smoke_20260608/v3_1_replace_smoke_consistency_audit.json` records implementation/status/next-step inconsistencies. No locked validation, deterministic replay, claim upgrade, or downstream PRM/filtering gain claim is authorized. |
+| real_task_v3.6 PRM800K hash step-ranking | pass for methodological step-ranking only | `outputs/real_task_v3_6_prm800k_hash/decision_report.json` and `outputs/real_task_v3_6_prm800k_hash/locked_validation_report.json` report a passed locked real PRM800K step-label validation: 4417 locked samples, 34219 locked steps, `w_struct` Spearman `0.6113401179642559`, raw local utility Spearman `-0.07745914322519368`, `w_struct - raw_local_utility` bootstrap CI lower `0.6732614322543506`, Holm correction pass, 0 API calls, USD `0.0`. This supports only `M_STEP_RANKING` / `M_STEP_RANKING_REAL_PRM800K`; it does not validate GSM8K/HotpotQA replay, PRM training, deterministic replay, or causal claims. |
 | TASK_SPECIFIC_S_FMA_V2_PASS | not run | requires a passing task-specific fresh-holdout rank signal and permits only task-specific or heterogeneous wording |
 | GLOBAL_S_FMA_V2_PASS | not run | requires both GSM8K and HotpotQA to satisfy the preregistered rank-signal standard before cross-task expansion design |
 | PRM/filtering validation | mini diagnostic failed; no PRM pass | no PRM claim; the v2.1 mini downstream filtering diagnostic failed and is abandoned; PRM/filtering is a future application hypothesis outside the current diagnostic manuscript |
 | Trajectory controls | pass | `trajectory_controls_complete: true` for readiness; control variants remain partial pilot measurements, not downstream validation |
 | API preflight | fail | current real-task pilot preflight reports `PREFLIGHT_FAIL_DRIFT`; v2 fresh-holdout preflight-only reports `PREFLIGHT_FAIL_DRIFT`; v2.1 preflight-only reports `PREFLIGHT_FAIL_DRIFT` with valid traces but failed drift/metadata readiness; v2.2 preflight has clean schema/tag/final-answer/raw-output gates at `1.0` but still reports `PREFLIGHT_FAIL_DRIFT` with disclosure-only missing provider metadata |
-| Tests | pass | latest local verification used `python -m pytest -q` |
+| Tests | pass | Python `3.11.14` environment `D:\DevelopTools\miniconda3\envs\owb\python.exe`; DVC archive/data artifacts restored with `python -m dvc pull outputs/archive.dvc data.dvc`; focused v3.5/v3.6/ranking tests passed `32 passed`; real-task v3 contract tests passed `48 passed`; full suite passed `467 passed, 1 deselected`. |
 
 ## DVC Archive State
 
-The KBS package uses root-level `outputs/` as the canonical evidence surface. The Phase 5-7 JSON/JSONL files and figures have been materialized from `outputs/archive/legacy/` into root `outputs/`, `outputs/phase5/`, `outputs/phase6/`, `outputs/phase7/`, and `outputs/figures/` without rewriting the historical report contents.
+The KBS package uses root-level `outputs/` as the canonical evidence surface. For the v3.6 verification pass, DVC was restored far enough to materialize `outputs/archive/` from `outputs/archive.dvc` and satisfy archive-backed contract tests without rewriting historical report contents.
 
-Accepted `dvc status` state for this diagnostic package:
+Current `dvc status` state after the v3.6 evidence-packaging verification:
 
-- `data.dvc` may report `data` as modified because the local v3 declared GSM8K source files are present under `data/real_task_v3/`; these files are not positive validation evidence.
-- `phase5`, `phase6`, `phase7`, and `figures` may report modified outs because archived evidence has been materialized for manuscript and Quarto path consistency.
-- `dvc repro --dry` must list phase5, phase6, phase7, and figures without failing on missing `outputs/phase5` or `outputs/phase6`.
+- `outputs/archive/` is present with 312 files and is available for the v2.1/v2.2 archive contract tests.
+- `dvc status` still reports `data/synthetic_traces.jsonl` modified, `outputs/phase5` deleted, `outputs/phase6` deleted, `outputs/phase7` deleted, and `outputs/figures` modified.
+- This remaining pipeline-materialization state is not evidence for or against the v3.6 PRM800K step-ranking claim. The v3.6 claim is governed by `outputs/real_task_v3_6_prm800k_hash/decision_report.json`, `locked_validation_report.json`, and the full pytest result.
 
 ## Blocking Items
 
@@ -170,12 +176,14 @@ The current paper package may claim only guarded diagnostic support:
 
 - Phase 5-7 stored synthetic diagnostics support the distinction between local utility and sparse structural necessity.
 - Stage 2 supports a low-magnitude, stratum-dependent diagnostic relation.
+- `real_task_v3_6_prm800k_hash` supports the SC-FMA methodological step-ranking claim on real PRM800K step labels, with locked `w_struct` Spearman `0.6113401179642559`, raw local utility Spearman `-0.07745914322519368`, and Holm-corrected bootstrap evidence that `w_struct` beats raw local utility and heuristic baselines.
 - Real-task evidence remains pilot-only and not scale-ready; the candidate score exists, but rank-signal gates fail. The current blocker is failed rank signal plus API drift, not absence of a candidate score.
 - `s_FMA_v2` validation is not completed. Fresh manifest/audit is clean, but fresh API preflight-only is drift-failed after 20 evaluated records; deterministic route is blocked; the first approved stochastic smoke failed at the original-generation JSON gate, and the approved bounded rerun failed sparse signal with 60/60 successful replay results but `nonzero_delta_rows: 0`; smoke artifacts remain non-validation diagnostics only, current status remains `PILOT_BLOCKED`, and no full generation, no 400 fresh traces, no v2 scoring, no task/global v2 pass, and no PRM claim yet.
 - `s_FMA_v2.1` has a regenerated clean manifest/contract package, a failed approved API_PREFLIGHT_ONLY diagnostic, a feasible stochastic smoke diagnostic, a recomputed pilot stochastic pass artifact, a failed full stochastic validation artifact, and a failed strict engineering retry artifact. The failed preflight report is now `PREFLIGHT_FAIL_DRIFT` with valid traces and successful parsing, but it is still not deterministic `API_PREFLIGHT_READY`; the drift failure audit blocks deterministic replay. The pilot has nonzero Delta-U in both tasks, positive pilot Spearman CIs, and true pilot `TASK_SPECIFIC`/`GLOBAL` gate fields, but the full validation and strict retry have `TASK_SPECIFIC_pass: false` and `GLOBAL_pass: false`; strict v2.1 full validation is abandoned, and no deterministic replay claim, submission-upgrade claim, or PRM claim exists.
 - The v2.1 downstream filtering mini-validation ran once and failed. It is a failed pilot-sourced diagnostic, not a PRM/filtering pass and not a full-validation substitute.
 - `s_FMA_v2.2` is archived failed exploratory provenance. It has a 400-row fresh manifest, clean non-overlap audit, clean contract audit, drift-failed API preflight, and a failed stochastic smoke checkpoint. It has no smoke pass, pilot validation, full validation, task/global gate, validation/pass claim, deterministic replay claim, or PRM/filtering artifact.
 - `real_task_v3` and `real_task_v3.1` have executed smoke-only routes, both failed sparse-signal gates, and neither permits dev calibration, locked validation, downstream validation, pass wording, deterministic replay wording, or downstream PRM/filtering gain claims.
+- `real_task_v3.5` is failed PRM800K provenance because contiguous row splitting introduced row-order distribution drift. `real_task_v3.6` corrects that split with hash stratification and passes real PRM800K step-ranking validation only; it is not GSM8K/HotpotQA replay validation.
 - PRM/filtering gains remain future validation, not a completed result; the completed v2.1 mini filtering diagnostic failed and is abandoned.
 
 Do not mark the manuscript as downstream validated or ready for a downstream PRM/filtering claim. The current submission path is diagnostic only, with real-task and downstream failures reported as preliminary test.

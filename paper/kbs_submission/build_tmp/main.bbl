@@ -1,4 +1,4 @@
-\begin{thebibliography}{13}
+\begin{thebibliography}{17}
 \expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
 \providecommand{\url}[1]{\texttt{#1}}
 \providecommand{\href}[2]{#2}
@@ -19,6 +19,14 @@
 \newblock \bibinfo{journal}{Nature} \bibinfo{volume}{406},
   \bibinfo{pages}{378--382}.
 \newblock \DOIprefix\doi{10.1038/35019019}.
+%Type = Book
+\bibitem[{Boyd and Vandenberghe(2004)}]{boyd2004convex}
+\bibinfo{author}{Boyd, S.}, \bibinfo{author}{Vandenberghe, L.},
+  \bibinfo{year}{2004}.
+\newblock \bibinfo{title}{Convex Optimization}.
+\newblock \bibinfo{publisher}{Cambridge University Press}.
+\newblock \URLprefix \url{https://web.stanford.edu/~boyd/cvxbook/},
+  \DOIprefix\doi{10.1017/CBO9780511804441}.
 %Type = Article
 \bibitem[{Cobbe et~al.(2021)Cobbe, Kosaraju, Bavarian, Chen, Jun, Kaiser,
   Plappert, Tworek, Hilton, Nakano, Hesse and Schulman}]{cobbe2021training}
@@ -33,6 +41,15 @@
 \newblock \bibinfo{journal}{arXiv preprint arXiv:2110.14168} \URLprefix
   \url{https://arxiv.org/abs/2110.14168},
   \DOIprefix\doi{10.48550/arXiv.2110.14168}.
+%Type = Techreport
+\bibitem[{Kraft(1988)}]{kraft1988software}
+\bibinfo{author}{Kraft, D.}, \bibinfo{year}{1988}.
+\newblock \bibinfo{title}{A Software Package for Sequential Quadratic
+  Programming}.
+\newblock \bibinfo{type}{Technical Report} \bibinfo{number}{DFVLR-FB 88-28}.
+  DLR German Aerospace Center -- Institute for Flight Mechanics.
+\newblock \URLprefix
+  \url{https://degenerateconic.com/uploads/2018/03/DFVLR_FB_88_28.pdf}.
 %Type = Article
 \bibitem[{Lightman et~al.(2023)Lightman, Kosaraju, Burda, Edwards, Baker, Lee,
   Leike, Schulman, Sutskever and Cobbe}]{lightman2023verify}
@@ -73,6 +90,15 @@
   Processing Systems}, pp. \bibinfo{pages}{1--21}.
 \newblock \URLprefix
   \url{https://proceedings.neurips.cc/paper_files/paper/2023/hash/91edff07232fb1b55a505a9e9f6c0ff3-Abstract-Conference.html}.
+%Type = Book
+\bibitem[{Nocedal and Wright(2006)}]{nocedal2006numerical}
+\bibinfo{author}{Nocedal, J.}, \bibinfo{author}{Wright, S.J.},
+  \bibinfo{year}{2006}.
+\newblock \bibinfo{title}{Numerical Optimization}.
+\newblock \bibinfo{edition}{2nd} ed., \bibinfo{publisher}{Springer}.
+\newblock \URLprefix
+  \url{https://link.springer.com/book/10.1007/978-0-387-40065-5},
+  \DOIprefix\doi{10.1007/978-0-387-40065-5}.
 %Type = Book
 \bibitem[{Pearl(2009)}]{pearl2009causality}
 \bibinfo{author}{Pearl, J.}, \bibinfo{year}{2009}.
@@ -147,6 +173,16 @@
   \bibinfo{pages}{9426--9439}.
 \newblock \URLprefix \url{https://aclanthology.org/2024.acl-long.510/},
   \DOIprefix\doi{10.18653/v1/2024.acl-long.510}.
+%Type = Inproceedings
+\bibitem[{Wang and Carreira-Perpi{\~n}{\'a}n(2013)}]{wang2013projection}
+\bibinfo{author}{Wang, W.}, \bibinfo{author}{Carreira-Perpi{\~n}{\'a}n,
+  M.{\'A}.}, \bibinfo{year}{2013}.
+\newblock \bibinfo{title}{Projection onto the probability simplex: An {N}ewton
+  algorithm with exact initialization and provable convergence}, in:
+  \bibinfo{booktitle}{Advances in Neural Information Processing Systems}, pp.
+  \bibinfo{pages}{3068--3076}.
+\newblock \URLprefix
+  \url{https://proceedings.neurips.cc/paper/2013/hash/cfbce4c1d2c41247b75db86a8a175470-Abstract.html}.
 %Type = Inproceedings
 \bibitem[{Ying et~al.(2019)Ying, Bourgeois, You, Zitnik and
   Leskovec}]{ying2019gnnexplainer}

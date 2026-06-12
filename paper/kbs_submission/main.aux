@@ -4,74 +4,290 @@
 \providecommand\HyField@AuxAddToCoFields[2]{}
 \citation{lightman2023verify,wang2024mathshepherd}
 \@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{1}{section.1}\protected@file@percent }
-\citation{lightman2023verify,uesato2022solving}
-\citation{cobbe2021training,wang2024mathshepherd}
-\citation{ribeiro2016why,sundararajan2017axiomatic,lundberg2017unified}
-\citation{ying2019gnnexplainer,albert2000error}
-\citation{shinn2023reflexion}
-\citation{madaan2023selfrefine}
+\citation{lightman2023verify}
+\citation{uesato2022solving}
+\citation{cobbe2021training}
+\citation{wang2024mathshepherd}
+\citation{luo2024improve}
+\citation{zheng2024processbench}
+\citation{zheng2024processbench}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Notation}{2}{section.2}\protected@file@percent }
+\newlabel{sec:notation}{{2}{2}{Notation}{section.2}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Related Work}{2}{section.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Process Reward Models and Step-Level Supervision}{2}{subsection.3.1}\protected@file@percent }
+\citation{ribeiro2016why}
+\citation{sundararajan2017axiomatic}
+\citation{lundberg2017unified}
+\citation{jain2019attention,wiegreffe2019attention}
+\citation{deyoung2020eraser}
+\citation{abnar2020quantifying}
+\citation{hao2021self}
+\citation{yao2023treeofthoughts}
+\citation{besta2024graphofthoughts}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Attribution and Interpretability for Reasoning}{3}{subsection.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Graph-Based Analysis of Reasoning}{3}{subsection.3.3}\protected@file@percent }
+\citation{ying2019gnnexplainer}
+\citation{vu2020pgmexplainer}
+\citation{albert2000error}
+\citation{motter2002cascade}
+\citation{newman2010networks}
+\citation{cortes1995svm}
+\citation{markowitz1952portfolio}
+\citation{boyd2004convex}
+\citation{nesterov1994interior}
+\citation{nocedal2006numerical}
+\citation{kraft1988software}
+\citation{tibshirani1996lasso}
+\citation{yuan2006group}
+\citation{wang2013projection}
+\citation{laird2012soar}
+\citation{anderson2004actr}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Convex Optimization in Machine Learning}{4}{subsection.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Metacognition in Cognitive Systems}{4}{subsection.3.5}\protected@file@percent }
+\citation{buchanan1984mycin}
+\citation{lindsay1980dendral}
+\citation{lao2011path}
+\citation{yang2017knowledge}
+\citation{simonyan2014deep,sundararajan2017axiomatic}
+\citation{ying2019gnnexplainer}
+\citation{deyoung2020eraser}
+\citation{lundberg2017unified}
+\citation{albert2000error}
+\citation{lightman2023verify,wang2024mathshepherd}
+\citation{wang2024mathshepherd}
 \citation{rubin1974estimating,pearl2009causality}
-\@writefile{toc}{\contentsline {section}{\numberline {2}Related Work}{2}{section.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {3}Methodology}{3}{section.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Preliminaries: CIU and Structural Necessity}{3}{subsection.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}The SCU Objective}{3}{subsection.3.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Calibration Variants}{3}{subsection.3.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Theoretical Properties}{3}{subsection.3.4}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Step importance ranking results. Mean metrics across 200 traces (1027 steps). Bootstrap CIs at 95\%. Friedman $\chi ^2(6) = 142.3$, $p < 0.001$.}}{4}{table.1}\protected@file@percent }
-\newlabel{tab:ranking-results}{{1}{4}{Step importance ranking results. Mean metrics across 200 traces (1027 steps). Bootstrap CIs at 95\%. Friedman $\chi ^2(6) = 142.3$, $p < 0.001$}{table.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Step Importance Ranking Evaluation}{4}{subsection.3.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {4}Experiments}{4}{section.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Setup and Data}{4}{subsection.4.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Calibration Quality}{4}{subsection.4.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Ablation Study}{4}{subsection.4.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Downstream Filtering on Real Data}{4}{subsection.4.4}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Ablation study: contribution of each SCU term. $\Delta $ is the change in mean Spearman $\rho $ from the full QP configuration ($\alpha =1.0$, $\beta =0.5$, $\gamma =0.2$, $\delta =0.1$).}}{5}{table.2}\protected@file@percent }
-\newlabel{tab:ablation}{{2}{5}{Ablation study: contribution of each SCU term. $\Delta $ is the change in mean Spearman $\rho $ from the full QP configuration ($\alpha =1.0$, $\beta =0.5$, $\gamma =0.2$, $\delta =0.1$)}{table.2}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {5}Discussion}{5}{section.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Limitations}{5}{subsection.5.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {6}Conclusion}{5}{section.6}\protected@file@percent }
+\citation{pineau2021reproducibility}
+\citation{dodge2019show,bouthillier2019unreproducible}
+\citation{raji2021ai,liang2022holistic}
+\citation{gebru2021datasheets,bender2018data,mitchell2019model}
+\citation{cobbe2021training,yang2018hotpotqa}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.6}Positioning Summary}{5}{subsection.3.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.7}Reproducibility and Data Governance}{5}{subsection.3.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}Methodology}{6}{section.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}CIU Estimation}{6}{subsection.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.1}Intervention Types}{6}{subsubsection.4.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.2}Functional Validity of Interventions}{7}{subsubsection.4.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.3}Normalization}{7}{subsubsection.4.1.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Graph Construction}{7}{subsection.4.2}\protected@file@percent }
+\newlabel{sec:graph-construction}{{4.2}{7}{Graph Construction}{subsection.4.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.1}Nodes and Edges}{7}{subsubsection.4.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.2}DAG Verification and Graph Statistics}{7}{subsubsection.4.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.3}Illustrative Example}{7}{subsubsection.4.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Structural Necessity Computation}{8}{subsection.4.3}\protected@file@percent }
+\newlabel{sec:necessity-comp}{{4.3}{8}{Structural Necessity Computation}{subsection.4.3}{}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces Structural Necessity Computation}}{8}{algorithm.1}\protected@file@percent }
+\newlabel{alg:necessity}{{1}{8}{Structural Necessity Computation}{algorithm.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Redundancy Matrix Construction}{8}{subsection.4.4}\protected@file@percent }
+\newlabel{sec:redundancy-matrix}{{4.4}{8}{Redundancy Matrix Construction}{subsection.4.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Bottleneck Identification}{9}{subsection.4.5}\protected@file@percent }
+\newlabel{sec:bottleneck}{{4.5}{9}{Bottleneck Identification}{subsection.4.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.6}The SCU Objective}{9}{subsection.4.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.7}Calibration Variants}{9}{subsection.4.7}\protected@file@percent }
+\citation{boyd2004convex}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {2}{\ignorespaces SC-FMA QP: Structurally-Calibrated Functional Attribution via Quadratic Programming}}{10}{algorithm.2}\protected@file@percent }
+\newlabel{alg:scfma-qp}{{2}{10}{Calibration Variants}{algorithm.2}{}}
+\newlabel{line:ciu-normalize}{{5}{10}{Calibration Variants}{algorithm.2}{}}
+\newlabel{line:nec-normalize}{{17}{10}{Calibration Variants}{algorithm.2}{}}
+\newlabel{line:psd-correction}{{23}{10}{Calibration Variants}{algorithm.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.8}Theoretical Properties}{10}{subsection.4.8}\protected@file@percent }
+\newlabel{thm:convexity}{{4.1}{10}{Convexity and Uniqueness}{theorem.4.1}{}}
+\newlabel{lem:hessian}{{4.2}{10}{Positive Definiteness of the Hessian}{theorem.4.2}{}}
+\citation{boyd2004convex}
+\citation{boyd2004convex}
+\newlabel{thm:monotonicity}{{4.3}{11}{Monotonicity Preservation}{theorem.4.3}{}}
+\citation{wang2013projection}
+\newlabel{thm:variance}{{4.4}{12}{Variance Reduction}{theorem.4.4}{}}
+\newlabel{thm:bottleneck}{{4.5}{12}{Bottleneck Protection}{theorem.4.5}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.8.1}Corollaries}{13}{subsubsection.4.8.1}\protected@file@percent }
+\newlabel{cor:sparsity}{{4.6}{13}{Sparsity Control}{theorem.4.6}{}}
+\newlabel{cor:stability}{{4.7}{13}{Computational Stability}{theorem.4.7}{}}
+\citation{kraft1988software}
+\citation{nocedal2006numerical}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.8.2}Optimization Algorithm Convergence}{14}{subsubsection.4.8.2}\protected@file@percent }
+\newlabel{lem:slsqp}{{4.8}{14}{Local Convergence Rate}{theorem.4.8}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.9}Step Importance Ranking Evaluation}{14}{subsection.4.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Experiments}{14}{section.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Setup and Data}{14}{subsection.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.1.1}Synthetic Data Generation}{14}{subsubsection.5.1.1}\protected@file@percent }
+\citation{cobbe2021training}
+\citation{yang2018hotpotqa}
+\citation{shrikumar2017learning}
+\citation{hao2021self}
+\citation{abnar2020quantifying}
+\citation{gromping2007estimators}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.1.2}Real-World Data}{15}{subsubsection.5.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.1.3}Baseline Methods}{15}{subsubsection.5.1.3}\protected@file@percent }
+\newlabel{sec:baselines}{{5.1.3}{15}{Baseline Methods}{subsubsection.5.1.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Hyperparameter Tuning}{16}{subsection.5.2}\protected@file@percent }
+\newlabel{sec:hparam}{{5.2}{16}{Hyperparameter Tuning}{subsection.5.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Calibration Quality}{16}{subsection.5.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Extended Ablation Study}{16}{subsection.5.4}\protected@file@percent }
+\newlabel{sec:ablation-ext}{{5.4}{16}{Extended Ablation Study}{subsection.5.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.5}Error Analysis}{17}{subsection.5.5}\protected@file@percent }
+\newlabel{sec:error}{{5.5}{17}{Error Analysis}{subsection.5.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.6}Computational Efficiency}{17}{subsection.5.6}\protected@file@percent }
+\newlabel{sec:efficiency}{{5.6}{17}{Computational Efficiency}{subsection.5.6}{}}
+\citation{cardoso2024medicalreasoning}
+\citation{markowitz1952portfolio}
+\citation{evans2018learning}
+\citation{lao2011path}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.7}Downstream Filtering on Real Data}{18}{subsection.5.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}Discussion}{18}{section.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Implications for Knowledge-Based Systems}{18}{subsection.6.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.1.1}Knowledge Verification Workflow Optimization}{18}{subsubsection.6.1.1}\protected@file@percent }
+\citation{galarraga2013amie}
+\citation{bellomarini2024knowledgegraphs}
+\citation{wachter2017counterfactual,guidotti2018survey}
+\citation{wachter2017counterfactual}
+\citation{guidotti2018survey}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.1.2}Knowledge Base Maintenance and Evolution}{19}{subsubsection.6.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.1.3}Explainability Enhancement}{19}{subsubsection.6.1.3}\protected@file@percent }
+\citation{galarraga2013amie}
+\citation{bellomarini2024knowledgegraphs}
+\citation{manhaeve2018deepproblog}
+\citation{guidotti2018survey}
+\citation{bellomarini2024knowledgegraphs}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.1.4}Integration Pathways with Existing KBS Technologies}{20}{subsubsection.6.1.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.1.5}Limitations and Outlook for KBS Integration}{20}{subsubsection.6.1.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7}Reproducibility and Limitations}{21}{section.7}\protected@file@percent }
+\newlabel{sec:reproducibility}{{7}{21}{Reproducibility and Limitations}{section.7}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.1}Reproducibility Architecture}{21}{subsection.7.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.2}Scope and Limitations}{21}{subsection.7.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {8}Conclusion}{22}{section.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {A}Extended Proofs and Derivations}{23}{section.A}\protected@file@percent }
+\newlabel{app:proofs}{{A}{23}{Extended Proofs and Derivations}{section.A}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {A.1}KKT Conditions for the SCU Objective}{23}{subsection.A.1}\protected@file@percent }
+\newlabel{app:kkt}{{A.1}{23}{KKT Conditions for the SCU Objective}{subsection.A.1}{}}
+\newlabel{app:kkt-stationarity}{{A.20}{23}{KKT Conditions for the SCU Objective}{equation.20}{}}
+\newlabel{app:kkt-dual-feas}{{A.21}{23}{KKT Conditions for the SCU Objective}{equation.21}{}}
+\newlabel{app:kkt-compl}{{A.22}{23}{KKT Conditions for the SCU Objective}{equation.22}{}}
+\newlabel{app:kkt-primal-feas}{{A.23}{23}{KKT Conditions for the SCU Objective}{equation.23}{}}
+\newlabel{app:kkt-sum}{{A.24}{23}{KKT Conditions for the SCU Objective}{equation.24}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {A.2}Derivation of the Variance Reduction Bound}{23}{subsection.A.2}\protected@file@percent }
+\newlabel{app:variance-derivation}{{A.2}{23}{Derivation of the Variance Reduction Bound}{subsection.A.2}{}}
+\citation{wang2013projection}
+\@writefile{toc}{\contentsline {subsection}{\numberline {A.3}Tightness Construction for Bottleneck Lower Bound}{24}{subsection.A.3}\protected@file@percent }
+\newlabel{app:bottleneck-tightness}{{A.3}{24}{Tightness Construction for Bottleneck Lower Bound}{subsection.A.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {A.4}Monotonicity Violation under Redundancy}{24}{subsection.A.4}\protected@file@percent }
+\newlabel{app:monotonicity-redundancy}{{A.4}{24}{Monotonicity Violation under Redundancy}{subsection.A.4}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {B}Additional Experimental Results and Figures}{25}{section.B}\protected@file@percent }
+\newlabel{app:additional-figures}{{B}{25}{Additional Experimental Results and Figures}{section.B}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {B.1}Full Ranking Metrics per Trace Size}{25}{subsection.B.1}\protected@file@percent }
+\newlabel{app:per-size}{{B.1}{25}{Full Ranking Metrics per Trace Size}{subsection.B.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {B.2}Supplementary Diagnostic Figures}{25}{subsection.B.2}\protected@file@percent }
+\newlabel{app:supp-figures}{{B.2}{25}{Supplementary Diagnostic Figures}{subsection.B.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {B.3}Stratum-Dependent Held-Out Analysis}{25}{subsection.B.3}\protected@file@percent }
+\newlabel{app:stratum}{{B.3}{25}{Stratum-Dependent Held-Out Analysis}{subsection.B.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {B.4}Taxonomy-Stratified Ablation}{25}{subsection.B.4}\protected@file@percent }
+\newlabel{app:taxonomy-ablation}{{B.4}{25}{Taxonomy-Stratified Ablation}{subsection.B.4}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {C}Implementation Details and Reproducibility}{25}{section.C}\protected@file@percent }
+\newlabel{app:implementation}{{C}{25}{Implementation Details and Reproducibility}{section.C}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {C.1}Reproducibility Checklist}{25}{subsection.C.1}\protected@file@percent }
+\newlabel{app:repro-checklist}{{C.1}{25}{Reproducibility Checklist}{subsection.C.1}{}}
 \bibstyle{cas-model2-names}
 \bibdata{references}
-\bibcite{adebayo2018sanity}{{1}{2018}{{Adebayo et~al.}}{{Adebayo, Gilmer, Muelly, Goodfellow, Hardt and Kim}}}
+\bibcite{abnar2020quantifying}{{1}{2020}{{Abnar and Zuidema}}{{}}}
 \bibcite{albert2000error}{{2}{2000}{{Albert et~al.}}{{Albert, Jeong and Barabasi}}}
-\bibcite{besta2024graphofthoughts}{{3}{2024}{{Besta et~al.}}{{Besta, Blach, Kubicek, Gerstenberger, Gianinazzi, Gajda, Lehmann, Podstawski, Niewiadomski, Nyczyk and Hoefler}}}
-\bibcite{bouthillier2019unreproducible}{{4}{2019}{{Bouthillier et~al.}}{{Bouthillier, Laurent and Vincent}}}
-\bibcite{cobbe2021training}{{5}{2021}{{Cobbe et~al.}}{{Cobbe, Kosaraju, Bavarian, Chen, Jun, Kaiser, Plappert, Tworek, Hilton, Nakano, Hesse and Schulman}}}
-\bibcite{deyoung2020eraser}{{6}{2020}{{DeYoung et~al.}}{{DeYoung, Jain, Rajani, Lehman, Xiong, Socher and Wallace}}}
-\bibcite{dodge2019show}{{7}{2019}{{Dodge et~al.}}{{Dodge, Gururangan, Card, Schwartz and Smith}}}
-\bibcite{gebru2021datasheets}{{8}{2021}{{Gebru et~al.}}{{Gebru, Morgenstern, Vecchione, Vaughan, Wallach, Daume~III and Crawford}}}
-\bibcite{hernan2020causal}{{9}{2020}{{Hernan and Robins}}{{}}}
-\bibcite{jacovi2020towards}{{10}{2020}{{Jacovi and Goldberg}}{{}}}
-\bibcite{jain2019attention}{{11}{2019}{{Jain and Wallace}}{{}}}
-\bibcite{kiela2021dynabench}{{12}{2021}{{Kiela et~al.}}{{Kiela, Bartolo, Nie, Kaushik, Geiger, Wu, Vidgen, Prasad, Singh, Ringshia, Ma, Thrush, Riedel, Waseem, Stenetorp, Jia, Bansal, Potts and Williams}}}
-\bibcite{kojima2022large}{{13}{2022}{{Kojima et~al.}}{{Kojima, Gu, Reid, Matsuo and Iwasawa}}}
-\bibcite{lee2022deduplicating}{{14}{2022}{{Lee et~al.}}{{Lee, Ippolito, Nystrom, Zhang, Eck, Callison-Burch and Carlini}}}
-\bibcite{liang2022helm}{{15}{2022}{{Liang et~al.}}{{Liang, Bommasani, Lee, Tsipras, Soylu, Yasunaga, Zhang, Narayanan, Wu, Kumar, Newman, Yuan, Yan, Zhang, Cosgrove, Manning, Re, Acosta-Navas, Hudson, Zelikman, Durmus, Ladhak, Rong, Ren, Yao, Wang, Santhanam, Orr, Zheng, Yuksekgonul, Suzgun, Kim, Guha, Chatterji, Khattab, Henderson, Huang, Chi, Xie, Santurkar, Ganguli, Hashimoto, Icard, Zhang, Chaudhary, Wang, Li, Mai, Zhang and Koreeda}}}
-\bibcite{lightman2023verify}{{16}{2023}{{Lightman et~al.}}{{Lightman, Kosaraju, Burda, Edwards, Baker, Lee, Leike, Schulman, Sutskever and Cobbe}}}
-\bibcite{lundberg2017unified}{{17}{2017}{{Lundberg and Lee}}{{}}}
-\bibcite{madaan2023selfrefine}{{18}{2023}{{Madaan et~al.}}{{Madaan, Tandon, Gupta, Hallinan, Gao, Wiegreffe, Alon, Dziri, Prabhumoye, Yang, Gupta, Majumder, Hermann, Welleck, Yazdanbakhsh and Clark}}}
-\bibcite{mitchell2019modelcards}{{19}{2019}{{Mitchell et~al.}}{{Mitchell, Wu, Zaldivar, Barnes, Vasserman, Hutchinson, Spitzer, Raji and Gebru}}}
-\bibcite{motter2002cascade}{{20}{2002}{{Motter and Lai}}{{}}}
-\bibcite{newman2010networks}{{21}{2010}{{Newman}}{{}}}
-\bibcite{pearl2009causality}{{22}{2009}{{Pearl}}{{}}}
-\bibcite{pineau2021reproducibility}{{23}{2021}{{Pineau et~al.}}{{Pineau, Vincent-Lamarre, Sinha, Lariviere, Beygelzimer, d'Alche Buc, Fox and Larochelle}}}
-\bibcite{raji2021benchmark}{{24}{2021}{{Raji et~al.}}{{Raji, Bender, Paullada, Denton and Hanna}}}
-\bibcite{ribeiro2016why}{{25}{2016}{{Ribeiro et~al.}}{{Ribeiro, Singh and Guestrin}}}
-\bibcite{rubin1974estimating}{{26}{1974}{{Rubin}}{{}}}
-\bibcite{shinn2023reflexion}{{27}{2023}{{Shinn et~al.}}{{Shinn, Cassano, Gopinath, Narasimhan and Yao}}}
-\bibcite{sundararajan2017axiomatic}{{28}{2017}{{Sundararajan et~al.}}{{Sundararajan, Taly and Yan}}}
-\bibcite{uesato2022solving}{{29}{2022}{{Uesato et~al.}}{{Uesato, Kushman, Kumar, Song, Siegel, Wang, Creswell, Irving and Higgins}}}
-\bibcite{wachter2017counterfactual}{{30}{2017}{{Wachter et~al.}}{{Wachter, Mittelstadt and Russell}}}
-\bibcite{wang2019superglue}{{31}{2019}{{Wang et~al.}}{{Wang, Pruksachatkun, Nangia, Singh, Michael, Hill, Levy and Bowman}}}
-\bibcite{wang2018glue}{{32}{2018}{{Wang et~al.}}{{Wang, Singh, Michael, Hill, Levy and Bowman}}}
-\bibcite{wang2024mathshepherd}{{33}{2024}{{Wang et~al.}}{{Wang, Li, Shao, Xu, Dai, Li, Chen, Wu and Sui}}}
-\bibcite{wang2023selfconsistency}{{34}{2023}{{Wang et~al.}}{{Wang, Wei, Schuurmans, Le, Chi, Narang, Chowdhery and Zhou}}}
-\bibcite{wei2022chainofthought}{{35}{2022}{{Wei et~al.}}{{Wei, Wang, Schuurmans, Bosma, Ichter, Xia, Chi, Le and Zhou}}}
-\bibcite{wiegreffe2019attention}{{36}{2019}{{Wiegreffe and Pinter}}{{}}}
-\bibcite{yao2023treeofthoughts}{{37}{2023a}{{Yao et~al.}}{{Yao, Yu, Zhao, Shafran, Griffiths, Cao and Narasimhan}}}
-\bibcite{yao2023react}{{38}{2023b}{{Yao et~al.}}{{Yao, Zhao, Yu, Du, Shafran, Narasimhan and Cao}}}
-\bibcite{ying2019gnnexplainer}{{39}{2019}{{Ying et~al.}}{{Ying, Bourgeois, You, Zitnik and Leskovec}}}
-\bibcite{zelikman2022star}{{40}{2022}{{Zelikman et~al.}}{{Zelikman, Wu, Mu and Goodman}}}
-\bibcite{zhou2023leasttomost}{{41}{2023}{{Zhou et~al.}}{{Zhou, Scharli, Hou, Wei, Scales, Wang, Schuurmans, Cui, Bousquet, Le and Chi}}}
-\csxdef{lastpage}{8}
-\gdef \@abspage@last{9}
+\bibcite{anderson2004actr}{{3}{2004}{{Anderson et~al.}}{{Anderson, Bothell, Byrne, Douglass, Lebiere and Qin}}}
+\bibcite{bellomarini2024knowledgegraphs}{{4}{2024}{{Bellomarini et~al.}}{{Bellomarini, Fayzrakhmanov, Gottlob, Kravchenko, Laurenza, Nenov, Reissfelder, Sallinger, Sherkhonov, Vahdati and Wu}}}
+\bibcite{bender2018data}{{5}{2018}{{Bender and Friedman}}{{}}}
+\bibcite{besta2024graphofthoughts}{{6}{2024}{{Besta et~al.}}{{Besta, Blach, Kubicek, Gerstenberger, Gianinazzi, Gajda, Lehmann, Podstawski, Niewiadomski, Nyczyk and Hoefler}}}
+\bibcite{bouthillier2019unreproducible}{{7}{2019}{{Bouthillier et~al.}}{{Bouthillier, Laurent and Vincent}}}
+\bibcite{boyd2004convex}{{8}{2004}{{Boyd and Vandenberghe}}{{}}}
+\bibcite{buchanan1984mycin}{{9}{1984}{{Buchanan and Shortliffe}}{{}}}
+\bibcite{cardoso2024medicalreasoning}{{10}{2024}{{Cardoso et~al.}}{{Cardoso, Li, Wang, Nori and Horvitz}}}
+\bibcite{cobbe2021training}{{11}{2021}{{Cobbe et~al.}}{{Cobbe, Kosaraju, Bavarian, Chen, Jun, Kaiser, Plappert, Tworek, Hilton, Nakano, Hesse and Schulman}}}
+\bibcite{cortes1995svm}{{12}{1995}{{Cortes and Vapnik}}{{}}}
+\bibcite{deyoung2020eraser}{{13}{2020}{{DeYoung et~al.}}{{DeYoung, Jain, Rajani, Lehman, Xiong, Socher and Wallace}}}
+\bibcite{dodge2019show}{{14}{2019}{{Dodge et~al.}}{{Dodge, Gururangan, Card, Schwartz and Smith}}}
+\bibcite{evans2018learning}{{15}{2018}{{Evans and Grefenstette}}{{}}}
+\bibcite{galarraga2013amie}{{16}{2013}{{Gal{\'a}rraga et~al.}}{{Gal{\'a}rraga, Teflioudi, Hose and Suchanek}}}
+\bibcite{gebru2021datasheets}{{17}{2021}{{Gebru et~al.}}{{Gebru, Morgenstern, Vecchione, Vaughan, Wallach, Daume~III and Crawford}}}
+\bibcite{gromping2007estimators}{{18}{2007}{{Gr{\"o}mping}}{{}}}
+\bibcite{guidotti2018survey}{{19}{2018}{{Guidotti et~al.}}{{Guidotti, Monreale, Ruggieri, Turini, Giannotti and Pedreschi}}}
+\bibcite{hao2021self}{{20}{2021}{{Hao et~al.}}{{Hao, Dong, Wei and Xu}}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {C.2}SLSQP Convergence Diagnostics}{26}{subsection.C.2}\protected@file@percent }
+\newlabel{app:slsqp-diagnostics}{{C.2}{26}{SLSQP Convergence Diagnostics}{subsection.C.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {C.3}Graph Construction Parameter Sensitivity}{26}{subsection.C.3}\protected@file@percent }
+\newlabel{app:graph-sensitivity}{{C.3}{26}{Graph Construction Parameter Sensitivity}{subsection.C.3}{}}
+\bibcite{jain2019attention}{{21}{2019}{{Jain and Wallace}}{{}}}
+\bibcite{kraft1988software}{{22}{1988}{{Kraft}}{{}}}
+\bibcite{laird2012soar}{{23}{2012}{{Laird}}{{}}}
+\bibcite{lao2011path}{{24}{2011}{{Lao et~al.}}{{Lao, Mitchell and Cohen}}}
+\bibcite{liang2022holistic}{{25}{2022}{{Liang et~al.}}{{Liang, Bommasani, Lee, Tsipras, Soylu, Yasunaga, Zhang, Narayanan, Wu, Kumar et~al.}}}
+\bibcite{lightman2023verify}{{26}{2023}{{Lightman et~al.}}{{Lightman, Kosaraju, Burda, Edwards, Baker, Lee, Leike, Schulman, Sutskever and Cobbe}}}
+\bibcite{lindsay1980dendral}{{27}{1980}{{Lindsay et~al.}}{{Lindsay, Buchanan, Feigenbaum and Lederberg}}}
+\bibcite{lundberg2017unified}{{28}{2017}{{Lundberg and Lee}}{{}}}
+\bibcite{luo2024improve}{{29}{2024}{{Luo et~al.}}{{Luo, Liu, Liu, Pentala and Deng}}}
+\bibcite{manhaeve2018deepproblog}{{30}{2018}{{Manhaeve et~al.}}{{Manhaeve, Duman{\v {c}}i{\'c}, Kimmig, Demeester and De~Raedt}}}
+\bibcite{markowitz1952portfolio}{{31}{1952}{{Markowitz}}{{}}}
+\bibcite{mitchell2019model}{{32}{2019}{{Mitchell et~al.}}{{Mitchell, Wu, Zaldivar, Barnes, Vasserman, Hutchinson, Spitzer, Raji and Gebru}}}
+\bibcite{motter2002cascade}{{33}{2002}{{Motter and Lai}}{{}}}
+\bibcite{nesterov1994interior}{{34}{1994}{{Nesterov and Nemirovskii}}{{}}}
+\bibcite{newman2010networks}{{35}{2010}{{Newman}}{{}}}
+\bibcite{nocedal2006numerical}{{36}{2006}{{Nocedal and Wright}}{{}}}
+\bibcite{pearl2009causality}{{37}{2009}{{Pearl}}{{}}}
+\bibcite{pineau2021reproducibility}{{38}{2021}{{Pineau et~al.}}{{Pineau, Vincent-Lamarre, Sinha, Lariviere, Beygelzimer, d'Alche Buc, Fox and Larochelle}}}
+\bibcite{raji2021ai}{{39}{2021}{{Raji et~al.}}{{Raji, Bender, Paullada, Denton and Hanna}}}
+\bibcite{ribeiro2016why}{{40}{2016}{{Ribeiro et~al.}}{{Ribeiro, Singh and Guestrin}}}
+\bibcite{rubin1974estimating}{{41}{1974}{{Rubin}}{{}}}
+\bibcite{shrikumar2017learning}{{42}{2017}{{Shrikumar et~al.}}{{Shrikumar, Greenside and Kundaje}}}
+\bibcite{simonyan2014deep}{{43}{2014}{{Simonyan et~al.}}{{Simonyan, Vedaldi and Zisserman}}}
+\bibcite{sundararajan2017axiomatic}{{44}{2017}{{Sundararajan et~al.}}{{Sundararajan, Taly and Yan}}}
+\bibcite{tibshirani1996lasso}{{45}{1996}{{Tibshirani}}{{}}}
+\bibcite{uesato2022solving}{{46}{2022}{{Uesato et~al.}}{{Uesato, Kushman, Kumar, Song, Siegel, Wang, Creswell, Irving and Higgins}}}
+\bibcite{vu2020pgmexplainer}{{47}{2020}{{Vu and Thai}}{{}}}
+\bibcite{wachter2017counterfactual}{{48}{2017}{{Wachter et~al.}}{{Wachter, Mittelstadt and Russell}}}
+\bibcite{wang2024mathshepherd}{{49}{2024}{{Wang et~al.}}{{Wang, Li, Shao, Xu, Dai, Li, Chen, Wu and Sui}}}
+\bibcite{wang2013projection}{{50}{2013}{{Wang and Carreira-Perpi{\~n}{\'a}n}}{{}}}
+\bibcite{wiegreffe2019attention}{{51}{2019}{{Wiegreffe and Pinter}}{{}}}
+\bibcite{yang2017knowledge}{{52}{2017}{{Yang et~al.}}{{Yang, Yang and Cohen}}}
+\bibcite{yang2018hotpotqa}{{53}{2018}{{Yang et~al.}}{{Yang, Qi, Zhang, Bengio, Cohen, Salakhutdinov and Manning}}}
+\bibcite{yao2023treeofthoughts}{{54}{2023}{{Yao et~al.}}{{Yao, Yu, Zhao, Shafran, Griffiths, Cao and Narasimhan}}}
+\bibcite{ying2019gnnexplainer}{{55}{2019}{{Ying et~al.}}{{Ying, Bourgeois, You, Zitnik and Leskovec}}}
+\bibcite{yuan2006group}{{56}{2006}{{Yuan and Lin}}{{}}}
+\bibcite{zheng2024processbench}{{57}{2024}{{Zheng et~al.}}{{Zheng, Zhang, Ding, Zhang, Zhuang and Zhou}}}
+\csxdef{lastpage}{28}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Summary of mathematical notation.}}{29}{table.1}\protected@file@percent }
+\newlabel{tab:notation}{{1}{29}{Summary of mathematical notation}{table.1}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Positioning of SC-FMA relative to prior work. Methods are classified along two axes: local vs.\ structural level of analysis (horizontal) and diagnostic vs.\ interventional function (vertical).}}{30}{table.2}\protected@file@percent }
+\newlabel{tab:positioning}{{2}{30}{Positioning of SC-FMA relative to prior work. Methods are classified along two axes: local vs.\ structural level of analysis (horizontal) and diagnostic vs.\ interventional function (vertical)}{table.2}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Data composition. Synthetic traces are used for method development, calibration, ablations, and error analysis. GSM8K and HotpotQA provide real-data downstream evidence. All splits are fixed-seed deterministic.}}{30}{table.3}\protected@file@percent }
+\newlabel{tab:data-splits}{{3}{30}{Data composition. Synthetic traces are used for method development, calibration, ablations, and error analysis. GSM8K and HotpotQA provide real-data downstream evidence. All splits are fixed-seed deterministic}{table.3}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Hyperparameter search grid and optimal values. For each parameter, we report the search range, step size, optimal value, and the $\Delta $Spearman $\rho $ when varying the parameter by $\pm 20\%$ from the optimum (one-at-a-time sensitivity).}}{30}{table.4}\protected@file@percent }
+\newlabel{tab:hparam-tuning}{{4}{30}{Hyperparameter search grid and optimal values. For each parameter, we report the search range, step size, optimal value, and the $\Delta $Spearman $\rho $ when varying the parameter by $\pm 20\%$ from the optimum (one-at-a-time sensitivity)}{table.4}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Step importance ranking results. Mean metrics across 200 traces (1,027 steps). Bootstrap CIs at 95\% (10k resamples). SC-FMA QP and Ridge are bolded. $\dagger $ indicates $p < 0.01$ vs.\ raw CIU (Wilcoxon signed-rank).}}{30}{table.5}\protected@file@percent }
+\newlabel{tab:ranking-results}{{5}{30}{Step importance ranking results. Mean metrics across 200 traces (1,027 steps). Bootstrap CIs at 95\% (10k resamples). SC-FMA QP and Ridge are bolded. $\dagger $ indicates $p < 0.01$ vs.\ raw CIU (Wilcoxon signed-rank)}{table.5}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Hyperparameter sensitivity curves. Panels (a)--(d) show the one-at-a-time effect of varying $\alpha $, $\beta $, $\gamma $, and $\delta $ while holding other parameters fixed at their validation-set optima. The vertical dashed line in each panel marks the selected optimal value. Shaded regions indicate $\pm 1$ standard error across 10 bootstrap resamples of the validation set.}}{31}{figure.1}\protected@file@percent }
+\newlabel{fig:sensitivity}{{1}{31}{Hyperparameter sensitivity curves. Panels (a)--(d) show the one-at-a-time effect of varying $\alpha $, $\beta $, $\gamma $, and $\delta $ while holding other parameters fixed at their validation-set optima. The vertical dashed line in each panel marks the selected optimal value. Shaded regions indicate $\pm 1$ standard error across 10 bootstrap resamples of the validation set}{figure.1}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Extended ablation study. $\Delta \rho $ is the change in mean Spearman $\rho $ from the full QP configuration ($\alpha =1.0$, $\beta =0.5$, $\gamma =0.2$, $\delta =0.1$, $\varepsilon =10^{-4}$). $p$-values are from one-sided Wilcoxon tests against the full QP. Effect size $r = Z/\sqrt  {N}$. Synergy $\checkmark  $ indicates statistically significant positive interaction ($p < 0.05$).}}{31}{table.6}\protected@file@percent }
+\newlabel{tab:ablation-ext}{{6}{31}{Extended ablation study. $\Delta \rho $ is the change in mean Spearman $\rho $ from the full QP configuration ($\alpha =1.0$, $\beta =0.5$, $\gamma =0.2$, $\delta =0.1$, $\varepsilon =10^{-4}$). $p$-values are from one-sided Wilcoxon tests against the full QP. Effect size $r = Z/\sqrt {N}$. Synergy $\checkmark $ indicates statistically significant positive interaction ($p < 0.05$)}{table.6}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Structural diagnostic: local CIU versus graph-level structural necessity across three perturbation modes (PRUNE, CASCADE, BYPASS) plus a pooled density panel. The diagonal reference line marks perfect agreement ($y = x$). The zero-inflation annotation highlights that $67.79\%$ of node-level necessity values are identically zero, and $49.54\%$ of steps have positive CIU but zero structural necessity. These diagnostics motivate the SC-FMA calibration framework by exposing the systematic divergence between local utility signals and topological structural role. See Appendix~\ref {app:additional-figures} for additional structural diagnostic figures including mode comparison, redundancy distributions, compensation analysis, and resilience curves.}}{32}{figure.2}\protected@file@percent }
+\newlabel{fig:ciu-vs-necessity}{{2}{32}{Structural diagnostic: local CIU versus graph-level structural necessity across three perturbation modes (PRUNE, CASCADE, BYPASS) plus a pooled density panel. The diagonal reference line marks perfect agreement ($y = x$). The zero-inflation annotation highlights that $67.79\%$ of node-level necessity values are identically zero, and $49.54\%$ of steps have positive CIU but zero structural necessity. These diagnostics motivate the SC-FMA calibration framework by exposing the systematic divergence between local utility signals and topological structural role. See Appendix~\ref {app:additional-figures} for additional structural diagnostic figures including mode comparison, redundancy distributions, compensation analysis, and resilience curves}{figure.2}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces Computational efficiency. Times are per-trace mean $\pm $ std over 40 test traces. Scaling column reports the exponent $p$ in the power-law fit $T(k) \propto k^p$ estimated over traces with $k = 3, 5, 8, 12, 20$ (generated for scaling analysis).}}{32}{table.7}\protected@file@percent }
+\newlabel{tab:efficiency}{{7}{32}{Computational efficiency. Times are per-trace mean $\pm $ std over 40 test traces. Scaling column reports the exponent $p$ in the power-law fit $T(k) \propto k^p$ estimated over traces with $k = 3, 5, 8, 12, 20$ (generated for scaling analysis)}{table.7}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {8}{\ignorespaces Time and space complexity comparison. Theoretical complexity is the asymptotic worst-case bound in big-$\mathcal  {O}$ notation. Empirical scaling exponent $p$ is the power-law fit $T(k) \propto k^p$. Space complexity accounts for all retained data structures (graph adjacency, redundancy matrix, Hessian).}}{33}{table.8}\protected@file@percent }
+\newlabel{tab:complexity}{{8}{33}{Time and space complexity comparison. Theoretical complexity is the asymptotic worst-case bound in big-$\mathcal {O}$ notation. Empirical scaling exponent $p$ is the power-law fit $T(k) \propto k^p$. Space complexity accounts for all retained data structures (graph adjacency, redundancy matrix, Hessian)}{table.8}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Computational scaling curves. Wall-clock time $T(k)$ as a function of trace size $k$ (3--20 steps) on log-log axes. Each curve shows the power-law fit $T(k) \propto k^p$; the exponent $p$ and corresponding $\mathcal  {O}$ complexity class are annotated. SC-FMA QP follows the $\mathcal  {O}(k^3)$ theoretical bound, while Ridge and Projection scale near-linearly. Error bars indicate $\pm 1$ std. over 10 traces per size. Dashed lines show the power-law fits with $R^2 > 0.96$ for all methods.}}{33}{figure.3}\protected@file@percent }
+\newlabel{fig:scaling}{{3}{33}{Computational scaling curves. Wall-clock time $T(k)$ as a function of trace size $k$ (3--20 steps) on log-log axes. Each curve shows the power-law fit $T(k) \propto k^p$; the exponent $p$ and corresponding $\mathcal {O}$ complexity class are annotated. SC-FMA QP follows the $\mathcal {O}(k^3)$ theoretical bound, while Ridge and Projection scale near-linearly. Error bars indicate $\pm 1$ std. over 10 traces per size. Dashed lines show the power-law fits with $R^2 > 0.96$ for all methods}{figure.3}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces GSM8K filtering and HotpotQA format-sensitivity analysis with 95\% bootstrap intervals. The GSM8K panel demonstrates that masking-based FMA CIU separates retained steps under a structured-answer metric, while the HotpotQA panel demonstrates a boundary condition for free-text answers. Near-chance performance on free-text tasks indicates answer-format dependency rather than method failure.}}{34}{figure.4}\protected@file@percent }
+\newlabel{fig:downstream-task-comparison}{{4}{34}{GSM8K filtering and HotpotQA format-sensitivity analysis with 95\% bootstrap intervals. The GSM8K panel demonstrates that masking-based FMA CIU separates retained steps under a structured-answer metric, while the HotpotQA panel demonstrates a boundary condition for free-text answers. Near-chance performance on free-text tasks indicates answer-format dependency rather than method failure}{figure.4}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {9}{\ignorespaces Downstream filtering results and position-confound checks. The table reports GSM8K filtering accuracy on the PRM/proxy comparison subset ($n=100$) across keep ratios; FMA values are bolded, and the position-control column distinguishes calibrated filtering evidence from position-driven baselines.}}{34}{table.9}\protected@file@percent }
+\newlabel{tab:downstream-filtering}{{9}{34}{Downstream filtering results and position-confound checks. The table reports GSM8K filtering accuracy on the PRM/proxy comparison subset ($n=100$) across keep ratios; FMA values are bolded, and the position-control column distinguishes calibrated filtering evidence from position-driven baselines}{table.9}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {B.10}{\ignorespaces Step importance ranking metrics stratified by trace size $k$. Mean Spearman $\rho $ over traces of each size. Standard errors in parentheses (bootstrap, 10k resamples).}}{35}{table.10}\protected@file@percent }
+\newlabel{tab:per-size}{{B.10}{35}{Step importance ranking metrics stratified by trace size $k$. Mean Spearman $\rho $ over traces of each size. Standard errors in parentheses (bootstrap, 10k resamples)}{table.10}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {B.5}{\ignorespaces Structural diagnostic summary by perturbation mode. The three perturbation modes (PRUNE, CASCADE, BYPASS) are compared on Pearson correlation, Spearman rank correlation, and zero-necessity fraction. Error bars indicate 95\% bootstrap confidence intervals. The consistency across modes confirms that weak CIU-necessity alignment is not an artifact of a single perturbation strategy.}}{35}{figure.5}\protected@file@percent }
+\newlabel{fig:mode-comparison}{{B.5}{35}{Structural diagnostic summary by perturbation mode. The three perturbation modes (PRUNE, CASCADE, BYPASS) are compared on Pearson correlation, Spearman rank correlation, and zero-necessity fraction. Error bars indicate 95\% bootstrap confidence intervals. The consistency across modes confirms that weak CIU-necessity alignment is not an artifact of a single perturbation strategy}{figure.5}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {B.6}{\ignorespaces Redundancy density and compensation analysis. Panel (a): per-trace redundancy density distribution (mean $0.3842$). Panel (b): per-node compensation ratio distribution under PRUNE mode (median $0.000$, mean $0.0084$). The concentration of compensation at zero confirms that reflective reasoning traces exhibit limited structural redistribution: removing a node rarely increases the necessity of its downstream neighbors.}}{35}{figure.6}\protected@file@percent }
+\newlabel{fig:redundancy-comp}{{B.6}{35}{Redundancy density and compensation analysis. Panel (a): per-trace redundancy density distribution (mean $0.3842$). Panel (b): per-node compensation ratio distribution under PRUNE mode (median $0.000$, mean $0.0084$). The concentration of compensation at zero confirms that reflective reasoning traces exhibit limited structural redistribution: removing a node rarely increases the necessity of its downstream neighbors}{figure.6}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {B.11}{\ignorespaces Held-out Stage 2 results stratified by difficulty tier. Bootstrap 95\% CIs from 10k resamples. ``CI excludes 0'' indicates whether the bootstrap interval is strictly positive.}}{35}{table.11}\protected@file@percent }
+\newlabel{tab:stratum}{{B.11}{35}{Held-out Stage 2 results stratified by difficulty tier. Bootstrap 95\% CIs from 10k resamples. ``CI excludes 0'' indicates whether the bootstrap interval is strictly positive}{table.11}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {B.7}{\ignorespaces Resilience curves under ordered node removal. Four removal orders are compared: necessity-first, attribution-first, sequential (original trace order), and deterministic random (hash-based). The $y$-axis shows remaining structural necessity fraction; the $x$-axis is the fraction of nodes removed. AUC values are annotated. The necessity-first curve degrades sharply (AUC $0.1488$), while attribution-first (AUC $0.4761$) is close to random (AUC $0.5098$), demonstrating that local CIU is not a sufficient proxy for structural criticality.}}{36}{figure.7}\protected@file@percent }
+\newlabel{fig:resilience-app}{{B.7}{36}{Resilience curves under ordered node removal. Four removal orders are compared: necessity-first, attribution-first, sequential (original trace order), and deterministic random (hash-based). The $y$-axis shows remaining structural necessity fraction; the $x$-axis is the fraction of nodes removed. AUC values are annotated. The necessity-first curve degrades sharply (AUC $0.1488$), while attribution-first (AUC $0.4761$) is close to random (AUC $0.5098$), demonstrating that local CIU is not a sufficient proxy for structural criticality}{figure.7}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {B.12}{\ignorespaces Taxonomy-stratified ablation analysis. $\Delta \rho $ values are relative to the full QP configuration. Standard errors from bootstrap (10k resamples).}}{36}{table.12}\protected@file@percent }
+\newlabel{tab:taxonomy-ablation}{{B.12}{36}{Taxonomy-stratified ablation analysis. $\Delta \rho $ values are relative to the full QP configuration. Standard errors from bootstrap (10k resamples)}{table.12}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {C.13}{\ignorespaces SLSQP convergence statistics by trace size $k$. Iteration counts and wall-clock times are mean $\pm $ std. over all traces of each size in the test set. Warm-start uses Ridge initialization; cold-start uses uniform $\mathbf  {w}^{(0)} = (1/k,\ldots  ,1/k)$.}}{36}{table.13}\protected@file@percent }
+\newlabel{tab:slsqp-convergence}{{C.13}{36}{SLSQP convergence statistics by trace size $k$. Iteration counts and wall-clock times are mean $\pm $ std. over all traces of each size in the test set. Warm-start uses Ridge initialization; cold-start uses uniform $\mathbf {w}^{(0)} = (1/k,\ldots ,1/k)$}{table.13}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {C.14}{\ignorespaces Sensitivity of downstream metrics to graph construction parameters. Values are mean $\pm $ std. over the test set. $\Delta $ columns show the absolute change from the default configuration ($\tau _{\text  {tfidf}} = 0.35$, $w_{\text  {topical}} = 0.75$).}}{36}{table.14}\protected@file@percent }
+\newlabel{tab:graph-sensitivity}{{C.14}{36}{Sensitivity of downstream metrics to graph construction parameters. Values are mean $\pm $ std. over the test set. $\Delta $ columns show the absolute change from the default configuration ($\tau _{\text {tfidf}} = 0.35$, $w_{\text {topical}} = 0.75$)}{table.14}{}}
+\gdef \@abspage@last{37}

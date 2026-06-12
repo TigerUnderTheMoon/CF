@@ -2,7 +2,7 @@
 
 Functional Metacognitive Attribution (FMA) is a diagnostic and design framework for studying reflective reasoning traces. It separates local functional utility from topology-sensitive structural necessity, then uses failed real-task and downstream routes as preliminary tests for reproducibility governance.
 
-Current package status: `PILOT_BLOCKED`.
+Current package status: methodological real step-ranking evidence passed; GSM8K/HotpotQA replay remains `PILOT_BLOCKED`.
 
 ## Current Evidence Boundary
 
@@ -16,6 +16,7 @@ Allowed current claims:
 - The v2.1 downstream filtering mini-check failed its filtering-signal gate.
 - v3 DELETE smoke failed sparse-signal gates: GSM8K `1/25`, HotpotQA `28/35`.
 - v3.1 REPLACE/masked-span smoke failed sparse-signal gates: GSM8K `8/25`, HotpotQA `14/35`.
+- v3.6 PRM800K hash-split locked validation supports real step-label ranking only: 4417 locked samples, 34219 locked steps, `w_struct` Spearman `0.6113401179642559`, raw local utility Spearman `-0.07745914322519368`, Holm correction passed, 0 API calls.
 
 Blocked current claims:
 
@@ -23,7 +24,8 @@ Blocked current claims:
 - downstream PRM/filtering gain
 - threshold retuning after failed smoke
 - mixing v3 DELETE and v3.1 rows
-- any status upgrade beyond `PILOT_BLOCKED`
+- any GSM8K/HotpotQA replay status upgrade beyond `PILOT_BLOCKED`
+- using PRM800K step-ranking evidence as GSM8K/HotpotQA replay validation
 
 ## Canonical Evidence Paths
 
@@ -47,6 +49,10 @@ Real-task boundary files:
 - `outputs/real_task_v3/qwen36_delete_hotfix_20260607/smoke_report.json`
 - `outputs/real_task_v3_1/qwen36_replace_smoke_20260608/smoke_report.json`
 - `outputs/real_task_v3_1/qwen36_replace_smoke_20260608/v3_1_replace_smoke_consistency_audit.json`
+- `outputs/real_task_v3_5_prm800k/failure_audit.json`
+- `outputs/real_task_v3_6_prm800k_hash/submission_evidence_summary.md`
+- `outputs/real_task_v3_6_prm800k_hash/decision_report.json`
+- `outputs/real_task_v3_6_prm800k_hash/locked_validation_report.json`
 
 ## Quick Start
 

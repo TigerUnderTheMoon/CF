@@ -1,0 +1,79 @@
+route:
+  id: real_task_v3_5_prm800k
+  version: "3.5"
+  description: "Offline real-data validation on PRM800K phase2 human step labels."
+  claim_scope: "M_STEP_RANKING real annotated step-label validation only"
+
+data:
+  source:
+    dataset: openai/prm800k
+    file: phase2_train.jsonl
+    url: https://media.githubusercontent.com/media/openai/prm800k/main/prm800k/data/phase2_train.jsonl
+    git_lfs_oid_sha256: "1110237feeb51d1bc200cb37b8f965cfdc1036eac7d506094049366fe7dc1089"
+    git_lfs_size_bytes: 456135365
+    source_kind: real_prm800k_phase2
+  dev:
+    start_row: 0
+    row_count: 1000
+    end_row: 999
+    purpose: "fit and freeze w_struct"
+  locked:
+    start_row: 3000
+    row_count: 2000
+    end_row: 4999
+    purpose: "one-shot locked validation; no threshold tuning"
+
+model:
+  name: w_struct_ridge_v1
+  ridge_lambda: 1.0
+  feature_policy:
+    label_fields_forbidden_in_features: true
+    allowed_inputs:
+      - step_text
+      - step_index
+      - trace_length
+      - text_length
+      - numeric_density
+      - equation_density
+      - lexical_cues
+      - relative_position
+
+validation_gates:
+  dev:
+    min_samples: 300
+    min_steps: 3000
+    stability_folds: 5
+    min_stability_positive_folds: 5
+  locked:
+    min_samples: 500
+    min_steps: 5000
+    primary_metric: mean_spearman
+    primary_contrast: w_struct_minus_raw_local_utility
+    bootstrap_samples: 10000
+    bootstrap_seed: 42
+    ci_lower_must_exceed: 0.0
+    holm_alpha: 0.05
+
+outputs:
+  root: outputs/real_task_v3_5_prm800k
+  dev_model: dev_w_struct_model.json
+  dev_report: dev_calibration_report.json
+  locked_report: locked_validation_report.json
+  decision_report: decision_report.json
+
+cost_policy:
+  api_calls_allowed: false
+  max_api_cost_usd: 0.0
+  read_full_source_file: false
+  max_source_rows_scanned: 5000
+
+claim_policy:
+  permits_real_step_ranking_claim: true
+  permits_gsm8k_hotpotqa_replay_claim: false
+  permits_prm_training_claim: false
+  current_real_task_replay_status_remains: future_validation
+  forbidden_claims:
+    - F_REAL_TASK_SC_FMA
+    - F_PRM_TRAINING
+    - deterministic_replay_claim
+    - causal_identification_claim

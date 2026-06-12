@@ -1,6 +1,6 @@
 # Closed Validation Routes Record
 
-This document consolidates the outcomes of all attempted real-task validation routes. All routes have failed or been abandoned. No real-task validation evidence may be claimed.
+This document consolidates the outcomes of attempted real-task validation routes. GSM8K/HotpotQA replay routes remain failed, blocked, or abandoned. A later PRM800K hash-split route passed for real step-label ranking only; it does not validate GSM8K/HotpotQA replay or downstream PRM training.
 
 ---
 
@@ -40,6 +40,22 @@ This document consolidates the outcomes of all attempted real-task validation ro
 - **Outcome**: **FAILED** - REPLACE smoke failed sparse-signal gates for both tasks (GSM8K 8 nonzero vs. gate 25; HotpotQA 14 nonzero vs. gate 35).
 - **Status**: Both DELETE and REPLACE interventions produced insufficient Delta-U variation. Archived to `outputs/archive/real_task_v3_1/`.
 
+## v3.5: PRM800K Contiguous Step-Ranking Route
+
+- **Plan**: `real_task_v3_5_prm800k_preregistration_plan.md`
+- **Route**: Offline real PRM800K phase2 step-label ranking with a contiguous dev/locked row split
+- **Outcome**: **FAILED** - Locked validation failed sample/step gates, `w_struct` did not beat raw local utility, and Holm correction failed.
+- **Root cause**: Contiguous PRM800K row splitting introduced row-order distribution drift; dev rows did not generalize to locked rows.
+- **Status**: Failed validation provenance only. Failure audit: `outputs/real_task_v3_5_prm800k/failure_audit.json`.
+
+## v3.6: PRM800K Hash-Split Step-Ranking Route
+
+- **Plan**: `real_task_v3_6_prm800k_hash_preregistration_plan.md`
+- **Route**: Offline real PRM800K phase2 step-label ranking with hash-stratified dev/locked split
+- **Outcome**: **PASSED FOR STEP-RANKING ONLY** - Locked validation used 4417 samples and 34219 steps; `w_struct` mean Spearman was `0.6113401179642559`, raw local utility mean Spearman was `-0.07745914322519368`, and Holm correction passed.
+- **Cost**: 0 API calls; estimated API cost USD `0.0`.
+- **Status**: Supports only `M_STEP_RANKING` / `M_STEP_RANKING_REAL_PRM800K`. It does not support `F_REAL_TASK_SC_FMA`, `F_PRM_TRAINING`, GSM8K/HotpotQA replay validation, deterministic replay validation, or causal identification claims.
+
 ## v2.1 Full Validation Route Decision
 
 - **Document**: `full_validation_route_decision.md` (archived)
@@ -57,6 +73,8 @@ This document consolidates the outcomes of all attempted real-task validation ro
 | v2.2 (exploratory) | FAILED | 0 nonzero GSM8K Delta-U; preflight drift |
 | v3 (real-task DELETE) | FAILED | Data scarcity (0 rows post-dedup) |
 | v3.1 (real-task REPLACE) | FAILED | Sparse signal both tasks |
+| v3.5 (PRM800K contiguous) | FAILED | Row-order distribution drift |
+| v3.6 (PRM800K hash split) | PASSED STEP-RANKING ONLY | Supports real PRM800K step-label ranking; not replay |
 | Legacy pilot | BLOCKED | Preflight drift failure |
 
-**No real-task validation evidence exists.** All claims involving real-task data MUST be labeled `failed_validation` or `pilot_blocked`.
+**No GSM8K/HotpotQA replay validation evidence exists.** Claims involving real-task replay MUST remain `failed_validation`, `pilot_blocked`, or `future_validation`. The only positive real-data validation currently recorded here is the v3.6 PRM800K step-ranking methodological claim.

@@ -140,7 +140,7 @@ Future work can extend this layer without changing the current deterministic Pha
 
 These directions should preserve the distinction between local reflective attribution and structural reflective necessity.
 
-Current readiness caveat: real-task evidence remains guarded pilot evidence while `readiness_audit.json` reports `PILOT_BLOCKED` and API preflight reports `PREFLIGHT_FAIL_DRIFT`.
+Current readiness caveat: GSM8K/HotpotQA generation-replay evidence remains guarded pilot evidence while `readiness_audit.json` reports `PILOT_BLOCKED` and API preflight reports `PREFLIGHT_FAIL_DRIFT`. Separately, `real_task_v3_6_prm800k_hash` passes real PRM800K step-label ranking validation for the SC-FMA methodological claim only; it does not validate replay, PRM training, or causal identification claims.
 
 ## Section 8 - Phase 7: Redundancy and Compensation
 

@@ -13,41 +13,102 @@
 \citation{rubin1974estimating,pearl2009causality}
 \@writefile{toc}{\contentsline {section}{\numberline {2}Related Work}{2}{section.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {3}Methodology}{3}{section.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Preliminaries: CIU and Structural Necessity}{3}{subsection.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}The SCU Objective}{3}{subsection.3.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Calibration Variants}{3}{subsection.3.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Theoretical Properties}{3}{subsection.3.4}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Step importance ranking results. Mean metrics across 200 traces (1027 steps). Bootstrap CIs at 95\%. Friedman $\chi ^2(6) = 142.3$, $p < 0.001$.}}{4}{table.1}\protected@file@percent }
-\newlabel{tab:ranking-results}{{1}{4}{Step importance ranking results. Mean metrics across 200 traces (1027 steps). Bootstrap CIs at 95\%. Friedman $\chi ^2(6) = 142.3$, $p < 0.001$}{table.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Step Importance Ranking Evaluation}{4}{subsection.3.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {4}Experiments}{4}{section.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Setup and Data}{4}{subsection.4.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Calibration Quality}{4}{subsection.4.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Ablation Study}{4}{subsection.4.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Downstream Filtering on Real Data}{4}{subsection.4.4}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Ablation study: contribution of each SCU term. $\Delta $ is the change in mean Spearman $\rho $ from the full QP configuration ($\alpha =1.0$, $\beta =0.5$, $\gamma =0.2$, $\delta =0.1$).}}{5}{table.2}\protected@file@percent }
-\newlabel{tab:ablation}{{2}{5}{Ablation study: contribution of each SCU term. $\Delta $ is the change in mean Spearman $\rho $ from the full QP configuration ($\alpha =1.0$, $\beta =0.5$, $\gamma =0.2$, $\delta =0.1$)}{table.2}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces GSM8K filtering and HotpotQA format-sensitivity analysis with 95\% bootstrap intervals. The GSM8K panel demonstrates that masking-based FMA CIU separates retained steps under a structured-answer metric, while the HotpotQA panel demonstrates a boundary condition for free-text answers. Near-chance performance on free-text tasks indicates answer-format dependency rather than method failure.}}{5}{figure.1}\protected@file@percent }
-\newlabel{fig:downstream-task-comparison}{{1}{5}{GSM8K filtering and HotpotQA format-sensitivity analysis with 95\% bootstrap intervals. The GSM8K panel demonstrates that masking-based FMA CIU separates retained steps under a structured-answer metric, while the HotpotQA panel demonstrates a boundary condition for free-text answers. Near-chance performance on free-text tasks indicates answer-format dependency rather than method failure}{figure.1}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {5}Discussion}{5}{section.5}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Downstream filtering results and position-confound checks. The table reports GSM8K filtering accuracy on the PRM/proxy comparison subset ($n=100$) across keep ratios; FMA values are bolded, and the position-control column distinguishes calibrated filtering evidence from position-driven baselines.}}{6}{table.3}\protected@file@percent }
-\newlabel{tab:downstream-filtering}{{3}{6}{Downstream filtering results and position-confound checks. The table reports GSM8K filtering accuracy on the PRM/proxy comparison subset ($n=100$) across keep ratios; FMA values are bolded, and the position-control column distinguishes calibrated filtering evidence from position-driven baselines}{table.3}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Limitations}{6}{subsection.5.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {6}Conclusion}{6}{section.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}CIU Estimation}{3}{subsection.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.1.1}Intervention Types}{3}{subsubsection.3.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.1.2}Normalization}{3}{subsubsection.3.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Graph Construction}{3}{subsection.3.2}\protected@file@percent }
+\newlabel{sec:graph-construction}{{3.2}{3}{Graph Construction}{subsection.3.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.1}Nodes and Edges}{4}{subsubsection.3.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.2}DAG Verification and Graph Statistics}{4}{subsubsection.3.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.3}Illustrative Example}{4}{subsubsection.3.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Structural Necessity Computation}{4}{subsection.3.3}\protected@file@percent }
+\newlabel{sec:necessity-comp}{{3.3}{4}{Structural Necessity Computation}{subsection.3.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Redundancy Matrix Construction}{4}{subsection.3.4}\protected@file@percent }
+\newlabel{sec:redundancy-matrix}{{3.4}{4}{Redundancy Matrix Construction}{subsection.3.4}{}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces Structural Necessity Computation}}{5}{algorithm.1}\protected@file@percent }
+\newlabel{alg:necessity}{{1}{5}{Structural Necessity Computation}{algorithm.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Bottleneck Identification}{5}{subsection.3.5}\protected@file@percent }
+\newlabel{sec:bottleneck}{{3.5}{5}{Bottleneck Identification}{subsection.3.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.6}The SCU Objective}{5}{subsection.3.6}\protected@file@percent }
+\citation{boyd2004convex}
+\citation{boyd2004convex}
+\citation{boyd2004convex}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.7}Calibration Variants}{6}{subsection.3.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.8}Theoretical Properties}{6}{subsection.3.8}\protected@file@percent }
+\newlabel{thm:convexity}{{3.1}{6}{Convexity and Uniqueness}{theorem.3.1}{}}
+\newlabel{lem:hessian}{{3.2}{6}{Positive Definiteness of the Hessian}{theorem.3.2}{}}
+\newlabel{thm:monotonicity}{{3.3}{7}{Monotonicity Preservation}{theorem.3.3}{}}
+\newlabel{thm:variance}{{3.4}{7}{Variance Reduction}{theorem.3.4}{}}
+\citation{wang2013projection}
+\newlabel{thm:bottleneck}{{3.5}{8}{Bottleneck Protection}{theorem.3.5}{}}
+\citation{kraft1988software}
+\citation{nocedal2006numerical}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.8.1}Corollaries}{9}{subsubsection.3.8.1}\protected@file@percent }
+\newlabel{cor:sparsity}{{3.6}{9}{Sparsity Control}{theorem.3.6}{}}
+\newlabel{cor:stability}{{3.7}{9}{Computational Stability}{theorem.3.7}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.8.2}Optimization Algorithm Convergence}{9}{subsubsection.3.8.2}\protected@file@percent }
+\newlabel{lem:slsqp}{{3.8}{9}{Local Convergence Rate}{theorem.3.8}{}}
+\citation{cobbe2021training}
+\citation{yang2018hotpotqa}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.9}Step Importance Ranking Evaluation}{10}{subsection.3.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}Experiments}{10}{section.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Setup and Data}{10}{subsection.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.1}Synthetic Data Generation}{10}{subsubsection.4.1.1}\protected@file@percent }
+\citation{shrikumar2017learning}
+\citation{hao2021self}
+\citation{abnar2020quantifying}
+\citation{gromping2007estimators}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Data composition. Synthetic traces are used for method development, calibration, ablations, and error analysis. GSM8K and HotpotQA provide real-data downstream evidence. All splits are fixed-seed deterministic.}}{11}{table.1}\protected@file@percent }
+\newlabel{tab:data-splits}{{1}{11}{Data composition. Synthetic traces are used for method development, calibration, ablations, and error analysis. GSM8K and HotpotQA provide real-data downstream evidence. All splits are fixed-seed deterministic}{table.1}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.2}Real-World Data}{11}{subsubsection.4.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.3}Baseline Methods}{11}{subsubsection.4.1.3}\protected@file@percent }
+\newlabel{sec:baselines}{{4.1.3}{11}{Baseline Methods}{subsubsection.4.1.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Hyperparameter Tuning}{11}{subsection.4.2}\protected@file@percent }
+\newlabel{sec:hparam}{{4.2}{11}{Hyperparameter Tuning}{subsection.4.2}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Hyperparameter search grid and optimal values. For each parameter, we report the search range, step size, optimal value, and the $\Delta $Spearman $\rho $ when varying the parameter by $\pm 20\%$ from the optimum (one-at-a-time sensitivity).}}{12}{table.2}\protected@file@percent }
+\newlabel{tab:hparam-tuning}{{2}{12}{Hyperparameter search grid and optimal values. For each parameter, we report the search range, step size, optimal value, and the $\Delta $Spearman $\rho $ when varying the parameter by $\pm 20\%$ from the optimum (one-at-a-time sensitivity)}{table.2}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Step importance ranking results. Mean metrics across 200 traces (1,027 steps). Bootstrap CIs at 95\% (10k resamples). SC-FMA QP and Ridge are bolded. $\dagger $ indicates $p < 0.01$ vs.\ raw CIU (Wilcoxon signed-rank).}}{12}{table.3}\protected@file@percent }
+\newlabel{tab:ranking-results}{{3}{12}{Step importance ranking results. Mean metrics across 200 traces (1,027 steps). Bootstrap CIs at 95\% (10k resamples). SC-FMA QP and Ridge are bolded. $\dagger $ indicates $p < 0.01$ vs.\ raw CIU (Wilcoxon signed-rank)}{table.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Calibration Quality}{12}{subsection.4.3}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Extended ablation study. $\Delta \rho $ is the change in mean Spearman $\rho $ from the full QP configuration ($\alpha =1.0$, $\beta =0.5$, $\gamma =0.2$, $\delta =0.1$, $\varepsilon =10^{-4}$). $p$-values are from one-sided Wilcoxon tests against the full QP. Effect size $r = Z/\sqrt  {N}$. Synergy $\checkmark  $ indicates statistically significant positive interaction ($p < 0.05$).}}{13}{table.4}\protected@file@percent }
+\newlabel{tab:ablation-ext}{{4}{13}{Extended ablation study. $\Delta \rho $ is the change in mean Spearman $\rho $ from the full QP configuration ($\alpha =1.0$, $\beta =0.5$, $\gamma =0.2$, $\delta =0.1$, $\varepsilon =10^{-4}$). $p$-values are from one-sided Wilcoxon tests against the full QP. Effect size $r = Z/\sqrt {N}$. Synergy $\checkmark $ indicates statistically significant positive interaction ($p < 0.05$)}{table.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Extended Ablation Study}{13}{subsection.4.4}\protected@file@percent }
+\newlabel{sec:ablation-ext}{{4.4}{13}{Extended Ablation Study}{subsection.4.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Error Analysis}{13}{subsection.4.5}\protected@file@percent }
+\newlabel{sec:error}{{4.5}{13}{Error Analysis}{subsection.4.5}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Computational efficiency. Times are per-trace mean $\pm $ std over 40 test traces. Scaling column reports the exponent $p$ in the power-law fit $T(k) \propto k^p$ estimated over traces with $k = 3, 5, 8, 12, 20$ (generated for scaling analysis).}}{14}{table.5}\protected@file@percent }
+\newlabel{tab:efficiency}{{5}{14}{Computational efficiency. Times are per-trace mean $\pm $ std over 40 test traces. Scaling column reports the exponent $p$ in the power-law fit $T(k) \propto k^p$ estimated over traces with $k = 3, 5, 8, 12, 20$ (generated for scaling analysis)}{table.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.6}Computational Efficiency}{14}{subsection.4.6}\protected@file@percent }
+\newlabel{sec:efficiency}{{4.6}{14}{Computational Efficiency}{subsection.4.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.7}Downstream Filtering on Real Data}{14}{subsection.4.7}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Downstream filtering results and position-confound checks. The table reports GSM8K filtering accuracy on the PRM/proxy comparison subset ($n=100$) across keep ratios; FMA values are bolded, and the position-control column distinguishes calibrated filtering evidence from position-driven baselines.}}{15}{table.6}\protected@file@percent }
+\newlabel{tab:downstream-filtering}{{6}{15}{Downstream filtering results and position-confound checks. The table reports GSM8K filtering accuracy on the PRM/proxy comparison subset ($n=100$) across keep ratios; FMA values are bolded, and the position-control column distinguishes calibrated filtering evidence from position-driven baselines}{table.6}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Discussion}{15}{section.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Limitations}{15}{subsection.5.1}\protected@file@percent }
 \bibstyle{cas-model2-names}
 \bibdata{references}
 \bibcite{albert2000error}{{1}{2000}{{Albert et~al.}}{{Albert, Jeong and Barabasi}}}
-\bibcite{cobbe2021training}{{2}{2021}{{Cobbe et~al.}}{{Cobbe, Kosaraju, Bavarian, Chen, Jun, Kaiser, Plappert, Tworek, Hilton, Nakano, Hesse and Schulman}}}
-\bibcite{lightman2023verify}{{3}{2023}{{Lightman et~al.}}{{Lightman, Kosaraju, Burda, Edwards, Baker, Lee, Leike, Schulman, Sutskever and Cobbe}}}
-\bibcite{lundberg2017unified}{{4}{2017}{{Lundberg and Lee}}{{}}}
-\bibcite{madaan2023selfrefine}{{5}{2023}{{Madaan et~al.}}{{Madaan, Tandon, Gupta, Hallinan, Gao, Wiegreffe, Alon, Dziri, Prabhumoye, Yang, Gupta, Majumder, Hermann, Welleck, Yazdanbakhsh and Clark}}}
-\bibcite{pearl2009causality}{{6}{2009}{{Pearl}}{{}}}
-\bibcite{ribeiro2016why}{{7}{2016}{{Ribeiro et~al.}}{{Ribeiro, Singh and Guestrin}}}
-\bibcite{rubin1974estimating}{{8}{1974}{{Rubin}}{{}}}
-\bibcite{shinn2023reflexion}{{9}{2023}{{Shinn et~al.}}{{Shinn, Cassano, Gopinath, Narasimhan and Yao}}}
-\bibcite{sundararajan2017axiomatic}{{10}{2017}{{Sundararajan et~al.}}{{Sundararajan, Taly and Yan}}}
-\bibcite{uesato2022solving}{{11}{2022}{{Uesato et~al.}}{{Uesato, Kushman, Kumar, Song, Siegel, Wang, Creswell, Irving and Higgins}}}
-\bibcite{wang2024mathshepherd}{{12}{2024}{{Wang et~al.}}{{Wang, Li, Shao, Xu, Dai, Li, Chen, Wu and Sui}}}
-\bibcite{ying2019gnnexplainer}{{13}{2019}{{Ying et~al.}}{{Ying, Bourgeois, You, Zitnik and Leskovec}}}
-\csxdef{lastpage}{7}
-\gdef \@abspage@last{8}
+\bibcite{boyd2004convex}{{2}{2004}{{Boyd and Vandenberghe}}{{}}}
+\bibcite{cobbe2021training}{{3}{2021}{{Cobbe et~al.}}{{Cobbe, Kosaraju, Bavarian, Chen, Jun, Kaiser, Plappert, Tworek, Hilton, Nakano, Hesse and Schulman}}}
+\bibcite{kraft1988software}{{4}{1988}{{Kraft}}{{}}}
+\bibcite{lightman2023verify}{{5}{2023}{{Lightman et~al.}}{{Lightman, Kosaraju, Burda, Edwards, Baker, Lee, Leike, Schulman, Sutskever and Cobbe}}}
+\bibcite{lundberg2017unified}{{6}{2017}{{Lundberg and Lee}}{{}}}
+\bibcite{madaan2023selfrefine}{{7}{2023}{{Madaan et~al.}}{{Madaan, Tandon, Gupta, Hallinan, Gao, Wiegreffe, Alon, Dziri, Prabhumoye, Yang, Gupta, Majumder, Hermann, Welleck, Yazdanbakhsh and Clark}}}
+\bibcite{nocedal2006numerical}{{8}{2006}{{Nocedal and Wright}}{{}}}
+\bibcite{pearl2009causality}{{9}{2009}{{Pearl}}{{}}}
+\@writefile{toc}{\contentsline {section}{\numberline {6}Conclusion}{16}{section.6}\protected@file@percent }
+\bibcite{ribeiro2016why}{{10}{2016}{{Ribeiro et~al.}}{{Ribeiro, Singh and Guestrin}}}
+\bibcite{rubin1974estimating}{{11}{1974}{{Rubin}}{{}}}
+\bibcite{shinn2023reflexion}{{12}{2023}{{Shinn et~al.}}{{Shinn, Cassano, Gopinath, Narasimhan and Yao}}}
+\bibcite{sundararajan2017axiomatic}{{13}{2017}{{Sundararajan et~al.}}{{Sundararajan, Taly and Yan}}}
+\bibcite{uesato2022solving}{{14}{2022}{{Uesato et~al.}}{{Uesato, Kushman, Kumar, Song, Siegel, Wang, Creswell, Irving and Higgins}}}
+\bibcite{wang2024mathshepherd}{{15}{2024}{{Wang et~al.}}{{Wang, Li, Shao, Xu, Dai, Li, Chen, Wu and Sui}}}
+\bibcite{wang2013projection}{{16}{2013}{{Wang and Carreira-Perpi{\~n}{\'a}n}}{{}}}
+\bibcite{ying2019gnnexplainer}{{17}{2019}{{Ying et~al.}}{{Ying, Bourgeois, You, Zitnik and Leskovec}}}
+\csxdef{lastpage}{17}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Hyperparameter sensitivity curves. One-at-a-time variation around optimal values on the validation set. Shaded regions indicate $\pm 1$ standard error across 10 bootstrap resamples.}}{18}{figure.1}\protected@file@percent }
+\newlabel{fig:sensitivity}{{1}{18}{Hyperparameter sensitivity curves. One-at-a-time variation around optimal values on the validation set. Shaded regions indicate $\pm 1$ standard error across 10 bootstrap resamples}{figure.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Computational scaling curves. Wall-clock time as a function of trace size $k$ (3--20 steps). Error bars indicate $\pm 1$ std. over 10 traces per size. Dashed lines show power-law fits.}}{18}{figure.2}\protected@file@percent }
+\newlabel{fig:scaling}{{2}{18}{Computational scaling curves. Wall-clock time as a function of trace size $k$ (3--20 steps). Error bars indicate $\pm 1$ std. over 10 traces per size. Dashed lines show power-law fits}{figure.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces GSM8K filtering and HotpotQA format-sensitivity analysis with 95\% bootstrap intervals. The GSM8K panel demonstrates that masking-based FMA CIU separates retained steps under a structured-answer metric, while the HotpotQA panel demonstrates a boundary condition for free-text answers. Near-chance performance on free-text tasks indicates answer-format dependency rather than method failure.}}{18}{figure.3}\protected@file@percent }
+\newlabel{fig:downstream-task-comparison}{{3}{18}{GSM8K filtering and HotpotQA format-sensitivity analysis with 95\% bootstrap intervals. The GSM8K panel demonstrates that masking-based FMA CIU separates retained steps under a structured-answer metric, while the HotpotQA panel demonstrates a boundary condition for free-text answers. Near-chance performance on free-text tasks indicates answer-format dependency rather than method failure}{figure.3}{}}

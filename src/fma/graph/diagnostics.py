@@ -365,8 +365,13 @@ def _plot_attribution_vs_necessity(
         axis.grid(alpha=0.25, linewidth=0.6)
     flat_axes[0].set_ylabel("Phase 6 structural necessity")
     flat_axes[2].set_ylabel("Phase 6 structural necessity")
-    sample_n = report["modes"][MODE_ORDER[0]]["correlation"]["num_samples"]
-    zero_fraction = report["cross_mode"]["mean_zero_structural_necessity_fraction"]
+    first_mode = report["modes"][MODE_ORDER[0]]
+    sample_n = first_mode.get("scatter", {}).get(
+        "num_samples",
+        len(records_by_mode[MODE_ORDER[0]]),
+    )
+    cross_mode = report.get("cross_mode") or _cross_mode_summary(report["modes"])
+    zero_fraction = cross_mode["mean_zero_structural_necessity_fraction"]
     fig.suptitle(
         f"Local Attribution vs Topology-Sensitive Necessity (n={sample_n}, zero={zero_fraction:.1%})",
         y=0.995,

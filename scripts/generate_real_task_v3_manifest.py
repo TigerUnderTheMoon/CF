@@ -15,6 +15,9 @@ from typing import Any, Iterable, Mapping, Sequence
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
+SRC_ROOT = PROJECT_ROOT / "src"
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
 
 from fma.io import load_records, write_records
 from fma.real_task_pilot.config import load_pilot_config
