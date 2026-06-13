@@ -1,4 +1,4 @@
-\begin{thebibliography}{56}
+\begin{thebibliography}{63}
 \expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
 \providecommand{\url}[1]{\texttt{#1}}
 \providecommand{\href}[2]{#2}
@@ -193,6 +193,14 @@
   \bibinfo{pages}{86--92}.
 \newblock \URLprefix \url{https://doi.org/10.1145/3458723},
   \DOIprefix\doi{10.1145/3458723}.
+%Type = Book
+\bibitem[{Gebser et~al.(2012)Gebser, Kaminski, Kaufmann and
+  Schaub}]{gebser2012answerset}
+\bibinfo{author}{Gebser, M.}, \bibinfo{author}{Kaminski, R.},
+  \bibinfo{author}{Kaufmann, B.}, \bibinfo{author}{Schaub, T.},
+  \bibinfo{year}{2012}.
+\newblock \bibinfo{title}{Answer Set Solving in Practice}.
+\newblock \bibinfo{publisher}{Morgan \& Claypool Publishers}.
 %Type = Article
 \bibitem[{Gr{\"o}mping(2007)}]{gromping2007estimators}
 \bibinfo{author}{Gr{\"o}mping, U.}, \bibinfo{year}{2007}.
@@ -222,6 +230,27 @@
   \bibinfo{pages}{12963--12971}.
 \newblock \URLprefix
   \url{https://ojs.aaai.org/index.php/AAAI/article/view/17533}.
+%Type = Misc
+\bibitem[{Hitzler et~al.(2012)Hitzler, Kr{\"o}tzsch, Parsia, Patel-Schneider
+  and Rudolph}]{hitzler2012owl2}
+\bibinfo{author}{Hitzler, P.}, \bibinfo{author}{Kr{\"o}tzsch, M.},
+  \bibinfo{author}{Parsia, B.}, \bibinfo{author}{Patel-Schneider, P.F.},
+  \bibinfo{author}{Rudolph, S.}, \bibinfo{year}{2012}.
+\newblock \bibinfo{title}{{OWL} 2 web ontology language primer (second
+  edition)}.
+\newblock \bibinfo{howpublished}{{W3C} Recommendation}.
+\newblock \URLprefix \url{https://www.w3.org/TR/owl2-primer/}.
+%Type = Article
+\bibitem[{Hu et~al.(2024)Hu, Liu, Zhao, Hou, Nie and
+  Li}]{hu2024knowledgeenhanced}
+\bibinfo{author}{Hu, L.}, \bibinfo{author}{Liu, Z.}, \bibinfo{author}{Zhao,
+  Z.}, \bibinfo{author}{Hou, L.}, \bibinfo{author}{Nie, L.},
+  \bibinfo{author}{Li, J.}, \bibinfo{year}{2024}.
+\newblock \bibinfo{title}{A survey of knowledge enhanced pre-trained language
+  models}.
+\newblock \bibinfo{journal}{IEEE Transactions on Knowledge and Data
+  Engineering} \bibinfo{volume}{36}, \bibinfo{pages}{1413--1430}.
+\newblock \DOIprefix\doi{10.1109/TKDE.2023.3310002}.
 %Type = Inproceedings
 \bibitem[{Jain and Wallace(2019)}]{jain2019attention}
 \bibinfo{author}{Jain, S.}, \bibinfo{author}{Wallace, B.C.},
@@ -232,6 +261,16 @@
   \bibinfo{pages}{3543--3556}.
 \newblock \URLprefix \url{https://aclanthology.org/N19-1357/},
   \DOIprefix\doi{10.18653/v1/N19-1357}.
+%Type = Article
+\bibitem[{Jin et~al.(2024)Jin, Liu, Han, Jiang, Ji and Han}]{jin2024llmgraphs}
+\bibinfo{author}{Jin, B.}, \bibinfo{author}{Liu, G.}, \bibinfo{author}{Han,
+  C.}, \bibinfo{author}{Jiang, M.}, \bibinfo{author}{Ji, H.},
+  \bibinfo{author}{Han, J.}, \bibinfo{year}{2024}.
+\newblock \bibinfo{title}{Large language models on graphs: A comprehensive
+  survey}.
+\newblock \bibinfo{journal}{IEEE Transactions on Knowledge and Data
+  Engineering} \bibinfo{volume}{36}, \bibinfo{pages}{8622--8642}.
+\newblock \DOIprefix\doi{10.1109/TKDE.2024.3469578}.
 %Type = Techreport
 \bibitem[{Kraft(1988)}]{kraft1988software}
 \bibinfo{author}{Kraft, D.}, \bibinfo{year}{1988}.
@@ -359,6 +398,18 @@
 \newblock \bibinfo{title}{Networks: An Introduction}.
 \newblock \bibinfo{publisher}{Oxford University Press}.
 \newblock \DOIprefix\doi{10.1093/acprof:oso/9780199206650.001.0001}.
+%Type = Inproceedings
+\bibitem[{Nguyen et~al.(2024)Nguyen, Luo, Shiri, Phung, Li and
+  Vu}]{nguyen2024direct}
+\bibinfo{author}{Nguyen, T.}, \bibinfo{author}{Luo, L.},
+  \bibinfo{author}{Shiri, F.}, \bibinfo{author}{Phung, D.},
+  \bibinfo{author}{Li, Y.F.}, \bibinfo{author}{Vu, T.T.}, \bibinfo{year}{2024}.
+\newblock \bibinfo{title}{Direct evaluation of chain-of-thought in multi-hop
+  reasoning with knowledge graphs}, in: \bibinfo{booktitle}{Findings of the
+  Association for Computational Linguistics: ACL 2024}, pp.
+  \bibinfo{pages}{2862--2883}.
+\newblock \URLprefix \url{https://aclanthology.org/2024.findings-acl.168/},
+  \DOIprefix\doi{10.18653/v1/2024.findings-acl.168}.
 %Type = Book
 \bibitem[{Nocedal and Wright(2006)}]{nocedal2006numerical}
 \bibinfo{author}{Nocedal, J.}, \bibinfo{author}{Wright, S.J.},
@@ -366,6 +417,16 @@
 \newblock \bibinfo{title}{Numerical Optimization}.
 \newblock \bibinfo{edition}{2nd} ed., \bibinfo{publisher}{Springer}.
 \newblock \DOIprefix\doi{10.1007/978-0-387-40065-5}.
+%Type = Article
+\bibitem[{Pan et~al.(2024)Pan, Luo, Wang, Chen, Wang and Wu}]{pan2024unifying}
+\bibinfo{author}{Pan, S.}, \bibinfo{author}{Luo, L.}, \bibinfo{author}{Wang,
+  Y.}, \bibinfo{author}{Chen, C.}, \bibinfo{author}{Wang, J.},
+  \bibinfo{author}{Wu, X.}, \bibinfo{year}{2024}.
+\newblock \bibinfo{title}{Unifying large language models and knowledge graphs:
+  A roadmap}.
+\newblock \bibinfo{journal}{IEEE Transactions on Knowledge and Data
+  Engineering} \bibinfo{volume}{36}, \bibinfo{pages}{3580--3599}.
+\newblock \DOIprefix\doi{10.1109/TKDE.2024.3352100}.
 %Type = Book
 \bibitem[{Pearl(2009)}]{pearl2009causality}
 \bibinfo{author}{Pearl, J.}, \bibinfo{year}{2009}.
@@ -405,6 +466,15 @@
   \bibinfo{pages}{1135--1144}.
 \newblock \URLprefix \url{https://doi.org/10.1145/2939672.2939778},
   \DOIprefix\doi{10.1145/2939672.2939778}.
+%Type = Inproceedings
+\bibitem[{Rockt{\"a}schel and Riedel(2017)}]{rocktaschel2017neural}
+\bibinfo{author}{Rockt{\"a}schel, T.}, \bibinfo{author}{Riedel, S.},
+  \bibinfo{year}{2017}.
+\newblock \bibinfo{title}{End-to-end differentiable proving}, in:
+  \bibinfo{booktitle}{Advances in Neural Information Processing Systems}, pp.
+  \bibinfo{pages}{3788--3800}.
+\newblock \URLprefix
+  \url{https://papers.nips.cc/paper_files/paper/2017/hash/b2ab001909a8a6f04b51920306046ce5-Abstract.html}.
 %Type = Article
 \bibitem[{Rubin(1974)}]{rubin1974estimating}
 \bibinfo{author}{Rubin, D.B.}, \bibinfo{year}{1974}.
