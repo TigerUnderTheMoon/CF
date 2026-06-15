@@ -1,18 +1,23 @@
 # KBS Format Compliance Checklist
 
 - [x] Title: 119 characters, within the 150-character working target.
-- [x] Abstract: 217 words, within the 250-word working target.
+- [x] Abstract: 231 words, within the 250-word working target.
 - [x] Keywords: 6 provided.
-- [x] Final tracked PDF generated from synchronized source: `main.pdf`, 37 pages, 630071 bytes.
+- [x] Highlights: 4 items; each item is within the 85-character Elsevier working limit.
+- [ ] Author metadata: KBS uses a single-anonymized workflow, so the anonymous placeholders in `main.tex` must be replaced with user-supplied author names, affiliations, and corresponding-author details before portal upload.
+- [x] Declaration of generative AI and AI-assisted technologies: present.
+- [x] Final tracked PDF generated from synchronized source: `main.pdf`; see the latest verification notes in `final_submission_manifest.md`.
 - [x] Claim-safe PDF text scan: no positive GSM8K/HotpotQA downstream filtering, PRM training, replay-validation, or external-generalization claim found.
 - [x] Figures/tables/algorithms: 6 figure environments, 14 table environments, and 2 algorithms compile in the final PDF.
 - [x] Current `main.tex` does not directly include PNG figures; retained PNG files are historical/supplementary assets and are not cited as current positive validation results.
-- [ ] Figure color space: production CMYK requirements were not revalidated in this pass; PNG source assets remain RGB where retained.
+- [x] Artwork/color-space blocker: no bitmap artwork is directly included by `main.tex`; retained PNG assets are outside the compiled manuscript and are listed only for optional editorial/supplementary upload.
 - [x] References: Elsevier numbered style via `cas-model2-names.bst`; BibTeX completed during final `latexmk` build.
 - [x] Supplementary materials: PRM800K v3.6/v3.8 evidence entries and failed-route provenance are listed in the supplement descriptions and manifest.
-- [x] Cover letter: anonymous and synchronized to the v3.6/v3.8 claim boundary.
-- [x] CRediT authorship contribution statement: present and anonymous.
-- [x] Acknowledgments: present.
+- [x] Cover letter: title and claim boundary synchronized to the current SC-FMA manuscript.
+- [x] CRediT authorship contribution statement: present; author names must be replaced with user-supplied metadata before upload.
+- [x] Acknowledgments: initial-submission neutral wording, with no reviewer-thank-you language before peer review.
 - [x] Competing interests: declared as no known competing interests.
 - [x] Compilation: `latexmk -pdf -interaction=nonstopmode -halt-on-error main.tex` completed with exit code 0.
 - [x] LaTeX warnings reviewed: no undefined references or citation failures in the final log; remaining warnings are float default-placement notices, a hyperref empty-anchor warning at title generation, duplicate-destination warnings from appendix counter resets, and overfull boxes from long numeric/path/table content.
+- [x] Package-controlled verification: `python scripts\verify_kbs_submission_package.py --package-dir paper\kbs_submission` passes, with only the expected author-metadata warning.
+- [ ] Direct-upload verification: `python scripts\verify_kbs_submission_package.py --package-dir paper\kbs_submission --require-author-metadata` remains blocked until author metadata is supplied.

@@ -40,10 +40,10 @@ Knowledge-intensive reasoning systems increasingly rely on reflective steps such
 \end{abstract}
 
 \begin{highlights}
-\item Structurally-Calibrated Functional Attribution converts interventional utility into calibrated supervision weights via convex optimization.
-\item The SCU objective guarantees convexity, monotonicity, variance reduction, and bottleneck protection.
-\item SC-FMA achieves higher rank correlation with oracle step labels than raw CIU and six baseline families.
-\item Three calibration variants (Ridge, QP, Projection) support different compute-accuracy tradeoffs.
+\item SC-FMA calibrates interventional utility into supervision weights.
+\item A convex SCU objective protects structure, redundancy, and bottlenecks.
+\item SC-FMA improves step-ranking correlation over raw CIU and six baselines.
+\item Ridge, QP, and Projection variants trade speed for ranking accuracy.
 \end{highlights}
 
 \begin{keywords}
@@ -898,7 +898,7 @@ Error bars indicate $\pm 1$ standard deviation over 10 traces per size point. Al
 
 The current positive real-data evidence is limited to PRM800K process-supervision annotations under the frozen v3.6/v3.8 routes. In the v3.6 hash-split locked validation, SC-FMA's structural weights are evaluated against PRM800K step labels on 4,417 samples and 34,219 labeled steps. The locked result gives $\rho=0.6113401179642559$ for \texttt{w\_struct}, compared with $\rho=-0.07745914322519368$ for raw local utility; the paired bootstrap confidence interval for \texttt{w\_struct - raw} is $[0.6732614322543506, 0.7045869106196779]$, with Holm correction passing.
 
-The v3.8 frozen PRM comparison is reported only as in-distribution baseline context with acknowledged PRM800K overlap risk. The frozen PRM score is a \texttt{prefix\_sequence\_reward\_probability}: step $k$ is scored by the sequence reward for the question plus the first $k$ steps, not by token-level PRM logits. On the same locked PRM800K split, the frozen PRM prefix-score Spearman correlation is $0.2515662235547571$, while \texttt{w\_struct} remains $0.6113401179642559$; the paired bootstrap confidence interval for \texttt{w\_struct - prm} is $[0.34499208448462026, 0.3745467544914783]$, with Holm correction passing. This supports an overlap-limited frozen PRM baseline comparison only. It does not validate PRM training, GSM8K/HotpotQA replay, downstream filtering, causal identification, or claims beyond PRM800K-like process-supervision data.
+The v3.8 frozen PRM comparison is reported only as in-distribution baseline context with acknowledged PRM800K overlap risk. The frozen PRM score is a \texttt{prefix\_sequence\_reward\_probability}: step $k$ is scored by the sequence reward for the question plus the first $k$ steps, not by token-level PRM logits. On the same locked PRM800K split, the frozen PRM prefix-score Spearman correlation is $0.2515662235547571$, while \texttt{w\_struct} remains $0.6113401179642559$; the paired bootstrap confidence interval for \texttt{w\_struct - prm} is $[0.34499208448462026, 0.3745467544914783]$, with Holm correction passing. This supports an overlap-limited frozen PRM baseline comparison only. It does not support downstream training, GSM8K/HotpotQA replay-pass wording, downstream filtering, mechanism recovery, or claims beyond PRM800K-like process-supervision data.
 
 \begin{table*}
 \caption{Current positive real-data evidence and claim boundaries. PRM800K supports real step-label ranking and an in-distribution frozen PRM baseline context only. GSM8K/HotpotQA replay and downstream filtering remain failed or blocked provenance, not positive validation evidence.}
@@ -1047,10 +1047,13 @@ This paper presented Structurally-Calibrated Functional Attribution (SC-FMA), a 
 Empirically, SC-FMA achieves higher rank correlation with oracle step importance labels than raw CIU and six baseline families, with each structural constraint contributing independently to ranking quality. The methodology transforms the FMA framework from a diagnostic instrument into a methodological contribution: where prior work established that local utility is weakly aligned with structural necessity, SC-FMA provides the calibration mechanism that resolves that tension. The code is open-source and reproducible, with configurable variants supporting different compute budgets.
 
 \section*{Acknowledgments}
-The authors acknowledge the anonymous reviewers for their constructive feedback.
+The authors have no acknowledgments to report for the initial submission.
 
 \section*{Declaration of competing interest}
 The anonymous authors declare no known competing financial interests or personal relationships that could have appeared to influence the work reported in this paper.
+
+\section*{Declaration of generative AI and AI-assisted technologies in the writing process}
+During preparation of this work, the authors used OpenAI Codex for language editing, LaTeX packaging assistance, and compliance checks. After using this tool, the authors reviewed and edited the content as needed and take full responsibility for the content of the publication.
 
 \section*{Data and code availability}
 The source code, including the SC-FMA calibration module (\texttt{src/fma/calibration/}), baseline families (\texttt{src/fma/baselines/}), step importance ranking framework (\texttt{src/fma/ranking/}), and PRM800K validation scripts, is provided in the anonymous submission package. The SCU objective is implemented in \texttt{src/fma/calibration/optimizer.py} with 15 theoretical guarantee tests in \texttt{tests/test\_calibration\_guarantees.py} (all passing). All experiments use deterministic seeds and documented hyperparameters for full reproducibility. The current real-data evidence artifacts are the v3.6 PRM800K locked validation report and the v3.8 frozen PRM locked scoring report; GSM8K/HotpotQA replay and downstream filtering artifacts are retained only as failed or blocked provenance. See Appendix~\ref{app:repro-checklist} for a complete reproducibility checklist and Appendix~\ref{app:slsqp-diagnostics} for SLSQP convergence diagnostics.
