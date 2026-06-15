@@ -4,8 +4,10 @@ import argparse
 import re
 import subprocess
 import sys
+import zipfile
 from dataclasses import dataclass
 from pathlib import Path
+from xml.etree import ElementTree
 
 
 CURRENT_TITLE = (
@@ -14,20 +16,19 @@ CURRENT_TITLE = (
 )
 
 REQUIRED_FILES = (
-    "main.pdf",
-    "main.tex",
+    "cover_letter.docx",
+    "manuscript.pdf",
+    "supplementary.pdf",
+    "latex_source.zip",
+)
+
+REQUIRED_ZIP_FILES = (
+    "manuscript.tex",
+    "supplementary.tex",
     "references.bib",
     "cas-sc.cls",
     "cas-common.sty",
     "cas-model2-names.bst",
-    "cover_letter.md",
-    "format_checklist.md",
-    "final_submission_manifest.md",
-    "submission_author_metadata_template.md",
-    "supplementary_materials.md",
-    "supplementary/supplementary_manifest.md",
-    "supplementary/Supplementary_Figure_S1_governance_diagnostic_upset.png",
-    "supplementary/Supplementary_Data_S1_governance_diagnostic_report.json",
 )
 
 AUXILIARY_GLOBS = (
@@ -39,25 +40,27 @@ AUXILIARY_GLOBS = (
     "*.log",
     "*.out",
     "*.abs",
+    "*.synctex.gz",
+    "_tmp_*",
     "test_title.*",
 )
 
-REQUIRED_MAIN_TEX_SNIPPETS = (
-    r"\begin{abstract}",
-    r"\begin{highlights}",
-    r"\section*{Declaration of competing interest}",
-    r"\section*{Declaration of generative AI and AI-assisted technologies in the writing process}",
-    r"\section*{Data and code availability}",
-    r"\section*{CRediT authorship contribution statement}",
+AUXILIARY_ZIP_SUFFIXES = (
+    ".aux",
+    ".bbl",
+    ".blg",
+    ".fdb_latexmk",
+    ".fls",
+    ".log",
+    ".out",
+    ".abs",
+    ".synctex.gz",
 )
 
-REQUIRED_PDF_TEXT_SNIPPETS = (
-    CURRENT_TITLE,
-    "Highlights",
-    "Declaration of competing interest",
-    "Declaration of generative AI",
-    "Data and code availability",
-    "CRediT authorship contribution statement",
+AUTHOR_PLACEHOLDERS = (
+    "Anonymous Author(s)",
+    "Anonymous Institution",
+    "anonymous submission package",
 )
 
 FORBIDDEN_SNIPPETS = {
@@ -72,10 +75,40 @@ FORBIDDEN_SNIPPETS = {
     "globally identifiable causal": "forbidden global-causal-identification wording remains",
 }
 
-AUTHOR_PLACEHOLDERS = (
-    "Anonymous Author(s)",
-    "Anonymous Institution",
+REQUIRED_MANUSCRIPT_SNIPPETS = (
+    CURRENT_TITLE,
+    "Haoran Ma",
+    "Ningning Wang",
+    "mahaoran0000@foamail.com",
+    "wangningning@bistu.edu.cn",
+    "National Social Science Fund of China Project (24BSH018)",
+    "Beijing Natural Science Foundation Project (L252145)",
+    r"\section*{Declaration of Competing Interest}",
+    "The authors declared that they have no conflicts of interest to this work.",
+    r"\section*{Data Availability}",
+    "Data will be made available on request.",
+    r"\section*{CRediT authorship contribution statement}",
 )
+
+REQUIRED_PDF_TEXT_SNIPPETS = {
+    "manuscript.pdf": (
+        CURRENT_TITLE,
+        "Highlights",
+        "Declaration of Competing Interest",
+        "Data Availability",
+        "CRediT authorship contribution statement",
+        "Haoran Ma",
+        "Ningning Wang",
+        "National Social Science Fund of China Project (24BSH018)",
+        "Data will be made available on request.",
+    ),
+    "supplementary.pdf": (
+        "Supplementary Material",
+        CURRENT_TITLE,
+        "Haoran Ma",
+        "Ningning Wang",
+    ),
+}
 
 
 @dataclass(frozen=True)
@@ -92,15 +125,7 @@ def _read_text(path: Path, errors: list[str]) -> str:
     if not path.exists():
         errors.append(f"missing required text file: {path}")
         return ""
-    return path.read_text(encoding="utf-8")
-
-
-def _extract_title(main_tex: str, errors: list[str]) -> str:
-    match = re.search(r"\\title\[mode=title\]\{(?P<title>[^{}]+)\}", main_tex)
-    if match is None:
-        errors.append("main.tex is missing \\title[mode=title]{...}")
-        return ""
-    return match.group("title").strip()
+    return path.read_text(encoding="utf-8", errors="ignore")
 
 
 def _check_required_files(package_dir: Path, errors: list[str]) -> None:
@@ -108,70 +133,178 @@ def _check_required_files(package_dir: Path, errors: list[str]) -> None:
         path = package_dir / rel_path
         if not path.exists():
             errors.append(f"missing required package file: {rel_path}")
+        elif path.stat().st_size == 0:
+            errors.append(f"required package file is empty: {rel_path}")
+
+
+def _check_top_level_boundary(package_dir: Path, errors: list[str]) -> None:
+    allowed = set(REQUIRED_FILES)
+    for path in sorted(p for p in package_dir.iterdir() if p.is_file()):
+        if path.name not in allowed:
+            errors.append(f"unexpected file in final upload boundary: {path.name}")
 
 
 def _check_auxiliary_artifacts(package_dir: Path, errors: list[str]) -> None:
     for pattern in AUXILIARY_GLOBS:
-        for path in sorted(package_dir.glob(pattern)):
-            errors.append(f"local build artifact should not be in upload boundary: {path.name}")
-    if (package_dir / "build_tmp").exists():
-        errors.append("temporary build directory should not be in upload boundary: build_tmp")
+        for path in sorted(package_dir.rglob(pattern)):
+            if path.name not in REQUIRED_FILES:
+                errors.append(f"local build artifact should not be in upload boundary: {path.name}")
+    for dirname in ("build", "build_tmp", "build_manuscript", "build_supplementary"):
+        if (package_dir / dirname).exists():
+            errors.append(f"temporary build directory should not be in upload boundary: {dirname}")
 
 
-def _check_title_consistency(main_tex: str, cover_letter: str, errors: list[str]) -> None:
-    title = _extract_title(main_tex, errors)
-    if not title:
+def _check_pdf_headers(package_dir: Path, errors: list[str]) -> None:
+    for filename in ("manuscript.pdf", "supplementary.pdf"):
+        path = package_dir / filename
+        if not path.exists():
+            continue
+        if path.stat().st_size < 8:
+            errors.append(f"{filename} is too small to be a valid PDF")
+            continue
+        with path.open("rb") as fh:
+            if fh.read(5) != b"%PDF-":
+                errors.append(f"{filename} does not start with a PDF header")
+
+
+def _read_docx_text(path: Path, errors: list[str]) -> str:
+    if not path.exists():
+        return ""
+    try:
+        with zipfile.ZipFile(path) as zf:
+            document_xml = zf.read("word/document.xml")
+    except KeyError:
+        errors.append(f"{path.name} is missing word/document.xml")
+        return ""
+    except zipfile.BadZipFile:
+        errors.append(f"{path.name} is not a valid DOCX zip archive")
+        return ""
+
+    try:
+        root = ElementTree.fromstring(document_xml)
+    except ElementTree.ParseError as exc:
+        errors.append(f"{path.name} has invalid document XML: {exc}")
+        return ""
+
+    text_nodes = []
+    for node in root.iter():
+        if node.tag.endswith("}t") and node.text:
+            text_nodes.append(node.text)
+    return "\n".join(text_nodes)
+
+
+def _check_cover_letter(package_dir: Path, errors: list[str]) -> None:
+    cover_text = _read_docx_text(package_dir / "cover_letter.docx", errors)
+    if not cover_text:
         return
-    if title != CURRENT_TITLE:
-        errors.append(f"main.tex title drifted from current KBS title: {title}")
-    if CURRENT_TITLE not in cover_letter:
-        errors.append("cover letter does not contain current title")
-    if title not in cover_letter:
-        errors.append("cover letter title does not match main.tex title")
+    for snippet in (CURRENT_TITLE, "Knowledge-Based Systems", "Haoran Ma", "Ningning Wang"):
+        if snippet not in cover_text:
+            errors.append(f"cover_letter.docx missing required text: {snippet}")
+    _check_forbidden_text({"cover_letter.docx": cover_text}, errors)
 
 
-def _check_required_sections(main_tex: str, errors: list[str]) -> None:
-    for snippet in REQUIRED_MAIN_TEX_SNIPPETS:
-        if snippet not in main_tex:
-            errors.append(f"main.tex missing required section/snippet: {snippet}")
+def _read_source_zip(path: Path, errors: list[str]) -> tuple[set[str], dict[str, str]]:
+    if not path.exists():
+        return set(), {}
+    try:
+        with zipfile.ZipFile(path) as zf:
+            names = set(zf.namelist())
+            text_by_name: dict[str, str] = {}
+            for name in names:
+                if name.endswith((".tex", ".bib", ".md", ".cls", ".sty", ".bst")):
+                    text_by_name[name] = zf.read(name).decode("utf-8", errors="ignore")
+            return names, text_by_name
+    except zipfile.BadZipFile:
+        errors.append("latex_source.zip is not a valid zip archive")
+        return set(), {}
+
+
+def _check_source_zip(package_dir: Path, errors: list[str]) -> dict[str, str]:
+    names, text_by_name = _read_source_zip(package_dir / "latex_source.zip", errors)
+    if not names:
+        return {}
+
+    for required in REQUIRED_ZIP_FILES:
+        if required not in names:
+            errors.append(f"latex_source.zip missing required source file: {required}")
+    if not any(name.startswith("figures/") and not name.endswith("/") for name in names):
+        errors.append("latex_source.zip missing required artwork directory: figures/")
+
+    for name in sorted(names):
+        if Path(name).name.startswith("_tmp_") or name.endswith(AUXILIARY_ZIP_SUFFIXES):
+            errors.append(f"latex_source.zip contains build artifact: {name}")
+
+    manuscript = text_by_name.get("manuscript.tex", "")
+    supplementary = text_by_name.get("supplementary.tex", "")
+    for snippet in REQUIRED_MANUSCRIPT_SNIPPETS:
+        if snippet not in manuscript:
+            errors.append(f"manuscript.tex missing required snippet: {snippet}")
+    if CURRENT_TITLE not in supplementary:
+        errors.append("supplementary.tex missing current title")
+
+    _check_includegraphics_paths_in_zip(names, manuscript, "manuscript.tex", errors)
+    _check_includegraphics_paths_in_zip(names, supplementary, "supplementary.tex", errors)
+    _check_forbidden_text(text_by_name, errors)
+    return text_by_name
+
+
+def _check_includegraphics_paths_in_zip(
+    names: set[str],
+    latex_text: str,
+    source_name: str,
+    errors: list[str],
+) -> None:
+    for match in re.finditer(r"\\includegraphics(?:\[[^\]]*\])?\{(?P<path>[^{}]+)\}", latex_text):
+        raw_path = match.group("path")
+        candidates = {raw_path}
+        if not Path(raw_path).suffix:
+            candidates.update({f"{raw_path}.png", f"{raw_path}.pdf", f"{raw_path}.jpg"})
+        if not any(candidate in names for candidate in candidates):
+            errors.append(f"{source_name} includes missing artwork in latex_source.zip: {raw_path}")
 
 
 def _check_forbidden_text(text_by_name: dict[str, str], errors: list[str]) -> None:
     for filename, text in text_by_name.items():
         for snippet, message in FORBIDDEN_SNIPPETS.items():
-            if snippet in text:
+            if _contains_snippet(text, snippet):
                 errors.append(f"{message}: {filename}")
 
 
+def _normalize_for_match(text: str) -> str:
+    text = text.replace("-\n", "")
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def _contains_snippet(text: str, snippet: str) -> bool:
+    return snippet in text or _normalize_for_match(snippet) in _normalize_for_match(text)
+
+
 def _check_author_metadata(
-    main_tex: str,
+    text_by_name: dict[str, str],
     *,
     require_author_metadata: bool,
     errors: list[str],
     warnings: list[str],
 ) -> None:
-    placeholders = [placeholder for placeholder in AUTHOR_PLACEHOLDERS if placeholder in main_tex]
+    placeholders: list[str] = []
+    for text in text_by_name.values():
+        placeholders.extend(
+            placeholder for placeholder in AUTHOR_PLACEHOLDERS if placeholder in text
+        )
+    placeholders = sorted(set(placeholders))
     if not placeholders:
         return
 
-    message = "author metadata placeholders remain"
+    message = f"author metadata placeholders remain: {', '.join(placeholders)}"
     if require_author_metadata:
-        errors.append(f"{message}: {', '.join(placeholders)}")
+        errors.append(message)
     else:
         warnings.append(message)
 
 
-def _check_includegraphics_paths(package_dir: Path, main_tex: str, errors: list[str]) -> None:
-    for match in re.finditer(r"\\includegraphics(?:\[[^\]]*\])?\{(?P<path>[^{}]+)\}", main_tex):
-        raw_path = match.group("path")
-        candidate = package_dir / raw_path
-        if not candidate.exists():
-            errors.append(f"main.tex includes missing artwork: {raw_path}")
-
-
-def _extract_pdf_text(package_dir: Path, errors: list[str]) -> str:
-    pdf_path = package_dir / "main.pdf"
-    text_path = package_dir / ".kbs_submission_pdf_text_check.txt"
+def _extract_pdf_text(package_dir: Path, filename: str, errors: list[str]) -> str:
+    pdf_path = package_dir / filename
+    text_path = package_dir / f".{filename}.text-check.txt"
     try:
         result = subprocess.run(
             ["pdftotext", str(pdf_path), str(text_path)],
@@ -186,7 +319,7 @@ def _extract_pdf_text(package_dir: Path, errors: list[str]) -> str:
 
     if result.returncode != 0:
         detail = (result.stderr or result.stdout).strip()
-        errors.append(f"pdftotext failed for rendered PDF text verification: {detail}")
+        errors.append(f"pdftotext failed for {filename}: {detail}")
         return ""
 
     try:
@@ -196,15 +329,26 @@ def _extract_pdf_text(package_dir: Path, errors: list[str]) -> str:
             text_path.unlink()
 
 
-def _check_pdf_text(pdf_text: str, errors: list[str]) -> None:
-    if CURRENT_TITLE not in pdf_text:
-        errors.append("rendered PDF text does not contain current title")
-    for snippet in REQUIRED_PDF_TEXT_SNIPPETS[1:]:
-        if snippet not in pdf_text:
-            errors.append(f"rendered PDF text missing required snippet: {snippet}")
-    for snippet, message in FORBIDDEN_SNIPPETS.items():
-        if snippet in pdf_text:
-            errors.append(f"{message}: rendered PDF")
+def _check_pdf_text(
+    package_dir: Path,
+    errors: list[str],
+    *,
+    pdf_text_by_name: dict[str, str] | None,
+) -> None:
+    for filename, snippets in REQUIRED_PDF_TEXT_SNIPPETS.items():
+        pdf_text = (
+            pdf_text_by_name[filename]
+            if pdf_text_by_name is not None and filename in pdf_text_by_name
+            else _extract_pdf_text(package_dir, filename, errors)
+        )
+        if not pdf_text:
+            continue
+        if not _contains_snippet(pdf_text, CURRENT_TITLE):
+            errors.append(f"rendered {filename} text does not contain current title")
+        for snippet in snippets[1:]:
+            if not _contains_snippet(pdf_text, snippet):
+                errors.append(f"rendered {filename} text missing required snippet: {snippet}")
+        _check_forbidden_text({f"rendered {filename}": pdf_text}, errors)
 
 
 def check_package(
@@ -213,6 +357,7 @@ def check_package(
     require_author_metadata: bool = False,
     require_pdf_text: bool = False,
     pdf_text: str | None = None,
+    pdf_text_by_name: dict[str, str] | None = None,
 ) -> VerificationReport:
     errors: list[str] = []
     warnings: list[str] = []
@@ -221,51 +366,40 @@ def check_package(
     if not package_dir.exists():
         return VerificationReport(errors=[f"missing package directory: {package_dir}"], warnings=[])
 
+    if pdf_text is not None and pdf_text_by_name is None:
+        pdf_text_by_name = {"manuscript.pdf": pdf_text}
+
     _check_required_files(package_dir, errors)
+    _check_top_level_boundary(package_dir, errors)
     _check_auxiliary_artifacts(package_dir, errors)
-
-    main_tex = _read_text(package_dir / "main.tex", errors)
-    cover_letter = _read_text(package_dir / "cover_letter.md", errors)
-    supplementary = _read_text(package_dir / "supplementary_materials.md", errors)
-    supplementary_manifest = _read_text(
-        package_dir / "supplementary" / "supplementary_manifest.md", errors
-    )
-
-    _check_title_consistency(main_tex, cover_letter, errors)
-    _check_required_sections(main_tex, errors)
-    _check_forbidden_text(
-        {
-            "main.tex": main_tex,
-            "cover_letter.md": cover_letter,
-            "supplementary_materials.md": supplementary,
-            "supplementary/supplementary_manifest.md": supplementary_manifest,
-        },
-        errors,
-    )
+    _check_pdf_headers(package_dir, errors)
+    _check_cover_letter(package_dir, errors)
+    source_text_by_name = _check_source_zip(package_dir, errors)
+    cover_text = _read_docx_text(package_dir / "cover_letter.docx", errors)
+    all_text = dict(source_text_by_name)
+    if cover_text:
+        all_text["cover_letter.docx"] = cover_text
     _check_author_metadata(
-        main_tex,
+        all_text,
         require_author_metadata=require_author_metadata,
         errors=errors,
         warnings=warnings,
     )
-    _check_includegraphics_paths(package_dir, main_tex, errors)
     if require_pdf_text:
-        rendered_text = pdf_text if pdf_text is not None else _extract_pdf_text(package_dir, errors)
-        if rendered_text:
-            _check_pdf_text(rendered_text, errors)
+        _check_pdf_text(package_dir, errors, pdf_text_by_name=pdf_text_by_name)
 
     return VerificationReport(errors=errors, warnings=warnings)
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Verify the local Knowledge-Based Systems submission package boundary."
+        description="Verify the final Knowledge-Based Systems submission upload boundary."
     )
     parser.add_argument(
         "--package-dir",
         type=Path,
-        default=Path("paper") / "kbs_submission",
-        help="Path to the KBS submission package directory.",
+        default=Path("paper") / "kbs_submission" / "final_package",
+        help="Path to the final KBS submission package directory.",
     )
     parser.add_argument(
         "--require-author-metadata",
@@ -275,7 +409,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--require-pdf-text",
         action="store_true",
-        help="Fail if rendered main.pdf text does not contain the current title and required statements.",
+        help="Fail if rendered PDF text does not contain the current title and required statements.",
     )
     args = parser.parse_args(argv)
 
@@ -290,7 +424,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"error: {error}", file=sys.stderr)
 
     if report.ok:
-        print("KBS submission package check passed")
+        print("KBS final submission package check passed")
         return 0
     return 1
 

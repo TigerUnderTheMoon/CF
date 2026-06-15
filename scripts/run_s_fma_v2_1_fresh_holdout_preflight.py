@@ -16,8 +16,8 @@ if str(PROJECT_ROOT) not in sys.path:
 from fma.io import load_records, write_records
 from fma.real_task_pilot.archive_paths import v2_1_failed_provenance_root
 from fma.real_task_pilot.config import load_pilot_config
-from fma.real_task_pilot.fresh_preflight import attempt_payloads_from_results, select_preflight_records
-from fma.real_task_pilot.fresh_preflight_v2_1 import (
+from fma.real_task_pilot._archived.fresh_preflight import attempt_payloads_from_results, select_preflight_records
+from fma.real_task_pilot._archived.fresh_preflight_v2_1 import (
     build_v2_1_generation_config,
     build_v2_1_preflight_report,
     estimate_attempt_cost_usd,

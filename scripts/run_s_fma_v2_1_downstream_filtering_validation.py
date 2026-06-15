@@ -16,7 +16,7 @@ if str(PROJECT_ROOT) not in sys.path:
 from fma.io import load_records, write_records
 from fma.real_task_pilot.archive_paths import v2_1_failed_provenance_root
 from fma.real_task_pilot.config import load_pilot_config
-from fma.real_task_pilot.downstream_filtering_v2_1 import (
+from fma.real_task_pilot._archived.downstream_filtering_v2_1 import (
     DEFAULT_BUDGET_USD,
     DEFAULT_MAX_API_REQUESTS,
     V2_1_DOWNSTREAM_FILTERING_MINI_FAIL_GATE,
@@ -31,8 +31,8 @@ from fma.real_task_pilot.downstream_filtering_v2_1 import (
     select_filtering_samples,
     validate_downstream_filtering_readiness,
 )
-from fma.real_task_pilot.fresh_preflight import attempt_payloads_from_results
-from fma.real_task_pilot.fresh_preflight_v2_1 import estimate_attempt_cost_usd
+from fma.real_task_pilot._archived.fresh_preflight import attempt_payloads_from_results
+from fma.real_task_pilot._archived.fresh_preflight_v2_1 import estimate_attempt_cost_usd
 from fma.real_task_pilot.generation import GeneratedTraceResult, load_prompt_template
 from scripts.run_s_fma_v2_1_fresh_holdout_preflight import (
     SingleRequestOpenAITraceAdapter,

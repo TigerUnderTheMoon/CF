@@ -9,11 +9,11 @@ import pytest
 
 from fma.real_task_pilot.config import load_pilot_config
 from fma.real_task_pilot import openai_client
-from fma.real_task_pilot.fresh_preflight import (
+from fma.real_task_pilot._archived.fresh_preflight import (
     PREFLIGHT_FAIL_DRIFT,
     PREFLIGHT_FAIL_SCHEMA_OR_TAGS,
 )
-from fma.real_task_pilot.fresh_preflight_v2_1 import (
+from fma.real_task_pilot._archived.fresh_preflight_v2_1 import (
     V2_1_API_PREFLIGHT_ONLY,
     V2_1PreflightError,
     build_v2_1_generation_config,
@@ -21,7 +21,7 @@ from fma.real_task_pilot.fresh_preflight_v2_1 import (
     validate_v2_1_preflight_readiness,
 )
 from fma.real_task_pilot.metrics import normalized_token_f1
-from fma.real_task_pilot.fresh_holdout_v2_1 import (
+from fma.real_task_pilot._archived.fresh_holdout_v2_1 import (
     V2_1_CONTRACT_CLEAN,
     build_v2_1_api_preflight_approval_request,
     build_v2_1_contract_audit,

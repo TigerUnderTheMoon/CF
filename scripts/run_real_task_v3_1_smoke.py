@@ -28,7 +28,7 @@ from fma.real_task_pilot.replay import (
     build_replay_prefix,
     missing_replay_jobs,
 )
-from fma.real_task_pilot.validation_v3 import (
+from fma.real_task_pilot._archived.validation_v3 import (
     score_gsm8k_v3_utility,
     score_hotpotqa_v3_utility,
 )
@@ -787,7 +787,7 @@ def _replay_prompt_template(original_template: str) -> str:
         "You are continuing a partially-written solution trace for a benchmark item. "
         "Return JSON with exactly these keys: observable_trace and final_answer. "
         "Continue the trace from where it left off. Some reflection blocks in the "
-        "partial trace have been replaced with [REASONING_MASK] â€” you must continue "
+        "partial trace have been replaced with [REASONING_MASK] â€?you must continue "
         "reasoning without the information those blocks would have provided.\n\n"
         "Task type: {task_type}\n"
         "Question:\n{question}\n\n"

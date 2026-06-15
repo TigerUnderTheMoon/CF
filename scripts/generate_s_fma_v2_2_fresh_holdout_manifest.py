@@ -14,8 +14,8 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from fma.io import load_records
 from fma.real_task_pilot.config import load_pilot_config
-from fma.real_task_pilot.fresh_holdout import row_overlap_keys
-from fma.real_task_pilot.fresh_holdout_v2_2 import (
+from fma.real_task_pilot._archived.fresh_holdout import row_overlap_keys
+from fma.real_task_pilot._archived.fresh_holdout_v2_2 import (
     S_FMA_V2_2_MANIFEST_ONLY_NON_OVERLAP_AUDIT,
     build_v2_2_contract_audit,
     build_v2_2_fresh_holdout_manifest,

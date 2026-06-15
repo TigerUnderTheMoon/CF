@@ -1,0 +1,234 @@
+%% Final Knowledge-Based Systems manuscript source.
+%% SC-FMA: Structurally-Calibrated Functional Attribution for Process Supervision
+\documentclass[a4paper,fleqn]{cas-sc}
+
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{xurl}
+\usepackage{amsthm}
+\usepackage{multirow}
+\usepackage{makecell}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue}
+
+\newtheorem{theorem}{Theorem}
+
+\begin{document}
+\let\WriteBookmarks\relax
+\def\floatpagepagefraction{1}
+\def\textpagefraction{.001}
+\pagenumbering{arabic}
+
+\shorttitle{Structurally-Calibrated Functional Attribution}
+\shortauthors{Ma and Wang}
+
+\title[mode=title]{Structurally-Calibrated Functional Attribution: A Methodology for Process Supervision Weighting in Reflective Reasoning}
+
+\author[1]{Haoran Ma}
+\ead{mahaoran0000@foamail.com}
+
+\author[1,2]{Ningning Wang\corref{cor1}}
+\ead{wangningning@bistu.edu.cn}
+
+\cortext[cor1]{Corresponding author.}
+
+\affiliation[1]{organization={College of Management Science and Engineering, Beijing Information Science and Technology University},
+            city={Beijing},
+            postcode={102200},
+            country={China}}
+
+\affiliation[2]{organization={Institute of Information Systems, ESG Intelligent Application Innovation Research Center},
+            city={Beijing},
+            postcode={102200},
+            country={China}}
+
+\begin{abstract}
+Knowledge-intensive reasoning systems use reflective steps such as self-evaluation, error diagnosis, and plan revision to organize verification workflows. Local utility often diverges from structural necessity: a fluent step may be redundant, while a bottleneck check may be indispensable despite a weak local signal. This paper presents Structurally-Calibrated Functional Attribution (SC-FMA), a methodology for verification-step weighting in knowledge-intensive reasoning systems. SC-FMA converts intervention-sensitive utility estimates into calibrated supervision weights through a convex Structurally-Calibrated Utility (SCU) objective that preserves local utility, structural necessity, redundancy relations, and bottleneck protection. The objective has a unique solution under mild regularization and yields monotonicity and variance-reduction guarantees under documented conditions. In synthetic step-ranking experiments with 200 traces and 1,027 steps, SC-FMA QP achieves a mean Spearman correlation of 0.608 with oracle step labels, outperforming raw CIU (0.483), gradient attribution (0.491), Monte Carlo Shapley (0.524), and information-theoretic baselines (0.310). Locked PRM800K step-label evidence provides overlap-limited real annotation context, while GSM8K/HotpotQA replay and downstream filtering remain failed or blocked validation routes. A Countries KG pilot demonstrates ontology-aware edge construction feasibility over a real knowledge graph structure, but no deployed KBS workflow is claimed.
+\end{abstract}
+
+\begin{highlights}
+\item SC-FMA calibrates interventional utility into supervision weights.
+\item The SCU objective combines utility, graph necessity, redundancy, and bottleneck protection.
+\item SC-FMA improves step-ranking correlation over raw CIU and six baselines.
+\item KBS claims are bounded to diagnostic calibration and a pilot ontology-aware edge study.
+\end{highlights}
+
+\begin{keywords}
+structural calibration \sep functional attribution \sep process supervision \sep knowledge-based systems \sep reflective reasoning \sep step importance ranking
+\end{keywords}
+
+\maketitle
+
+\section{Introduction}
+
+Knowledge-intensive reasoning systems require verification workflows that are both locally useful and structurally well placed. In expert systems, knowledge graphs, and reflective language-agent pipelines, an intermediate check may correlate with successful final answers while being redundant because another rule, entity path, or neighboring reflection supplies the same support. Conversely, a rare bottleneck check may have a small local signal but still gate all downstream inference. This makes process supervision a Knowledge-Based Systems (KBS) problem as well as a scoring problem: supervision weights should reflect local utility, structural dependency, redundancy, and bottleneck protection.
+
+Process Reward Models and verifier-guided search assign scalar scores to intermediate reasoning steps~\cite{lightman2023verify,uesato2022solving,wang2024mathshepherd}. These approaches provide useful dense supervision, but they usually treat step labels or automated pseudo-labels as locally separable targets. Graph-based reasoning and KBS traditions emphasize a complementary concern: a reasoning step's importance depends on how it participates in a larger dependency structure~\cite{laird2012soar,buchanan1984mycin,pan2024unifying}. A step may be topologically substitutable even when locally helpful, and a low-frequency verification may be structurally indispensable.
+
+This paper proposes \textbf{Structurally-Calibrated Functional Attribution (SC-FMA)}, a methodology for transforming intervention-sensitive utility estimates into structurally calibrated supervision weights. SC-FMA takes a vector of local utility estimates, a reflection graph, a structural necessity vector, a redundancy matrix, and bottleneck indicators as inputs, then solves a convex calibration problem over the probability simplex. The aim is not to identify a formal causal quantity. The aim is to produce deterministic, auditable weights that reconcile local functional influence with graph-derived structure under an explicitly documented protocol.
+
+The paper makes four contributions. First, it defines the SCU objective, which calibrates local CIU against structural necessity, redundancy, and bottleneck constraints. Second, it provides formal convexity, uniqueness, monotonicity, variance-reduction, and bottleneck-protection guarantees. Third, it evaluates SC-FMA on step importance ranking against six baseline families. Fourth, it positions SC-FMA for KBS use without overstating validation: real KG structure is used in a fixture-level Countries KG pilot, while deployed rule-engine, ontology-reasoner, KG-query, and downstream PRM/filtering workflows remain future work.
+
+\section{Related Work}
+
+\subsection{Process supervision and step attribution}
+
+Process supervision trains models to evaluate intermediate reasoning steps instead of only final answers. Lightman et al.~\cite{lightman2023verify} established a standard PRM paradigm using human step labels; Math-Shepherd automates pseudo-label generation by measuring whether masking a step changes completion correctness~\cite{wang2024mathshepherd}; ProcessBench exposes out-of-distribution limits in step-level error detection~\cite{zheng2024processbench}. These methods improve the availability of dense supervision, but the resulting scores remain primarily local.
+
+Attribution methods such as Integrated Gradients, LIME, SHAP, ERASER, and attention-flow variants quantify how input components contribute to predictions~\cite{sundararajan2017axiomatic,ribeiro2016why,lundberg2017unified,deyoung2020eraser,abnar2020quantifying}. They help identify salient tokens, rationales, or spans, but they do not directly model whether two reasoning steps are redundant, whether a step lies on a bottleneck path, or whether a graph perturbation would change downstream structural support. SC-FMA adopts the granularity of step-level attribution while adding a graph-structured calibration layer.
+
+\subsection{Graph reasoning and KBS positioning}
+
+Explicit graph representations of reasoning have become prominent in Tree of Thoughts, Graph of Thoughts, and LLM-KG systems~\cite{yao2023treeofthoughts,besta2024graphofthoughts,pan2024unifying}. In those systems, graph structure often acts as a generation scaffold. SC-FMA uses graph structure differently: it takes already recorded reflective traces and uses a reflection DAG as a diagnostic lens for calibrating verification-step weights.
+
+Classical KBS and cognitive architectures provide an earlier precedent for this distinction. MYCIN and DENDRAL exposed rule-firing chains for explanation and auditability~\cite{buchanan1984mycin,lindsay1980dendral}; SOAR and ACT-R treat metacognitive monitoring as part of control and utility selection~\cite{laird2012soar,anderson2004actr}. Modern knowledge-enhanced language models and neuro-symbolic systems continue this concern by combining neural plausibility with explicit symbolic or graph structure~\cite{hu2024knowledgeenhanced,rocktaschel2017neural,manhaeve2018deepproblog}. SC-FMA is complementary to these approaches: it does not train a knowledge-enhanced model or certify formal reasoning, but supplies a calibration layer that can use structural constraints when they are available.
+
+\section{Methodology}
+
+\subsection{Trace representation}
+
+Let a reasoning trace contain $k$ reflective steps $s_1,\ldots,s_k$. The trace is represented as a reflection DAG $\mathcal{G}=(\mathcal{V},\mathcal{E})$, where node $v_i$ corresponds to step $s_i$. Temporal edges preserve trace order, while topical edges encode surface similarity or, in the KG pilot, ontology-derived relations. Each node has three measured inputs: local CIU $c_i$, structural necessity $n_i$, and bottleneck indicator $b_i$. Pairwise redundancy is stored in a positive semidefinite matrix $\mathbf{R}$.
+
+The local CIU vector is intervention-sensitive rather than globally identifiable:
+\begin{equation}
+c_i = U(Y_{\mathrm{orig}})-U(Y_{\mathrm{int},i}),
+\end{equation}
+where $U$ is the documented task utility and $Y_{\mathrm{int},i}$ is the output after the fixed intervention protocol. All reported CIU values depend on segmentation, graph construction, utility definition, and intervention type.
+
+\subsection{SCU objective}
+
+SC-FMA computes a calibrated weight vector $\mathbf{w}$ over the simplex:
+\begin{equation}
+\mathcal{W}=\{\mathbf{w}\in\mathbb{R}^{k}: w_i \ge \varepsilon,\; \sum_i w_i=1\}.
+\end{equation}
+The Structurally-Calibrated Utility objective is:
+\begin{equation}
+L(\mathbf{w}) =
+\alpha\|\mathbf{w}-\tilde{\mathbf{c}}\|_2^2
++\beta\|\mathbf{w}-\tilde{\mathbf{n}}\|_2^2
++\gamma\mathbf{w}^{\top}\mathbf{R}\mathbf{w}
+-\delta\sum_i b_i\log(w_i),
+\label{eq:scu}
+\end{equation}
+where $\tilde{\mathbf{c}}$ and $\tilde{\mathbf{n}}$ are normalized CIU and structural necessity vectors. The four terms have distinct roles: fidelity to local utility, consistency with structural necessity, redundancy-aware smoothing, and bottleneck protection. Hyperparameters $(\alpha,\beta,\gamma,\delta)$ determine the trade-off among these terms.
+
+\begin{theorem}[Convexity and uniqueness]
+If $\alpha+\beta>0$, $\gamma \ge 0$, $\delta \ge 0$, and $\mathbf{R}$ is positive semidefinite, Eq.~\ref{eq:scu} is strictly convex on $\mathcal{W}$. Therefore SC-FMA has a unique global minimizer.
+\end{theorem}
+
+The proof follows from the positive semidefinite Hessian contributions of the quadratic terms and the positive diagonal Hessian contribution of the log-barrier on active bottleneck nodes. Supplementary Material provides the KKT conditions, variance-reduction bound, and monotonicity discussion. Operationally, SC-FMA supports three implementations: Ridge, a closed-form softmax over local and structural signals; QP, a constrained SLSQP solver for the full objective; and Projection, a fast topology-constrained projection.
+
+\begin{table}[t]
+\caption{SC-FMA inputs and their KBS interpretation.}
+\label{tab:inputs}
+\centering
+\small
+\begin{tabular}{lll}
+\toprule
+\textbf{Input} & \textbf{Trace meaning} & \textbf{KBS interpretation} \\
+\midrule
+$c_i$ & Local intervention-sensitive utility & Step-level verification usefulness \\
+$n_i$ & Structural necessity under graph perturbation & Dependency or rule-path indispensability \\
+$R_{ij}$ & Redundancy between steps & Substitutable checks or duplicated support \\
+$b_i$ & Bottleneck indicator & Single-point-of-failure verification node \\
+$w_i$ & Calibrated supervision weight & Auditable verification-step priority \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Experiments}
+
+\subsection{Evaluation task}
+
+The primary evaluation is step importance ranking. Given a trace, each method predicts a ranked list of reflective steps. We compare that ranking with oracle step labels using Spearman correlation. This task directly evaluates whether a method assigns higher weight to steps that should receive stronger process-supervision emphasis.
+
+The main benchmark contains 200 synthetic traces and 1,027 reflective steps generated from controlled distributions that reproduce observed CIU skew, necessity zero-inflation, redundancy clusters, and bottleneck concentration. Synthetic evidence is useful for controlled mechanism analysis, but it does not establish external validity on naturally occurring reasoning traces. For real annotation context, we additionally use locked PRM800K step labels under overlap-limited provenance checks. GSM8K/HotpotQA replay and downstream filtering routes are retained only as failed or blocked validation provenance.
+
+\subsection{Baselines}
+
+SC-FMA is compared with six baseline families: raw CIU, gradient attribution (Gradient$\times$Input and attention rollout), Monte Carlo Shapley, information-theoretic measures (token surprisal and step entropy), heuristics (random, span length, and relative position), and oracle labels as an upper reference. Hyperparameters are tuned on a held-out validation split and frozen before test-set evaluation.
+
+\section{Results}
+
+\begin{table}[t]
+\caption{Step importance ranking performance. Mean Spearman $\rho$ is computed over traces; standard errors use bootstrap resampling.}
+\label{tab:ranking}
+\centering
+\small
+\begin{tabular}{lcc}
+\toprule
+\textbf{Method} & \textbf{Mean Spearman $\rho$} & \textbf{Relative to raw CIU} \\
+\midrule
+SC-FMA QP & 0.608 & +0.125 \\
+SC-FMA Ridge & 0.542 & +0.059 \\
+SC-FMA Projection & 0.342 & -0.141 \\
+Monte Carlo Shapley & 0.524 & +0.041 \\
+Gradient attribution & 0.491 & +0.008 \\
+Raw CIU & 0.483 & 0.000 \\
+Information-theoretic & 0.310 & -0.173 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+SC-FMA QP achieves the strongest ranking performance (Table~\ref{tab:ranking}). It improves mean Spearman correlation over raw CIU by 0.125 and outperforms gradient attribution, Monte Carlo Shapley, and information-theoretic baselines. The result supports the central methodological claim: local utility signals become more useful for step weighting when calibrated against graph structure.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.86\linewidth]{figures/fig_ciu_necessity.png}
+\caption{Local CIU and structural necessity are weakly aligned, motivating structural calibration rather than direct use of local utility as supervision weight.}
+\label{fig:ciu-necessity}
+\end{figure}
+
+Ablation analysis shows that each structural term contributes independently. Removing structure alignment costs 0.057 Spearman points, removing the redundancy penalty costs 0.022, and removing bottleneck protection costs 0.013. The gains are largest for longer traces, where redundant support paths and bottleneck nodes are more frequent.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.86\linewidth]{figures/fig_sensitivity.png}
+\caption{Sensitivity analysis under hyperparameter perturbation. The ranking signal remains stable across moderate changes in structural calibration weights.}
+\label{fig:sensitivity}
+\end{figure}
+
+\clearpage
+
+\subsection{KBS-oriented pilot}
+
+To test whether explicit knowledge structure can change the reflection graph, we conduct a fixture-level Countries KG pilot. The pilot uses 25 country entities, 5 region entities, and 189 triples encoding \texttt{locatedIn} and \texttt{neighborOf} relations. We generate 30 synthetic reasoning traces over KG query patterns and compare a baseline TF-IDF reflection DAG with a KG-augmented DAG that adds ontology-derived edges.
+
+The pilot demonstrates feasibility: ontology-derived metadata can be inserted into the graph layer and changes edge construction in a deterministic way. The evidence level remains pilot only. It does not validate a deployed rule engine, ontology reasoner, KG query engine, or production KBS workflow. This boundary is important because SC-FMA currently uses graph structure as an operational approximation, not as a formally verified knowledge-system dependency graph.
+
+\section{Reproducibility and Limitations}
+
+All experiments use deterministic seeds and documented hyperparameters. The SCU optimizer, baseline families, ranking metrics, and diagnostic tests are implemented in the accompanying source code. The final submission package separates the manuscript PDF, supplementary PDF, cover letter, and a source zip containing manuscript and supplementary LaTeX sources plus figures.
+
+The main limitations are as follows. First, the primary calibration benchmark is synthetic, so external validity on naturally occurring reasoning traces is unconfirmed. Second, current CIU values are computed from trace-level binary correctness, which limits per-span granularity; process-annotated datasets such as PRM800K provide finer supervision context but not the same interventional replay design. Third, reflection graphs use heuristic temporal and topical edges except in the fixture-level KG pilot. Fourth, downstream PRM training and filtering improvement are not validated. SC-FMA should therefore be read as a diagnostic calibration methodology and a KBS-facing integration pathway, not as evidence of deployed KBS performance.
+
+\section{Conclusion}
+
+SC-FMA provides a convex, auditable method for converting local intervention-sensitive utility into structurally calibrated process-supervision weights. By combining utility fidelity, graph necessity, redundancy reduction, and bottleneck protection, the SCU objective addresses a common failure mode in process supervision: locally useful steps are not always structurally important. Empirical ranking results support the value of structural calibration under controlled conditions, and the KG pilot shows a concrete route for ontology-aware graph construction. Future work should validate the method on naturally occurring reasoning corpora, richer per-span utility signals, and deployed KBS workflows with formal rule or ontology dependencies.
+
+\section*{Acknowledgments}
+The authors thank the College of Management Science and Engineering at Beijing Information Science and Technology University for research support.
+
+\section*{Funding}
+This work was supported by the National Social Science Fund of China Project (24BSH018) and the Beijing Natural Science Foundation Project (L252145).
+
+\section*{Declaration of Competing Interest}
+The authors declared that they have no conflicts of interest to this work.
+
+\section*{Declaration of generative AI and AI-assisted technologies in the writing process}
+During preparation of this work, the authors used OpenAI Codex for language editing, LaTeX packaging assistance, and compliance checks. After using this tool, the authors reviewed and edited the content as needed and take full responsibility for the content of the publication.
+
+\section*{Data Availability}
+Data will be made available on request.
+
+\section*{CRediT authorship contribution statement}
+\textbf{Haoran Ma}: Conceptualization, Methodology, Software, Formal analysis, Investigation, Data Curation, Writing -- Original Draft, Visualization. \textbf{Ningning Wang}: Methodology, Validation, Writing -- Review \& Editing, Supervision, Project administration, Funding acquisition.
+
+\bibliographystyle{cas-model2-names}
+\bibliography{references}
+
+\end{document}

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -100,6 +101,8 @@ def _write_provenance(jsonl_path: Path, provenance_path: Path, *, row_count: int
 
 
 def _run_validator(jsonl_path: Path, provenance_path: Path) -> subprocess.CompletedProcess[str]:
+    src_dir = str((Path(__file__).resolve().parents[1] / "src").resolve())
+    env = {**os.environ, "PYTHONPATH": src_dir}
     return subprocess.run(
         [
             sys.executable,
@@ -112,4 +115,5 @@ def _run_validator(jsonl_path: Path, provenance_path: Path) -> subprocess.Comple
         cwd=Path.cwd(),
         text=True,
         capture_output=True,
+        env=env,
     )

@@ -7,14 +7,14 @@ from pathlib import Path
 import pytest
 
 from fma.real_task_pilot.config import load_pilot_config
-from fma.real_task_pilot.fresh_preflight import PREFLIGHT_FAIL_DRIFT
-from fma.real_task_pilot.fresh_holdout_v2_2 import (
+from fma.real_task_pilot._archived.fresh_preflight import PREFLIGHT_FAIL_DRIFT
+from fma.real_task_pilot._archived.fresh_holdout_v2_2 import (
     S_FMA_V2_2_MANIFEST_ONLY_NON_OVERLAP_AUDIT,
     V2_2_CONTRACT_CLEAN,
     build_v2_2_contract_audit,
     build_v2_2_fresh_holdout_manifest,
 )
-from fma.real_task_pilot.fresh_preflight_v2_2 import (
+from fma.real_task_pilot._archived.fresh_preflight_v2_2 import (
     V2_2_API_PREFLIGHT_ONLY,
     V2_2PreflightError,
     build_v2_2_generation_config,

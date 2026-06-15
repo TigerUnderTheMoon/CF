@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import re
 from pathlib import Path
 from typing import Any
@@ -207,6 +208,61 @@ def estimate_ciu_file(
     ciu_records = compute_ciu_records(original_records, intervened_records)
     write_jsonl(ciu_records, output_path)
     return ciu_records
+
+
+def compute_prm800k_proxy_ciu(
+    step_ratings: list[int],
+    step_indices: list[int] | None = None,
+    trace_id: str = "",
+    normalize: bool = True,
+) -> list[dict[str, Any]]:
+    """Convert PRM800K per-step correctness ratings to proxy CIU values.
+
+    IMPORTANT: This is a **proxy** measure, not interventional CIU. PRM800K
+    ratings encode human judgments of step correctness, which is a different
+    quantity from the interventional utility estimated by masking/replacement
+    experiments. Step correctness ≠ interventional utility: a correct step may
+    have low functional utility (if downstream steps compensate), and an
+    incorrect step may have high utility (if it triggers productive recovery).
+    Use this function only when no interventional CIU data is available and
+    explicitly label all downstream results as ``source: prm800k_proxy``.
+    """
+    if not step_ratings:
+        return []
+
+    valid_ratings = {-1, 0, 1}
+    for i, r in enumerate(step_ratings):
+        if r not in valid_ratings:
+            raise ValueError(
+                f"step_ratings[{i}]={r!r} is not in {{-1, 0, +1}}."
+            )
+
+    if step_indices is not None and len(step_indices) != len(step_ratings):
+        raise ValueError(
+            "step_indices must have the same length as step_ratings "
+            f"({len(step_indices)} != {len(step_ratings)})."
+        )
+
+    proxy_values = [(r + 1) / 2 for r in step_ratings]
+
+    if normalize:
+        l2_norm = math.sqrt(sum(v * v for v in proxy_values))
+        if l2_norm < 1e-12:
+            proxy_values = [1.0 / len(step_ratings)] * len(step_ratings)
+        else:
+            proxy_values = [v / l2_norm for v in proxy_values]
+
+    indices = step_indices if step_indices is not None else list(range(len(step_ratings)))
+
+    return [
+        {
+            "step_index": idx,
+            "ciu": round(pv, 8),
+            "source": "prm800k_proxy",
+            "trace_id": trace_id,
+        }
+        for idx, pv in zip(indices, proxy_values)
+    ]
 
 
 def parse_args() -> argparse.Namespace:

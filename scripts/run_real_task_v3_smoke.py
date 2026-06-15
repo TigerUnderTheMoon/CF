@@ -28,7 +28,7 @@ from fma.real_task_pilot.replay import (
     build_replay_prefix,
     missing_replay_jobs,
 )
-from fma.real_task_pilot.validation_v3 import (
+from fma.real_task_pilot._archived.validation_v3 import (
     score_gsm8k_v3_utility,
     score_hotpotqa_v3_utility,
 )

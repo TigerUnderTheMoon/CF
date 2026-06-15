@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import zipfile
 from pathlib import Path
 
 
@@ -9,101 +10,153 @@ TITLE = (
 )
 
 
-def _write_minimal_package(
-    package_dir: Path,
+def _write_docx(path: Path, text: str | None = None) -> None:
+    text = text or "\n".join(
+        [
+            TITLE,
+            "Knowledge-Based Systems",
+            "Haoran Ma",
+            "Ningning Wang",
+        ]
+    )
+    document_xml = f"""<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body><w:p><w:r><w:t>{text}</w:t></w:r></w:p></w:body>
+</w:document>
+"""
+    with zipfile.ZipFile(path, "w") as zf:
+        zf.writestr(
+            "[Content_Types].xml",
+            """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+</Types>
+""",
+        )
+        zf.writestr("word/document.xml", document_xml)
+
+
+def _write_pdf(path: Path) -> None:
+    path.write_bytes(b"%PDF-1.4\n% minimal test fixture\n%%EOF\n")
+
+
+def _write_source_zip(
+    path: Path,
     *,
-    title: str = TITLE,
-    cover_title: str | None = None,
-    author_text: str = "Anonymous Author(s)",
-    affiliation_text: str = "Anonymous Institution",
-    acknowledgement_text: str = "The authors have no acknowledgments to report for the initial submission.",
+    manuscript_tex: str | None = None,
+    supplementary_tex: str | None = None,
 ) -> None:
-    cover_title = cover_title or title
+    manuscript_tex = manuscript_tex or "\n".join(
+        [
+            rf"\title[mode=title]{{{TITLE}}}",
+            r"\author[1]{Haoran Ma}",
+            r"\author[1,2]{Ningning Wang}",
+            "mahaoran0000@foamail.com",
+            "wangningning@bistu.edu.cn",
+            "National Social Science Fund of China Project (24BSH018)",
+            "Beijing Natural Science Foundation Project (L252145)",
+            r"\section*{Declaration of Competing Interest}",
+            "The authors declared that they have no conflicts of interest to this work.",
+            r"\section*{Data Availability}",
+            "Data will be made available on request.",
+            r"\section*{CRediT authorship contribution statement}",
+            "Haoran Ma: Conceptualization. Ningning Wang: Supervision.",
+            r"\includegraphics{figures/fig_sensitivity.png}",
+        ]
+    )
+    supplementary_tex = supplementary_tex or "\n".join(
+        [
+            rf"\title[mode=title]{{Supplementary Material for {TITLE}}}",
+            "Haoran Ma and Ningning Wang",
+            r"\includegraphics{figures/fig_scaling.png}",
+        ]
+    )
+    with zipfile.ZipFile(path, "w") as zf:
+        zf.writestr("manuscript.tex", manuscript_tex)
+        zf.writestr("supplementary.tex", supplementary_tex)
+        zf.writestr("references.bib", "@article{x,title={x}}\n")
+        zf.writestr("cas-sc.cls", "class fixture\n")
+        zf.writestr("cas-common.sty", "style fixture\n")
+        zf.writestr("cas-model2-names.bst", "bst fixture\n")
+        zf.writestr("figures/fig_sensitivity.png", b"png")
+        zf.writestr("figures/fig_scaling.png", b"png")
+
+
+def _write_final_package(package_dir: Path) -> None:
     package_dir.mkdir(parents=True, exist_ok=True)
-    (package_dir / "supplementary").mkdir()
-
-    (package_dir / "main.tex").write_text(
-        "\n".join(
-            [
-                rf"\title[mode=title]{{{title}}}",
-                rf"\author[1]{{{author_text}}}",
-                rf"\affiliation[1]{{organization={{{affiliation_text}}}}}",
-                r"\begin{abstract}",
-                "Abstract text.",
-                r"\end{abstract}",
-                r"\begin{highlights}",
-                r"\item SC-FMA calibrates interventional utility into supervision weights.",
-                r"\end{highlights}",
-                r"\section*{Acknowledgments}",
-                acknowledgement_text,
-                r"\section*{Declaration of competing interest}",
-                "The authors declare no known competing financial interests.",
-                r"\section*{Declaration of generative AI and AI-assisted technologies in the writing process}",
-                "The authors used OpenAI Codex for language editing.",
-                r"\section*{Data and code availability}",
-                "Data and code are available in the anonymous submission package.",
-                r"\section*{CRediT authorship contribution statement}",
-                "Author roles are stated here.",
-            ]
-        ),
-        encoding="utf-8",
-    )
-    (package_dir / "cover_letter.md").write_text(
-        "\n".join(
-            [
-                "# Cover Letter",
-                "",
-                f'**Subject**: Submission of Regular Article: "{cover_title}"',
-                "",
-                "Dear Editor,",
-                "",
-                f'Please consider the manuscript "{cover_title}" as a Regular Article for Knowledge-Based Systems.',
-            ]
-        ),
-        encoding="utf-8",
-    )
-    for filename in (
-        "main.pdf",
-        "references.bib",
-        "cas-sc.cls",
-        "cas-common.sty",
-        "cas-model2-names.bst",
-        "format_checklist.md",
-        "final_submission_manifest.md",
-        "submission_author_metadata_template.md",
-        "supplementary_materials.md",
-    ):
-        (package_dir / filename).write_text("placeholder\n", encoding="utf-8")
-    (package_dir / "supplementary" / "supplementary_manifest.md").write_text(
-        "manifest\n", encoding="utf-8"
-    )
-    (package_dir / "supplementary" / "Supplementary_Data_S1_governance_diagnostic_report.json").write_text(
-        "{}\n", encoding="utf-8"
-    )
-    (package_dir / "supplementary" / "Supplementary_Figure_S1_governance_diagnostic_upset.png").write_bytes(
-        b"png"
-    )
+    _write_docx(package_dir / "cover_letter.docx")
+    _write_pdf(package_dir / "manuscript.pdf")
+    _write_pdf(package_dir / "supplementary.pdf")
+    _write_source_zip(package_dir / "latex_source.zip")
 
 
-def test_kbs_verifier_passes_package_controlled_checks_without_author_gate(tmp_path: Path) -> None:
+def _pdf_text_by_name() -> dict[str, str]:
+    manuscript_text = "\n".join(
+        [
+            TITLE,
+            "Highlights",
+            "Declaration of Competing Interest",
+            "Data Availability",
+            "CRediT authorship contribution statement",
+            "Haoran Ma",
+            "Ningning Wang",
+            "mahaoran0000@foamail.com",
+            "wangningning@bistu.edu.cn",
+            "National Social Science Fund of China Project (24BSH018)",
+            "Data will be made available on request.",
+        ]
+    )
+    supplementary_text = f"Supplementary Material\n{TITLE}\nHaoran Ma\nNingning Wang"
+    return {
+        "manuscript.pdf": manuscript_text,
+        "supplementary.pdf": supplementary_text,
+    }
+
+
+def test_kbs_verifier_passes_final_submission_boundary(tmp_path: Path) -> None:
     from scripts.verify_kbs_submission_package import check_package
 
-    package_dir = tmp_path / "kbs_submission"
-    _write_minimal_package(package_dir)
+    package_dir = tmp_path / "final_package"
+    _write_final_package(package_dir)
 
-    report = check_package(package_dir, require_author_metadata=False)
+    report = check_package(
+        package_dir,
+        require_author_metadata=True,
+        require_pdf_text=True,
+        pdf_text_by_name=_pdf_text_by_name(),
+    )
 
     assert report.ok, report.errors
-    assert report.warnings == ["author metadata placeholders remain"]
+    assert report.warnings == []
 
 
-def test_kbs_verifier_blocks_direct_upload_when_author_metadata_is_required(
-    tmp_path: Path,
-) -> None:
+def test_kbs_verifier_requires_final_upload_files(tmp_path: Path) -> None:
     from scripts.verify_kbs_submission_package import check_package
 
-    package_dir = tmp_path / "kbs_submission"
-    _write_minimal_package(package_dir)
+    package_dir = tmp_path / "final_package"
+    package_dir.mkdir()
+    (package_dir / "main.pdf").write_bytes(b"%PDF-1.4\n%%EOF\n")
+
+    report = check_package(package_dir)
+
+    assert not report.ok
+    assert any("missing required package file: cover_letter.docx" in error for error in report.errors)
+    assert any("missing required package file: manuscript.pdf" in error for error in report.errors)
+    assert any("missing required package file: supplementary.pdf" in error for error in report.errors)
+    assert any("missing required package file: latex_source.zip" in error for error in report.errors)
+
+
+def test_kbs_verifier_blocks_author_placeholders_in_source_zip(tmp_path: Path) -> None:
+    from scripts.verify_kbs_submission_package import check_package
+
+    package_dir = tmp_path / "final_package"
+    _write_final_package(package_dir)
+    _write_source_zip(
+        package_dir / "latex_source.zip",
+        manuscript_tex="Anonymous Author(s)\nAnonymous Institution\n",
+    )
 
     report = check_package(package_dir, require_author_metadata=True)
 
@@ -111,63 +164,35 @@ def test_kbs_verifier_blocks_direct_upload_when_author_metadata_is_required(
     assert any("author metadata placeholders remain" in error for error in report.errors)
 
 
-def test_kbs_verifier_catches_title_drift_and_pre_review_acknowledgment(
-    tmp_path: Path,
-) -> None:
+def test_kbs_verifier_checks_source_zip_manifest(tmp_path: Path) -> None:
     from scripts.verify_kbs_submission_package import check_package
 
-    package_dir = tmp_path / "kbs_submission"
-    _write_minimal_package(
-        package_dir,
-        cover_title="Functional Metacognitive Attribution: A Diagnostic and Design Framework",
-        acknowledgement_text="The authors acknowledge the anonymous reviewers for their constructive feedback.",
-    )
+    package_dir = tmp_path / "final_package"
+    _write_final_package(package_dir)
+    with zipfile.ZipFile(package_dir / "latex_source.zip", "w") as zf:
+        zf.writestr("manuscript.tex", TITLE)
 
-    report = check_package(package_dir, require_author_metadata=False)
+    report = check_package(package_dir)
 
     assert not report.ok
-    assert any("cover letter does not contain current title" in error for error in report.errors)
-    assert any("pre-review anonymous reviewer acknowledgment" in error for error in report.errors)
-
-
-def test_kbs_verifier_passes_rendered_pdf_text_gate(tmp_path: Path) -> None:
-    from scripts.verify_kbs_submission_package import check_package
-
-    package_dir = tmp_path / "kbs_submission"
-    _write_minimal_package(package_dir)
-    pdf_text = "\n".join(
-        [
-            TITLE,
-            "Highlights",
-            "Declaration of competing interest",
-            "Declaration of generative AI",
-            "Data and code availability",
-            "CRediT authorship contribution statement",
-        ]
-    )
-
-    report = check_package(package_dir, require_pdf_text=True, pdf_text=pdf_text)
-
-    assert report.ok, report.errors
+    assert any("latex_source.zip missing required source file: supplementary.tex" in error for error in report.errors)
+    assert any("latex_source.zip missing required artwork directory: figures/" in error for error in report.errors)
 
 
 def test_kbs_verifier_blocks_stale_rendered_pdf_text(tmp_path: Path) -> None:
     from scripts.verify_kbs_submission_package import check_package
 
-    package_dir = tmp_path / "kbs_submission"
-    _write_minimal_package(package_dir)
-    pdf_text = "\n".join(
-        [
-            "Functional Metacognitive Attribution: A Diagnostic and Design Framework",
-            "Highlights",
-            "Declaration of competing interest",
-            "Declaration of generative AI",
-            "Data and code availability",
-            "CRediT authorship contribution statement",
-        ]
+    package_dir = tmp_path / "final_package"
+    _write_final_package(package_dir)
+
+    report = check_package(
+        package_dir,
+        require_pdf_text=True,
+        pdf_text_by_name={
+            "manuscript.pdf": "Functional Metacognitive Attribution: A Diagnostic and Design Framework",
+            "supplementary.pdf": f"Supplementary Material\n{TITLE}",
+        },
     )
 
-    report = check_package(package_dir, require_pdf_text=True, pdf_text=pdf_text)
-
     assert not report.ok
-    assert any("rendered PDF text does not contain current title" in error for error in report.errors)
+    assert any("rendered manuscript.pdf text does not contain current title" in error for error in report.errors)

@@ -1,44 +1,36 @@
-# KBS Author Metadata Template
+# KBS Author Metadata Record
 
-Purpose: collect the user-supplied fields required before converting the current claim-safe manuscript shell into a direct Knowledge-Based Systems upload package.
+Purpose: record the author and statement metadata inserted into the final Knowledge-Based Systems submission package.
 
 ## Manuscript
 
 - Title: Structurally-Calibrated Functional Attribution: A Methodology for Process Supervision Weighting in Reflective Reasoning
 - Article type: Regular Article
 
-## Author List
+## Authors
 
-Replace the placeholders below with the exact author order for submission.
-
-| Order | Full name | Email | ORCID | Affiliation number(s) | Corresponding author? |
-|---:|---|---|---|---|---|
-| 1 |  |  |  |  |  |
-| 2 |  |  |  |  |  |
+| Order | Full name | Email | Affiliation number(s) | Corresponding author? |
+|---:|---|---|---|---|
+| 1 | Haoran Ma | mahaoran0000@foamail.com | 1 | No |
+| 2 | Ningning Wang | wangningning@bistu.edu.cn | 1, 2 | Yes |
 
 ## Affiliations
 
-| Number | Department or institute | Organization | City | State/province | Country |
-|---:|---|---|---|---|---|
-| 1 |  |  |  |  |  |
+| Number | Affiliation |
+|---:|---|
+| 1 | College of Management Science and Engineering, Beijing Information Science and Technology University, Beijing 102200, China |
+| 2 | Institute of Information Systems, ESG Intelligent Application Innovation Research Center, Beijing 102200, China |
 
-## Corresponding Author Details
+## Statements
 
-- Name:
-- Email:
-- Full postal address:
+- Funding: National Social Science Fund of China Project (24BSH018); Beijing Natural Science Foundation Project (L252145).
+- Declaration of Competing Interest: The authors declared that they have no conflicts of interest to this work.
+- Data Availability: Data will be made available on request.
+- CRediT: Haoran Ma: Conceptualization, Methodology, Software, Formal analysis, Investigation, Data Curation, Writing -- Original Draft, Visualization. Ningning Wang: Methodology, Validation, Writing -- Review & Editing, Supervision, Project administration, Funding acquisition.
 
-## Statements To Confirm
+## Local Targets Updated
 
-- Competing interest statement:
-- Funding statement, if any:
-- Data/code availability wording:
-- CRediT roles by author:
-- Acknowledgments, if any:
-
-## Local Replacement Targets
-
-- Replace `Anonymous Author(s)` and `Anonymous Institution` in `main.tex`.
-- Replace `The authors` in `cover_letter.md` if the cover letter should include named submitters.
-- Replace anonymous CRediT wording in `main.tex`.
-- Rebuild `main.pdf` after author metadata is inserted.
+- `main.tex`
+- `final_source/manuscript.tex`
+- `final_source/supplementary.tex`
+- `final_package/cover_letter.docx`

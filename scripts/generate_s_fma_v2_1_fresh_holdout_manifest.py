@@ -16,8 +16,8 @@ if str(PROJECT_ROOT) not in sys.path:
 from fma.io import load_records
 from fma.real_task_pilot.archive_paths import v2_1_failed_provenance_root
 from fma.real_task_pilot.config import load_pilot_config
-from fma.real_task_pilot.fresh_holdout import row_overlap_keys
-from fma.real_task_pilot.fresh_holdout_v2_1 import (
+from fma.real_task_pilot._archived.fresh_holdout import row_overlap_keys
+from fma.real_task_pilot._archived.fresh_holdout_v2_1 import (
     build_v2_1_api_preflight_approval_request,
     build_v2_1_contract_audit,
     build_v2_1_fresh_holdout_manifest,

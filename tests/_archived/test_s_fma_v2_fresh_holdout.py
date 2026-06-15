@@ -8,7 +8,7 @@ from datetime import date
 import pytest
 
 from fma.io import write_records
-from fma.real_task_pilot.fresh_holdout import (
+from fma.real_task_pilot._archived.fresh_holdout import (
     BLOCKED_INSUFFICIENT_FRESH_ROWS,
     MANIFEST_OVERLAP_CLEAN,
     alias_hash,
@@ -17,7 +17,7 @@ from fma.real_task_pilot.fresh_holdout import (
 )
 from scripts.generate_s_fma_v2_fresh_holdout_manifest import _assert_current_task_boundary
 
-from fma.real_task_pilot.fresh_preflight import (
+from fma.real_task_pilot._archived.fresh_preflight import (
     API_PREFLIGHT_READY,
     PREFLIGHT_FAIL_COST,
     PREFLIGHT_FAIL_DRIFT,
@@ -31,7 +31,7 @@ from fma.real_task_pilot.fresh_preflight import (
     summarize_fresh_preflight,
     validate_preflight_readiness,
 )
-from fma.real_task_pilot.fresh_smoke import (
+from fma.real_task_pilot._archived.fresh_smoke import (
     STOCHASTIC_SMOKE_ENGINEERING_PASS,
     STOCHASTIC_SMOKE_FAIL_COST,
     STOCHASTIC_SMOKE_FAIL_GENERATION,

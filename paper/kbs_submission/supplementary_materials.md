@@ -11,3 +11,15 @@
 **Supplementary Data S4**: Frozen PRM baseline context. The v3.7 overlap audit is `outputs/real_task_v3_7_prm_baseline_comparison/training_overlap_audit.json`. The v3.8 locked PRM scoring report is `outputs/real_task_v3_8_prm_locked_scoring/locked_prm_baseline_comparison_report.json`; it supports only an in-distribution, overlap-limited frozen PRM baseline context with frozen PRM prefix-score Spearman 0.2515662235547571 and `w_struct - prm` bootstrap CI [0.34499208448462026, 0.3745467544914783].
 
 **Supplementary Note S1**: Claim boundary. These supplementary files preserve failed and blocked replay/filtering provenance while adding PRM800K step-ranking and overlap-limited frozen PRM baseline-context evidence. They do not add downstream filtering support, downstream training support, GSM8K/HotpotQA replay-pass evidence, mechanism-recovery claims, or claims beyond PRM800K-like process-supervision data.
+
+**Supplementary Note S2**: Full derivation of the variance reduction bound (Theorem 3). Contains the complete algebraic expansion of the two-term objective, variance decomposition, and the non-expansive projection argument.
+
+**Supplementary Note S3**: Tightness construction for the bottleneck lower bound (Theorem 4). Contains the explicit $k=2$ construction, the first-order condition $w_1^* = \sqrt{\delta/(4(\alpha+\beta))}$, and the proof that setting $\varepsilon = \sqrt{\delta/(4(\alpha+\beta))}$ makes the bound exact.
+
+**Supplementary Note S4**: SLSQP convergence diagnostics by trace size. Contains the full table of warm-start and cold-start iteration counts and wall-clock times for $k = 3$--$8$, including standard deviations and convergence rate analysis.
+
+**Supplementary Note S5**: Graph construction parameter sensitivity. Contains the full sensitivity table for $\pm 20\%$ perturbation of $\tau_{\text{tfidf}}$ and $w_{\text{topical}}$, including per-trace-size breakdowns and bottleneck count variations.
+
+**Supplementary Note S6**: Stratum-dependent held-out analysis. Contains the full Stage 2 validation results stratified by difficulty tier ($S_{\text{high}}$, $S_{\text{mid}}$, $S_{\text{low}}$, $S_{\text{rand}}$) with bootstrap confidence intervals.
+
+**Supplementary Note S7**: Taxonomy-stratified ablation analysis. Contains the full ablation results broken down by reflective operation category (ERROR_CORRECTION, VERIFICATION, PLANNING, BACKTRACKING, DECOMPOSITION, CONSTRAINT_TRACKING, RETRIEVAL, UNCERTAINTY_MON).

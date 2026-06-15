@@ -14,7 +14,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from fma.io import load_records, write_records
 from fma.real_task_pilot.config import load_pilot_config
-from fma.real_task_pilot.fresh_preflight import (
+from fma.real_task_pilot._archived.fresh_preflight import (
     FreshPreflightError,
     attempt_payloads_from_results,
     build_budget_blocked_report,

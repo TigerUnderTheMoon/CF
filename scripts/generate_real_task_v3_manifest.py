@@ -21,7 +21,7 @@ if str(SRC_ROOT) not in sys.path:
 
 from fma.io import load_records, write_records
 from fma.real_task_pilot.config import load_pilot_config
-from fma.real_task_pilot.validation_v3 import REAL_TASK_V3_PREREGISTRATION_ONLY
+from fma.real_task_pilot._archived.validation_v3 import REAL_TASK_V3_PREREGISTRATION_ONLY
 from scripts.prepare_real_task_v3_gsm8k_source import (
     DECLARED_GSM8K_REVISION,
     SOURCE_PREPARATION_FAILURE_STATUS,

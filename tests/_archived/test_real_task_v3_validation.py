@@ -13,7 +13,7 @@ import pytest
 from fma.io import write_records
 from fma.real_task_pilot.config import load_pilot_config
 from fma.real_task_pilot.parsing import extract_reflection_spans
-from fma.real_task_pilot.validation_v3 import (
+from fma.real_task_pilot._archived.validation_v3 import (
     EXPECTED_V3_HARD_CAPS,
     HOTPOTQA_SURFACE_MATCH_THRESHOLDS,
     REAL_TASK_V3_PREREGISTRATION_ONLY,

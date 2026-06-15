@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import re
 
-import torch
+import pytest
+
+torch = pytest.importorskip("torch")
 
 from fma.replay.counterfactual import (
     ReplayConfig,
