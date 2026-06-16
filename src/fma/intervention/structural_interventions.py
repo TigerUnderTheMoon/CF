@@ -94,7 +94,7 @@ class StructuralInterventionEngine:
     ) -> tuple[ReflectionChain, dict[str, Any]]:
         steps = list(trace.reflection_chain)
         removed = steps.pop(target_index)
-        return _with_steps(trace, steps), {"removed_category": removed.category}
+        return _with_steps(trace, steps), _proxy_details({"removed_category": removed.category})
 
     @staticmethod
     def _shuffle(
@@ -105,7 +105,11 @@ class StructuralInterventionEngine:
         before_order = [step.category for step in steps]
         rng.shuffle(steps)
         after_order = [step.category for step in steps]
-        return _with_steps(trace, steps), {"before_order": before_order, "after_order": after_order}, None
+        return (
+            _with_steps(trace, steps),
+            _proxy_details({"before_order": before_order, "after_order": after_order}),
+            None,
+        )
 
     @staticmethod
     def _replace(
@@ -131,10 +135,12 @@ class StructuralInterventionEngine:
             expected_intervention=replacement_template.expected_intervention,
             confidence=replacement_template.confidence,
         )
-        return _with_steps(trace, steps), {
-            "removed_category": original.category,
-            "replacement_category": replacement_style.name,
-        }
+        return _with_steps(trace, steps), _proxy_details(
+            {
+                "removed_category": original.category,
+                "replacement_category": replacement_style.name,
+            }
+        )
 
     @staticmethod
     def _truncate(
@@ -143,7 +149,9 @@ class StructuralInterventionEngine:
     ) -> tuple[ReflectionChain, dict[str, Any]]:
         # Exclusive policy: keep the target step and remove later reflections.
         steps = list(trace.reflection_chain[: target_index + 1])
-        return _with_steps(trace, steps), {"truncate_policy": "exclusive_keep_target"}
+        return _with_steps(trace, steps), _proxy_details(
+            {"truncate_policy": "exclusive_keep_target"}
+        )
 
     @staticmethod
     def _contradict(
@@ -163,7 +171,7 @@ class StructuralInterventionEngine:
                 confidence=0.9,
             ),
         )
-        return _with_steps(trace, steps), {"inserted_category": "CONTRADICTION"}
+        return _with_steps(trace, steps), _proxy_details({"inserted_category": "CONTRADICTION"})
 
     @staticmethod
     def _resolve_target_index(
@@ -187,6 +195,16 @@ def trace_hash(trace: ReflectionChain) -> str:
 
 def _with_steps(trace: ReflectionChain, steps: list[ReflectionStep]) -> ReflectionChain:
     return ReflectionChain(trace_id=trace.trace_id, reflection_chain=tuple(steps))
+
+
+def _proxy_details(details: dict[str, Any]) -> dict[str, Any]:
+    return {
+        **details,
+        "structure_preserving": False,
+        "primary_ciu_allowed": False,
+        "proxy_only": True,
+        "evidence_role": "destructive_diagnostic",
+    }
 
 
 __all__ = [

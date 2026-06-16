@@ -10,7 +10,7 @@ from pathlib import Path
 import yaml
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 CONFIG_PATH = PROJECT_ROOT / "configs" / "real_task_v3_6_prm800k_hash_validation.yaml"
 SCRIPT_PATH = PROJECT_ROOT / "scripts" / "run_real_task_v3_6_prm800k_hash_validation.py"
 

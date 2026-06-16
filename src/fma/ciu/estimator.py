@@ -73,6 +73,24 @@ def coerce_binary_outcome(value: Any, field_name: str, sample_id: str) -> float:
     )
 
 
+def coerce_bounded_outcome(value: Any, field_name: str, sample_id: str) -> float:
+    if isinstance(value, bool):
+        return 1.0 if value else 0.0
+    if isinstance(value, int | float):
+        numeric_value = float(value)
+        if math.isfinite(numeric_value) and 0.0 <= numeric_value <= 1.0:
+            return numeric_value
+    raise ValueError(
+        f"Outcome field {field_name!r} for sample_id={sample_id!r} must be numeric in [0, 1]."
+    )
+
+
+def coerce_outcome(value: Any, field_name: str, sample_id: str) -> float:
+    if "correctness" in field_name:
+        return coerce_binary_outcome(value, field_name, sample_id)
+    return coerce_bounded_outcome(value, field_name, sample_id)
+
+
 def require_outcome(
     record: dict[str, Any],
     field_names: tuple[str, ...],
@@ -81,7 +99,7 @@ def require_outcome(
 ) -> float:
     for field_name in field_names:
         if field_name in record and record[field_name] is not None:
-            return coerce_binary_outcome(record[field_name], field_name, sample_id)
+            return coerce_outcome(record[field_name], field_name, sample_id)
     expected = ", ".join(field_names)
     raise ValueError(f"{label} record for sample_id={sample_id!r} lacks {expected}.")
 
@@ -158,7 +176,13 @@ def compute_ciu_records(
         intervened = intervened_by_id[sample_id]
         original_outcome = require_outcome(
             original,
-            ("correctness", "original_correctness", "original_outcome"),
+            (
+                "correctness",
+                "original_correctness",
+                "original_utility",
+                "utility",
+                "original_outcome",
+            ),
             sample_id,
             "original",
         )
@@ -167,6 +191,8 @@ def compute_ciu_records(
             (
                 "counterfactual_correctness",
                 "intervened_correctness",
+                "counterfactual_utility",
+                "intervened_utility",
                 "counterfactual_outcome",
                 "intervened_outcome",
             ),

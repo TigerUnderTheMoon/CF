@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.5.21)  15 JUN 2026 22:30
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.5.21)  16 JUN 2026 19:43
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -696,7 +696,7 @@ LaTeX Font Info:    Trying to load font information for T1+stix on input line 2
  (d:/DevelopTools/texlive/2026/texmf-dist/tex/latex/stix/t1stix.fd
 File: t1stix.fd 2015/04/17 v1.1.2-latex STIX T1 font definitions
 )
-No file supplementary.aux.
+(./supplementary.aux)
 \openout1 = `supplementary.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 23.
@@ -720,6 +720,7 @@ LaTeX Font Info:    ... okay on input line 23.
 LaTeX Font Info:    Checking defaults for LS1/stix/m/n on input line 23.
 LaTeX Font Info:    Trying to load font information for LS1+stix on input line 
 23.
+
 (d:/DevelopTools/texlive/2026/texmf-dist/tex/latex/stix/ls1stix.fd
 File: ls1stix.fd 2015/04/17 v1.1.2-latex STIX LS1 font definitions
 )
@@ -760,6 +761,7 @@ e
 LaTeX Info: Command `\dddot' is already robust on input line 23.
 LaTeX Info: Command `\ddddot' is already robust on input line 23.
 Package hyperref Info: Link coloring ON on input line 23.
+ (./supplementary.out) (./supplementary.out)
 \@outlinefile=\write3
 \openout3 = `supplementary.out'.
 
@@ -874,31 +876,26 @@ Package hyperref Warning: Ignoring empty anchor on input line 60.
 
 Package hyperref Warning: Ignoring empty anchor on input line 60.
 
+<thumbnails/cas-email.jpeg, id=4, 225.84375pt x 225.84375pt>
+File: thumbnails/cas-email.jpeg Graphic file (type jpg)
+<use thumbnails/cas-email.jpeg>
+Package pdftex.def Info: thumbnails/cas-email.jpeg  used on input line 60.
+(pdftex.def)             Requested size: 7.99838pt x 8.0pt.
 
-Package natbib Warning: Citation `wang2013projection' on page 1 undefined on in
-put line 94.
+Package hyperref Warning: Ignoring empty anchor on input line 60.
 
 [1
 
 {d:/DevelopTools/texlive/2026/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{d:/
 DevelopTools/texlive/2026/texmf-dist/fonts/enc/dvips/stix/stix-t1.enc}{d:/Devel
-opTools/texlive/2026/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc}]
-
-LaTeX Warning: Reference `tab:per-size' on page 2 undefined on input line 141.
-
-
-LaTeX Warning: Reference `fig:mode-comparison' on page 2 undefined on input lin
-e 167.
-
-
-LaTeX Warning: Reference `fig:resilience-app' on page 2 undefined on input line
- 167.
-
+opTools/texlive/2026/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc} <d:/D
+evelopTools/texlive/2026/texmf-dist/tex/latex/els-cas-templates/thumbnails/cas-
+email.jpeg>]
 
 LaTeX Warning: No positions in optional float specifier.
                Default added (so using `') on input line 169.
 
-<figures/fig_mode_comparison.png, id=27, 493.6041pt x 117.5592pt>
+<figures/fig_mode_comparison.png, id=34, 493.6041pt x 117.5592pt>
 File: figures/fig_mode_comparison.png Graphic file (type png)
 <use figures/fig_mode_comparison.png>
 Package pdftex.def Info: figures/fig_mode_comparison.png  used on input line 17
@@ -908,7 +905,7 @@ Package pdftex.def Info: figures/fig_mode_comparison.png  used on input line 17
 LaTeX Warning: No positions in optional float specifier.
                Default added (so using `') on input line 176.
 
-<figures/fig_redundancy_comp.png, id=29, 496.0131pt x 117.8001pt>
+<figures/fig_redundancy_comp.png, id=36, 496.0131pt x 117.8001pt>
 File: figures/fig_redundancy_comp.png Graphic file (type png)
 <use figures/fig_redundancy_comp.png>
 Package pdftex.def Info: figures/fig_redundancy_comp.png  used on input line 17
@@ -918,7 +915,7 @@ Package pdftex.def Info: figures/fig_redundancy_comp.png  used on input line 17
 LaTeX Warning: No positions in optional float specifier.
                Default added (so using `') on input line 183.
 
-<figures/fig_resilience.png, id=30, 240.6591pt x 189.8292pt>
+<figures/fig_resilience.png, id=37, 240.6591pt x 189.8292pt>
 File: figures/fig_resilience.png Graphic file (type png)
 <use figures/fig_resilience.png>
 Package pdftex.def Info: figures/fig_resilience.png  used on input line 185.
@@ -929,9 +926,7 @@ pdfTeX warning (ext4): destination with the same identifier (name{table.1}) has
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
 l.228 
-      ]
-No file supplementary.bbl.
-[4
+      ] (./supplementary.bbl) [4
 pdfTeX warning (ext4): destination with the same identifier (name{table.2}) has
  been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
@@ -956,58 +951,42 @@ s been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
 l.256 \end{document}
-                     <./figures/fig_resilience.png>]
-
-Package natbib Warning: There were undefined citations.
-
-(./supplementary.aux)
+                     <./figures/fig_resilience.png>] (./supplementary.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-04-28>
  ***********
-
-
-LaTeX Warning: There were undefined references.
-
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
-
-Package rerunfilecheck Warning: File `supplementary.out' has changed.
-(rerunfilecheck)                Rerun to get outlines right
-(rerunfilecheck)                or use package `bookmark'.
-
-Package rerunfilecheck Info: Checksums for `supplementary.out':
-(rerunfilecheck)             Before: <no file>
-(rerunfilecheck)             After:  D41D8CD98F00B204E9800998ECF8427E;0.
+Package rerunfilecheck Info: File `supplementary.out' has not changed.
+(rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
  ) 
 Here is how much of TeX's memory you used:
- 17175 strings out of 467341
- 258979 string characters out of 5412745
- 688223 words of memory out of 5000000
- 45957 multiletter control sequences out of 15000+600000
- 725153 words of font info for 160 fonts, out of 8000000 for 9000
+ 17217 strings out of 467341
+ 259867 string characters out of 5412745
+ 691127 words of memory out of 5000000
+ 45987 multiletter control sequences out of 15000+600000
+ 725466 words of font info for 161 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 90i,12n,98p,1053b,533s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 90i,12n,98p,1062b,533s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <d:/DevelopTools/texlive/2026/texmf-dist/fonts/type1/public/stix/STIXGeneral-
 Bold.pfb><d:/DevelopTools/texlive/2026/texmf-dist/fonts/type1/public/stix/STIXG
 eneral-Italic.pfb><d:/DevelopTools/texlive/2026/texmf-dist/fonts/type1/public/s
 tix/STIXGeneral-Regular.pfb><d:/DevelopTools/texlive/2026/texmf-dist/fonts/type
 1/public/cm-super/sfss0900.pfb><d:/DevelopTools/texlive/2026/texmf-dist/fonts/t
 ype1/public/cm-super/sfsx0900.pfb><d:/DevelopTools/texlive/2026/texmf-dist/font
-s/type1/public/cm-super/sftt1000.pfb><d:/DevelopTools/texlive/2026/texmf-dist/f
-onts/type1/public/stix/stix-mathbb.pfb><d:/DevelopTools/texlive/2026/texmf-dist
-/fonts/type1/public/stix/stix-mathcal.pfb><d:/DevelopTools/texlive/2026/texmf-d
-ist/fonts/type1/public/stix/stix-mathex.pfb><d:/DevelopTools/texlive/2026/texmf
--dist/fonts/type1/public/stix/stix-mathit.pfb><d:/DevelopTools/texlive/2026/tex
-mf-dist/fonts/type1/public/stix/stix-mathrm-bold.pfb><d:/DevelopTools/texlive/2
-026/texmf-dist/fonts/type1/public/stix/stix-mathrm.pfb><d:/DevelopTools/texlive
-/2026/texmf-dist/fonts/type1/public/stix/stix-mathscr.pfb><d:/DevelopTools/texl
-ive/2026/texmf-dist/fonts/type1/public/stix/stix-mathtt.pfb>
-Output written on supplementary.pdf (6 pages, 454263 bytes).
+s/type1/public/cm-super/sftt0800.pfb><d:/DevelopTools/texlive/2026/texmf-dist/f
+onts/type1/public/cm-super/sftt1000.pfb><d:/DevelopTools/texlive/2026/texmf-dis
+t/fonts/type1/public/stix/stix-mathbb.pfb><d:/DevelopTools/texlive/2026/texmf-d
+ist/fonts/type1/public/stix/stix-mathcal.pfb><d:/DevelopTools/texlive/2026/texm
+f-dist/fonts/type1/public/stix/stix-mathex.pfb><d:/DevelopTools/texlive/2026/te
+xmf-dist/fonts/type1/public/stix/stix-mathit.pfb><d:/DevelopTools/texlive/2026/
+texmf-dist/fonts/type1/public/stix/stix-mathrm-bold.pfb><d:/DevelopTools/texliv
+e/2026/texmf-dist/fonts/type1/public/stix/stix-mathrm.pfb><d:/DevelopTools/texl
+ive/2026/texmf-dist/fonts/type1/public/stix/stix-mathscr.pfb><d:/DevelopTools/t
+exlive/2026/texmf-dist/fonts/type1/public/stix/stix-mathtt.pfb>
+Output written on supplementary.pdf (6 pages, 497755 bytes).
 PDF statistics:
- 160 PDF objects out of 1000 (max. 8388607)
- 116 compressed objects within 2 object streams
- 44 named destinations out of 1000 (max. 500000)
- 16 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 173 PDF objects out of 1000 (max. 8388607)
+ 126 compressed objects within 2 object streams
+ 46 named destinations out of 1000 (max. 500000)
+ 21 words of extra memory for PDF output out of 10000 (max. 10000000)
 

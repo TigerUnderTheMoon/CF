@@ -50,7 +50,7 @@
             country={China}}
 
 \begin{abstract}
-This supplementary material contains the appendix sections separated from the main manuscript. It preserves the extended proofs, additional experimental results, implementation details, and reproducibility notes from the original full manuscript package.
+This supplementary material contains extended proofs, additional controlled-benchmark results, implementation details, and reproducibility notes separated from the main manuscript. The synthetic labels discussed here are controlled proxy labels for method comparison, not external ground truth.
 \end{abstract}
 
 \begin{keywords}
@@ -138,7 +138,7 @@ This appendix provides extended experimental results, supplementary figures, and
 \subsection{Full Ranking Metrics per Trace Size}
 \label{app:per-size}
 
-Table~\ref{tab:per-size} breaks down the ranking metrics by trace size ($k = 3$ to $8$) for the three SC-FMA variants and raw CIU. Patterns are consistent across trace sizes: SC-FMA QP dominates at all $k$, with the largest gains at $k \ge 6$ where redundancy effects are most pronounced.
+Table~\ref{tab:per-size} breaks down the controlled synthetic ranking metrics by trace size ($k = 3$ to $8$) for the three SC-FMA variants and raw CIU. Within this controlled proxy-label benchmark, SC-FMA QP is strongest at all $k$, with the largest gains at $k \ge 6$ where redundancy effects are most pronounced.
 
 \begin{table}[ht]
 \caption{Step importance ranking metrics stratified by trace size $k$. Mean Spearman $\rho$ over traces of each size. Standard errors in parentheses (bootstrap, 10k resamples).}
@@ -226,13 +226,13 @@ SLSQP convergence statistics across $N = 1{,}027$ steps (200 traces): mean itera
 
 The keyword-heuristic graph construction introduces two free parameters: $\tau_{\text{tfidf}} = 0.35$ and $w_{\text{topical}} = 0.75$. Sensitivity analysis ($\pm 20\%$ perturbation) shows $|\Delta\rho| < 0.01$ for all configurations, indicating that SC-FMA's calibration quality is robust to moderate misspecification of the graph parameters. Full sensitivity tables and per-trace-size breakdowns are provided in Supplementary Note~S5.
 
-\subsection{Oracle Label Independence Analysis}
+\subsection{Controlled Proxy-Label Independence Analysis}
 \label{app:oracle-independence}
 
-We verify that the independent oracle defined in the main manuscript does not share input features with the SCU objective. The correlation between each oracle component and each SCU input is:
+We verify that the controlled proxy-label definition used in the synthetic benchmark does not share input features with the SCU objective. The correlation between each proxy-label component and each SCU input is:
 
 \begin{table}[ht]
-\caption{Cross-correlation between oracle components and SCU inputs across 1{,}027 steps. All correlations are below $|\rho| < 0.15$, confirming functional independence.}
+\caption{Cross-correlation between controlled proxy-label components and SCU inputs across 1{,}027 steps. All correlations are below $|\rho| < 0.15$, confirming low input overlap.}
 \label{tab:oracle-independence}
 \centering
 \small
@@ -247,7 +247,7 @@ $p_i$ (position value) & 0.11 & $-$0.09 & $-$0.02 \\
 \end{tabular}
 \end{table}
 
-All cross-correlations are below $|\rho| < 0.15$, confirming that the oracle components are functionally independent of the SCU inputs. The previous isomorphic definition ($y_i = 0.4\tilde{c}_i + 0.4\tilde{n}_i + 0.2(1-\bar{r}_i)$) achieved Pearson correlations of $0.63$ with $\tilde{c}_i$ and $0.53$ with $\tilde{n}_i$---indicating substantial overlap that the independent definition eliminates.
+All cross-correlations are below $|\rho| < 0.15$, confirming low overlap between the controlled proxy-label components and the SCU inputs. The previous isomorphic definition ($y_i = 0.4\tilde{c}_i + 0.4\tilde{n}_i + 0.2(1-\bar{r}_i)$) achieved Pearson correlations of $0.63$ with $\tilde{c}_i$ and $0.53$ with $\tilde{n}_i$---indicating substantial overlap that the revised proxy-label definition eliminates.
 
 
 \bibliographystyle{cas-model2-names}

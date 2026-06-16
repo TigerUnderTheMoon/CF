@@ -11,7 +11,7 @@
 - [x] Manuscript PDF compiled from `final_source/manuscript.tex` with exit code 0.
 - [x] Supplementary PDF compiled from `final_source/supplementary.tex` with exit code 0.
 - [x] Highlights PDF extracted as a standalone 1-page file from the full compiled `main.pdf`.
-- [x] Page counts are content-faithful to the 38-page full PDF: `Highlights.pdf` 1 page, `manuscript.pdf` 32 pages, `supplementary.pdf` 6 pages.
+- [x] Page counts are content-faithful to the cleanly recompiled full PDF: `main.pdf` 7 pages, `Highlights.pdf` 1 page, `manuscript.pdf` 6 pages, `supplementary.pdf` 6 pages.
 - [x] Manuscript and supplementary PDFs were rendered to PNG contact sheets and visually checked.
 - [x] Source zip includes manuscript/supplementary LaTeX sources, bibliography, CAS files, and PNG artwork.
 - [x] Source zip excludes LaTeX auxiliary/build artifacts.

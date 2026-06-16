@@ -33,9 +33,9 @@ The portal-facing package is `final_package/` and contains exactly five files:
 
 ## Verification
 
-- The full compiled `main.pdf` has 38 pages and is used only as the source for extracting the standalone Highlights page.
+- The full compiled `main.pdf` has 7 pages and is used only as the source for extracting the standalone Highlights page.
 - `Highlights.pdf` has 1 page.
-- `manuscript.tex` compiled with TeX Live/latexmk: exit code 0, output `manuscript.pdf` with 32 pages.
+- `manuscript.tex` compiled with TeX Live/latexmk: exit code 0, output `manuscript.pdf` with 6 pages.
 - `supplementary.tex` compiled with TeX Live/latexmk: exit code 0, output `supplementary.pdf` with 6 pages.
 - PDF pages were rendered to PNG contact sheets and visually checked for page count, footer consistency, figure placement, and obvious clipping.
 - `cover_letter.docx` was structurally checked for required DOCX parts and required text. Visual DOCX rendering could not be completed because `soffice.exe`/LibreOffice is not installed on this machine.
@@ -44,4 +44,4 @@ The portal-facing package is `final_package/` and contains exactly five files:
 
 ## Claim boundary
 
-The package supports a methodological KBS submission: SC-FMA calibration, synthetic ranking evidence, locked PRM800K step-label context, and a fixture-level Countries KG ontology-aware edge pilot. It does not claim downstream PRM/filtering gains, GSM8K/HotpotQA replay-pass evidence, deployed KBS workflow validation, or formal causal identification.
+The package supports a methodological KBS submission: SC-FMA calibration, controlled synthetic proxy-label ranking evidence, PRM800K step-label ranking with `w_struct` as the primary real-data result, and a fixture-level ontology-aware edge pilot as diagnostic context. It does not claim downstream PRM/filtering gains, GSM8K/HotpotQA replay-pass evidence, deployed KBS workflow validation, or formal causal identification.

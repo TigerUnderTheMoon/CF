@@ -1,18 +1,18 @@
 # Fdb version 4
-["bibtex build_full_main/main"] 1781527425.30822 "build_full_main/main.aux" "build_full_main/main.bbl" "build_full_main/main" 1781527759.6489 0
+["bibtex build_full_main/main"] 1781590910.34607 "build_full_main/main.aux" "build_full_main/main.bbl" "build_full_main/main" 1781590918.92416 0
   "./cas-model2-names.bst" 1714792130 31802 28b630660245c09f173aac55be552b29 ""
   "./references.bib" 1781522040 36239 60c7e50c1868e1d37178887bb4fe5511 ""
-  "build_full_main/main.aux" 1781527757 36859 a9df55c6d2cb4db397c344eefeafbb09 "pdflatex"
+  "build_full_main/main.aux" 1781590916 37805 af95c4a717c6116c9098b7d4e1125c28 "pdflatex"
   (generated)
   "build_full_main/main.bbl"
   "build_full_main/main.blg"
   (rewritten before read)
-["pdflatex"] 1781527752.78802 "main.tex" "build_full_main/main.pdf" "main" 1781527759.65102 0
-  "build_full_main/main.abs" 1781527754 1915 867cf01f6e9bb83f176b781126556863 "pdflatex"
-  "build_full_main/main.aux" 1781527757 36859 a9df55c6d2cb4db397c344eefeafbb09 "pdflatex"
-  "build_full_main/main.bbl" 1781527426 36628 d27554fa4685bf2aed79b04f9111421e "bibtex build_full_main/main"
-  "build_full_main/main.out" 1781527754 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
-  "cas-common.sty" 1714793202 76688 c602be3da196cb506acc84d1fa26b134 ""
+["pdflatex"] 1781590911.14158 "main.tex" "build_full_main/main.pdf" "main" 1781590918.92631 0
+  "build_full_main/main.abs" 1781590913 2178 bee534eb4a1cfa42e3401e3d0de7b023 "pdflatex"
+  "build_full_main/main.aux" 1781590916 37805 af95c4a717c6116c9098b7d4e1125c28 "pdflatex"
+  "build_full_main/main.bbl" 1781590911 36628 d27554fa4685bf2aed79b04f9111421e "bibtex build_full_main/main"
+  "build_full_main/main.out" 1781590913 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
+  "cas-common.sty" 1781590858 76651 31515d583d75b614317d78d376474675 ""
   "cas-sc.cls" 1714793356 4410 65b518b1d7581e9c4ebe84b81471ee59 ""
   "d:/DevelopTools/texlive/2026/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc" 1779287267 2971 def0b6c1f0b107b3b936def894055589 ""
   "d:/DevelopTools/texlive/2026/texmf-dist/fonts/enc/dvips/stix/stix-t1.enc" 1779295520 7013 c55cc8669071ac14036c4a0c96c16202 ""
@@ -187,7 +187,7 @@
   "figures/fig_resilience.png" 1781520337 97891 ba227f17ee96a1b46f5b57f22623c86c ""
   "figures/fig_scaling.png" 1781520336 94394 30d638182e456119647f5740861332fe ""
   "figures/fig_sensitivity.png" 1781520336 154445 4e83026fdb5c7b44db866d7de64ce4aa ""
-  "main.tex" 1781525404 155518 504e0a3fc7748628e712f9cf9e1dbcd7 ""
+  "main.tex" 1781590653 162032 0ba6b4a71ff7300c88513821a806ad14 ""
   (generated)
   "build_full_main/main.abs"
   "build_full_main/main.aux"

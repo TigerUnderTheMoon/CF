@@ -61,3 +61,27 @@ def test_metadata_hashes_change_after_edit() -> None:
     assert metadata.intervention_type == "contradict"
     assert metadata.target_index == 0
     assert metadata.before_hash != metadata.after_hash
+
+
+def test_destructive_interventions_are_marked_proxy_only() -> None:
+    trace = make_trace()
+    engine = StructuralInterventionEngine()
+
+    for intervention_type in (
+        InterventionType.DELETE,
+        InterventionType.SHUFFLE,
+        InterventionType.REPLACE,
+        InterventionType.TRUNCATE,
+        InterventionType.CONTRADICT,
+    ):
+        _edited, metadata = engine.apply(
+            trace,
+            intervention_type,
+            seed=11,
+            target_index=0 if intervention_type is not InterventionType.SHUFFLE else None,
+        )
+
+        assert metadata.details["structure_preserving"] is False
+        assert metadata.details["primary_ciu_allowed"] is False
+        assert metadata.details["proxy_only"] is True
+        assert metadata.details["evidence_role"] == "destructive_diagnostic"

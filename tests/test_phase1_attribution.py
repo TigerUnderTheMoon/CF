@@ -62,12 +62,37 @@ class Phase1AttributionTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "lacks counterfactual_correctness"):
             compute_ciu_records(original_records, intervened_records)
 
-    def test_ciu_rejects_non_binary_outcome(self) -> None:
+    def test_ciu_accepts_continuous_utility_outcomes(self) -> None:
+        original_records = [
+            {
+                "sample_id": "gsm8k_1",
+                "original_utility": 0.8,
+                "reflection_spans": [{"start_token": 0, "end_token": 1}],
+            }
+        ]
+        intervened_records = [{"sample_id": "gsm8k_1", "intervened_utility": 0.3}]
+
+        records = compute_ciu_records(original_records, intervened_records)
+
+        self.assertEqual(len(records), 1)
+        self.assertAlmostEqual(records[0]["original_outcome"], 0.8)
+        self.assertAlmostEqual(records[0]["intervened_outcome"], 0.3)
+        self.assertAlmostEqual(records[0]["ciu"], 0.5)
+
+    def test_ciu_rejects_non_binary_correctness(self) -> None:
         original_records = [
             {"sample_id": "gsm8k_1", "correctness": True, "reflection_spans": [{"start_token": 0, "end_token": 1}]}
         ]
-        intervened_records = [{"sample_id": "gsm8k_1", "intervened_outcome": 0.5}]
+        intervened_records = [{"sample_id": "gsm8k_1", "intervened_correctness": 0.5}]
         with self.assertRaisesRegex(ValueError, "must be boolean or 0/1"):
+            compute_ciu_records(original_records, intervened_records)
+
+    def test_ciu_rejects_outcome_outside_unit_interval(self) -> None:
+        original_records = [
+            {"sample_id": "gsm8k_1", "original_outcome": 1.1, "reflection_spans": [{"start_token": 0, "end_token": 1}]}
+        ]
+        intervened_records = [{"sample_id": "gsm8k_1", "intervened_outcome": 0.0}]
+        with self.assertRaisesRegex(ValueError, r"must be numeric in \[0, 1\]"):
             compute_ciu_records(original_records, intervened_records)
 
     def test_fma_normalization_and_tie_handling(self) -> None:
