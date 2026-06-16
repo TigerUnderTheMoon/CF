@@ -1,0 +1,382 @@
+{
+  "claim_boundary": "real_prm800k_audit_prioritization_only",
+  "claim_permissions": {
+    "audit_prioritization_context": true,
+    "downstream_prm_training": false,
+    "external_generalization": false,
+    "gsm8k_hotpotqa_replay_validation": false
+  },
+  "elapsed_seconds": 621.19,
+  "method_order": [
+    "w_struct",
+    "scfma_ridge",
+    "scfma_qp",
+    "scfma_projection",
+    "raw_local_utility",
+    "relative_position",
+    "span_length",
+    "random",
+    "frozen_prm_prefix_score"
+  ],
+  "methods": [
+    {
+      "bootstrap_ci": {
+        "label_mass_at_25": {
+          "ci_lower": 0.3781820240875942,
+          "ci_upper": 0.3835506109082449,
+          "mean": 0.38088810777254206
+        },
+        "label_mass_at_50": {
+          "ci_lower": 0.6810581173074696,
+          "ci_upper": 0.6895578624553196,
+          "mean": 0.6854491331323134
+        },
+        "ndcg_at_25": {
+          "ci_lower": 0.9466503313562203,
+          "ci_upper": 0.9545742318246732,
+          "mean": 0.9505531705674897
+        },
+        "ndcg_at_50": {
+          "ci_lower": 0.9565281047259512,
+          "ci_upper": 0.9618360560890412,
+          "mean": 0.9592697819316535
+        },
+        "top1_max_label_hit": {
+          "ci_lower": 0.908535204890197,
+          "ci_upper": 0.9250622594521168,
+          "mean": 0.9169119311750057
+        }
+      },
+      "claim_permission": "audit_prioritization_context_only",
+      "display_name": "w_struct",
+      "mean_mass_at_25": 0.38088810777254206,
+      "mean_mass_at_50": 0.6854491331323134,
+      "mean_ndcg_at_25": 0.9505531705674897,
+      "mean_ndcg_at_50": 0.9592697819316535,
+      "mean_top1_hit": 0.9169119311750057,
+      "method": "w_struct",
+      "n_samples": 4417,
+      "n_steps": 34219
+    },
+    {
+      "bootstrap_ci": {
+        "label_mass_at_25": {
+          "ci_lower": 0.37685471953284966,
+          "ci_upper": 0.38225234669413694,
+          "mean": 0.3796009571796519
+        },
+        "label_mass_at_50": {
+          "ci_lower": 0.6792858729631608,
+          "ci_upper": 0.6878325860653189,
+          "mean": 0.6837332919140906
+        },
+        "ndcg_at_25": {
+          "ci_lower": 0.9416171044106865,
+          "ci_upper": 0.9499848527443695,
+          "mean": 0.9459510410915027
+        },
+        "ndcg_at_50": {
+          "ci_lower": 0.9524976110240603,
+          "ci_upper": 0.9581819070514793,
+          "mean": 0.9554298692143124
+        },
+        "top1_max_label_hit": {
+          "ci_lower": 0.8965361104822278,
+          "ci_upper": 0.9135216210097351,
+          "mean": 0.9053656327824315
+        }
+      },
+      "claim_permission": "audit_prioritization_context_only",
+      "display_name": "SC-FMA Ridge",
+      "mean_mass_at_25": 0.3796009571796519,
+      "mean_mass_at_50": 0.6837332919140906,
+      "mean_ndcg_at_25": 0.9459510410915027,
+      "mean_ndcg_at_50": 0.9554298692143124,
+      "mean_top1_hit": 0.9053656327824315,
+      "method": "scfma_ridge",
+      "n_samples": 4417,
+      "n_steps": 34219
+    },
+    {
+      "bootstrap_ci": {
+        "label_mass_at_25": {
+          "ci_lower": 0.3762616790366565,
+          "ci_upper": 0.38166234771474833,
+          "mean": 0.37895981599796225
+        },
+        "label_mass_at_50": {
+          "ci_lower": 0.6730506768363044,
+          "ci_upper": 0.6818228192839205,
+          "mean": 0.6774469695388392
+        },
+        "ndcg_at_25": {
+          "ci_lower": 0.9393843297333709,
+          "ci_upper": 0.9480138386409466,
+          "mean": 0.9439303653393326
+        },
+        "ndcg_at_50": {
+          "ci_lower": 0.9456503257032663,
+          "ci_upper": 0.9517352899173378,
+          "mean": 0.9486875608403417
+        },
+        "top1_max_label_hit": {
+          "ci_lower": 0.8947249264206475,
+          "ci_upper": 0.9117047769979624,
+          "mean": 0.9033280507131537
+        }
+      },
+      "claim_permission": "audit_prioritization_context_only",
+      "display_name": "SC-FMA QP",
+      "mean_mass_at_25": 0.37895981599796225,
+      "mean_mass_at_50": 0.6774469695388392,
+      "mean_ndcg_at_25": 0.9439303653393326,
+      "mean_ndcg_at_50": 0.9486875608403417,
+      "mean_top1_hit": 0.9033280507131537,
+      "method": "scfma_qp",
+      "n_samples": 4417,
+      "n_steps": 34219
+    },
+    {
+      "bootstrap_ci": {
+        "label_mass_at_25": {
+          "ci_lower": 0.28378670928895744,
+          "ci_upper": 0.29170050306689604,
+          "mean": 0.2877428539513429
+        },
+        "label_mass_at_50": {
+          "ci_lower": 0.5185296457390939,
+          "ci_upper": 0.5263650535250892,
+          "mean": 0.5226251000381102
+        },
+        "ndcg_at_25": {
+          "ci_lower": 0.7332191241609743,
+          "ci_upper": 0.7517295854880174,
+          "mean": 0.7425171277506604
+        },
+        "ndcg_at_50": {
+          "ci_lower": 0.7417623574021267,
+          "ci_upper": 0.753637640938149,
+          "mean": 0.7477846008345496
+        },
+        "top1_max_label_hit": {
+          "ci_lower": 0.7102105501471587,
+          "ci_upper": 0.7358105048675571,
+          "mean": 0.722662440570523
+        }
+      },
+      "claim_permission": "audit_prioritization_context_only",
+      "display_name": "SC-FMA Projection",
+      "mean_mass_at_25": 0.2877428539513429,
+      "mean_mass_at_50": 0.5226251000381102,
+      "mean_ndcg_at_25": 0.7425171277506604,
+      "mean_ndcg_at_50": 0.7477846008345496,
+      "mean_top1_hit": 0.722662440570523,
+      "method": "scfma_projection",
+      "n_samples": 4417,
+      "n_steps": 34219
+    },
+    {
+      "bootstrap_ci": {
+        "label_mass_at_25": {
+          "ci_lower": 0.2776098748143661,
+          "ci_upper": 0.28624295678615896,
+          "mean": 0.28198656461839916
+        },
+        "label_mass_at_50": {
+          "ci_lower": 0.5274003015279187,
+          "ci_upper": 0.5352266692104438,
+          "mean": 0.5314340704947781
+        },
+        "ndcg_at_25": {
+          "ci_lower": 0.7114167451027509,
+          "ci_upper": 0.7322927473082798,
+          "mean": 0.7221334751447174
+        },
+        "ndcg_at_50": {
+          "ci_lower": 0.7458890990954672,
+          "ci_upper": 0.7581176367536683,
+          "mean": 0.7518967986542865
+        },
+        "top1_max_label_hit": {
+          "ci_lower": 0.6724020828616708,
+          "ci_upper": 0.6991170477699796,
+          "mean": 0.6862123613312203
+        }
+      },
+      "claim_permission": "audit_prioritization_context_only",
+      "display_name": "raw_local_utility",
+      "mean_mass_at_25": 0.28198656461839916,
+      "mean_mass_at_50": 0.5314340704947781,
+      "mean_ndcg_at_25": 0.7221334751447174,
+      "mean_ndcg_at_50": 0.7518967986542865,
+      "mean_top1_hit": 0.6862123613312203,
+      "method": "raw_local_utility",
+      "n_samples": 4417,
+      "n_steps": 34219
+    },
+    {
+      "bootstrap_ci": {
+        "label_mass_at_25": {
+          "ci_lower": 0.1474362901324679,
+          "ci_upper": 0.1533973766413013,
+          "mean": 0.15032217247900934
+        },
+        "label_mass_at_50": {
+          "ci_lower": 0.4544927647350121,
+          "ci_upper": 0.45911808114826125,
+          "mean": 0.45662229838271884
+        },
+        "ndcg_at_25": {
+          "ci_lower": 0.3138902715198252,
+          "ci_upper": 0.3274073832689997,
+          "mean": 0.3203683313480326
+        },
+        "ndcg_at_50": {
+          "ci_lower": 0.5305673462534956,
+          "ci_upper": 0.5393325589194644,
+          "mean": 0.5349270451372162
+        },
+        "top1_max_label_hit": {
+          "ci_lower": 0.013357482454154404,
+          "ci_upper": 0.02128141272356803,
+          "mean": 0.01697985057731492
+        }
+      },
+      "claim_permission": "audit_prioritization_context_only",
+      "display_name": "relative_position",
+      "mean_mass_at_25": 0.15032217247900934,
+      "mean_mass_at_50": 0.45662229838271884,
+      "mean_ndcg_at_25": 0.3203683313480326,
+      "mean_ndcg_at_50": 0.5349270451372162,
+      "mean_top1_hit": 0.01697985057731492,
+      "method": "relative_position",
+      "n_samples": 4417,
+      "n_steps": 34219
+    },
+    {
+      "bootstrap_ci": {
+        "label_mass_at_25": {
+          "ci_lower": 0.29270287592324423,
+          "ci_upper": 0.30100705493039487,
+          "mean": 0.29693407008273026
+        },
+        "label_mass_at_50": {
+          "ci_lower": 0.5453819220788816,
+          "ci_upper": 0.5538163748703581,
+          "mean": 0.5497650198889077
+        },
+        "ndcg_at_25": {
+          "ci_lower": 0.7431508875954886,
+          "ci_upper": 0.7618503378669927,
+          "mean": 0.7526149816346391
+        },
+        "ndcg_at_50": {
+          "ci_lower": 0.7694760458536154,
+          "ci_upper": 0.7817896371539798,
+          "mean": 0.7759071998691884
+        },
+        "top1_max_label_hit": {
+          "ci_lower": 0.6925458455965587,
+          "ci_upper": 0.7183665383744623,
+          "mean": 0.7054561919855106
+        }
+      },
+      "claim_permission": "audit_prioritization_context_only",
+      "display_name": "span_length",
+      "mean_mass_at_25": 0.29693407008273026,
+      "mean_mass_at_50": 0.5497650198889077,
+      "mean_ndcg_at_25": 0.7526149816346391,
+      "mean_ndcg_at_50": 0.7759071998691884,
+      "mean_top1_hit": 0.7054561919855106,
+      "method": "span_length",
+      "n_samples": 4417,
+      "n_steps": 34219
+    },
+    {
+      "bootstrap_ci": {
+        "label_mass_at_25": {
+          "ci_lower": 0.30255836267625513,
+          "ci_upper": 0.3107018130613387,
+          "mean": 0.3065142709821653
+        },
+        "label_mass_at_50": {
+          "ci_lower": 0.5477489827048566,
+          "ci_upper": 0.5565420412118344,
+          "mean": 0.5523205718357879
+        },
+        "ndcg_at_25": {
+          "ci_lower": 0.7666976526774311,
+          "ci_upper": 0.7851078018154888,
+          "mean": 0.7757130305444527
+        },
+        "ndcg_at_50": {
+          "ci_lower": 0.7781154689048323,
+          "ci_upper": 0.7905888462327338,
+          "mean": 0.7843628143153262
+        },
+        "top1_max_label_hit": {
+          "ci_lower": 0.7201720624858501,
+          "ci_upper": 0.7462078333710663,
+          "mean": 0.732850350916912
+        }
+      },
+      "claim_permission": "audit_prioritization_context_only",
+      "display_name": "random",
+      "mean_mass_at_25": 0.3065142709821653,
+      "mean_mass_at_50": 0.5523205718357879,
+      "mean_ndcg_at_25": 0.7757130305444527,
+      "mean_ndcg_at_50": 0.7843628143153262,
+      "mean_top1_hit": 0.732850350916912,
+      "method": "random",
+      "n_samples": 4417,
+      "n_steps": 34219
+    },
+    {
+      "bootstrap_ci": {
+        "label_mass_at_25": {
+          "ci_lower": 0.33831972402643934,
+          "ci_upper": 0.3453843967707159,
+          "mean": 0.3419078335326947
+        },
+        "label_mass_at_50": {
+          "ci_lower": 0.6144860653176959,
+          "ci_upper": 0.6241146700368307,
+          "mean": 0.619282593697584
+        },
+        "ndcg_at_25": {
+          "ci_lower": 0.8386541274904568,
+          "ci_upper": 0.8538687313933947,
+          "mean": 0.8465383604201925
+        },
+        "ndcg_at_50": {
+          "ci_lower": 0.8572986273835667,
+          "ci_upper": 0.8677802830968651,
+          "mean": 0.8626735783976892
+        },
+        "top1_max_label_hit": {
+          "ci_lower": 0.7656780620330541,
+          "ci_upper": 0.7899083088068825,
+          "mean": 0.7774507584333258
+        }
+      },
+      "claim_permission": "audit_prioritization_context_only",
+      "display_name": "Frozen PRM prefix score",
+      "mean_mass_at_25": 0.3419078335326947,
+      "mean_mass_at_50": 0.619282593697584,
+      "mean_ndcg_at_25": 0.8465383604201925,
+      "mean_ndcg_at_50": 0.8626735783976892,
+      "mean_top1_hit": 0.7774507584333258,
+      "method": "frozen_prm_prefix_score",
+      "n_samples": 4417,
+      "n_steps": 34219
+    }
+  ],
+  "n_samples": 4417,
+  "n_steps": 34219,
+  "route_id": "real_task_v3_6_prm800k_hash_audit_prioritization",
+  "source": {
+    "config": "D:\\CF\\configs\\real_task_v3_6_prm800k_hash_validation.yaml",
+    "frozen_prm_scores": "D:\\CF\\outputs\\real_task_v3_8_prm_locked_scoring\\locked_prm_scores.jsonl",
+    "git_revision": "b91fe54980fa9e23dcde155e23f22b7d2bd21eca"
+  }
+}
