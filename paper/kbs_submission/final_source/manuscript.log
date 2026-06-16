@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.5.21)  16 JUN 2026 19:48
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.5.21)  16 JUN 2026 22:06
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -696,7 +696,7 @@ LaTeX Font Info:    Trying to load font information for T1+stix on input line 2
  (d:/DevelopTools/texlive/2026/texmf-dist/tex/latex/stix/t1stix.fd
 File: t1stix.fd 2015/04/17 v1.1.2-latex STIX T1 font definitions
 )
-(./manuscript.aux)
+(build_manuscript/manuscript.aux)
 \openout1 = `manuscript.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 22.
@@ -761,7 +761,7 @@ e
 LaTeX Info: Command `\dddot' is already robust on input line 22.
 LaTeX Info: Command `\ddddot' is already robust on input line 22.
 Package hyperref Info: Link coloring ON on input line 22.
- (./manuscript.out) (./manuscript.out)
+ (build_manuscript/manuscript.out) (build_manuscript/manuscript.out)
 \@outlinefile=\write3
 \openout3 = `manuscript.out'.
 
@@ -869,7 +869,7 @@ Overfull \hbox (117.0831pt too wide) detected at line 59
 []
  []
 
-(./manuscript.abs)
+(build_manuscript/manuscript.abs)
 
 Package hyperref Warning: Ignoring empty anchor on input line 59.
 
@@ -892,50 +892,196 @@ opTools/texlive/2026/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc} <d:/D
 evelopTools/texlive/2026/texmf-dist/tex/latex/els-cas-templates/thumbnails/cas-
 email.jpeg>]
 LaTeX Font Info:    Trying to load font information for TS1+stix on input line 
-103.
+104.
 
 (d:/DevelopTools/texlive/2026/texmf-dist/tex/latex/stix/ts1stix.fd
 File: ts1stix.fd 2015/04/17 v1.1.2-latex STIX TS1 font definitions
 ) [2{d:/DevelopTools/texlive/2026/texmf-dist/fonts/enc/dvips/stix/stix-ts1.enc}
 ]
-Underfull \hbox (badness 1448) in paragraph at lines 151--152
-[]|\T1/cmss/m/n/9 Method cal-i-bra-tion, ab-la-tion, and con-
+Underfull \hbox (badness 3895) in paragraph at lines 161--161
+[]|\T1/cmss/m/n/7 Synthetic con-trolled bench-
  []
 
 
-Underfull \hbox (badness 5260) in paragraph at lines 153--153
-[]|\T1/cmss/m/n/9 PRM800K v3.8 frozen PRM
+Underfull \hbox (badness 2326) in paragraph at lines 162--162
+[]|\T1/cmss/m/n/7 Real PRM800K step-label rank-ing with
  []
 
 
-Underfull \hbox (badness 1748) in paragraph at lines 155--155
-[]|\T1/cmss/m/n/9 GSM8K/HotpotQA re-play and
+Underfull \hbox (badness 10000) in paragraph at lines 167--168
+[]|\T1/cmss/m/n/7 Rule-engine, ontology-reasoner, KG-
  []
 
-[3
+
+Overfull \hbox (10.53252pt too wide) in paragraph at lines 157--170
+ [][] 
+ []
+
+
+Underfull \hbox (badness 7576) in paragraph at lines 185--185
+[]|\T1/cmss/m/n/7 Same PRM800K locked
+ []
+
+
+Underfull \hbox (badness 1888) in paragraph at lines 185--185
+[]|\T1/cmss/m/n/7 Pass: same rows, la-bels,
+ []
+
+
+Underfull \hbox (badness 7576) in paragraph at lines 186--186
+[]|\T1/cmss/m/n/7 Same PRM800K locked
+ []
+
+
+Underfull \hbox (badness 1253) in paragraph at lines 186--186
+[]|\T1/cmss/m/n/7 Pass: de-ter-min-is-tic same-
+ []
+
+
+Underfull \hbox (badness 7576) in paragraph at lines 187--187
+[]|\T1/cmss/m/n/7 Same PRM800K locked
+ []
+
+
+Underfull \hbox (badness 1253) in paragraph at lines 187--187
+[]|\T1/cmss/m/n/7 Pass: de-ter-min-is-tic same-
+ []
+
+
+Underfull \hbox (badness 7576) in paragraph at lines 188--188
+[]|\T1/cmss/m/n/7 Same PRM800K locked
+ []
+
+
+Underfull \hbox (badness 7576) in paragraph at lines 189--189
+[]|\T1/cmss/m/n/7 Same PRM800K locked
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 189--189
+[]|\T1/cmss/m/n/7 Overlap-limited con-text
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 189--190
+[]|\T1/cmss/m/n/7 Provides PRM-distribution
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 190--190
+[]|\T1/cmss/m/n/7 Recommended
+ []
+
+
+Underfull \hbox (badness 7576) in paragraph at lines 190--190
+[]|\T1/cmss/m/n/7 Same PRM800K locked
+ []
+
+
+Underfull \hbox (badness 1783) in paragraph at lines 190--190
+[]|\T1/cmss/m/n/7 Pass: same fea-tures and
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 191--191
+[]|\T1/cmss/m/n/7 Controlled-synthetic
+ []
+
+
+Underfull \hbox (badness 7576) in paragraph at lines 191--191
+[]|\T1/cmss/m/n/7 Same PRM800K locked
+ []
+
+
+Underfull \hbox (badness 6047) in paragraph at lines 191--191
+[]|\T1/cmss/m/n/7 Pass as vari-ant; down-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 191--192
+[]|\T1/cmss/m/n/7 Shows syn-thetic strength
+ []
+
+
+Underfull \hbox (badness 2134) in paragraph at lines 191--192
+\T1/cmss/m/n/7 does not trans-fer to this
+ []
+
+
+Underfull \hbox (badness 8019) in paragraph at lines 192--192
+[]|\T1/cmss/m/n/7 Math-Shepherd/public PRM
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 192--192
+[]|\T1/cmss/m/n/7 Not protocol-compatible
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 192--192
+\T1/cmss/m/n/7 non-overlap scor-ing is
+ []
+
+
+Underfull \hbox (badness 1931) in paragraph at lines 193--193
+[]|\T1/cmss/m/n/7 Citation-only bench-mark
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 193--194
+[]|\T1/cmss/m/n/7 Motivates process-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 193--194
+\T1/cmss/m/n/7 supervision brit-tle-ness
+ []
+
+
+Overfull \hbox (22.52536pt too wide) in paragraph at lines 181--196
+ [][] 
+ []
+
+[3] [4
 pdfTeX warning (ext4): destination with the same identifier (name{table.1}) has
  been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.185 \subsection
-                 {PRM800K Real Step-Label Ranking}]
-LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <9> not available
-(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 197.
- [4
+l.223 \subsection
+                 {PRM800K Real Step-Label Ranking}
 pdfTeX warning (ext4): destination with the same identifier (name{table.2}) has
  been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.226 \item \textbf
-                   {Non-identifiability.} The intervention notation is opera...
-
+l.223 \subsection
+                 {PRM800K Real Step-Label Ranking}
 pdfTeX warning (ext4): destination with the same identifier (name{table.3}) has
  been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.226 \item \textbf
-                   {Non-identifiability.} The intervention notation is opera...
-] (./manuscript.bbl [5]) [6] (./manuscript.aux)
+l.223 \subsection
+                 {PRM800K Real Step-Label Ranking}]
+LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <9> not available
+(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 235.
+
+Underfull \hbox (badness 2564) in paragraph at lines 265--266
+[]|\T1/cmss/m/n/7 In-distribution base-line con-text
+ []
+
+[5
+pdfTeX warning (ext4): destination with the same identifier (name{table.4}) has
+ been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  \__shipout_drop_firstpage_...
+l.281 
+      
+pdfTeX warning (ext4): destination with the same identifier (name{table.5}) has
+ been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  \__shipout_drop_firstpage_...
+l.281 
+      ] [6] (build_manuscript/manuscript.bbl) [7]
+(build_manuscript/manuscript.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-04-28>
@@ -944,31 +1090,33 @@ Package rerunfilecheck Info: File `manuscript.out' has not changed.
 (rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
  ) 
 Here is how much of TeX's memory you used:
- 17239 strings out of 467341
- 260078 string characters out of 5412745
- 682285 words of memory out of 5000000
- 46001 multiletter control sequences out of 15000+600000
- 720573 words of font info for 161 fonts, out of 8000000 for 9000
+ 17271 strings out of 467341
+ 260771 string characters out of 5412745
+ 688570 words of memory out of 5000000
+ 46023 multiletter control sequences out of 15000+600000
+ 729271 words of font info for 178 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 90i,12n,98p,1558b,565s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 90i,12n,98p,1672b,565s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <d:/DevelopTools/texlive/2026/texmf-dist/fonts/type1/public/stix/STIXGeneral-
 Bold.pfb><d:/DevelopTools/texlive/2026/texmf-dist/fonts/type1/public/stix/STIXG
 eneral-Italic.pfb><d:/DevelopTools/texlive/2026/texmf-dist/fonts/type1/public/s
 tix/STIXGeneral-Regular.pfb><d:/DevelopTools/texlive/2026/texmf-dist/fonts/type
-1/public/cm-super/sfss0900.pfb><d:/DevelopTools/texlive/2026/texmf-dist/fonts/t
-ype1/public/cm-super/sfsx0900.pfb><d:/DevelopTools/texlive/2026/texmf-dist/font
-s/type1/public/cm-super/sftt0800.pfb><d:/DevelopTools/texlive/2026/texmf-dist/f
-onts/type1/public/cm-super/sftt0900.pfb><d:/DevelopTools/texlive/2026/texmf-dis
-t/fonts/type1/public/cm-super/sftt1000.pfb><d:/DevelopTools/texlive/2026/texmf-
-dist/fonts/type1/public/stix/stix-mathcal.pfb><d:/DevelopTools/texlive/2026/tex
-mf-dist/fonts/type1/public/stix/stix-mathex.pfb><d:/DevelopTools/texlive/2026/t
-exmf-dist/fonts/type1/public/stix/stix-mathit.pfb><d:/DevelopTools/texlive/2026
-/texmf-dist/fonts/type1/public/stix/stix-mathrm-bold.pfb><d:/DevelopTools/texli
-ve/2026/texmf-dist/fonts/type1/public/stix/stix-mathrm.pfb>
-Output written on manuscript.pdf (6 pages, 322628 bytes).
+1/public/cm-super/sfss0800.pfb><d:/DevelopTools/texlive/2026/texmf-dist/fonts/t
+ype1/public/cm-super/sfss0900.pfb><d:/DevelopTools/texlive/2026/texmf-dist/font
+s/type1/public/cm-super/sfsx0800.pfb><d:/DevelopTools/texlive/2026/texmf-dist/f
+onts/type1/public/cm-super/sfsx0900.pfb><d:/DevelopTools/texlive/2026/texmf-dis
+t/fonts/type1/public/cm-super/sftt0800.pfb><d:/DevelopTools/texlive/2026/texmf-
+dist/fonts/type1/public/cm-super/sftt0900.pfb><d:/DevelopTools/texlive/2026/tex
+mf-dist/fonts/type1/public/cm-super/sftt1000.pfb><d:/DevelopTools/texlive/2026/
+texmf-dist/fonts/type1/public/stix/stix-mathcal.pfb><d:/DevelopTools/texlive/20
+26/texmf-dist/fonts/type1/public/stix/stix-mathex.pfb><d:/DevelopTools/texlive/
+2026/texmf-dist/fonts/type1/public/stix/stix-mathit.pfb><d:/DevelopTools/texliv
+e/2026/texmf-dist/fonts/type1/public/stix/stix-mathrm-bold.pfb><d:/DevelopTools
+/texlive/2026/texmf-dist/fonts/type1/public/stix/stix-mathrm.pfb>
+Output written on build_manuscript/manuscript.pdf (7 pages, 375466 bytes).
 PDF statistics:
- 186 PDF objects out of 1000 (max. 8388607)
- 148 compressed objects within 2 object streams
- 48 named destinations out of 1000 (max. 500000)
+ 212 PDF objects out of 1000 (max. 8388607)
+ 169 compressed objects within 2 object streams
+ 55 named destinations out of 1000 (max. 500000)
  6 words of extra memory for PDF output out of 10000 (max. 10000000)
 

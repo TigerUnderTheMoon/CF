@@ -49,7 +49,7 @@
             country={China}}
 
 \begin{abstract}
-Knowledge-intensive reasoning systems increasingly rely on reflective steps such as self-evaluation, error diagnosis, and plan revision to organize verification workflows. This paper presents Structurally-Calibrated Functional Attribution (SC-FMA), a methodology for auditable verification-step weighting in knowledge-intensive reasoning systems. SC-FMA converts local functional utility signals into calibrated supervision weights through the Structurally-Calibrated Utility (SCU) objective, a convex optimization problem that combines fidelity to utility, graph-level structural necessity, redundancy reduction, and bottleneck protection. On a controlled synthetic benchmark with controlled proxy step-importance labels, the full Quadratic Program (QP) variant achieves the best Spearman correlation ($\rho=0.608$) and improves over raw CIU ($\rho=0.483$). On PRM800K real process-supervision annotations, the primary positive evidence is instead the stored \texttt{w\_struct} step-ranking signal ($\rho=0.611$); Ridge closely preserves it ($\rho=0.604$), while QP ($\rho=0.442$) and Projection ($\rho=-0.135$) underperform on this real-data route. GSM8K/HotpotQA task-specific replay, downstream filtering, and PRM-training routes remain failed or unvalidated. The contribution is therefore a claim-bounded calibration methodology: SC-FMA provides formal optimization guarantees and reproducible ranking evidence, while leaving downstream deployment and external generalization to future validation.
+Knowledge-intensive reasoning systems increasingly rely on reflective steps such as self-evaluation, error diagnosis, and plan revision to organize verification workflows. This paper presents Structurally-Calibrated Functional Attribution (SC-FMA), a methodology for auditable verification-step weighting in knowledge-intensive reasoning systems. SC-FMA converts local functional utility signals into calibrated supervision weights through the Structurally-Calibrated Utility (SCU) objective, a convex optimization problem that combines fidelity to utility, graph-level structural necessity, redundancy reduction, and bottleneck protection. On a controlled synthetic benchmark with proxy step-importance labels, the full Quadratic Program (QP) variant is strongest ($\rho=0.608$) and improves over raw CIU ($\rho=0.483$). On PRM800K real process-supervision annotations, the primary positive evidence is instead the stored \texttt{w\_struct} step-ranking signal ($\rho=0.611$); Ridge is the closest SC-FMA approximation ($\rho=0.604$), while QP ($\rho=0.442$) and Projection ($\rho=-0.135$) are downgraded for this real-data route. A new PRM800K audit-prioritization readout shows that the same locked-split evidence can concentrate high-rated process steps under a fixed review budget, but only as offline audit context. GSM8K/HotpotQA task-specific replay, downstream filtering, PRM training, and out-of-distribution transfer remain unsupported. The contribution is therefore a claim-bounded calibration methodology for KBS-oriented verification-step weighting, not a deployed training or replay validation result.
 \end{abstract}
 
 \begin{keywords}
@@ -72,7 +72,8 @@ The paper makes five contributions:
 \item three deterministic calibration variants---Ridge, Quadratic Program (QP), and Topology Projection---covering different compute budgets;
 \item formal guarantees for convexity/uniqueness, non-redundant monotonicity, variance shrinkage, and bottleneck protection;
 \item controlled synthetic evidence showing QP as the strongest variant under controlled proxy labels;
-\item real PRM800K evidence showing that \texttt{w\_struct}, not QP, is the main real-data step-ranking result, with Ridge acting as the closest SC-FMA approximation.
+\item real PRM800K evidence showing that \texttt{w\_struct}, not QP, is the main real-data step-ranking result, with Ridge acting as the closest SC-FMA approximation;
+\item a bounded PRM800K audit-prioritization readout that treats step weights as review-budget guidance rather than downstream PRM-training evidence.
 \end{enumerate}
 
 This evidence boundary is intentional. The synthetic benchmark uses controlled proxy labels, not external ground truth. PRM800K supports step-label ranking and an in-distribution frozen PRM baseline comparison. GSM8K/HotpotQA task-specific replay, downstream filtering, and PRM training are not positive evidence in this submission.
@@ -132,6 +133,15 @@ Conditional replacement, counterfactual matching, and doubly robust estimation a
 
 Under positive regularization and $w_i>\varepsilon$, the SCU objective is strictly convex on the feasible simplex and has a unique global solution. For non-redundant step pairs with identical redundancy profiles, the calibrated weights preserve the joint ordering implied by $\tilde{\mathbf{c}}$ and $\tilde{\mathbf{n}}$. The structural term shrinks weight variance relative to raw utility weighting when structural necessity has lower variance than CIU, and the bottleneck log barrier prevents identified bottleneck nodes from receiving zero weight. Full derivations, KKT conditions, and solver diagnostics are provided in the supplementary material.
 
+\section{KBS Fit: Verification-Step Weighting as Structured Decision Support}
+\label{sec:kbs-fit}
+
+SC-FMA frames verification-step weighting as a knowledge-structured decision-support problem. A reflective reasoning trace is not only a sequence of locally scored steps: it is also a graph of dependencies, redundancies, and bottleneck checks. This structure is familiar to KBS settings in which rules, entity paths, ontology relations, and verification routines interact rather than contribute independently.
+
+The methodology therefore exposes three KBS-relevant objects. First, graph dependencies make the weighting decision inspectable at the step and edge level. Second, redundancy diagnostics identify when several high-scoring steps provide overlapping support. Third, bottleneck protection prevents rare but structurally central checks from being washed out by smooth utility scores. These objects make the output suitable for audit and review-budget allocation, even before any downstream training loop is attempted.
+
+The ontology-aware edge pilot remains deliberately narrow. It records ontology relation labels as fixture-level diagnostic metadata and shows how ontology-derived edges could replace purely topical edges in a future domain-specific KBS workflow. It does not validate a rule engine, ontology reasoner, KG query engine, or deployed knowledge-base workflow. Such validation would require a real knowledge-base task, an executable reasoning component, and a preregistered evaluation protocol.
+
 \section{Experiments}
 \label{sec:experiments}
 
@@ -139,23 +149,51 @@ Under positive regularization and $w_i>\varepsilon$, the SCU objective is strict
 
 Table~\ref{tab:data-boundary} summarizes the evidence routes used in this submission. The distinction between controlled synthetic evidence and PRM800K real-data evidence is central to the claim boundary.
 
-\begin{table}[t]
-\caption{Evidence routes and claim permissions.}
+\begin{table*}[t]
+\caption{Evidence surfaces, claim permissions, and forbidden upgrades.}
 \label{tab:data-boundary}
 \centering
-\small
-\begin{tabular}{p{0.27\linewidth}p{0.25\linewidth}p{0.35\linewidth}}
+\scriptsize
+\begin{tabular}{p{0.20\linewidth}p{0.16\linewidth}p{0.29\linewidth}p{0.27\linewidth}}
 \toprule
-\textbf{Route} & \textbf{Status} & \textbf{Permission} \\
+\textbf{Evidence surface} & \textbf{Status} & \textbf{Allowed claim} & \textbf{Forbidden upgrade} \\
 \midrule
-Synthetic controlled benchmark & Passed & Method calibration, ablation, and controlled proxy-label ranking. \\
-PRM800K v3.6 frozen hash split & Passed & Real step-label ranking with \texttt{w\_struct} as the primary signal. \\
-PRM800K v3.8 frozen PRM comparison & Passed, context-only & In-distribution frozen PRM baseline context. \\
-Stage 2 holdout & Diagnostic & Small, stratum-dependent signal only ($\rho=0.1628$). \\
-GSM8K/HotpotQA replay and filtering & Failed or blocked & No positive replay, filtering, PRM-training, or external-generalization claim. \\
+Synthetic controlled benchmark & Passed & Method calibration and controlled proxy-label ranking; QP is strongest only here. & External step-importance truth or real-task superiority. \\
+PRM800K v3.6 locked step-label ranking & Passed & Real PRM800K step-label ranking with \texttt{w\_struct} as the primary signal. & Downstream PRM training, filtering, or task replay validation. \\
+PRM800K v3.8 frozen PRM baseline & Passed, context-only & In-distribution frozen PRM baseline context on the same PRM800K locked split. & Clean non-overlap public-PRM comparison or cross-dataset generalization. \\
+PRM800K audit prioritization & Added, context-only & Offline review-budget readout over the same locked PRM800K split. & Operational deployment, PRM training gain, or filtering superiority. \\
+Stage 2 holdout & Diagnostic & Small, stratum-dependent diagnostic signal only ($\rho=0.1628$). & Broad real-task validation. \\
+GSM8K/HotpotQA replay and filtering & Failed or blocked & Negative provenance and route boundary. & Positive replay, downstream filtering, or PRM-training evidence. \\
+Ontology-aware edge pilot & Fixture-level diagnostic & KBS extension path for ontology-derived graph metadata. & Rule-engine, ontology-reasoner, KG-query, or deployed KBS validation. \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{table*}
+
+\subsection{Baseline and Fairness Ledger}
+
+The main comparison claim is deliberately narrow: SC-FMA-style weighting should be judged against same-split step-ranking controls and protocol-compatible variants, not against unrelated PRM training pipelines. Table~\ref{tab:baseline-ledger} records the fairness status of each comparator used or discussed in the submission.
+
+\begin{table*}[t]
+\caption{Baseline and fairness ledger for reviewer-facing comparison boundaries.}
+\label{tab:baseline-ledger}
+\centering
+\scriptsize
+\begin{tabular}{p{0.20\linewidth}p{0.17\linewidth}p{0.18\linewidth}p{0.18\linewidth}p{0.19\linewidth}}
+\toprule
+\textbf{Comparator} & \textbf{Role} & \textbf{Data/split} & \textbf{Fairness status} & \textbf{Main use} \\
+\midrule
+\texttt{raw\_local\_utility} & Direct ablation & Same PRM800K locked split & Pass: same rows, labels, and metric & Shows raw utility alone is insufficient. \\
+\texttt{span\_length} & Trivial control & Same PRM800K locked split & Pass: deterministic same-split control & Tests length-driven explanation. \\
+\texttt{relative\_position} & Trivial control & Same PRM800K locked split & Pass: deterministic same-split control & Tests position-driven explanation. \\
+\texttt{random} & Sanity control & Same PRM800K locked split & Pass: deterministic seeded control & Calibrates chance ranking. \\
+Frozen PRM prefix score & In-distribution context & Same PRM800K locked split & Overlap-limited context only & Provides PRM-distribution reference, not a clean SOTA comparison. \\
+SC-FMA Ridge & Recommended approximation & Same PRM800K locked split & Pass: same features and scoring protocol & Closest SC-FMA approximation to \texttt{w\_struct}. \\
+SC-FMA QP & Controlled-synthetic strongest variant & Same PRM800K locked split for downgrade & Pass as variant; downgraded on PRM800K & Shows synthetic strength does not transfer to this real-data route. \\
+Math-Shepherd/public PRM literature & Citation-only & Not protocol-compatible here & Citation-only unless clean non-overlap scoring is added & Positions against PRM literature without unfair numeric claims. \\
+ProcessBench & Citation-only benchmark context & Separate benchmark & Citation-only unless a future route is preregistered & Motivates process-supervision brittleness and future evaluation. \\
+\bottomrule
+\end{tabular}
+\end{table*}
 
 \subsection{Synthetic Controlled Benchmark}
 
@@ -208,15 +246,40 @@ Raw local utility & $-0.077$ & $-0.689$ & Uncalibrated utility is insufficient. 
 
 Two conclusions follow. First, the real-data main result is \texttt{w\_struct}, not QP. Second, Ridge is the only SC-FMA variant that closely preserves the stored real-data ordering. The more complex QP and Projection variants are useful for synthetic calibration analysis but must be downgraded for PRM800K.
 
+\subsection{Offline Audit-Prioritization Readout}
+
+The same locked PRM800K split can also be read operationally as an audit-prioritization setting: if a reviewer or verifier can inspect only a fixed fraction of process steps, do the scores concentrate high-rated annotations? Table~\ref{tab:audit-prioritization} reports this readout for the top methods by NDCG@25\%. The result remains a step-ranking use case on the locked PRM800K split. It is not downstream PRM training, not filtering superiority, and not GSM8K/HotpotQA replay evidence.
+
+\begin{table*}[t]
+\caption{PRM800K locked split as offline audit-prioritization context.}
+\label{tab:audit-prioritization}
+\centering
+\scriptsize
+\begin{tabular}{lcccp{0.22\linewidth}}
+\toprule
+\textbf{Method} & \textbf{Top-1 max-label hit} & \textbf{Label mass@25\%} & \textbf{NDCG@25\%} & \textbf{Claim permission} \\
+\midrule
+\texttt{w\_struct} & \textbf{0.9169} & \textbf{0.3809} & \textbf{0.9506} & Audit-prioritization context only. \\
+SC-FMA Ridge & 0.9054 & 0.3796 & 0.9460 & Audit-prioritization context only. \\
+SC-FMA QP & 0.9033 & 0.3790 & 0.9439 & Audit-prioritization context only; not the real-data ranking winner. \\
+Frozen PRM prefix score & 0.7775 & 0.3419 & 0.8465 & In-distribution baseline context only. \\
+Random & 0.7329 & 0.3065 & 0.7757 & Sanity control. \\
+Span length & 0.7055 & 0.2969 & 0.7526 & Trivial control. \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+In this bounded readout, \texttt{w\_struct} and SC-FMA Ridge exceed \texttt{raw\_local\_utility} (NDCG@25\% $=0.7221$), \texttt{relative\_position} (0.3204), and the best simple control, \texttt{random} (0.7757). The result supports the operational statement that high-rated PRM800K process steps can be concentrated under a fixed review budget. It does not support claims about trained PRM improvement, task success, or external datasets.
+
 \subsection{Stage 2 Diagnostic Holdout}
 
 The Stage 2 holdout result is intentionally reported as diagnostic. The aggregate Spearman signal is small ($\rho=0.1628$) and stratum-dependent; high-divergence strata show stronger alignment than mid or random strata. This supports the interpretation that SC-FMA is most informative where local utility and structural necessity diverge, but it is not sufficient evidence for broad real-task validation.
 
-\section{KBS Fit and Discussion}
+\section{Discussion}
 
-SC-FMA is relevant to KBS research because it treats verification-step weighting as a structured knowledge problem. Instead of scoring steps independently, it asks how a step participates in a graph of dependencies, redundancies, and bottlenecks. This aligns with KBS concerns about rule interaction, knowledge-graph path redundancy, and neuro-symbolic module interfaces.
+The empirical pattern is useful precisely because it is not uniform. QP is strongest when the benchmark is controlled and proxy labels are aligned with the full SCU objective. PRM800K instead favors \texttt{w\_struct}, with Ridge preserving that ordering more faithfully than QP or Projection. This separation prevents the paper from turning a synthetic calibration win into a real-data claim it cannot support.
 
-The current KBS integration evidence is methodological. A deterministic ontology-aware edge-construction pilot records ontology relation labels as diagnostic metadata and demonstrates that ontology-derived edges can change structural necessity scores. It does not validate a rule engine, ontology reasoner, KG query engine, or deployed KBS workflow. The pilot is best read as an extension path: formal ontology edges could replace keyword topical edges in future domain-specific KBS studies.
+For KBS research, the most durable contribution is the audit surface. The method exposes which verification steps receive weight, which graph relations explain structural necessity, and which redundant or bottleneck relations shape the final allocation. The ontology-aware pilot shows an interface path for adding domain knowledge to that graph, but remains fixture-level diagnostic evidence until a rule engine, ontology reasoner, or KG query workflow is evaluated end to end.
 
 \section{Scope and Limitations}
 \label{sec:limitations}
@@ -226,14 +289,15 @@ The current evidence supports SC-FMA as a diagnostic and calibration methodology
 \item \textbf{Non-identifiability.} The intervention notation is operational shorthand for documented trace manipulation. The framework reports protocol-defined functional attribution scores, not formally identified treatment-effect parameters or global causal quantities.
 \item \textbf{Synthetic scope.} Synthetic results use controlled proxy labels. They justify method behavior under controlled conditions, not external truth.
 \item \textbf{Real-data boundary.} PRM800K supports step-label ranking and in-distribution frozen PRM baseline context. GSM8K/HotpotQA replay and filtering routes remain failed or blocked.
+\item \textbf{Audit-prioritization boundary.} The audit-prioritization readout is an offline locked-split analysis of review-budget concentration. It is not evidence of PRM training, filtering gains, or deployed workflow performance.
 \item \textbf{Intervention boundary.} MASK is the primary structure-preserving CIU intervention. DELETE, SHUFFLE, TRUNCATE, and CONTRADICT are destructive diagnostics only.
 \item \textbf{Planned components.} Conditional replacement, counterfactual matching, and doubly robust estimation remain future work and are not counted as completed evidence.
-\item \textbf{KBS deployment.} No production rule engine, ontology reasoner, KG query engine, or deployed KBS workflow is validated here.
+\item \textbf{KBS deployment.} No production rule engine, ontology reasoner, KG query engine, or deployed knowledge-base workflow is validated here.
 \end{itemize}
 
 \section{Conclusion}
 
-SC-FMA converts local functional attribution signals into structurally calibrated supervision weights through a convex SCU objective. The controlled synthetic benchmark supports QP as the strongest method under controlled proxy labels. The PRM800K real-data route supports a different boundary: \texttt{w\_struct} is the main real step-ranking signal, Ridge closely preserves it, and QP/Projection must be downgraded. With these boundaries, SC-FMA offers an auditable methodology for verification-step weighting in reflective reasoning and KBS-oriented analysis, while leaving downstream PRM training, task-specific replay validation, and deployed KBS workflows to future work.
+SC-FMA converts local functional attribution signals into structurally calibrated supervision weights through a convex SCU objective. The controlled synthetic benchmark supports QP as the strongest method under controlled proxy labels. The PRM800K real-data route supports a different boundary: \texttt{w\_struct} is the main real step-ranking signal, Ridge closely preserves it, and QP/Projection must be downgraded. The offline audit-prioritization readout adds a bounded KBS-facing use case for review-budget allocation on the same locked split. With these boundaries, SC-FMA offers an auditable methodology for verification-step weighting in reflective reasoning and KBS-oriented analysis, while leaving downstream PRM training, task-specific replay validation, and deployed knowledge-base workflows to future work.
 
 \section*{Acknowledgments}
 The authors thank the College of Management Science and Engineering at Beijing Information Science and Technology University for research support.
@@ -248,7 +312,7 @@ The authors declared that they have no conflicts of interest to this work.
 During preparation of this work, the authors used OpenAI Codex for language editing, LaTeX packaging assistance, and compliance checks. After using this tool, the authors reviewed and edited the content as needed and take full responsibility for the content of the publication.
 
 \section*{Data Availability}
-Data will be made available on request.
+PRM800K is publicly available from its original source. Derived locked-split reports, audit-prioritization artifacts, and reproduction scripts will be made available by the authors on request.
 
 \section*{CRediT authorship contribution statement}
 \textbf{Haoran Ma}: Conceptualization, Methodology, Software, Formal analysis, Investigation, Data Curation, Writing -- Original Draft, Visualization. \textbf{Ningning Wang}: Methodology, Validation, Writing -- Review \& Editing, Supervision, Project administration, Funding acquisition.

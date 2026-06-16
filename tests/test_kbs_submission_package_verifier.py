@@ -9,6 +9,12 @@ TITLE = (
     "Process Supervision Weighting in Reflective Reasoning"
 )
 
+DATA_AVAILABILITY = (
+    "PRM800K is publicly available from its original source. Derived locked-split reports, "
+    "audit-prioritization artifacts, and reproduction scripts will be made available by the "
+    "authors on request."
+)
+
 
 def _write_docx(path: Path, text: str | None = None) -> None:
     text = text or "\n".join(
@@ -60,7 +66,7 @@ def _write_source_zip(
             r"\section*{Declaration of Competing Interest}",
             "The authors declared that they have no conflicts of interest to this work.",
             r"\section*{Data Availability}",
-            "Data will be made available on request.",
+            DATA_AVAILABILITY,
             r"\section*{CRediT authorship contribution statement}",
             "Haoran Ma: Conceptualization. Ningning Wang: Supervision.",
             r"\includegraphics{figures/fig_sensitivity.png}",
@@ -105,7 +111,7 @@ def _pdf_text_by_name() -> dict[str, str]:
             "mahaoran0000@foamail.com",
             "wangningning@bistu.edu.cn",
             "National Social Science Fund of China Project (24BSH018)",
-            "Data will be made available on request.",
+            DATA_AVAILABILITY,
         ]
     )
     supplementary_text = f"Supplementary Material\n{TITLE}\nHaoran Ma\nNingning Wang"

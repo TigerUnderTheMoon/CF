@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.5.21)  16 JUN 2026 19:43
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.5.21)  16 JUN 2026 22:06
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -696,7 +696,7 @@ LaTeX Font Info:    Trying to load font information for T1+stix on input line 2
  (d:/DevelopTools/texlive/2026/texmf-dist/tex/latex/stix/t1stix.fd
 File: t1stix.fd 2015/04/17 v1.1.2-latex STIX T1 font definitions
 )
-(./supplementary.aux)
+(build_supplementary/supplementary.aux)
 \openout1 = `supplementary.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 23.
@@ -761,7 +761,8 @@ e
 LaTeX Info: Command `\dddot' is already robust on input line 23.
 LaTeX Info: Command `\ddddot' is already robust on input line 23.
 Package hyperref Info: Link coloring ON on input line 23.
- (./supplementary.out) (./supplementary.out)
+ (build_supplementary/supplementary.out)
+(build_supplementary/supplementary.out)
 \@outlinefile=\write3
 \openout3 = `supplementary.out'.
 
@@ -869,7 +870,7 @@ Overfull \hbox (117.0831pt too wide) detected at line 60
 []
  []
 
-(./supplementary.abs)
+(build_supplementary/supplementary.abs)
 
 Package hyperref Warning: Ignoring empty anchor on input line 60.
 
@@ -926,7 +927,7 @@ pdfTeX warning (ext4): destination with the same identifier (name{table.1}) has
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
 l.228 
-      ] (./supplementary.bbl) [4
+      ] (build_supplementary/supplementary.bbl) [4
 pdfTeX warning (ext4): destination with the same identifier (name{table.2}) has
  been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
@@ -951,7 +952,8 @@ s been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
 l.256 \end{document}
-                     <./figures/fig_resilience.png>] (./supplementary.aux)
+                     <./figures/fig_resilience.png>]
+(build_supplementary/supplementary.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-04-28>
@@ -960,8 +962,8 @@ Package rerunfilecheck Info: File `supplementary.out' has not changed.
 (rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
  ) 
 Here is how much of TeX's memory you used:
- 17217 strings out of 467341
- 259867 string characters out of 5412745
+ 17218 strings out of 467341
+ 260155 string characters out of 5412745
  691127 words of memory out of 5000000
  45987 multiletter control sequences out of 15000+600000
  725466 words of font info for 161 fonts, out of 8000000 for 9000
@@ -983,7 +985,8 @@ texmf-dist/fonts/type1/public/stix/stix-mathrm-bold.pfb><d:/DevelopTools/texliv
 e/2026/texmf-dist/fonts/type1/public/stix/stix-mathrm.pfb><d:/DevelopTools/texl
 ive/2026/texmf-dist/fonts/type1/public/stix/stix-mathscr.pfb><d:/DevelopTools/t
 exlive/2026/texmf-dist/fonts/type1/public/stix/stix-mathtt.pfb>
-Output written on supplementary.pdf (6 pages, 497755 bytes).
+Output written on build_supplementary/supplementary.pdf (6 pages, 497755 bytes)
+.
 PDF statistics:
  173 PDF objects out of 1000 (max. 8388607)
  126 compressed objects within 2 object streams

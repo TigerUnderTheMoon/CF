@@ -15,6 +15,12 @@ CURRENT_TITLE = (
     "Process Supervision Weighting in Reflective Reasoning"
 )
 
+DATA_AVAILABILITY = (
+    "PRM800K is publicly available from its original source. Derived locked-split reports, "
+    "audit-prioritization artifacts, and reproduction scripts will be made available by the "
+    "authors on request."
+)
+
 REQUIRED_FILES = (
     "Highlights.pdf",
     "cover_letter.docx",
@@ -87,7 +93,7 @@ REQUIRED_MANUSCRIPT_SNIPPETS = (
     r"\section*{Declaration of Competing Interest}",
     "The authors declared that they have no conflicts of interest to this work.",
     r"\section*{Data Availability}",
-    "Data will be made available on request.",
+    DATA_AVAILABILITY,
     r"\section*{CRediT authorship contribution statement}",
 )
 
@@ -105,7 +111,7 @@ REQUIRED_PDF_TEXT_SNIPPETS = {
         "Haoran Ma",
         "Ningning Wang",
         "National Social Science Fund of China Project (24BSH018)",
-        "Data will be made available on request.",
+        DATA_AVAILABILITY,
     ),
     "supplementary.pdf": (
         "Supplementary Material",

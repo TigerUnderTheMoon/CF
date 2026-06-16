@@ -1,17 +1,17 @@
 # Fdb version 4
-["bibtex build_supplementary/supplementary"] 1781590907.22134 "build_supplementary/supplementary.aux" "build_supplementary/supplementary.bbl" "build_supplementary/supplementary" 1781590915.03748 0
+["bibtex build_supplementary/supplementary"] 1781618803.86276 "build_supplementary/supplementary.aux" "build_supplementary/supplementary.bbl" "build_supplementary/supplementary" 1781618811.53937 0
   "./cas-model2-names.bst" 1714792130 31802 28b630660245c09f173aac55be552b29 ""
   "./references.bib" 1781522040 36239 60c7e50c1868e1d37178887bb4fe5511 ""
-  "build_supplementary/supplementary.aux" 1781590911 8230 dee4d48162a5c5dde128385f09d509e7 "pdflatex"
+  "build_supplementary/supplementary.aux" 1781618808 8270 8531db057f09bbbe5d1edd08c1cee5ca "pdflatex"
   (generated)
   "build_supplementary/supplementary.bbl"
   "build_supplementary/supplementary.blg"
   (rewritten before read)
-["pdflatex"] 1781590908.01622 "supplementary.tex" "build_supplementary/supplementary.pdf" "supplementary" 1781590915.03924 0
-  "build_supplementary/supplementary.abs" 1781590909 255 36eeb86514e449760d4bb17e6137f43a "pdflatex"
-  "build_supplementary/supplementary.aux" 1781590911 8230 dee4d48162a5c5dde128385f09d509e7 "pdflatex"
-  "build_supplementary/supplementary.bbl" 1781590907 975 fb9f230fc78b0398bdcb83894c6a993e "bibtex build_supplementary/supplementary"
-  "build_supplementary/supplementary.out" 1781590909 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
+["pdflatex"] 1781618804.66033 "supplementary.tex" "build_supplementary/supplementary.pdf" "supplementary" 1781618811.54244 0
+  "build_supplementary/supplementary.abs" 1781618807 295 97233475df44368ca95c20d3cef5af5c "pdflatex"
+  "build_supplementary/supplementary.aux" 1781618808 8270 8531db057f09bbbe5d1edd08c1cee5ca "pdflatex"
+  "build_supplementary/supplementary.bbl" 1781618804 975 fb9f230fc78b0398bdcb83894c6a993e "bibtex build_supplementary/supplementary"
+  "build_supplementary/supplementary.out" 1781618807 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
   "cas-common.sty" 1781590858 76651 31515d583d75b614317d78d376474675 ""
   "cas-sc.cls" 1714793356 4410 65b518b1d7581e9c4ebe84b81471ee59 ""
   "d:/DevelopTools/texlive/2026/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc" 1779287267 2971 def0b6c1f0b107b3b936def894055589 ""
@@ -160,7 +160,7 @@
   "figures/fig_mode_comparison.png" 1781520337 63358 cee4226d34f60e34543c87eef7aef275 ""
   "figures/fig_redundancy_comp.png" 1781520337 61316 e7ffd7f485b7769c8265aa7f7f4b8bfe ""
   "figures/fig_resilience.png" 1781520337 97891 ba227f17ee96a1b46f5b57f22623c86c ""
-  "supplementary.tex" 1781527692 17149 f11fa8d3999e3c123d770c60b08b13bd ""
+  "supplementary.tex" 1781610099 17258 2d04e8eabb59b50e3917017065c41cd9 ""
   (generated)
   "build_supplementary/supplementary.abs"
   "build_supplementary/supplementary.aux"

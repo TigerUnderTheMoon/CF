@@ -5,13 +5,14 @@
 - [x] Author metadata is filled in manuscript, supplementary source, and cover letter.
 - [x] Funding statement is present.
 - [x] Declaration of Competing Interest is present with the user-supplied wording.
-- [x] Data Availability is present with the user-supplied wording.
+- [x] Data Availability is present and distinguishes public PRM800K from derived artifacts available on request.
 - [x] Declaration of generative AI and AI-assisted technologies is present.
 - [x] CRediT authorship contribution statement uses named authors.
 - [x] Manuscript PDF compiled from `final_source/manuscript.tex` with exit code 0.
 - [x] Supplementary PDF compiled from `final_source/supplementary.tex` with exit code 0.
 - [x] Highlights PDF extracted as a standalone 1-page file from the full compiled `main.pdf`.
-- [x] Page counts are content-faithful to the cleanly recompiled full PDF: `main.pdf` 7 pages, `Highlights.pdf` 1 page, `manuscript.pdf` 6 pages, `supplementary.pdf` 6 pages.
+- [x] Page counts are content-faithful to the cleanly recompiled full PDF: `main.pdf` 8 pages, `Highlights.pdf` 1 page, `manuscript.pdf` 7 pages, `supplementary.pdf` 6 pages.
+- [x] Supplementary data map includes the PRM800K audit-prioritization report and summary as context-only artifacts.
 - [x] Manuscript and supplementary PDFs were rendered to PNG contact sheets and visually checked.
 - [x] Source zip includes manuscript/supplementary LaTeX sources, bibliography, CAS files, and PNG artwork.
 - [x] Source zip excludes LaTeX auxiliary/build artifacts.
