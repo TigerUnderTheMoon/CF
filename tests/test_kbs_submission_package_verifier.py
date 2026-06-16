@@ -87,6 +87,7 @@ def _write_source_zip(
 def _write_final_package(package_dir: Path) -> None:
     package_dir.mkdir(parents=True, exist_ok=True)
     _write_docx(package_dir / "cover_letter.docx")
+    _write_pdf(package_dir / "Highlights.pdf")
     _write_pdf(package_dir / "manuscript.pdf")
     _write_pdf(package_dir / "supplementary.pdf")
     _write_source_zip(package_dir / "latex_source.zip")
@@ -96,7 +97,6 @@ def _pdf_text_by_name() -> dict[str, str]:
     manuscript_text = "\n".join(
         [
             TITLE,
-            "Highlights",
             "Declaration of Competing Interest",
             "Data Availability",
             "CRediT authorship contribution statement",
@@ -109,7 +109,15 @@ def _pdf_text_by_name() -> dict[str, str]:
         ]
     )
     supplementary_text = f"Supplementary Material\n{TITLE}\nHaoran Ma\nNingning Wang"
+    highlights_text = "\n".join(
+        [
+            "Highlights",
+            TITLE,
+            "SC-FMA calibrates interventional utility into supervision weights.",
+        ]
+    )
     return {
+        "Highlights.pdf": highlights_text,
         "manuscript.pdf": manuscript_text,
         "supplementary.pdf": supplementary_text,
     }
@@ -143,6 +151,7 @@ def test_kbs_verifier_requires_final_upload_files(tmp_path: Path) -> None:
 
     assert not report.ok
     assert any("missing required package file: cover_letter.docx" in error for error in report.errors)
+    assert any("missing required package file: Highlights.pdf" in error for error in report.errors)
     assert any("missing required package file: manuscript.pdf" in error for error in report.errors)
     assert any("missing required package file: supplementary.pdf" in error for error in report.errors)
     assert any("missing required package file: latex_source.zip" in error for error in report.errors)
@@ -189,6 +198,7 @@ def test_kbs_verifier_blocks_stale_rendered_pdf_text(tmp_path: Path) -> None:
         package_dir,
         require_pdf_text=True,
         pdf_text_by_name={
+            "Highlights.pdf": f"Highlights\n{TITLE}",
             "manuscript.pdf": "Functional Metacognitive Attribution: A Diagnostic and Design Framework",
             "supplementary.pdf": f"Supplementary Material\n{TITLE}",
         },

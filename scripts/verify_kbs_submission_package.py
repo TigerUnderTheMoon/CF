@@ -16,6 +16,7 @@ CURRENT_TITLE = (
 )
 
 REQUIRED_FILES = (
+    "Highlights.pdf",
     "cover_letter.docx",
     "manuscript.pdf",
     "supplementary.pdf",
@@ -91,9 +92,13 @@ REQUIRED_MANUSCRIPT_SNIPPETS = (
 )
 
 REQUIRED_PDF_TEXT_SNIPPETS = {
+    "Highlights.pdf": (
+        "Highlights",
+        CURRENT_TITLE,
+        "SC-FMA calibrates interventional utility into supervision weights.",
+    ),
     "manuscript.pdf": (
         CURRENT_TITLE,
-        "Highlights",
         "Declaration of Competing Interest",
         "Data Availability",
         "CRediT authorship contribution statement",
@@ -108,6 +113,10 @@ REQUIRED_PDF_TEXT_SNIPPETS = {
         "Haoran Ma",
         "Ningning Wang",
     ),
+}
+
+FORBIDDEN_PDF_SNIPPETS = {
+    "manuscript.pdf": ("Highlights",),
 }
 
 
@@ -348,6 +357,9 @@ def _check_pdf_text(
         for snippet in snippets[1:]:
             if not _contains_snippet(pdf_text, snippet):
                 errors.append(f"rendered {filename} text missing required snippet: {snippet}")
+        for snippet in FORBIDDEN_PDF_SNIPPETS.get(filename, ()):
+            if _contains_snippet(pdf_text, snippet):
+                errors.append(f"rendered {filename} text contains forbidden snippet: {snippet}")
         _check_forbidden_text({f"rendered {filename}": pdf_text}, errors)
 
 

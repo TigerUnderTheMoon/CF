@@ -82,7 +82,7 @@ The operational pipeline uses deterministic scripts, not the ABC interface archi
 | `Matcher.match()` | ABC defined | **Not implemented.** No `fma/matching/` directory. No counterfactual matching in the pipeline. |
 | `DoublyRobustEstimator.estimate()` | ABC defined | **Not implemented.** No `fma/dr/` directory. All CIU estimates are raw differences, not DR-corrected. |
 | `FMAAggregator.aggregate()` | ABC defined | Partially implemented. `fma/fma/aggregator.py` does group-mean aggregation, lacks temperature-based softmax weights. |
-| Data scale | 800 traces / 2400 reflective steps | Synthetic-only. Real-task validation: **all 6 routes failed** (v2, v2.1, v2.2, v3, v3.1). External validity limited to synthetic data. |
+| Data scale | 800 traces / 2400 reflective steps | Synthetic primary calibration + PRM800K real step-label ranking (4,417 samples / 34,219 steps; v3.6 PASSED, v3.8 PASSED). GSM8K/HotpotQA task-specific routes failed (v2, v2.1, v2.2, v3, v3.1). External validity beyond PRM800K distribution unconfirmed. |
 | Open-source data ingestion | Planned (no files) | **Implemented.** `src/fma/data/` loads PRM800K, ProcessBench, GSM8K CoT, normalizes to internal format. |
 | Frozen PRM scoring | Planned (no files) | **Implemented.** `src/fma/prm/` wraps Qwen2.5-Math-PRM, Math-Shepherd, RLVR-PRM (frozen inference only). |
 | Downstream comparison | Planned (no files) | **Implemented.** `src/fma/utility/` provides filtering A/B experiment, FMA vs PRM vs heuristic comparison report. |
@@ -927,7 +927,7 @@ All 6 real-task validation routes have failed:
 | v3.1 (real-task REPLACE) | **FAILED** | Sparse signal on both tasks |
 | Legacy pilot | **BLOCKED** | Preflight drift failure |
 
-No real-task validation evidence may be claimed. All claims involving real-task data MUST be labeled `failed_validation` or `pilot_blocked`.
+PRM800K real step-label ranking and in-distribution frozen PRM baseline context are validated (v3.6 PASSED, v3.8 PASSED). Claims must respect route-specific permissions: v3.6 supports `M_STEP_RANKING` and `M_STEP_RANKING_REAL_PRM800K`; v3.8 supports `M_BASELINE_COMPARISON_CONTEXT_ONLY` only. GSM8K/HotpotQA task-specific routes remain failed or blocked; claims involving those tasks MUST be labeled `failed_validation` or `pilot_blocked`. No claims about downstream PRM training, external generalization, deterministic replay, or causal identification are allowed.
 
 ### 10.3 Deduplication Root Cause
 

@@ -4,9 +4,10 @@ Purpose: define the clean upload boundary for the Knowledge-Based Systems submis
 
 ## Final upload files
 
-The portal-facing package is `final_package/` and contains exactly four files:
+The portal-facing package is `final_package/` and contains exactly five files:
 
 - `cover_letter.docx` -- Word cover letter with named authors and bounded KBS positioning.
+- `Highlights.pdf` -- standalone Highlights PDF extracted from page 1 of the full compiled `main.pdf`.
 - `manuscript.pdf` -- manuscript PDF compiled from `final_source/manuscript.tex`.
 - `supplementary.pdf` -- supplementary PDF compiled from `final_source/supplementary.tex`.
 - `latex_source.zip` -- source bundle containing `manuscript.tex`, `supplementary.tex`, `references.bib`, CAS style files, and all PNG artwork under `figures/`.
@@ -32,8 +33,10 @@ The portal-facing package is `final_package/` and contains exactly four files:
 
 ## Verification
 
-- `manuscript.tex` compiled with TeX Live through the LaTeX plugin: exit code 0, output `manuscript.pdf` with 7 pages.
-- `supplementary.tex` compiled with TeX Live through the LaTeX plugin: exit code 0, output `supplementary.pdf` with 4 pages.
+- The full compiled `main.pdf` has 38 pages and is used only as the source for extracting the standalone Highlights page.
+- `Highlights.pdf` has 1 page.
+- `manuscript.tex` compiled with TeX Live/latexmk: exit code 0, output `manuscript.pdf` with 32 pages.
+- `supplementary.tex` compiled with TeX Live/latexmk: exit code 0, output `supplementary.pdf` with 6 pages.
 - PDF pages were rendered to PNG contact sheets and visually checked for page count, footer consistency, figure placement, and obvious clipping.
 - `cover_letter.docx` was structurally checked for required DOCX parts and required text. Visual DOCX rendering could not be completed because `soffice.exe`/LibreOffice is not installed on this machine.
 - `python scripts\verify_kbs_submission_package.py --package-dir paper\kbs_submission\final_package --require-author-metadata --require-pdf-text` passes.

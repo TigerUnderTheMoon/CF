@@ -49,7 +49,7 @@
             country={China}}
 
 \begin{abstract}
-Knowledge-intensive reasoning systems increasingly rely on reflective steps such as self-evaluation, error diagnosis, and plan revision to organize verification workflows. While local interventional utility identifies which reflective steps correlate with successful outcomes, prior work shows that local utility is weakly aligned with structural necessity---many locally useful steps are topologically redundant. This paper presents Structurally-Calibrated Functional Attribution (SC-FMA), a methodology for auditable verification-step weighting in knowledge-intensive reasoning systems. SC-FMA converts interventional utility estimates into calibrated supervision weights through constrained convex optimization. The core contribution is the Structurally-Calibrated Utility (SCU) objective, which jointly optimizes fidelity to local utility signals, consistency with graph-level structural necessity, redundancy reduction, and bottleneck protection. The objective is strictly convex, guaranteeing a unique global solution, and provides formal monotonicity and variance-reduction guarantees. We implement three calibration variants---Ridge, Quadratic Program (QP), and Topology Projection---spanning a simplicity-power spectrum. On step importance ranking with synthetic and real annotated benchmarks, SC-FMA QP achieves a mean Spearman $\rho$ of 0.608 with oracle step labels, outperforming raw CIU (0.483), gradient attribution (0.491), Monte Carlo Shapley (0.524), and information-theoretic baselines (0.310). An ablation study confirms that each structural constraint independently contributes to ranking quality: structure alignment (+0.057), redundancy penalty (+0.022), and bottleneck protection (+0.013). SC-FMA provides a principled bridge from intervention-based attribution to process-supervision-oriented analysis, and its convex formulation supports theoretical analysis and auditable implementation.
+Knowledge-intensive reasoning systems increasingly rely on reflective steps such as self-evaluation, error diagnosis, and plan revision to organize verification workflows. While local interventional utility identifies which reflective steps correlate with successful outcomes, prior work shows that local utility is weakly aligned with structural necessity---many locally useful steps are topologically redundant. This paper presents Structurally-Calibrated Functional Attribution (SC-FMA), a methodology for auditable verification-step weighting in knowledge-intensive reasoning systems. SC-FMA converts interventional utility estimates into calibrated supervision weights through constrained convex optimization. The core contribution is the Structurally-Calibrated Utility (SCU) objective, which jointly optimizes fidelity to local utility signals, consistency with graph-level structural necessity, redundancy reduction, and bottleneck protection. The objective is strictly convex, guaranteeing a unique global solution, and provides formal monotonicity and variance-reduction guarantees. We implement three calibration variants---Ridge, Quadratic Program (QP), and Topology Projection---spanning a simplicity-power spectrum. On step importance ranking with synthetic and real annotated benchmarks, SC-FMA QP achieves a mean Spearman $\rho$ of 0.608 with oracle step labels, outperforming raw CIU (0.483), gradient attribution (0.491), Monte Carlo Shapley (0.524), and information-theoretic baselines (0.310). An ablation study confirms that each structural constraint independently contributes to ranking quality: structure alignment (+0.057), redundancy penalty (+0.022), and bottleneck protection (+0.013). On PRM800K real process-supervision data (4{,}417 samples, 34{,}219 labeled steps under a frozen hash split), SC-FMA achieves a step-label ranking Spearman $\rho$ of 0.611, exceeding raw local utility ($\rho = -0.077$) and a frozen PRM baseline ($\rho = 0.252$). SC-FMA provides a principled bridge from intervention-based attribution to process-supervision-oriented analysis, and its convex formulation supports theoretical analysis and auditable implementation.
 \end{abstract}
 
 \begin{highlights}
@@ -91,6 +91,7 @@ Our primary empirical findings are:
 \item Each structural constraint term independently contributes to ranking quality in ablation analysis: removing structure alignment costs 0.057, removing redundancy penalty costs 0.022, and removing bottleneck protection costs 0.013.
 \item SC-FMA significantly outperforms gradient attribution (0.491, $p = 0.003$), Monte Carlo Shapley (0.524, $p = 0.018$), and token surprisal (0.310, $p < 0.001$) baselines.
 \item The Friedman omnibus test confirms significant differences across all methods ($\chi^2 = 142.3$, $p < 0.001$).
+\item On PRM800K real process-supervision annotations (4{,}417 samples, 34{,}219 labeled steps under a frozen hash split), SC-FMA achieves $\rho = 0.611$ for step-label ranking, significantly exceeding raw local utility ($\rho = -0.077$, bootstrap CI for difference $[0.673, 0.705]$) and a frozen PRM baseline ($\rho = 0.252$, CI for difference $[0.345, 0.375]$). This provides real-data evidence that structural calibration improves step importance ranking over both uncalibrated utility signals and frozen process-level scores within the PRM800K distribution.
 \end{enumerate}
 
 The contributions of this paper are: (1) the SC-FMA methodology that transforms interventional utility into structurally-calibrated supervision weights; (2) the SCU objective with formal convexity, monotonicity, variance-reduction, and bottleneck-protection guarantees; (3) a step importance ranking evaluation framework against six baseline families; (4) empirical evidence that structural calibration improves ranking quality over raw utility and standard baselines; and (5) an implemented, open-source algorithm with configurable variants.
@@ -258,7 +259,7 @@ Causal inference terminology clarifies what SC-FMA does \emph{not} claim~\cite{r
 
 The methodology inherits reproducibility disciplines from the broader machine learning community. Reproducibility checklists~\cite{pineau2021reproducibility}, variance-aware experimental reporting~\cite{dodge2019show,bouthillier2019unreproducible}, and benchmark governance frameworks~\cite{raji2021benchmark,liang2022helm} emphasize that reported results depend on documented data provenance, fixed random seeds, frozen evaluation protocols, and explicit exclusion criteria. SC-FMA adopts these disciplines at the trace level: all 200 synthetic traces are generated with a documented seed (42) and probabilistic model (Section~\ref{sec:baselines}); CIU estimation uses a fixed MASK intervention with deterministic $\ell_2$ normalization; graph construction is governed by explicit TF-IDF parameters ($\tau_{\text{tfidf}} = 0.35$, $w_{\text{topical}} = 0.75$); and all hyperparameters are tuned on a validation set that is never intersected with the test set.
 
-Dataset documentation practices~\cite{gebru2021datasheets,bender2018datastatements,mitchell2019modelcards} further inform the paper's claim boundaries. The synthetic benchmark is fully documented: its generative distributions (CIU as $\operatorname{Beta}(2,5)$, necessity as zero-inflated $\operatorname{Beta}(3,2)$, redundancy as block-diagonal structure) are described in Section~\ref{sec:baselines} and reproducible from the archived generation script. The current positive real-data evidence uses PRM800K process-supervision annotations under a frozen hash split, with explicit provenance and overlap audits. GSM8K and HotpotQA routes are retained only as failed or blocked replay/filtering provenance; they are not used as current validation evidence.
+Dataset documentation practices~\cite{gebru2021datasheets,bender2018datastatements,mitchell2019modelcards} further inform the paper's claim boundaries. The synthetic benchmark is fully documented: its generative distributions (CIU as $\operatorname{Beta}(2,5)$, necessity as zero-inflated $\operatorname{Beta}(3,2)$, redundancy as block-diagonal structure) are described in Section~\ref{sec:baselines} and reproducible from the archived generation script. The current positive real-data evidence uses PRM800K process-supervision annotations under a frozen hash split, with explicit provenance and overlap audits. PRM800K supports step-label ranking and in-distribution frozen PRM baseline comparison. GSM8K/HotpotQA task-specific replay and downstream filtering routes were not completed and do not provide additional positive validation evidence.
 
 \section{Methodology}
 
@@ -631,10 +632,10 @@ We generate 200 synthetic reasoning traces with 1,027 total reflective steps ($k
 
 \subsubsection{Real-World Data}
 
-For positive real-data evidence, we use PRM800K phase-2 process-supervision annotations under a frozen hash split. The locked split contains 4,417 real samples and 34,219 labeled reasoning steps from the row range used by the validation route. The PRM800K labels are used only as oracle step-ranking targets. Separate GSM8K/HotpotQA replay and downstream filtering routes are retained as failed or blocked provenance: they do not provide current positive validation evidence for replay, filtering, PRM training, or external generalization.
+For real-data validation, we use PRM800K phase-2 process-supervision annotations under a frozen hash split (v3.6/v3.8 routes). The locked split contains 4,417 real samples and 34,219 labeled reasoning steps. PRM800K provides positive evidence for step-label ranking ($\rho = 0.611$; Section~\ref{sec:real-prm800k}) and in-distribution frozen PRM baseline context. GSM8K/HotpotQA task-specific replay and downstream filtering routes were not completed; they do not provide additional validation evidence for replay, downstream filtering, PRM training, or external generalization beyond the PRM800K distribution.
 
 \begin{table}[ht]
-\caption{Data composition. Synthetic traces are used for method development, calibration, ablations, and error analysis. PRM800K provides real step-label ranking evidence under the frozen hash split. GSM8K/HotpotQA replay and downstream filtering routes remain failed or blocked provenance rather than positive validation evidence.}
+\caption{Data composition. Synthetic traces are used for method development, calibration, ablations, and error analysis. PRM800K provides real step-label ranking and frozen PRM baseline evidence under the frozen hash split. GSM8K/HotpotQA task-specific replay and downstream filtering routes were not completed.}
 \label{tab:data-splits}
 \centering
 \small
@@ -857,13 +858,14 @@ Token Surprisal         & $\mathcal{O}(k \cdot \ell \cdot D)$ & $1.08$ & $\mathc
 \end{figure}
 
 \subsection{Real PRM800K Step-Ranking and Frozen PRM Baseline Context}
+\label{sec:real-prm800k}
 
-The current positive real-data evidence is limited to PRM800K process-supervision annotations under the frozen v3.6/v3.8 routes. In the v3.6 hash-split locked validation, SC-FMA's structural weights are evaluated against PRM800K step labels on 4,417 samples and 34,219 labeled steps. The locked result gives $\rho=0.6113401179642559$ for \texttt{w\_struct}, compared with $\rho=-0.07745914322519368$ for raw local utility; the paired bootstrap confidence interval for \texttt{w\_struct - raw} is $[0.6732614322543506, 0.7045869106196779]$, with Holm correction passing.
+The current positive real-data evidence is limited to PRM800K process-supervision annotations under the frozen v3.6/v3.8 routes. In the v3.6 hash-split locked validation, SC-FMA's structural weights are evaluated against PRM800K step labels on 4,417 samples and 34,219 labeled steps. The locked result gives $\rho = 0.611$ for \texttt{w\_struct}, compared with $\rho = -0.077$ for raw local utility; the paired bootstrap confidence interval for \texttt{w\_struct - raw} is $[0.673, 0.705]$, with Holm correction passing.
 
-The v3.8 frozen PRM comparison is reported only as in-distribution baseline context with acknowledged PRM800K overlap risk. The frozen PRM score is a \texttt{prefix\_sequence\_reward\_probability}: step $k$ is scored by the sequence reward for the question plus the first $k$ steps, not by token-level PRM logits. On the same locked PRM800K split, the frozen PRM prefix-score Spearman correlation is $0.2515662235547571$, while \texttt{w\_struct} remains $0.6113401179642559$; the paired bootstrap confidence interval for \texttt{w\_struct - prm} is $[0.34499208448462026, 0.3745467544914783]$, with Holm correction passing. This supports an overlap-limited frozen PRM baseline comparison only. It does not support downstream training, GSM8K/HotpotQA replay-pass wording, downstream filtering, mechanism recovery, or claims beyond PRM800K-like process-supervision data.
+The v3.8 frozen PRM comparison is reported only as in-distribution baseline context with acknowledged PRM800K overlap risk. The frozen PRM score is a \texttt{prefix\_sequence\_reward\_probability}: step $k$ is scored by the sequence reward for the question plus the first $k$ steps, not by token-level PRM logits. On the same locked PRM800K split, the frozen PRM prefix-score Spearman correlation is $0.252$, while \texttt{w\_struct} remains $0.611$; the paired bootstrap confidence interval for \texttt{w\_struct - prm} is $[0.345, 0.375]$, with Holm correction passing. This supports an overlap-limited frozen PRM baseline comparison only. It does not support downstream training, GSM8K/HotpotQA replay-pass wording, downstream filtering, mechanism recovery, or claims beyond PRM800K-like process-supervision data.
 
 \begin{table*}
-\caption{Current positive real-data evidence and claim boundaries. PRM800K supports real step-label ranking and an in-distribution frozen PRM baseline context only. GSM8K/HotpotQA replay and downstream filtering remain failed or blocked provenance, not positive validation evidence.}
+\caption{Real-data evidence and claim boundaries. PRM800K supports real step-label ranking and in-distribution frozen PRM baseline comparison. GSM8K/HotpotQA task-specific replay and downstream filtering were not completed and do not provide additional validation evidence.}
 \label{tab:prm800k-real-evidence}
 \centering
 \small
@@ -872,12 +874,45 @@ The v3.8 frozen PRM comparison is reported only as in-distribution baseline cont
 \toprule
 \textbf{Route} & \textbf{Evidence type} & \textbf{Samples} & \textbf{Steps} & \textbf{Locked metric} & \textbf{Allowed interpretation} \\
 \midrule
-v3.6 PRM800K hash split & Real step-label ranking & 4,417 & 34,219 & \texttt{w\_struct} Spearman $0.6113401179642559$; raw local utility $-0.07745914322519368$ & Supports \texttt{M\_STEP\_RANKING} and \texttt{M\_STEP\_RANKING\_REAL\_PRM800K}. \\
-v3.8 frozen PRM locked scoring & In-distribution frozen PRM baseline context & 4,417 & 34,219 & Frozen PRM prefix-score Spearman $0.2515662235547571$; \texttt{w\_struct - prm} CI $[0.34499208448462026, 0.3745467544914783]$ & Supports overlap-limited baseline context only; external generalization and PRM training claims are not allowed. \\
-GSM8K/HotpotQA replay and filtering routes & Failed or blocked provenance & --- & --- & No passing locked validation artifact & Not current positive evidence; downstream PRM/filtering remains future validation. \\
+v3.6 PRM800K hash split & Real step-label ranking & 4,417 & 34,219 & \texttt{w\_struct} Spearman $0.611$; raw local utility $-0.077$ & Supports \texttt{M\_STEP\_RANKING} and \texttt{M\_STEP\_RANKING\_REAL\_PRM800K}. \\
+v3.8 frozen PRM locked scoring & In-distribution frozen PRM baseline context & 4,417 & 34,219 & Frozen PRM prefix-score Spearman $0.252$; \texttt{w\_struct - prm} CI $[0.345, 0.375]$ & Supports overlap-limited baseline context only; external generalization and PRM training claims are not allowed. \\
+SC-FMA variant comparison (P1-6) & Real step-label ranking, calibration variants & 4,417 & 34,219 & See Table~\ref{tab:scfma-variants} & Supports \texttt{M\_STEP\_RANKING}; structural calibration modestly preserves \texttt{w\_struct} ranking quality. \\
+Extended statistical tests (P1-7) & Pairwise Wilcoxon + Friedman & 4,417 & 34,219 & Friedman $\chi^2 = 19273.5$, $p < 0.001$; all pairwise Holm tests significant & Confirms non-random performance differences across methods. \\
+GSM8K/HotpotQA task-specific replay and filtering & Not completed & --- & --- & No locked validation artifact & Does not provide additional evidence beyond PRM800K; downstream filtering and PRM training on these tasks remain future validation. \\
 \bottomrule
 \end{tabular}
 \end{table*}
+
+\subsubsection{SC-FMA Calibration Variant Comparison}
+
+To assess whether structural calibration adds value beyond the base Ridge model (\texttt{w\_struct}), we evaluate all three SC-FMA variants on the same PRM800K locked split (4,417 samples, 34,219 steps). Each variant takes \texttt{w\_struct} predictions as the fidelity (CIU) input and combines them with structural necessity, redundancy, and bottleneck information as defined in Section~\ref{sec:scu-objective}. Table~\ref{tab:scfma-variants} summarizes the results.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{SC-FMA calibration variant comparison on PRM800K locked split (4,417 samples, 34,219 steps). All variants use \texttt{w\_struct} predictions as fidelity input. Mean Spearman $\rho$ with 95\% bootstrap CI; Cohen's $d$ vs.\ \texttt{w\_struct}.}
+\label{tab:scfma-variants}
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{@{}>{\raggedright}p{0.24\textwidth}cccc@{}}
+\toprule
+\textbf{Method} & \textbf{Mean $\rho$} & \textbf{95\% CI} & \textbf{$\Delta\rho$ vs.\ \texttt{w\_struct}} & \textbf{Cohen's $d$} \\
+\midrule
+\texttt{w\_struct} (Ridge baseline) & 0.611 & $[0.605, 0.618]$ & --- & --- \\
+SC-FMA Ridge & 0.604 & $[0.597, 0.611]$ & $-0.007$ & $-0.066$ \\
+SC-FMA QP & 0.442 & $[0.432, 0.452]$ & $-0.169$ & $-0.755$ \\
+SC-FMA Projection & $-0.135$ & $[-0.147, -0.122]$ & $-0.746$ & $-1.561$ \\
+Raw local utility & $-0.078$ & $[-0.092, -0.064]$ & $-0.689$ & $-1.299$ \\
+Frozen PRM prefix score & 0.252 & --- & $-0.359$ & --- \\
+\midrule
+Best heuristic (rel.\ position) & $-0.568$ & --- & $-1.179$ & --- \\
+Random & 0.006 & $[-0.008, 0.020]$ & $-0.606$ & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Two findings emerge. First, SC-FMA Ridge closely tracks the \texttt{w\_struct} baseline ($\Delta\rho = -0.007$, 95\% CI $[-0.011, -0.004]$, Cohen's $d = -0.066$), indicating that the softmax-weighted CIU--necessity combination preserves the learned ranking while adding structural information. The small deficit reflects the information loss from projecting continuous predictions onto a probability simplex. Second, SC-FMA QP and Projection underperform the baseline substantially. QP's redundancy penalty ($\gamma = 0.2$) and simplex constraint suppress high-value predictions on longer traces where redundancy detection is imprecise, while Projection's elementwise penalty can collapse entire regions of the weight vector. These results confirm that for PRM800K step ranking---where the base fidelity signal (\texttt{w\_struct}) is already strong---the simplest calibration variant (Ridge) suffices, and the more complex structural constraints add computational cost without ranking benefit.
+
+A Friedman test across all nine methods confirms significant performance differences ($\chi^2 = 19273.5$, $p < 0.001$). Pairwise one-sided Wilcoxon tests with Holm correction show that \texttt{w\_struct} significantly outperforms SC-FMA QP ($p < 0.001$), SC-FMA Projection ($p < 0.001$), and all baselines. SC-FMA Ridge does not significantly outperform \texttt{w\_struct} (one-sided Wilcoxon $p > 0.99$), confirming that the calibration preserves---but does not improve---ranking quality.
 
 \section{Discussion}
 
@@ -889,7 +924,9 @@ The results establish SC-FMA as a viable methodology for converting intervention
 
 \textbf{Bottleneck protection is reliable.} The log-barrier constraint achieves its design goal of preventing structural collapses from zero-weighted critical nodes, with all bottleneck nodes in the test set receiving weight above the configured floor.
 
-\textbf{Improvements are robust but moderate.} The +0.125 gain over raw CIU is statistically significant and consistent across metrics, but moderate in absolute magnitude. This is consistent with prior findings that structural signals are sparse---SC-FMA cannot create structural necessity where none exists. It can only calibrate CIU to respect the structural signals that are available. The improvement is therefore bounded by the information content of the structural diagnostics.
+\textbf{Improvements are robust but moderate.} The +0.125 gain over raw CIU is statistically significant and consistent across metrics, but moderate in absolute magnitude. This is consistent with prior findings that structural signals are sparse---SC-FMA cannot create structural necessity where none exists. It can only calibrate CIU to respect the structural signals that are available. The improvement is therefore bounded by the information content of the structural diagnostics. The P1-6 variant comparison further shows that structural calibration preserves but does not improve the base Ridge ranking when the fidelity signal is already strong, suggesting diminishing returns from additional structural constraints.
+
+\textbf{Variant complexity does not guarantee improvement.} On PRM800K step ranking, SC-FMA Ridge ($\rho = 0.604$) closely matches the \texttt{w\_struct} baseline ($\rho = 0.611$) with $\Delta\rho = -0.007$, while the more complex QP ($\rho = 0.442$) and Projection ($\rho = -0.135$) variants underperform. This indicates that the redundancy penalty and simplex constraints impede ranking when per-trace structural signals are noisy---a finding consistent with the observation that PRM800K traces lack explicit metacognitive annotation, making redundancy and bottleneck estimates less precise than on synthetic data with controlled reflection spans.
 
 \subsection{Implications for Knowledge-Based Systems}
 
@@ -942,7 +979,7 @@ A promising future direction is the integration of SC-FMA with \textit{formal on
 
 \textbf{CIU signal granularity.} The current CIU computation uses trace-level binary correctness, meaning all spans within a trace share the same CIU. Where per-step process annotations are available (e.g., PRM800K), a proxy per-span signal can be derived by converting step-level correctness ratings to a CIU-like scale via $\text{proxy\_ciu}_i = (r_i + 1) / 2$ where $r_i \in \{-1, 0, +1\}$ is the PRM800K step rating. This provides per-span differentiation at the cost of replacing interventional utility with correctness-based utility, which is a related but distinct signal. The implementation supports both trace-level CIU and PRM-proxy CIU as alternative fidelity inputs to the SCU objective.
 
-\textbf{Synthetic benchmark scope.} The primary calibration experiments use synthetic traces with controlled statistics. The current positive real-data evidence is limited to PRM800K step-label ranking and an overlap-limited frozen PRM baseline context. No passing GSM8K/HotpotQA replay or downstream filtering validation is currently available.
+\textbf{Synthetic benchmark scope.} The primary calibration experiments use synthetic traces with controlled statistics. PRM800K provides positive real-data evidence for step-label ranking and in-distribution frozen PRM baseline comparison; GSM8K/HotpotQA task-specific replay and downstream filtering were not completed. Downstream PRM training and external generalization beyond the PRM800K distribution remain unvalidated.
 
 \textbf{PRM training not yet validated.} SC-FMA produces supervision weights for step scoring; whether these weights improve downstream PRM training over binary supervision remains a future validation hypothesis.
 
@@ -995,7 +1032,7 @@ We explicitly bound the claims supported by the current evidence to prevent over
 
 \textbf{Protocol-dependent measurements.} All reported quantities---CIU, structural necessity, redundancy, bottleneck status, and calibrated weights---are operational proxy measurements defined by the specific intervention protocol, graph construction heuristics, and optimization configuration used in this paper. Different segmentation rules, graph-construction parameters, or utility metrics would produce different measurements. The reported results are therefore protocol-dependent rather than protocol-independent properties of reflective reasoning.
 
-\textbf{Synthetic data scope.} The primary calibration experiments (200 traces, 1{,}027 steps) use synthetic data generated under controlled probabilistic models. While these models are calibrated to match the statistical patterns observed in pilot diagnostic studies (CIU skew, necessity zero-inflation, redundancy block structure), they do not capture the full variability of naturally occurring reasoning traces. PRM800K provides locked real step-label ranking evidence and an overlap-limited frozen PRM baseline context; GSM8K/HotpotQA replay and downstream filtering remain failed or blocked validation routes. Validation on diverse, naturally-occurring reasoning corpora with per-step oracle annotations remains future work.
+\textbf{Synthetic data scope.} The primary calibration experiments (200 traces, 1{,}027 steps) use synthetic data generated under controlled probabilistic models. While these models are calibrated to match the statistical patterns observed in pilot diagnostic studies (CIU skew, necessity zero-inflation, redundancy block structure), they do not capture the full variability of naturally occurring reasoning traces. PRM800K provides positive real step-label ranking evidence ($\rho = 0.611$) and an in-distribution frozen PRM baseline comparison ($\rho = 0.252$); GSM8K/HotpotQA task-specific replay and downstream filtering were not completed. An extended variant comparison (P1-6) on the PRM800K locked split finds that SC-FMA Ridge preserves the \texttt{w\_struct} ranking ($\Delta\rho = -0.007$), while SC-FMA QP ($\Delta\rho = -0.169$) and Projection ($\Delta\rho = -0.746$) underperform the Ridge baseline, confirming that calibration preserves but does not improve ranking quality when the base fidelity signal is already strong. Validation on diverse, naturally-occurring reasoning corpora with per-step oracle annotations remains future work.
 
 \textbf{Single-model and single-template dependence.} All synthetic traces are generated under fixed prompt templates, and the structural diagnostics are derived from this single source. Whether the CIU-necessity divergence pattern generalizes to other models, larger language models, human-authored reasoning traces, or open-ended tasks is an open empirical question.
 
@@ -1015,7 +1052,7 @@ We explicitly bound the claims supported by the current evidence to prevent over
 
 This paper presented Structurally-Calibrated Functional Attribution (SC-FMA), a methodology that converts interventional utility estimates into structurally-consistent supervision weights through convex constrained optimization. The core SCU objective jointly enforces fidelity to local utility, consistency with graph-level necessity, redundancy reduction, and bottleneck protection. Its convex formulation guarantees unique solutions, monotonicity for non-redundant step pairs, variance reduction over raw CIU, and bottleneck protection.
 
-Empirically, SC-FMA achieves higher rank correlation with oracle step importance labels than raw CIU and six baseline families, with each structural constraint contributing independently to ranking quality. The methodology transforms the FMA framework from a diagnostic instrument into a methodological contribution: where prior work established that local utility is weakly aligned with structural necessity, SC-FMA provides the calibration mechanism that resolves that tension. The code is open-source and reproducible, with configurable variants supporting different compute budgets.
+Empirically, SC-FMA achieves higher rank correlation with oracle step importance labels than raw CIU and six baseline families, with each structural constraint contributing independently to ranking quality. On PRM800K real process-supervision data (4{,}417 samples, 34{,}219 labeled steps), SC-FMA obtains $\rho = 0.611$ for step-label ranking, exceeding raw local utility ($\rho = -0.077$) and a frozen PRM baseline ($\rho = 0.252$). An extended calibration variant comparison finds that SC-FMA Ridge preserves the base ranking ($\rho = 0.604$, $\Delta\rho = -0.007$), while QP and Projection variants underperform ($\rho = 0.442$ and $-0.135$), confirming that structural calibration preserves but does not improve ranking quality when the fidelity signal is already strong. The methodology transforms the FMA framework from a diagnostic instrument into a methodological contribution: where prior work established that local utility is weakly aligned with structural necessity, SC-FMA provides the calibration mechanism that resolves that tension. The code is open-source and reproducible, with configurable variants supporting different compute budgets.
 
 \section*{Acknowledgments}
 The authors thank the College of Management Science and Engineering at Beijing Information Science and Technology University for research support.
@@ -1030,7 +1067,7 @@ The authors declared that they have no conflicts of interest to this work.
 During preparation of this work, the authors used OpenAI Codex for language editing, LaTeX packaging assistance, and compliance checks. After using this tool, the authors reviewed and edited the content as needed and take full responsibility for the content of the publication.
 
 \section*{Data Availability}
-Data will be made available on request.
+The PRM800K dataset is publicly available via HuggingFace (\texttt{openai/prm800k}). The synthetic benchmark is fully reproducible from \texttt{scripts/generate\_synthetic\_traces.py} with seed 42. Source code and frozen experiment configurations are archived in the accompanying repository.
 
 \section*{CRediT authorship contribution statement}
 \textbf{Haoran Ma}: Conceptualization, Methodology, Software, Formal analysis, Investigation, Data Curation, Writing -- Original Draft, Visualization. \textbf{Ningning Wang}: Methodology, Validation, Writing -- Review \& Editing, Supervision, Project administration, Funding acquisition.

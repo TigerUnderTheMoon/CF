@@ -38,7 +38,7 @@ Purpose: this file is the manuscript claim contract for the SC-FMA methodologica
 
 ## Legacy Route Status
 
-All prior real-task validation routes (v2, v2.1, v2.2, v3, v3.1) remain in their respective statuses (`failed_validation`, `pilot_blocked`, `archived`) as recorded in the original claim registry. v3.5 PRM800K contiguous split is preserved as failed validation provenance in `outputs/real_task_v3_5_prm800k/failure_audit.json`. v3.6 PRM800K hash-stratified validation supports only the step-ranking methodological claim and does not constitute GSM8K/HotpotQA replay validation. v3.7/v3.8 add in-distribution frozen PRM baseline context only; they do not authorize `F_PRM_TRAINING`, `F_REAL_TASK_SC_FMA`, external PRM generalization, deterministic replay, or causal identification wording.
+All prior real-task validation routes (v2, v2.1, v2.2, v3, v3.1) remain in their respective statuses (`failed_validation`, `pilot_blocked`, `archived`) as recorded in the original claim registry. v3.5 PRM800K contiguous split is preserved as failed validation provenance in `outputs/real_task_v3_5_prm800k/failure_audit.json`. v3.6 PRM800K hash-stratified validation supports the step-ranking methodological claim (`M_STEP_RANKING`, `M_STEP_RANKING_REAL_PRM800K`) and does not constitute GSM8K/HotpotQA replay validation. v3.7/v3.8 add in-distribution frozen PRM baseline context (`M_BASELINE_COMPARISON_CONTEXT_ONLY`) only; they do not authorize `F_PRM_TRAINING`, `F_REAL_TASK_SC_FMA`, external PRM generalization, deterministic replay, or causal identification wording.
 
 ## Real-Task v3/v3.1 Final Status (2026-06-08)
 
