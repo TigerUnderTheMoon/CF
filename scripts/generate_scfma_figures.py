@@ -1,6 +1,6 @@
 """Generate all 6 figures for the SC-FMA paper using matplotlib.
 
-Generates synthetic data matching the statistics described in main.tex.
+Generates synthetic data matching the statistics described in manuscript.tex.
 Uses numpy random seed 42 for reproducibility.
 """
 

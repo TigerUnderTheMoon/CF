@@ -7,9 +7,9 @@ Purpose: define the clean upload boundary for the Knowledge-Based Systems submis
 The portal-facing package is `final_package/` and contains exactly five files:
 
 - `cover_letter.docx` -- Word cover letter with named authors and bounded KBS positioning.
-- `Highlights.pdf` -- standalone Highlights PDF extracted from page 1 of the full compiled `main.pdf`.
+- `Highlights.docx` -- Word highlights file converted from the standalone highlights content.
 - `manuscript.pdf` -- manuscript PDF compiled from `final_source/manuscript.tex`.
-- `supplementary.pdf` -- supplementary PDF compiled from `final_source/supplementary.tex`.
+- `supplementary.docx` -- Word supplementary file converted from the supplementary content.
 - `latex_source.zip` -- source bundle containing `manuscript.tex`, `supplementary.tex`, `references.bib`, CAS style files, and all PNG artwork under `figures/`.
 
 ## Author and statement metadata
@@ -33,16 +33,15 @@ The portal-facing package is `final_package/` and contains exactly five files:
 
 ## Verification
 
-- The full compiled `main.pdf` has 8 pages and is used only as the source for extracting the standalone Highlights page.
-- `Highlights.pdf` has 1 page.
-- `manuscript.tex` compiled with TeX Live/latexmk: exit code 0, output `manuscript.pdf` with 7 pages.
-- `supplementary.tex` compiled with TeX Live/latexmk: exit code 0, output `supplementary.pdf` with 6 pages.
+- `manuscript.tex` compiled with TeX Live/latexmk: exit code 0, output `manuscript.pdf` with 35 pages.
+- `Highlights.docx` contains the final highlights text and current title.
+- `supplementary.docx` contains the supplementary title, author names, and supplementary content converted from the split supplementary material.
 - Supplementary data map now includes `outputs/real_task_v3_6_prm800k_hash/audit_prioritization_report.json` and `outputs/real_task_v3_6_prm800k_hash/audit_prioritization_summary.md` as audit-prioritization context only.
-- PDF pages were rendered to PNG contact sheets and visually checked for page count, footer consistency, figure placement, and obvious clipping.
-- `cover_letter.docx` was structurally checked for required DOCX parts and required text. Visual DOCX rendering could not be completed because `soffice.exe`/LibreOffice is not installed on this machine.
+- Manuscript PDF pages were rendered to PNG contact sheets and visually checked for page count, footer consistency, figure placement, and obvious clipping.
+- `cover_letter.docx`, `Highlights.docx`, and `supplementary.docx` were structurally checked for required DOCX parts and required text. Visual DOCX rendering could not be completed because `soffice.exe`/LibreOffice is not installed on this machine.
 - `python scripts\verify_kbs_submission_package.py --package-dir paper\kbs_submission\final_package --require-author-metadata --require-pdf-text` passes.
 - `pytest -q tests/test_kbs_submission_package_verifier.py` passes.
 
 ## Claim boundary
 
-The package supports a methodological KBS submission: SC-FMA calibration, controlled synthetic proxy-label ranking evidence, PRM800K step-label ranking with `w_struct` as the primary real-data result, Ridge as the closest SC-FMA approximation on that route, offline PRM800K audit-prioritization context, and a fixture-level ontology-aware edge pilot as diagnostic context. It does not claim downstream PRM/filtering gains, GSM8K/HotpotQA replay-pass evidence, deployed knowledge-base workflow validation, or formal causal identification.
+The package supports a methodological KBS submission: SC-FMA calibration, controlled synthetic proxy-label ranking evidence, PRM800K step-label ranking with `w_struct` as the primary real-data result, Ridge as the closest SC-FMA approximation on that route, offline PRM800K audit-prioritization context, and a fixture-level ontology-aware edge pilot as diagnostic context. It does not claim downstream PRM/filtering gains, GSM8K/HotpotQA replay-pass evidence, production knowledge-base deployment validation, or formal causal identification.

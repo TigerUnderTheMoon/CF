@@ -22,10 +22,10 @@ DATA_AVAILABILITY = (
 )
 
 REQUIRED_FILES = (
-    "Highlights.pdf",
+    "Highlights.docx",
     "cover_letter.docx",
     "manuscript.pdf",
-    "supplementary.pdf",
+    "supplementary.docx",
     "latex_source.zip",
 )
 
@@ -97,12 +97,21 @@ REQUIRED_MANUSCRIPT_SNIPPETS = (
     r"\section*{CRediT authorship contribution statement}",
 )
 
-REQUIRED_PDF_TEXT_SNIPPETS = {
-    "Highlights.pdf": (
+REQUIRED_DOCX_TEXT_SNIPPETS = {
+    "Highlights.docx": (
         "Highlights",
         CURRENT_TITLE,
         "SC-FMA calibrates interventional utility into supervision weights.",
     ),
+    "supplementary.docx": (
+        "Supplementary Material",
+        CURRENT_TITLE,
+        "Haoran Ma",
+        "Ningning Wang",
+    ),
+}
+
+REQUIRED_PDF_TEXT_SNIPPETS = {
     "manuscript.pdf": (
         CURRENT_TITLE,
         "Declaration of Competing Interest",
@@ -112,12 +121,6 @@ REQUIRED_PDF_TEXT_SNIPPETS = {
         "Ningning Wang",
         "National Social Science Fund of China Project (24BSH018)",
         DATA_AVAILABILITY,
-    ),
-    "supplementary.pdf": (
-        "Supplementary Material",
-        CURRENT_TITLE,
-        "Haoran Ma",
-        "Ningning Wang",
     ),
 }
 
@@ -170,7 +173,7 @@ def _check_auxiliary_artifacts(package_dir: Path, errors: list[str]) -> None:
 
 
 def _check_pdf_headers(package_dir: Path, errors: list[str]) -> None:
-    for filename in ("manuscript.pdf", "supplementary.pdf"):
+    for filename in ("manuscript.pdf",):
         path = package_dir / filename
         if not path.exists():
             continue
@@ -201,11 +204,18 @@ def _read_docx_text(path: Path, errors: list[str]) -> str:
         errors.append(f"{path.name} has invalid document XML: {exc}")
         return ""
 
-    text_nodes = []
-    for node in root.iter():
-        if node.tag.endswith("}t") and node.text:
-            text_nodes.append(node.text)
-    return "\n".join(text_nodes)
+    paragraphs = []
+    for para in root.iter():
+        if not para.tag.endswith("}p"):
+            continue
+        text_nodes = [
+            node.text
+            for node in para.iter()
+            if node.tag.endswith("}t") and node.text
+        ]
+        if text_nodes:
+            paragraphs.append("".join(text_nodes))
+    return "\n".join(paragraphs)
 
 
 def _check_cover_letter(package_dir: Path, errors: list[str]) -> None:
@@ -216,6 +226,20 @@ def _check_cover_letter(package_dir: Path, errors: list[str]) -> None:
         if snippet not in cover_text:
             errors.append(f"cover_letter.docx missing required text: {snippet}")
     _check_forbidden_text({"cover_letter.docx": cover_text}, errors)
+
+
+def _check_docx_text(package_dir: Path, errors: list[str]) -> dict[str, str]:
+    text_by_name: dict[str, str] = {}
+    for filename, snippets in REQUIRED_DOCX_TEXT_SNIPPETS.items():
+        docx_text = _read_docx_text(package_dir / filename, errors)
+        if not docx_text:
+            continue
+        text_by_name[filename] = docx_text
+        for snippet in snippets:
+            if not _contains_snippet(docx_text, snippet):
+                errors.append(f"{filename} missing required text: {snippet}")
+    _check_forbidden_text(text_by_name, errors)
+    return text_by_name
 
 
 def _read_source_zip(path: Path, errors: list[str]) -> tuple[set[str], dict[str, str]]:
@@ -392,9 +416,11 @@ def check_package(
     _check_auxiliary_artifacts(package_dir, errors)
     _check_pdf_headers(package_dir, errors)
     _check_cover_letter(package_dir, errors)
+    package_docx_text = _check_docx_text(package_dir, errors)
     source_text_by_name = _check_source_zip(package_dir, errors)
     cover_text = _read_docx_text(package_dir / "cover_letter.docx", errors)
     all_text = dict(source_text_by_name)
+    all_text.update(package_docx_text)
     if cover_text:
         all_text["cover_letter.docx"] = cover_text
     _check_author_metadata(

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.5.21)  16 JUN 2026 22:06
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.5.21)  16 JUN 2026 23:12
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -696,7 +696,7 @@ LaTeX Font Info:    Trying to load font information for T1+stix on input line 2
  (d:/DevelopTools/texlive/2026/texmf-dist/tex/latex/stix/t1stix.fd
 File: t1stix.fd 2015/04/17 v1.1.2-latex STIX T1 font definitions
 )
-(build_manuscript/manuscript.aux)
+(./manuscript.aux)
 \openout1 = `manuscript.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 22.
@@ -761,7 +761,7 @@ e
 LaTeX Info: Command `\dddot' is already robust on input line 22.
 LaTeX Info: Command `\ddddot' is already robust on input line 22.
 Package hyperref Info: Link coloring ON on input line 22.
- (build_manuscript/manuscript.out) (build_manuscript/manuscript.out)
+ (./manuscript.out) (./manuscript.out)
 \@outlinefile=\write3
 \openout3 = `manuscript.out'.
 
@@ -808,81 +808,81 @@ Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 \openout4 = `manuscript.abs'.
 
 LaTeX Font Info:    Trying to load font information for LS1+stixscr on input li
-ne 59.
+ne 60.
 (d:/DevelopTools/texlive/2026/texmf-dist/tex/latex/stix/ls1stixscr.fd
 File: ls1stixscr.fd 2015/04/17 v1.1.2-latex STIX script LS1 font definitions
 )
 LaTeX Font Info:    Trying to load font information for LS2+stixex on input lin
-e 59.
+e 60.
 
 (d:/DevelopTools/texlive/2026/texmf-dist/tex/latex/stix/ls2stixex.fd
 File: ls2stixex.fd 2015/04/17 v1.1.2-latex STIX extentions LS2 font definitions
 
 )
-LaTeX Font Info:    Trying to load font information for U+msa on input line 59.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 60.
 
 
 (d:/DevelopTools/texlive/2026/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 59.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 60.
 
 
 (d:/DevelopTools/texlive/2026/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
 LaTeX Font Info:    Trying to load font information for LS1+stixfrak on input l
-ine 59.
+ine 60.
 
 (d:/DevelopTools/texlive/2026/texmf-dist/tex/latex/stix/ls1stixfrak.fd
 File: ls1stixfrak.fd 2015/04/17 v1.1.2-latex STIX fraktur LS1 font definitions
 )
 LaTeX Font Info:    Trying to load font information for LS1+stixbb on input lin
-e 59.
+e 60.
 
 (d:/DevelopTools/texlive/2026/texmf-dist/tex/latex/stix/ls1stixbb.fd
 File: ls1stixbb.fd 2015/04/17 v1.1.2-latex STIX blackboard LS1 font definitions
 
 )
 LaTeX Font Info:    Trying to load font information for LS2+stixcal on input li
-ne 59.
+ne 60.
 
 (d:/DevelopTools/texlive/2026/texmf-dist/tex/latex/stix/ls2stixcal.fd
 File: ls2stixcal.fd 2015/04/17 v1.1.2-latex STIX calligraphic LS2 font definiti
 ons
 )
 LaTeX Font Info:    Trying to load font information for LS1+stixsf on input lin
-e 59.
+e 60.
 
 (d:/DevelopTools/texlive/2026/texmf-dist/tex/latex/stix/ls1stixsf.fd
 File: ls1stixsf.fd 2015/04/17 v1.1.2-latex STIX sans-serif LS1 font definitions
 
 )
 LaTeX Font Info:    Trying to load font information for LS2+stixtt on input lin
-e 59.
+e 60.
 
 (d:/DevelopTools/texlive/2026/texmf-dist/tex/latex/stix/ls2stixtt.fd
 File: ls2stixtt.fd 2015/04/17 v1.1.2-latex STIX typewriter LS2 font definitions
 
 )
-Overfull \hbox (117.0831pt too wide) detected at line 59
+Overfull \hbox (117.0831pt too wide) detected at line 60
 []
  []
 
-(build_manuscript/manuscript.abs)
+(./manuscript.abs)
 
-Package hyperref Warning: Ignoring empty anchor on input line 59.
+Package hyperref Warning: Ignoring empty anchor on input line 60.
 
 
-Package hyperref Warning: Ignoring empty anchor on input line 59.
+Package hyperref Warning: Ignoring empty anchor on input line 60.
 
 <thumbnails/cas-email.jpeg, id=4, 225.84375pt x 225.84375pt>
 File: thumbnails/cas-email.jpeg Graphic file (type jpg)
 <use thumbnails/cas-email.jpeg>
-Package pdftex.def Info: thumbnails/cas-email.jpeg  used on input line 59.
+Package pdftex.def Info: thumbnails/cas-email.jpeg  used on input line 60.
 (pdftex.def)             Requested size: 7.99838pt x 8.0pt.
 
-Package hyperref Warning: Ignoring empty anchor on input line 59.
+Package hyperref Warning: Ignoring empty anchor on input line 60.
 
 [1
 
@@ -890,198 +890,164 @@ Package hyperref Warning: Ignoring empty anchor on input line 59.
 DevelopTools/texlive/2026/texmf-dist/fonts/enc/dvips/stix/stix-t1.enc}{d:/Devel
 opTools/texlive/2026/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc} <d:/D
 evelopTools/texlive/2026/texmf-dist/tex/latex/els-cas-templates/thumbnails/cas-
-email.jpeg>]
+email.jpeg>] [2] [3] [4] [5] [6]
 LaTeX Font Info:    Trying to load font information for TS1+stix on input line 
-104.
+272.
 
 (d:/DevelopTools/texlive/2026/texmf-dist/tex/latex/stix/ts1stix.fd
 File: ts1stix.fd 2015/04/17 v1.1.2-latex STIX TS1 font definitions
-) [2{d:/DevelopTools/texlive/2026/texmf-dist/fonts/enc/dvips/stix/stix-ts1.enc}
+) [7{d:/DevelopTools/texlive/2026/texmf-dist/fonts/enc/dvips/stix/stix-ts1.enc}
 ]
-Underfull \hbox (badness 3895) in paragraph at lines 161--161
-[]|\T1/cmss/m/n/7 Synthetic con-trolled bench-
+Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on in
+put line 320.
+ [8]
+[9] [10] [11] [12] [13] [14] [15] [16]
+
+LaTeX Warning: No positions in optional float specifier.
+               Default added (so using `') on input line 694.
+
+<figures/fig_sensitivity.png, id=328, 493.845pt x 117.8001pt>
+File: figures/fig_sensitivity.png Graphic file (type png)
+<use figures/fig_sensitivity.png>
+Package pdftex.def Info: figures/fig_sensitivity.png  used on input line 696.
+(pdftex.def)             Requested size: 468.3324pt x 111.7135pt.
+
+LaTeX Warning: No positions in optional float specifier.
+               Default added (so using `') on input line 702.
+
+<figures/fig_ciu_necessity.png, id=330, 510.708pt x 117.8001pt>
+File: figures/fig_ciu_necessity.png Graphic file (type png)
+<use figures/fig_ciu_necessity.png>
+Package pdftex.def Info: figures/fig_ciu_necessity.png  used on input line 704.
+
+(pdftex.def)             Requested size: 468.3324pt x 108.02867pt.
+[17] [18]
+
+LaTeX Warning: No positions in optional float specifier.
+               Default added (so using `') on input line 848.
+
+<figures/fig_scaling.png, id=357, 240.6591pt x 189.8292pt>
+File: figures/fig_scaling.png Graphic file (type png)
+<use figures/fig_scaling.png>
+Package pdftex.def Info: figures/fig_scaling.png  used on input line 850.
+(pdftex.def)             Requested size: 468.3324pt x 369.4181pt.
+
+Overfull \hbox (27.07898pt too wide) in paragraph at lines 873--874
+\T1/cmtt/m/n/9 M_STEP_RANKING_REAL_PRM800K\T1/cmss/m/n/9 .|  
  []
 
 
-Underfull \hbox (badness 2326) in paragraph at lines 162--162
-[]|\T1/cmss/m/n/7 Real PRM800K step-label rank-ing with
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 167--168
-[]|\T1/cmss/m/n/7 Rule-engine, ontology-reasoner, KG-
- []
-
-
-Overfull \hbox (10.53252pt too wide) in paragraph at lines 157--170
+Overfull \hbox (5.62093pt too wide) in paragraph at lines 869--880
  [][] 
  []
 
+LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <9> not available
+(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 894.
 
-Underfull \hbox (badness 7576) in paragraph at lines 185--185
-[]|\T1/cmss/m/n/7 Same PRM800K locked
+Overfull \hbox (4.56pt too wide) in paragraph at lines 940--941
+[]\T1/stix/m/n/10 The audit-prioritization read-out sup-ports one bounded op-er
+-a-tional state-ment: on PRM800K-like process-supervision
+ []
+
+[19] [20] [21] [22]
+Overfull \hbox (9.76465pt too wide) in paragraph at lines 1018--1019
+\T1/cmtt/m/n/10 false\T1/stix/m/n/10 . The KG-augmented graphs add 196 ontology
+-derived edges (134 \T1/cmtt/m/n/10 depends_on_concept\T1/stix/m/n/10 , 54 \T1/
+cmtt/m/n/10 same_constraint\T1/stix/m/n/10 ,
  []
 
 
-Underfull \hbox (badness 1888) in paragraph at lines 185--185
-[]|\T1/cmss/m/n/7 Pass: same rows, la-bels,
+Overfull \hbox (49.72636pt too wide) in paragraph at lines 1030--1031
+[]\T1/stix/b/n/10 Synthetic bench-mark gen-er-a-tion. \T1/stix/m/n/10 The 200-t
+race bench-mark is gen-er-ated by \T1/cmtt/m/n/10 scripts/generate_synthetic_tr
+aces.py
  []
 
-
-Underfull \hbox (badness 7576) in paragraph at lines 186--186
-[]|\T1/cmss/m/n/7 Same PRM800K locked
- []
-
-
-Underfull \hbox (badness 1253) in paragraph at lines 186--186
-[]|\T1/cmss/m/n/7 Pass: de-ter-min-is-tic same-
- []
-
-
-Underfull \hbox (badness 7576) in paragraph at lines 187--187
-[]|\T1/cmss/m/n/7 Same PRM800K locked
- []
-
-
-Underfull \hbox (badness 1253) in paragraph at lines 187--187
-[]|\T1/cmss/m/n/7 Pass: de-ter-min-is-tic same-
- []
-
-
-Underfull \hbox (badness 7576) in paragraph at lines 188--188
-[]|\T1/cmss/m/n/7 Same PRM800K locked
- []
-
-
-Underfull \hbox (badness 7576) in paragraph at lines 189--189
-[]|\T1/cmss/m/n/7 Same PRM800K locked
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 189--189
-[]|\T1/cmss/m/n/7 Overlap-limited con-text
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 189--190
-[]|\T1/cmss/m/n/7 Provides PRM-distribution
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 190--190
-[]|\T1/cmss/m/n/7 Recommended
- []
-
-
-Underfull \hbox (badness 7576) in paragraph at lines 190--190
-[]|\T1/cmss/m/n/7 Same PRM800K locked
- []
-
-
-Underfull \hbox (badness 1783) in paragraph at lines 190--190
-[]|\T1/cmss/m/n/7 Pass: same fea-tures and
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 191--191
-[]|\T1/cmss/m/n/7 Controlled-synthetic
- []
-
-
-Underfull \hbox (badness 7576) in paragraph at lines 191--191
-[]|\T1/cmss/m/n/7 Same PRM800K locked
- []
-
-
-Underfull \hbox (badness 6047) in paragraph at lines 191--191
-[]|\T1/cmss/m/n/7 Pass as vari-ant; down-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 191--192
-[]|\T1/cmss/m/n/7 Shows syn-thetic strength
- []
-
-
-Underfull \hbox (badness 2134) in paragraph at lines 191--192
-\T1/cmss/m/n/7 does not trans-fer to this
- []
-
-
-Underfull \hbox (badness 8019) in paragraph at lines 192--192
-[]|\T1/cmss/m/n/7 Math-Shepherd/public PRM
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 192--192
-[]|\T1/cmss/m/n/7 Not protocol-compatible
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 192--192
-\T1/cmss/m/n/7 non-overlap scor-ing is
- []
-
-
-Underfull \hbox (badness 1931) in paragraph at lines 193--193
-[]|\T1/cmss/m/n/7 Citation-only bench-mark
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 193--194
-[]|\T1/cmss/m/n/7 Motivates process-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 193--194
-\T1/cmss/m/n/7 supervision brit-tle-ness
- []
-
-
-Overfull \hbox (22.52536pt too wide) in paragraph at lines 181--196
- [][] 
- []
-
-[3] [4
+[23] [24] [25] (./manuscript.bbl [26] [27]) [28] [29
 pdfTeX warning (ext4): destination with the same identifier (name{table.1}) has
  been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.223 \subsection
-                 {PRM800K Real Step-Label Ranking}
+l.1106 \end{document}
+                     ] [30
 pdfTeX warning (ext4): destination with the same identifier (name{table.2}) has
  been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.223 \subsection
-                 {PRM800K Real Step-Label Ranking}
+l.1106 \end{document}
+                     
 pdfTeX warning (ext4): destination with the same identifier (name{table.3}) has
  been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.223 \subsection
-                 {PRM800K Real Step-Label Ranking}]
-LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <9> not available
-(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 235.
-
-Underfull \hbox (badness 2564) in paragraph at lines 265--266
-[]|\T1/cmss/m/n/7 In-distribution base-line con-text
- []
-
-[5
+l.1106 \end{document}
+                     
 pdfTeX warning (ext4): destination with the same identifier (name{table.4}) has
  been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.281 
-      
+l.1106 \end{document}
+                     
+pdfTeX warning (ext4): destination with the same identifier (name{figure.1}) ha
+s been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  \__shipout_drop_firstpage_...
+l.1106 \end{document}
+                      <./figures/fig_sensitivity.png>] [31
+pdfTeX warning (ext4): destination with the same identifier (name{figure.2}) ha
+s been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  \__shipout_drop_firstpage_...
+l.1106 \end{document}
+                     
 pdfTeX warning (ext4): destination with the same identifier (name{table.5}) has
  been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.281 
-      ] [6] (build_manuscript/manuscript.bbl) [7]
-(build_manuscript/manuscript.aux)
+l.1106 \end{document}
+                     
+pdfTeX warning (ext4): destination with the same identifier (name{table.6}) has
+ been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  \__shipout_drop_firstpage_...
+l.1106 \end{document}
+                      <./figures/fig_ciu_necessity.png>] [32
+pdfTeX warning (ext4): destination with the same identifier (name{table.7}) has
+ been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  \__shipout_drop_firstpage_...
+l.1106 \end{document}
+                     
+pdfTeX warning (ext4): destination with the same identifier (name{table.8}) has
+ been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  \__shipout_drop_firstpage_...
+l.1106 \end{document}
+                     ] [33
+pdfTeX warning (ext4): destination with the same identifier (name{figure.3}) ha
+s been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  \__shipout_drop_firstpage_...
+l.1106 \end{document}
+                      <./figures/fig_scaling.png>] [34
+pdfTeX warning (ext4): destination with the same identifier (name{table.9}) has
+ been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  \__shipout_drop_firstpage_...
+l.1106 \end{document}
+                     
+pdfTeX warning (ext4): destination with the same identifier (name{table.10}) ha
+s been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  \__shipout_drop_firstpage_...
+l.1106 \end{document}
+                     ] [35
+pdfTeX warning (ext4): destination with the same identifier (name{table.11}) ha
+s been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  \__shipout_drop_firstpage_...
+l.1106 \end{document}
+                     ] (./manuscript.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-04-28>
@@ -1090,33 +1056,41 @@ Package rerunfilecheck Info: File `manuscript.out' has not changed.
 (rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
  ) 
 Here is how much of TeX's memory you used:
- 17271 strings out of 467341
- 260771 string characters out of 5412745
- 688570 words of memory out of 5000000
- 46023 multiletter control sequences out of 15000+600000
- 729271 words of font info for 178 fonts, out of 8000000 for 9000
+ 17732 strings out of 467341
+ 270461 string characters out of 5412745
+ 794133 words of memory out of 5000000
+ 46310 multiletter control sequences out of 15000+600000
+ 751288 words of font info for 199 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 90i,12n,98p,1672b,565s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 90i,14n,98p,2346b,672s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <d:/DevelopTools/texlive/2026/texmf-dist/fonts/type1/public/stix/STIXGeneral-
 Bold.pfb><d:/DevelopTools/texlive/2026/texmf-dist/fonts/type1/public/stix/STIXG
-eneral-Italic.pfb><d:/DevelopTools/texlive/2026/texmf-dist/fonts/type1/public/s
-tix/STIXGeneral-Regular.pfb><d:/DevelopTools/texlive/2026/texmf-dist/fonts/type
-1/public/cm-super/sfss0800.pfb><d:/DevelopTools/texlive/2026/texmf-dist/fonts/t
-ype1/public/cm-super/sfss0900.pfb><d:/DevelopTools/texlive/2026/texmf-dist/font
-s/type1/public/cm-super/sfsx0800.pfb><d:/DevelopTools/texlive/2026/texmf-dist/f
-onts/type1/public/cm-super/sfsx0900.pfb><d:/DevelopTools/texlive/2026/texmf-dis
-t/fonts/type1/public/cm-super/sftt0800.pfb><d:/DevelopTools/texlive/2026/texmf-
-dist/fonts/type1/public/cm-super/sftt0900.pfb><d:/DevelopTools/texlive/2026/tex
-mf-dist/fonts/type1/public/cm-super/sftt1000.pfb><d:/DevelopTools/texlive/2026/
-texmf-dist/fonts/type1/public/stix/stix-mathcal.pfb><d:/DevelopTools/texlive/20
-26/texmf-dist/fonts/type1/public/stix/stix-mathex.pfb><d:/DevelopTools/texlive/
-2026/texmf-dist/fonts/type1/public/stix/stix-mathit.pfb><d:/DevelopTools/texliv
-e/2026/texmf-dist/fonts/type1/public/stix/stix-mathrm-bold.pfb><d:/DevelopTools
-/texlive/2026/texmf-dist/fonts/type1/public/stix/stix-mathrm.pfb>
-Output written on build_manuscript/manuscript.pdf (7 pages, 375466 bytes).
+eneral-BoldItalic.pfb><d:/DevelopTools/texlive/2026/texmf-dist/fonts/type1/publ
+ic/stix/STIXGeneral-Italic.pfb><d:/DevelopTools/texlive/2026/texmf-dist/fonts/t
+ype1/public/stix/STIXGeneral-Regular.pfb><d:/DevelopTools/texlive/2026/texmf-di
+st/fonts/type1/public/cm-super/sfsi0900.pfb><d:/DevelopTools/texlive/2026/texmf
+-dist/fonts/type1/public/cm-super/sfss0800.pfb><d:/DevelopTools/texlive/2026/te
+xmf-dist/fonts/type1/public/cm-super/sfss0900.pfb><d:/DevelopTools/texlive/2026
+/texmf-dist/fonts/type1/public/cm-super/sfsx0900.pfb><d:/DevelopTools/texlive/2
+026/texmf-dist/fonts/type1/public/cm-super/sftt0800.pfb><d:/DevelopTools/texliv
+e/2026/texmf-dist/fonts/type1/public/cm-super/sftt0900.pfb><d:/DevelopTools/tex
+live/2026/texmf-dist/fonts/type1/public/cm-super/sftt1000.pfb><d:/DevelopTools/
+texlive/2026/texmf-dist/fonts/type1/public/stix/stix-mathbb.pfb><d:/DevelopTool
+s/texlive/2026/texmf-dist/fonts/type1/public/stix/stix-mathcal.pfb><d:/DevelopT
+ools/texlive/2026/texmf-dist/fonts/type1/public/stix/stix-mathex.pfb><d:/Develo
+pTools/texlive/2026/texmf-dist/fonts/type1/public/stix/stix-mathfrak.pfb><d:/De
+velopTools/texlive/2026/texmf-dist/fonts/type1/public/stix/stix-mathit-bold.pfb
+><d:/DevelopTools/texlive/2026/texmf-dist/fonts/type1/public/stix/stix-mathit.p
+fb><d:/DevelopTools/texlive/2026/texmf-dist/fonts/type1/public/stix/stix-mathrm
+-bold.pfb><d:/DevelopTools/texlive/2026/texmf-dist/fonts/type1/public/stix/stix
+-mathrm.pfb><d:/DevelopTools/texlive/2026/texmf-dist/fonts/type1/public/stix/st
+ix-mathscr.pfb><d:/DevelopTools/texlive/2026/texmf-dist/fonts/type1/public/stix
+/stix-mathsf.pfb><d:/DevelopTools/texlive/2026/texmf-dist/fonts/type1/public/st
+ix/stix-mathtt.pfb>
+Output written on manuscript.pdf (35 pages, 986969 bytes).
 PDF statistics:
- 212 PDF objects out of 1000 (max. 8388607)
- 169 compressed objects within 2 object streams
- 55 named destinations out of 1000 (max. 500000)
- 6 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 749 PDF objects out of 1000 (max. 8388607)
+ 653 compressed objects within 7 object streams
+ 219 named destinations out of 1000 (max. 500000)
+ 21 words of extra memory for PDF output out of 10000 (max. 10000000)
 

@@ -30,7 +30,8 @@ Purpose: record the author and statement metadata inserted into the final Knowle
 
 ## Local Targets Updated
 
-- `main.tex`
 - `final_source/manuscript.tex`
 - `final_source/supplementary.tex`
 - `final_package/cover_letter.docx`
+- `final_package/Highlights.docx`
+- `final_package/supplementary.docx`

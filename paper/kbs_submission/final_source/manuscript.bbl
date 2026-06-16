@@ -1,4 +1,4 @@
-\begin{thebibliography}{9}
+\begin{thebibliography}{64}
 \expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
 \providecommand{\url}[1]{\texttt{#1}}
 \providecommand{\href}[2]{#2}
@@ -11,6 +11,34 @@
 \providecommand{\Pubmed}[1]{\href{pmid:#1}{\path{#1}}}
 \providecommand{\bibinfo}[2]{#2}
 \ifx\xfnm\relax \def\xfnm[#1]{\unskip,\space#1}\fi
+%Type = Inproceedings
+\bibitem[{Abnar and Zuidema(2020)}]{abnar2020quantifying}
+\bibinfo{author}{Abnar, S.}, \bibinfo{author}{Zuidema, W.},
+  \bibinfo{year}{2020}.
+\newblock \bibinfo{title}{Quantifying attention flow in transformers}, in:
+  \bibinfo{booktitle}{Proceedings of the 58th Annual Meeting of the Association
+  for Computational Linguistics}, pp. \bibinfo{pages}{4190--4197}.
+\newblock \URLprefix \url{https://aclanthology.org/2020.acl-main.385/},
+  \DOIprefix\doi{10.18653/v1/2020.acl-main.385}.
+%Type = Article
+\bibitem[{Albert et~al.(2000)Albert, Jeong and Barabasi}]{albert2000error}
+\bibinfo{author}{Albert, R.}, \bibinfo{author}{Jeong, H.},
+  \bibinfo{author}{Barabasi, A.L.}, \bibinfo{year}{2000}.
+\newblock \bibinfo{title}{Error and attack tolerance of complex networks}.
+\newblock \bibinfo{journal}{Nature} \bibinfo{volume}{406},
+  \bibinfo{pages}{378--382}.
+\newblock \DOIprefix\doi{10.1038/35019019}.
+%Type = Article
+\bibitem[{Anderson et~al.(2004)Anderson, Bothell, Byrne, Douglass, Lebiere and
+  Qin}]{anderson2004actr}
+\bibinfo{author}{Anderson, J.R.}, \bibinfo{author}{Bothell, D.},
+  \bibinfo{author}{Byrne, M.D.}, \bibinfo{author}{Douglass, S.},
+  \bibinfo{author}{Lebiere, C.}, \bibinfo{author}{Qin, Y.},
+  \bibinfo{year}{2004}.
+\newblock \bibinfo{title}{An integrated theory of the mind}.
+\newblock \bibinfo{journal}{Psychological Review} \bibinfo{volume}{111},
+  \bibinfo{pages}{1036--1060}.
+\newblock \DOIprefix\doi{10.1037/0033-295X.111.4.1036}.
 %Type = Article
 \bibitem[{Bellomarini et~al.(2024)Bellomarini, Fayzrakhmanov, Gottlob,
   Kravchenko, Laurenza, Nenov, Reissfelder, Sallinger, Sherkhonov, Vahdati and
@@ -25,6 +53,54 @@
 \newblock \bibinfo{journal}{Data \& Knowledge Engineering}
   \bibinfo{volume}{150}, \bibinfo{pages}{102247}.
 \newblock \DOIprefix\doi{10.1016/j.datak.2023.102247}.
+%Type = Article
+\bibitem[{Bender and Friedman(2018)}]{bender2018datastatements}
+\bibinfo{author}{Bender, E.M.}, \bibinfo{author}{Friedman, B.},
+  \bibinfo{year}{2018}.
+\newblock \bibinfo{title}{Data statements for natural language processing:
+  Toward mitigating system bias and enabling better science}.
+\newblock \bibinfo{journal}{Transactions of the Association for Computational
+  Linguistics} \bibinfo{volume}{6}, \bibinfo{pages}{587--604}.
+\newblock \URLprefix \url{https://aclanthology.org/Q18-1041/},
+  \DOIprefix\doi{10.1162/tacl_a_00041}.
+%Type = Article
+\bibitem[{Besta et~al.(2024)Besta, Blach, Kubicek, Gerstenberger, Gianinazzi,
+  Gajda, Lehmann, Podstawski, Niewiadomski, Nyczyk and
+  Hoefler}]{besta2024graphofthoughts}
+\bibinfo{author}{Besta, M.}, \bibinfo{author}{Blach, N.},
+  \bibinfo{author}{Kubicek, A.}, \bibinfo{author}{Gerstenberger, R.},
+  \bibinfo{author}{Gianinazzi, L.}, \bibinfo{author}{Gajda, J.},
+  \bibinfo{author}{Lehmann, T.}, \bibinfo{author}{Podstawski, M.},
+  \bibinfo{author}{Niewiadomski, H.}, \bibinfo{author}{Nyczyk, P.},
+  \bibinfo{author}{Hoefler, T.}, \bibinfo{year}{2024}.
+\newblock \bibinfo{title}{Graph of thoughts: Solving elaborate problems with
+  large language models}.
+\newblock \bibinfo{journal}{Proceedings of the AAAI Conference on Artificial
+  Intelligence} \bibinfo{volume}{38}, \bibinfo{pages}{17682--17690}.
+\newblock \URLprefix
+  \url{https://ojs.aaai.org/index.php/AAAI/article/view/29720},
+  \DOIprefix\doi{10.1609/aaai.v38i16.29720}.
+%Type = Inproceedings
+\bibitem[{Bordes et~al.(2013)Bordes, Usunier, Garcia-Duran, Weston and
+  Yakhnenko}]{bordes2013translating}
+\bibinfo{author}{Bordes, A.}, \bibinfo{author}{Usunier, N.},
+  \bibinfo{author}{Garcia-Duran, A.}, \bibinfo{author}{Weston, J.},
+  \bibinfo{author}{Yakhnenko, O.}, \bibinfo{year}{2013}.
+\newblock \bibinfo{title}{Translating embeddings for modeling multi-relational
+  data}, in: \bibinfo{booktitle}{Advances in Neural Information Processing
+  Systems}, pp. \bibinfo{pages}{2787--2795}.
+\newblock \URLprefix
+  \url{https://papers.nips.cc/paper/2013/hash/1cecc7a77928ca8133fa24680a88d2f9-Abstract.html}.
+%Type = Inproceedings
+\bibitem[{Bouthillier et~al.(2019)Bouthillier, Laurent and
+  Vincent}]{bouthillier2019unreproducible}
+\bibinfo{author}{Bouthillier, X.}, \bibinfo{author}{Laurent, C.},
+  \bibinfo{author}{Vincent, P.}, \bibinfo{year}{2019}.
+\newblock \bibinfo{title}{Unreproducible research is reproducible}, in:
+  \bibinfo{booktitle}{Proceedings of the 36th International Conference on
+  Machine Learning}, \bibinfo{publisher}{PMLR}. pp. \bibinfo{pages}{725--734}.
+\newblock \URLprefix
+  \url{https://proceedings.mlr.press/v97/bouthillier19a.html}.
 %Type = Book
 \bibitem[{Boyd and Vandenberghe(2004)}]{boyd2004convex}
 \bibinfo{author}{Boyd, S.}, \bibinfo{author}{Vandenberghe, L.},
@@ -33,6 +109,238 @@
 \newblock \bibinfo{publisher}{Cambridge University Press}.
 \newblock \URLprefix \url{https://web.stanford.edu/~boyd/cvxbook/},
   \DOIprefix\doi{10.1017/CBO9780511804441}.
+%Type = Book
+\bibitem[{Buchanan and Shortliffe(1984)}]{buchanan1984mycin}
+\bibinfo{author}{Buchanan, B.G.}, \bibinfo{author}{Shortliffe, E.H.},
+  \bibinfo{year}{1984}.
+\newblock \bibinfo{title}{Rule-Based Expert Systems: The {MYCIN} Experiments of
+  the {Stanford} Heuristic Programming Project}.
+\newblock \bibinfo{publisher}{Addison-Wesley}.
+%Type = Article
+\bibitem[{Cardoso et~al.(2024)Cardoso, Li, Wang, Nori and
+  Horvitz}]{cardoso2024medicalreasoning}
+\bibinfo{author}{Cardoso, J.}, \bibinfo{author}{Li, Y.}, \bibinfo{author}{Wang,
+  P.}, \bibinfo{author}{Nori, H.}, \bibinfo{author}{Horvitz, E.},
+  \bibinfo{year}{2024}.
+\newblock \bibinfo{title}{Towards evaluation of clinical reasoning with large
+  language models}.
+\newblock \bibinfo{journal}{arXiv preprint arXiv:2407.01751} \URLprefix
+  \url{https://arxiv.org/abs/2407.01751}.
+%Type = Article
+\bibitem[{Cobbe et~al.(2021)Cobbe, Kosaraju, Bavarian, Chen, Jun, Kaiser,
+  Plappert, Tworek, Hilton, Nakano, Hesse and Schulman}]{cobbe2021training}
+\bibinfo{author}{Cobbe, K.}, \bibinfo{author}{Kosaraju, V.},
+  \bibinfo{author}{Bavarian, M.}, \bibinfo{author}{Chen, M.},
+  \bibinfo{author}{Jun, H.}, \bibinfo{author}{Kaiser, L.},
+  \bibinfo{author}{Plappert, M.}, \bibinfo{author}{Tworek, J.},
+  \bibinfo{author}{Hilton, J.}, \bibinfo{author}{Nakano, R.},
+  \bibinfo{author}{Hesse, C.}, \bibinfo{author}{Schulman, J.},
+  \bibinfo{year}{2021}.
+\newblock \bibinfo{title}{Training verifiers to solve math word problems}.
+\newblock \bibinfo{journal}{arXiv preprint arXiv:2110.14168} \URLprefix
+  \url{https://arxiv.org/abs/2110.14168},
+  \DOIprefix\doi{10.48550/arXiv.2110.14168}.
+%Type = Article
+\bibitem[{Cortes and Vapnik(1995)}]{cortes1995svm}
+\bibinfo{author}{Cortes, C.}, \bibinfo{author}{Vapnik, V.},
+  \bibinfo{year}{1995}.
+\newblock \bibinfo{title}{Support-vector networks}.
+\newblock \bibinfo{journal}{Machine Learning} \bibinfo{volume}{20},
+  \bibinfo{pages}{273--297}.
+\newblock \DOIprefix\doi{10.1007/BF00994018}.
+%Type = Inproceedings
+\bibitem[{DeYoung et~al.(2020)DeYoung, Jain, Rajani, Lehman, Xiong, Socher and
+  Wallace}]{deyoung2020eraser}
+\bibinfo{author}{DeYoung, J.}, \bibinfo{author}{Jain, S.},
+  \bibinfo{author}{Rajani, N.F.}, \bibinfo{author}{Lehman, E.},
+  \bibinfo{author}{Xiong, C.}, \bibinfo{author}{Socher, R.},
+  \bibinfo{author}{Wallace, B.C.}, \bibinfo{year}{2020}.
+\newblock \bibinfo{title}{{ERASER}: A benchmark to evaluate rationalized {NLP}
+  models}, in: \bibinfo{booktitle}{Proceedings of the 58th Annual Meeting of
+  the Association for Computational Linguistics}, pp.
+  \bibinfo{pages}{4443--4458}.
+\newblock \URLprefix \url{https://aclanthology.org/2020.acl-main.408/},
+  \DOIprefix\doi{10.18653/v1/2020.acl-main.408}.
+%Type = Inproceedings
+\bibitem[{Dodge et~al.(2019)Dodge, Gururangan, Card, Schwartz and
+  Smith}]{dodge2019show}
+\bibinfo{author}{Dodge, J.}, \bibinfo{author}{Gururangan, S.},
+  \bibinfo{author}{Card, D.}, \bibinfo{author}{Schwartz, R.},
+  \bibinfo{author}{Smith, N.A.}, \bibinfo{year}{2019}.
+\newblock \bibinfo{title}{Show your work: Improved reporting of experimental
+  results}, in: \bibinfo{booktitle}{Proceedings of the 2019 Conference on
+  Empirical Methods in Natural Language Processing and the 9th International
+  Joint Conference on Natural Language Processing}, pp.
+  \bibinfo{pages}{2185--2194}.
+\newblock \URLprefix \url{https://aclanthology.org/D19-1224/},
+  \DOIprefix\doi{10.18653/v1/D19-1224}.
+%Type = Inproceedings
+\bibitem[{Evans and Grefenstette(2018)}]{evans2018learning}
+\bibinfo{author}{Evans, R.}, \bibinfo{author}{Grefenstette, E.},
+  \bibinfo{year}{2018}.
+\newblock \bibinfo{title}{Learning explanatory rules from noisy data}, in:
+  \bibinfo{booktitle}{Journal of Artificial Intelligence Research}, pp.
+  \bibinfo{pages}{1--64}.
+\newblock \DOIprefix\doi{10.1613/jair.5714}.
+%Type = Inproceedings
+\bibitem[{Gal{\'a}rraga et~al.(2013)Gal{\'a}rraga, Teflioudi, Hose and
+  Suchanek}]{galarraga2013amie}
+\bibinfo{author}{Gal{\'a}rraga, L.A.}, \bibinfo{author}{Teflioudi, C.},
+  \bibinfo{author}{Hose, K.}, \bibinfo{author}{Suchanek, F.M.},
+  \bibinfo{year}{2013}.
+\newblock \bibinfo{title}{{AMIE}: Association rule mining under incomplete
+  evidence in ontological knowledge bases}, in: \bibinfo{booktitle}{Proceedings
+  of the 22nd International Conference on World Wide Web}, pp.
+  \bibinfo{pages}{413--422}.
+\newblock \DOIprefix\doi{10.1145/2488388.2488425}.
+%Type = Article
+\bibitem[{Gebru et~al.(2021)Gebru, Morgenstern, Vecchione, Vaughan, Wallach,
+  Daume~III and Crawford}]{gebru2021datasheets}
+\bibinfo{author}{Gebru, T.}, \bibinfo{author}{Morgenstern, J.},
+  \bibinfo{author}{Vecchione, B.}, \bibinfo{author}{Vaughan, J.W.},
+  \bibinfo{author}{Wallach, H.}, \bibinfo{author}{Daume~III, H.},
+  \bibinfo{author}{Crawford, K.}, \bibinfo{year}{2021}.
+\newblock \bibinfo{title}{Datasheets for datasets}.
+\newblock \bibinfo{journal}{Communications of the ACM} \bibinfo{volume}{64},
+  \bibinfo{pages}{86--92}.
+\newblock \URLprefix \url{https://doi.org/10.1145/3458723},
+  \DOIprefix\doi{10.1145/3458723}.
+%Type = Book
+\bibitem[{Gebser et~al.(2012)Gebser, Kaminski, Kaufmann and
+  Schaub}]{gebser2012answerset}
+\bibinfo{author}{Gebser, M.}, \bibinfo{author}{Kaminski, R.},
+  \bibinfo{author}{Kaufmann, B.}, \bibinfo{author}{Schaub, T.},
+  \bibinfo{year}{2012}.
+\newblock \bibinfo{title}{Answer Set Solving in Practice}.
+\newblock \bibinfo{publisher}{Morgan \& Claypool Publishers}.
+%Type = Article
+\bibitem[{Gr{\"o}mping(2007)}]{gromping2007estimators}
+\bibinfo{author}{Gr{\"o}mping, U.}, \bibinfo{year}{2007}.
+\newblock \bibinfo{title}{Estimators of relative importance in linear
+  regression based on variance decomposition}.
+\newblock \bibinfo{journal}{The American Statistician} \bibinfo{volume}{61},
+  \bibinfo{pages}{139--147}.
+\newblock \DOIprefix\doi{10.1198/000313007X188252}.
+%Type = Article
+\bibitem[{Guidotti et~al.(2018)Guidotti, Monreale, Ruggieri, Turini, Giannotti
+  and Pedreschi}]{guidotti2018survey}
+\bibinfo{author}{Guidotti, R.}, \bibinfo{author}{Monreale, A.},
+  \bibinfo{author}{Ruggieri, S.}, \bibinfo{author}{Turini, F.},
+  \bibinfo{author}{Giannotti, F.}, \bibinfo{author}{Pedreschi, D.},
+  \bibinfo{year}{2018}.
+\newblock \bibinfo{title}{A survey of methods for explaining black box models}.
+\newblock \bibinfo{journal}{ACM Computing Surveys} \bibinfo{volume}{51},
+  \bibinfo{pages}{1--42}.
+\newblock \DOIprefix\doi{10.1145/3236009}.
+%Type = Inproceedings
+\bibitem[{Hao et~al.(2021)Hao, Dong, Wei and Xu}]{hao2021self}
+\bibinfo{author}{Hao, Y.}, \bibinfo{author}{Dong, L.}, \bibinfo{author}{Wei,
+  F.}, \bibinfo{author}{Xu, K.}, \bibinfo{year}{2021}.
+\newblock \bibinfo{title}{Self-attention attribution: Interpreting information
+  interactions inside transformer}, in: \bibinfo{booktitle}{Proceedings of the
+  AAAI Conference on Artificial Intelligence}, pp.
+  \bibinfo{pages}{12963--12971}.
+\newblock \URLprefix
+  \url{https://ojs.aaai.org/index.php/AAAI/article/view/17533}.
+%Type = Misc
+\bibitem[{Hitzler et~al.(2012)Hitzler, Kr{\"o}tzsch, Parsia, Patel-Schneider
+  and Rudolph}]{hitzler2012owl2}
+\bibinfo{author}{Hitzler, P.}, \bibinfo{author}{Kr{\"o}tzsch, M.},
+  \bibinfo{author}{Parsia, B.}, \bibinfo{author}{Patel-Schneider, P.F.},
+  \bibinfo{author}{Rudolph, S.}, \bibinfo{year}{2012}.
+\newblock \bibinfo{title}{{OWL} 2 web ontology language primer (second
+  edition)}.
+\newblock \bibinfo{howpublished}{{W3C} Recommendation}.
+\newblock \URLprefix \url{https://www.w3.org/TR/owl2-primer/}.
+%Type = Article
+\bibitem[{Hu et~al.(2024)Hu, Liu, Zhao, Hou, Nie and
+  Li}]{hu2024knowledgeenhanced}
+\bibinfo{author}{Hu, L.}, \bibinfo{author}{Liu, Z.}, \bibinfo{author}{Zhao,
+  Z.}, \bibinfo{author}{Hou, L.}, \bibinfo{author}{Nie, L.},
+  \bibinfo{author}{Li, J.}, \bibinfo{year}{2024}.
+\newblock \bibinfo{title}{A survey of knowledge enhanced pre-trained language
+  models}.
+\newblock \bibinfo{journal}{IEEE Transactions on Knowledge and Data
+  Engineering} \bibinfo{volume}{36}, \bibinfo{pages}{1413--1430}.
+\newblock \DOIprefix\doi{10.1109/TKDE.2023.3310002}.
+%Type = Inproceedings
+\bibitem[{Jain and Wallace(2019)}]{jain2019attention}
+\bibinfo{author}{Jain, S.}, \bibinfo{author}{Wallace, B.C.},
+  \bibinfo{year}{2019}.
+\newblock \bibinfo{title}{Attention is not explanation}, in:
+  \bibinfo{booktitle}{Proceedings of the 2019 Conference of the North American
+  Chapter of the Association for Computational Linguistics}, pp.
+  \bibinfo{pages}{3543--3556}.
+\newblock \URLprefix \url{https://aclanthology.org/N19-1357/},
+  \DOIprefix\doi{10.18653/v1/N19-1357}.
+%Type = Article
+\bibitem[{Jin et~al.(2024)Jin, Liu, Han, Jiang, Ji and Han}]{jin2024llmgraphs}
+\bibinfo{author}{Jin, B.}, \bibinfo{author}{Liu, G.}, \bibinfo{author}{Han,
+  C.}, \bibinfo{author}{Jiang, M.}, \bibinfo{author}{Ji, H.},
+  \bibinfo{author}{Han, J.}, \bibinfo{year}{2024}.
+\newblock \bibinfo{title}{Large language models on graphs: A comprehensive
+  survey}.
+\newblock \bibinfo{journal}{IEEE Transactions on Knowledge and Data
+  Engineering} \bibinfo{volume}{36}, \bibinfo{pages}{8622--8642}.
+\newblock \DOIprefix\doi{10.1109/TKDE.2024.3469578}.
+%Type = Techreport
+\bibitem[{Kraft(1988)}]{kraft1988software}
+\bibinfo{author}{Kraft, D.}, \bibinfo{year}{1988}.
+\newblock \bibinfo{title}{A Software Package for Sequential Quadratic
+  Programming}.
+\newblock \bibinfo{type}{Technical Report} \bibinfo{number}{DFVLR-FB 88-28}.
+  DLR German Aerospace Center --- Institute for Flight Mechanics.
+%Type = Book
+\bibitem[{Laird(2012)}]{laird2012soar}
+\bibinfo{author}{Laird, J.E.}, \bibinfo{year}{2012}.
+\newblock \bibinfo{title}{The {Soar} Cognitive Architecture}.
+\newblock \bibinfo{publisher}{MIT Press}.
+\newblock \DOIprefix\doi{10.7551/mitpress/7688.001.0001}.
+%Type = Inproceedings
+\bibitem[{Lao et~al.(2011)Lao, Mitchell and Cohen}]{lao2011path}
+\bibinfo{author}{Lao, N.}, \bibinfo{author}{Mitchell, T.},
+  \bibinfo{author}{Cohen, W.W.}, \bibinfo{year}{2011}.
+\newblock \bibinfo{title}{Random walk inference and learning in a large scale
+  knowledge base}, in: \bibinfo{booktitle}{Proceedings of the 2011 Conference
+  on Empirical Methods in Natural Language Processing}, pp.
+  \bibinfo{pages}{529--539}.
+\newblock \URLprefix \url{https://aclanthology.org/D11-1049/}.
+%Type = Article
+\bibitem[{Liang et~al.(2022)Liang, Bommasani, Lee, Tsipras, Soylu, Yasunaga,
+  Zhang, Narayanan, Wu, Kumar, Newman, Yuan, Yan, Zhang, Cosgrove, Manning, Re,
+  Acosta-Navas, Hudson, Zelikman, Durmus, Ladhak, Rong, Ren, Yao, Wang,
+  Santhanam, Orr, Zheng, Yuksekgonul, Suzgun, Kim, Guha, Chatterji, Khattab,
+  Henderson, Huang, Chi, Xie, Santurkar, Ganguli, Hashimoto, Icard, Zhang,
+  Chaudhary, Wang, Li, Mai, Zhang and Koreeda}]{liang2022helm}
+\bibinfo{author}{Liang, P.}, \bibinfo{author}{Bommasani, R.},
+  \bibinfo{author}{Lee, T.}, \bibinfo{author}{Tsipras, D.},
+  \bibinfo{author}{Soylu, D.}, \bibinfo{author}{Yasunaga, M.},
+  \bibinfo{author}{Zhang, Y.}, \bibinfo{author}{Narayanan, D.},
+  \bibinfo{author}{Wu, Y.}, \bibinfo{author}{Kumar, A.},
+  \bibinfo{author}{Newman, B.}, \bibinfo{author}{Yuan, B.},
+  \bibinfo{author}{Yan, B.}, \bibinfo{author}{Zhang, C.},
+  \bibinfo{author}{Cosgrove, C.}, \bibinfo{author}{Manning, C.D.},
+  \bibinfo{author}{Re, C.}, \bibinfo{author}{Acosta-Navas, D.},
+  \bibinfo{author}{Hudson, D.A.}, \bibinfo{author}{Zelikman, E.},
+  \bibinfo{author}{Durmus, E.}, \bibinfo{author}{Ladhak, F.},
+  \bibinfo{author}{Rong, F.}, \bibinfo{author}{Ren, H.}, \bibinfo{author}{Yao,
+  H.}, \bibinfo{author}{Wang, J.}, \bibinfo{author}{Santhanam, K.},
+  \bibinfo{author}{Orr, L.}, \bibinfo{author}{Zheng, L.},
+  \bibinfo{author}{Yuksekgonul, M.}, \bibinfo{author}{Suzgun, M.},
+  \bibinfo{author}{Kim, N.}, \bibinfo{author}{Guha, N.},
+  \bibinfo{author}{Chatterji, N.}, \bibinfo{author}{Khattab, O.},
+  \bibinfo{author}{Henderson, P.}, \bibinfo{author}{Huang, Q.},
+  \bibinfo{author}{Chi, R.}, \bibinfo{author}{Xie, S.M.},
+  \bibinfo{author}{Santurkar, S.}, \bibinfo{author}{Ganguli, S.},
+  \bibinfo{author}{Hashimoto, T.}, \bibinfo{author}{Icard, T.},
+  \bibinfo{author}{Zhang, T.}, \bibinfo{author}{Chaudhary, V.},
+  \bibinfo{author}{Wang, W.}, \bibinfo{author}{Li, X.}, \bibinfo{author}{Mai,
+  Y.}, \bibinfo{author}{Zhang, Y.}, \bibinfo{author}{Koreeda, Y.},
+  \bibinfo{year}{2022}.
+\newblock \bibinfo{title}{Holistic evaluation of language models}.
+\newblock \bibinfo{journal}{arXiv preprint arXiv:2211.09110} \URLprefix
+  \url{https://arxiv.org/abs/2211.09110},
+  \DOIprefix\doi{10.48550/arXiv.2211.09110}.
 %Type = Article
 \bibitem[{Lightman et~al.(2023)Lightman, Kosaraju, Burda, Edwards, Baker, Lee,
   Leike, Schulman, Sutskever and Cobbe}]{lightman2023verify}
@@ -46,6 +354,15 @@
 \newblock \bibinfo{journal}{arXiv preprint arXiv:2305.20050} \URLprefix
   \url{https://arxiv.org/abs/2305.20050},
   \DOIprefix\doi{10.48550/arXiv.2305.20050}.
+%Type = Book
+\bibitem[{Lindsay et~al.(1980)Lindsay, Buchanan, Feigenbaum and
+  Lederberg}]{lindsay1980dendral}
+\bibinfo{author}{Lindsay, R.K.}, \bibinfo{author}{Buchanan, B.G.},
+  \bibinfo{author}{Feigenbaum, E.A.}, \bibinfo{author}{Lederberg, J.},
+  \bibinfo{year}{1980}.
+\newblock \bibinfo{title}{Applications of Artificial Intelligence for Organic
+  Chemistry: The {DENDRAL} Project}.
+\newblock \bibinfo{publisher}{McGraw-Hill}.
 %Type = Inproceedings
 \bibitem[{Lundberg and Lee(2017)}]{lundberg2017unified}
 \bibinfo{author}{Lundberg, S.M.}, \bibinfo{author}{Lee, S.I.},
@@ -55,6 +372,81 @@
   Processing Systems}, pp. \bibinfo{pages}{1--11}.
 \newblock \URLprefix
   \url{https://papers.nips.cc/paper/7062-a-unified-approach-to-interpreting-model-predictions}.
+%Type = Article
+\bibitem[{Luo et~al.(2024)Luo, Liu, Liu, Pentala and Deng}]{luo2024improve}
+\bibinfo{author}{Luo, L.}, \bibinfo{author}{Liu, Y.}, \bibinfo{author}{Liu,
+  R.}, \bibinfo{author}{Pentala, S.}, \bibinfo{author}{Deng, Y.},
+  \bibinfo{year}{2024}.
+\newblock \bibinfo{title}{Improve mathematical reasoning in language models by
+  automated process supervision}.
+\newblock \bibinfo{journal}{arXiv preprint arXiv:2406.06592} \URLprefix
+  \url{https://arxiv.org/abs/2406.06592}.
+%Type = Inproceedings
+\bibitem[{Manhaeve et~al.(2018)Manhaeve, Duman{\v{c}}i{\'c}, Kimmig, Demeester
+  and De~Raedt}]{manhaeve2018deepproblog}
+\bibinfo{author}{Manhaeve, R.}, \bibinfo{author}{Duman{\v{c}}i{\'c}, S.},
+  \bibinfo{author}{Kimmig, A.}, \bibinfo{author}{Demeester, T.},
+  \bibinfo{author}{De~Raedt, L.}, \bibinfo{year}{2018}.
+\newblock \bibinfo{title}{{DeepProbLog}: Neural probabilistic logic
+  programming}, in: \bibinfo{booktitle}{Advances in Neural Information
+  Processing Systems}, pp. \bibinfo{pages}{3753--3763}.
+\newblock \URLprefix
+  \url{https://papers.nips.cc/paper_files/paper/2018/hash/dc5d637ed5e62e36c3ec23bb7eb97812-Abstract.html}.
+%Type = Article
+\bibitem[{Markowitz(1952)}]{markowitz1952portfolio}
+\bibinfo{author}{Markowitz, H.}, \bibinfo{year}{1952}.
+\newblock \bibinfo{title}{Portfolio selection}.
+\newblock \bibinfo{journal}{The Journal of Finance} \bibinfo{volume}{7},
+  \bibinfo{pages}{77--91}.
+\newblock \URLprefix \url{https://doi.org/10.1111/j.1540-6261.1952.tb01525.x},
+  \DOIprefix\doi{10.1111/j.1540-6261.1952.tb01525.x}.
+%Type = Inproceedings
+\bibitem[{Mitchell et~al.(2019)Mitchell, Wu, Zaldivar, Barnes, Vasserman,
+  Hutchinson, Spitzer, Raji and Gebru}]{mitchell2019modelcards}
+\bibinfo{author}{Mitchell, M.}, \bibinfo{author}{Wu, S.},
+  \bibinfo{author}{Zaldivar, A.}, \bibinfo{author}{Barnes, P.},
+  \bibinfo{author}{Vasserman, L.}, \bibinfo{author}{Hutchinson, B.},
+  \bibinfo{author}{Spitzer, E.}, \bibinfo{author}{Raji, I.D.},
+  \bibinfo{author}{Gebru, T.}, \bibinfo{year}{2019}.
+\newblock \bibinfo{title}{Model cards for model reporting}, in:
+  \bibinfo{booktitle}{Proceedings of the Conference on Fairness,
+  Accountability, and Transparency}, pp. \bibinfo{pages}{220--229}.
+\newblock \URLprefix \url{https://doi.org/10.1145/3287560.3287596},
+  \DOIprefix\doi{10.1145/3287560.3287596}.
+%Type = Article
+\bibitem[{Motter and Lai(2002)}]{motter2002cascade}
+\bibinfo{author}{Motter, A.E.}, \bibinfo{author}{Lai, Y.C.},
+  \bibinfo{year}{2002}.
+\newblock \bibinfo{title}{Cascade-based attacks on complex networks}.
+\newblock \bibinfo{journal}{Physical Review E} \bibinfo{volume}{66},
+  \bibinfo{pages}{065102}.
+\newblock \DOIprefix\doi{10.1103/PhysRevE.66.065102}.
+%Type = Book
+\bibitem[{Nesterov and Nemirovskii(1994)}]{nesterov1994interior}
+\bibinfo{author}{Nesterov, Y.}, \bibinfo{author}{Nemirovskii, A.},
+  \bibinfo{year}{1994}.
+\newblock \bibinfo{title}{Interior-Point Polynomial Algorithms in Convex
+  Programming}.
+\newblock \bibinfo{publisher}{SIAM}.
+\newblock \DOIprefix\doi{10.1137/1.9781611970791}.
+%Type = Book
+\bibitem[{Newman(2010)}]{newman2010networks}
+\bibinfo{author}{Newman, M.}, \bibinfo{year}{2010}.
+\newblock \bibinfo{title}{Networks: An Introduction}.
+\newblock \bibinfo{publisher}{Oxford University Press}.
+\newblock \DOIprefix\doi{10.1093/acprof:oso/9780199206650.001.0001}.
+%Type = Inproceedings
+\bibitem[{Nguyen et~al.(2024)Nguyen, Luo, Shiri, Phung, Li and
+  Vu}]{nguyen2024direct}
+\bibinfo{author}{Nguyen, T.}, \bibinfo{author}{Luo, L.},
+  \bibinfo{author}{Shiri, F.}, \bibinfo{author}{Phung, D.},
+  \bibinfo{author}{Li, Y.F.}, \bibinfo{author}{Vu, T.T.}, \bibinfo{year}{2024}.
+\newblock \bibinfo{title}{Direct evaluation of chain-of-thought in multi-hop
+  reasoning with knowledge graphs}, in: \bibinfo{booktitle}{Findings of the
+  Association for Computational Linguistics: ACL 2024}, pp.
+  \bibinfo{pages}{2862--2883}.
+\newblock \URLprefix \url{https://aclanthology.org/2024.findings-acl.168/},
+  \DOIprefix\doi{10.18653/v1/2024.findings-acl.168}.
 %Type = Book
 \bibitem[{Nocedal and Wright(2006)}]{nocedal2006numerical}
 \bibinfo{author}{Nocedal, J.}, \bibinfo{author}{Wright, S.J.},
@@ -62,6 +454,47 @@
 \newblock \bibinfo{title}{Numerical Optimization}.
 \newblock \bibinfo{edition}{2nd} ed., \bibinfo{publisher}{Springer}.
 \newblock \DOIprefix\doi{10.1007/978-0-387-40065-5}.
+%Type = Article
+\bibitem[{Pan et~al.(2024)Pan, Luo, Wang, Chen, Wang and Wu}]{pan2024unifying}
+\bibinfo{author}{Pan, S.}, \bibinfo{author}{Luo, L.}, \bibinfo{author}{Wang,
+  Y.}, \bibinfo{author}{Chen, C.}, \bibinfo{author}{Wang, J.},
+  \bibinfo{author}{Wu, X.}, \bibinfo{year}{2024}.
+\newblock \bibinfo{title}{Unifying large language models and knowledge graphs:
+  A roadmap}.
+\newblock \bibinfo{journal}{IEEE Transactions on Knowledge and Data
+  Engineering} \bibinfo{volume}{36}, \bibinfo{pages}{3580--3599}.
+\newblock \DOIprefix\doi{10.1109/TKDE.2024.3352100}.
+%Type = Book
+\bibitem[{Pearl(2009)}]{pearl2009causality}
+\bibinfo{author}{Pearl, J.}, \bibinfo{year}{2009}.
+\newblock \bibinfo{title}{Causality: Models, Reasoning, and Inference}.
+\newblock \bibinfo{edition}{2} ed., \bibinfo{publisher}{Cambridge University
+  Press}.
+%Type = Article
+\bibitem[{Pineau et~al.(2021)Pineau, Vincent-Lamarre, Sinha, Lariviere,
+  Beygelzimer, d'Alche Buc, Fox and Larochelle}]{pineau2021reproducibility}
+\bibinfo{author}{Pineau, J.}, \bibinfo{author}{Vincent-Lamarre, P.},
+  \bibinfo{author}{Sinha, K.}, \bibinfo{author}{Lariviere, V.},
+  \bibinfo{author}{Beygelzimer, A.}, \bibinfo{author}{d'Alche Buc, F.},
+  \bibinfo{author}{Fox, E.}, \bibinfo{author}{Larochelle, H.},
+  \bibinfo{year}{2021}.
+\newblock \bibinfo{title}{Improving reproducibility in machine learning
+  research: A report from the {NeurIPS} 2019 reproducibility program}.
+\newblock \bibinfo{journal}{Journal of Machine Learning Research}
+  \bibinfo{volume}{22}, \bibinfo{pages}{1--20}.
+\newblock \URLprefix \url{https://www.jmlr.org/papers/v22/20-303.html}.
+%Type = Inproceedings
+\bibitem[{Raji et~al.(2021)Raji, Bender, Paullada, Denton and
+  Hanna}]{raji2021benchmark}
+\bibinfo{author}{Raji, I.D.}, \bibinfo{author}{Bender, E.M.},
+  \bibinfo{author}{Paullada, A.}, \bibinfo{author}{Denton, E.},
+  \bibinfo{author}{Hanna, A.}, \bibinfo{year}{2021}.
+\newblock \bibinfo{title}{{AI} and the everything in the whole wide world
+  benchmark}, in: \bibinfo{booktitle}{Proceedings of the Neural Information
+  Processing Systems Track on Datasets and Benchmarks}, pp.
+  \bibinfo{pages}{1--15}.
+\newblock \URLprefix
+  \url{https://datasets-benchmarks-proceedings.neurips.cc/paper/2021/hash/084b6fbb10729ed4da8c3d3f5a3ae7c9-Abstract-round2.html}.
 %Type = Inproceedings
 \bibitem[{Ribeiro et~al.(2016)Ribeiro, Singh and Guestrin}]{ribeiro2016why}
 \bibinfo{author}{Ribeiro, M.T.}, \bibinfo{author}{Singh, S.},
@@ -73,6 +506,42 @@
 \newblock \URLprefix \url{https://doi.org/10.1145/2939672.2939778},
   \DOIprefix\doi{10.1145/2939672.2939778}.
 %Type = Inproceedings
+\bibitem[{Rockt{\"a}schel and Riedel(2017)}]{rocktaschel2017neural}
+\bibinfo{author}{Rockt{\"a}schel, T.}, \bibinfo{author}{Riedel, S.},
+  \bibinfo{year}{2017}.
+\newblock \bibinfo{title}{End-to-end differentiable proving}, in:
+  \bibinfo{booktitle}{Advances in Neural Information Processing Systems}, pp.
+  \bibinfo{pages}{3788--3800}.
+\newblock \URLprefix
+  \url{https://papers.nips.cc/paper_files/paper/2017/hash/b2ab001909a8a6f04b51920306046ce5-Abstract.html}.
+%Type = Article
+\bibitem[{Rubin(1974)}]{rubin1974estimating}
+\bibinfo{author}{Rubin, D.B.}, \bibinfo{year}{1974}.
+\newblock \bibinfo{title}{Estimating causal effects of treatments in randomized
+  and nonrandomized studies}.
+\newblock \bibinfo{journal}{Journal of Educational Psychology}
+  \bibinfo{volume}{66}, \bibinfo{pages}{688--701}.
+\newblock \DOIprefix\doi{10.1037/h0037350}.
+%Type = Inproceedings
+\bibitem[{Shrikumar et~al.(2017)Shrikumar, Greenside and
+  Kundaje}]{shrikumar2017learning}
+\bibinfo{author}{Shrikumar, A.}, \bibinfo{author}{Greenside, P.},
+  \bibinfo{author}{Kundaje, A.}, \bibinfo{year}{2017}.
+\newblock \bibinfo{title}{Learning important features through propagating
+  activation differences}, in: \bibinfo{booktitle}{Proceedings of the 34th
+  International Conference on Machine Learning}, pp.
+  \bibinfo{pages}{3145--3153}.
+\newblock \URLprefix \url{https://proceedings.mlr.press/v70/shrikumar17a.html}.
+%Type = Article
+\bibitem[{Simonyan et~al.(2014)Simonyan, Vedaldi and
+  Zisserman}]{simonyan2014deep}
+\bibinfo{author}{Simonyan, K.}, \bibinfo{author}{Vedaldi, A.},
+  \bibinfo{author}{Zisserman, A.}, \bibinfo{year}{2014}.
+\newblock \bibinfo{title}{Deep inside convolutional networks: Visualising image
+  classification models and saliency maps}.
+\newblock \bibinfo{journal}{arXiv preprint arXiv:1312.6034} \URLprefix
+  \url{https://arxiv.org/abs/1312.6034}.
+%Type = Inproceedings
 \bibitem[{Sundararajan et~al.(2017)Sundararajan, Taly and
   Yan}]{sundararajan2017axiomatic}
 \bibinfo{author}{Sundararajan, M.}, \bibinfo{author}{Taly, A.},
@@ -83,6 +552,46 @@
   \bibinfo{pages}{3319--3328}.
 \newblock \URLprefix
   \url{https://proceedings.mlr.press/v70/sundararajan17a.html}.
+%Type = Article
+\bibitem[{Tibshirani(1996)}]{tibshirani1996lasso}
+\bibinfo{author}{Tibshirani, R.}, \bibinfo{year}{1996}.
+\newblock \bibinfo{title}{Regression shrinkage and selection via the lasso}.
+\newblock \bibinfo{journal}{Journal of the Royal Statistical Society: Series B
+  (Methodological)} \bibinfo{volume}{58}, \bibinfo{pages}{267--288}.
+\newblock \DOIprefix\doi{10.1111/j.2517-6161.1996.tb02080.x}.
+%Type = Article
+\bibitem[{Uesato et~al.(2022)Uesato, Kushman, Kumar, Song, Siegel, Wang,
+  Creswell, Irving and Higgins}]{uesato2022solving}
+\bibinfo{author}{Uesato, J.}, \bibinfo{author}{Kushman, N.},
+  \bibinfo{author}{Kumar, R.}, \bibinfo{author}{Song, F.},
+  \bibinfo{author}{Siegel, N.}, \bibinfo{author}{Wang, L.},
+  \bibinfo{author}{Creswell, A.}, \bibinfo{author}{Irving, G.},
+  \bibinfo{author}{Higgins, I.}, \bibinfo{year}{2022}.
+\newblock \bibinfo{title}{Solving math word problems with process- and
+  outcome-based feedback}.
+\newblock \bibinfo{journal}{arXiv preprint arXiv:2211.14275} \URLprefix
+  \url{https://arxiv.org/abs/2211.14275},
+  \DOIprefix\doi{10.48550/arXiv.2211.14275}.
+%Type = Inproceedings
+\bibitem[{Vu and Thai(2020)}]{vu2020pgmexplainer}
+\bibinfo{author}{Vu, M.N.}, \bibinfo{author}{Thai, M.T.}, \bibinfo{year}{2020}.
+\newblock \bibinfo{title}{{PGM-Explainer}: Probabilistic graphical model
+  explanations for graph neural networks}, in: \bibinfo{booktitle}{Advances in
+  Neural Information Processing Systems}, pp. \bibinfo{pages}{12225--12235}.
+\newblock \URLprefix
+  \url{https://proceedings.neurips.cc/paper_files/paper/2020/hash/8e7e854e5e5a1842cf4c3e85fd1c3a73-Abstract.html}.
+%Type = Article
+\bibitem[{Wachter et~al.(2017)Wachter, Mittelstadt and
+  Russell}]{wachter2017counterfactual}
+\bibinfo{author}{Wachter, S.}, \bibinfo{author}{Mittelstadt, B.},
+  \bibinfo{author}{Russell, C.}, \bibinfo{year}{2017}.
+\newblock \bibinfo{title}{Counterfactual explanations without opening the black
+  box: Automated decisions and the {GDPR}}.
+\newblock \bibinfo{journal}{Harvard Journal of Law \& Technology}
+  \bibinfo{volume}{31}, \bibinfo{pages}{841--887}.
+\newblock \URLprefix
+  \url{https://jolt.law.harvard.edu/assets/articlePDFs/v31/Counterfactual-Explanations-without-Opening-the-Black-Box-Sandra-Wachter-et-al.pdf},
+  \DOIprefix\doi{10.2139/ssrn.3063289}.
 %Type = Inproceedings
 \bibitem[{Wang et~al.(2024)Wang, Li, Shao, Xu, Dai, Li, Chen, Wu and
   Sui}]{wang2024mathshepherd}
@@ -98,6 +607,63 @@
   \bibinfo{pages}{9426--9439}.
 \newblock \URLprefix \url{https://aclanthology.org/2024.acl-long.510/},
   \DOIprefix\doi{10.18653/v1/2024.acl-long.510}.
+%Type = Article
+\bibitem[{Wang and Carreira-Perpi{\~n}{\'a}n(2013)}]{wang2013projection}
+\bibinfo{author}{Wang, W.}, \bibinfo{author}{Carreira-Perpi{\~n}{\'a}n,
+  M.{\'A}.}, \bibinfo{year}{2013}.
+\newblock \bibinfo{title}{Projection onto the probability simplex: An
+  {$\ell_1$}-ball approach}.
+\newblock \bibinfo{journal}{arXiv preprint arXiv:1309.1541} \URLprefix
+  \url{https://arxiv.org/abs/1309.1541}.
+%Type = Inproceedings
+\bibitem[{Wiegreffe and Pinter(2019)}]{wiegreffe2019attention}
+\bibinfo{author}{Wiegreffe, S.}, \bibinfo{author}{Pinter, Y.},
+  \bibinfo{year}{2019}.
+\newblock \bibinfo{title}{Attention is not not explanation}, in:
+  \bibinfo{booktitle}{Proceedings of the 2019 Conference on Empirical Methods
+  in Natural Language Processing}, pp. \bibinfo{pages}{11--20}.
+\newblock \URLprefix \url{https://aclanthology.org/D19-1002/},
+  \DOIprefix\doi{10.18653/v1/D19-1002}.
+%Type = Inproceedings
+\bibitem[{Yang et~al.(2017)Yang, Yang and Cohen}]{yang2017knowledge}
+\bibinfo{author}{Yang, F.}, \bibinfo{author}{Yang, Z.}, \bibinfo{author}{Cohen,
+  W.W.}, \bibinfo{year}{2017}.
+\newblock \bibinfo{title}{Differentiable learning of logical rules for
+  knowledge base reasoning}, in: \bibinfo{booktitle}{Advances in Neural
+  Information Processing Systems}, pp. \bibinfo{pages}{2319--2328}.
+\newblock \URLprefix
+  \url{https://papers.nips.cc/paper_files/paper/2017/hash/0e55666a4ad822e0e34299df3591d979-Abstract.html}.
+%Type = Inproceedings
+\bibitem[{Yao et~al.(2023)Yao, Yu, Zhao, Shafran, Griffiths, Cao and
+  Narasimhan}]{yao2023treeofthoughts}
+\bibinfo{author}{Yao, S.}, \bibinfo{author}{Yu, D.}, \bibinfo{author}{Zhao,
+  J.}, \bibinfo{author}{Shafran, I.}, \bibinfo{author}{Griffiths, T.L.},
+  \bibinfo{author}{Cao, Y.}, \bibinfo{author}{Narasimhan, K.},
+  \bibinfo{year}{2023}.
+\newblock \bibinfo{title}{Tree of thoughts: Deliberate problem solving with
+  large language models}, in: \bibinfo{booktitle}{Advances in Neural
+  Information Processing Systems}, pp. \bibinfo{pages}{1--12}.
+\newblock \URLprefix
+  \url{https://papers.nips.cc/paper_files/paper/2023/hash/271db9922b8d1f4dd7aaef84ed5ac703-Abstract-Conference.html}.
+%Type = Inproceedings
+\bibitem[{Ying et~al.(2019)Ying, Bourgeois, You, Zitnik and
+  Leskovec}]{ying2019gnnexplainer}
+\bibinfo{author}{Ying, R.}, \bibinfo{author}{Bourgeois, D.},
+  \bibinfo{author}{You, J.}, \bibinfo{author}{Zitnik, M.},
+  \bibinfo{author}{Leskovec, J.}, \bibinfo{year}{2019}.
+\newblock \bibinfo{title}{{GNNExplainer}: Generating explanations for graph
+  neural networks}, in: \bibinfo{booktitle}{Advances in Neural Information
+  Processing Systems}, pp. \bibinfo{pages}{1--12}.
+\newblock \URLprefix
+  \url{https://papers.nips.cc/paper/9123-gnnexplainer-generating-explanations-for-graph-neural-networks}.
+%Type = Article
+\bibitem[{Yuan and Lin(2006)}]{yuan2006group}
+\bibinfo{author}{Yuan, M.}, \bibinfo{author}{Lin, Y.}, \bibinfo{year}{2006}.
+\newblock \bibinfo{title}{Model selection and estimation in regression with
+  grouped variables}.
+\newblock \bibinfo{journal}{Journal of the Royal Statistical Society: Series B
+  (Statistical Methodology)} \bibinfo{volume}{68}, \bibinfo{pages}{49--67}.
+\newblock \DOIprefix\doi{10.1111/j.1467-9868.2005.00532.x}.
 %Type = Article
 \bibitem[{Zheng et~al.(2024)Zheng, Zhang, Ding, Zhang, Zhuang and
   Zhou}]{zheng2024processbench}
