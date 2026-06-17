@@ -1,4 +1,4 @@
-\begin{thebibliography}{67}
+\begin{thebibliography}{62}
 \expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
 \providecommand{\url}[1]{\texttt{#1}}
 \providecommand{\href}[2]{#2}
@@ -263,19 +263,6 @@
 \newblock \bibinfo{journal}{IEEE Transactions on Knowledge and Data
   Engineering} \bibinfo{volume}{36}, \bibinfo{pages}{1413--1430}.
 \newblock \DOIprefix\doi{10.1109/TKDE.2023.3310002}.
-%Type = Article
-\bibitem[{Huang et~al.(2025)Huang, Zhou, Lapata, Vougiouklis, Montella and
-  Pan}]{huang2025kglongtail}
-\bibinfo{author}{Huang, W.}, \bibinfo{author}{Zhou, G.},
-  \bibinfo{author}{Lapata, M.}, \bibinfo{author}{Vougiouklis, P.},
-  \bibinfo{author}{Montella, S.}, \bibinfo{author}{Pan, J.Z.},
-  \bibinfo{year}{2025}.
-\newblock \bibinfo{title}{Prompting large language models with knowledge graphs
-  for question answering involving long-tail facts}.
-\newblock \bibinfo{journal}{Knowledge-Based Systems} \bibinfo{volume}{324},
-  \bibinfo{pages}{113648}.
-\newblock \URLprefix \url{https://doi.org/10.1016/j.knosys.2025.113648},
-  \DOIprefix\doi{10.1016/j.knosys.2025.113648}.
 %Type = Inproceedings
 \bibitem[{Jain and Wallace(2019)}]{jain2019attention}
 \bibinfo{author}{Jain, S.}, \bibinfo{author}{Wallace, B.C.},
@@ -286,16 +273,6 @@
   \bibinfo{pages}{3543--3556}.
 \newblock \URLprefix \url{https://aclanthology.org/N19-1357/},
   \DOIprefix\doi{10.18653/v1/N19-1357}.
-%Type = Article
-\bibitem[{Jin et~al.(2024)Jin, Liu, Han, Jiang, Ji and Han}]{jin2024llmgraphs}
-\bibinfo{author}{Jin, B.}, \bibinfo{author}{Liu, G.}, \bibinfo{author}{Han,
-  C.}, \bibinfo{author}{Jiang, M.}, \bibinfo{author}{Ji, H.},
-  \bibinfo{author}{Han, J.}, \bibinfo{year}{2024}.
-\newblock \bibinfo{title}{Large language models on graphs: A comprehensive
-  survey}.
-\newblock \bibinfo{journal}{IEEE Transactions on Knowledge and Data
-  Engineering} \bibinfo{volume}{36}, \bibinfo{pages}{8622--8642}.
-\newblock \DOIprefix\doi{10.1109/TKDE.2024.3469578}.
 %Type = Techreport
 \bibitem[{Kraft(1988)}]{kraft1988software}
 \bibinfo{author}{Kraft, D.}, \bibinfo{year}{1988}.
@@ -448,18 +425,6 @@
 \newblock \bibinfo{title}{Networks: An Introduction}.
 \newblock \bibinfo{publisher}{Oxford University Press}.
 \newblock \DOIprefix\doi{10.1093/acprof:oso/9780199206650.001.0001}.
-%Type = Inproceedings
-\bibitem[{Nguyen et~al.(2024)Nguyen, Luo, Shiri, Phung, Li and
-  Vu}]{nguyen2024direct}
-\bibinfo{author}{Nguyen, T.}, \bibinfo{author}{Luo, L.},
-  \bibinfo{author}{Shiri, F.}, \bibinfo{author}{Phung, D.},
-  \bibinfo{author}{Li, Y.F.}, \bibinfo{author}{Vu, T.T.}, \bibinfo{year}{2024}.
-\newblock \bibinfo{title}{Direct evaluation of chain-of-thought in multi-hop
-  reasoning with knowledge graphs}, in: \bibinfo{booktitle}{Findings of the
-  Association for Computational Linguistics: ACL 2024}, pp.
-  \bibinfo{pages}{2862--2883}.
-\newblock \URLprefix \url{https://aclanthology.org/2024.findings-acl.168/},
-  \DOIprefix\doi{10.18653/v1/2024.findings-acl.168}.
 %Type = Book
 \bibitem[{Nocedal and Wright(2006)}]{nocedal2006numerical}
 \bibinfo{author}{Nocedal, J.}, \bibinfo{author}{Wright, S.J.},
@@ -518,15 +483,6 @@
   \bibinfo{pages}{1135--1144}.
 \newblock \URLprefix \url{https://doi.org/10.1145/2939672.2939778},
   \DOIprefix\doi{10.1145/2939672.2939778}.
-%Type = Inproceedings
-\bibitem[{Rockt{\"a}schel and Riedel(2017)}]{rocktaschel2017neural}
-\bibinfo{author}{Rockt{\"a}schel, T.}, \bibinfo{author}{Riedel, S.},
-  \bibinfo{year}{2017}.
-\newblock \bibinfo{title}{End-to-end differentiable proving}, in:
-  \bibinfo{booktitle}{Advances in Neural Information Processing Systems}, pp.
-  \bibinfo{pages}{3788--3800}.
-\newblock \URLprefix
-  \url{https://papers.nips.cc/paper_files/paper/2017/hash/b2ab001909a8a6f04b51920306046ce5-Abstract.html}.
 %Type = Article
 \bibitem[{Rubin(1974)}]{rubin1974estimating}
 \bibinfo{author}{Rubin, D.B.}, \bibinfo{year}{1974}.
@@ -545,16 +501,6 @@
   International Conference on Machine Learning}, pp.
   \bibinfo{pages}{3145--3153}.
 \newblock \URLprefix \url{https://proceedings.mlr.press/v70/shrikumar17a.html}.
-%Type = Article
-\bibitem[{Siddharth and Luo(2024)}]{siddharth2024engineeringrag}
-\bibinfo{author}{Siddharth, L.}, \bibinfo{author}{Luo, J.},
-  \bibinfo{year}{2024}.
-\newblock \bibinfo{title}{Retrieval augmented generation using engineering
-  design knowledge}.
-\newblock \bibinfo{journal}{Knowledge-Based Systems} \bibinfo{volume}{303},
-  \bibinfo{pages}{112410}.
-\newblock \URLprefix \url{https://doi.org/10.1016/j.knosys.2024.112410},
-  \DOIprefix\doi{10.1016/j.knosys.2024.112410}.
 %Type = Article
 \bibitem[{Simonyan et~al.(2014)Simonyan, Vedaldi and
   Zisserman}]{simonyan2014deep}
