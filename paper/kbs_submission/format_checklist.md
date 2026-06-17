@@ -1,5 +1,7 @@
 # KBS Format Compliance Checklist
 
+Repository-level submission status is currently `blocked_for_submission`; this checklist records package-format checks only and must not be read as a submission-ready declaration.
+
 - [x] Final upload boundary is isolated under `final_package/`.
 - [x] Required upload files are present: `cover_letter.docx`, `Highlights.docx`, `manuscript.pdf`, `supplementary.docx`, `latex_source.zip`.
 - [x] Author metadata is filled in manuscript, supplementary source, and cover letter.
@@ -8,15 +10,15 @@
 - [x] Data Availability is present and distinguishes public PRM800K from derived artifacts available on request.
 - [x] Declaration of generative AI and AI-assisted technologies is present.
 - [x] CRediT authorship contribution statement uses named authors.
-- [x] Manuscript PDF compiled from `final_source/manuscript.tex` with exit code 0.
+- [x] Manuscript PDF compiled from `final_source/manuscript.tex` after the moderate-title revision.
 - [x] Supplementary content was converted to `supplementary.docx`; reproducible source remains in `final_source/supplementary.tex` and `latex_source.zip`.
 - [x] Highlights content was converted to `Highlights.docx`.
-- [x] Manuscript page count is content-faithful to the cleanly compiled source: `manuscript.pdf` 35 pages.
+- [x] Manuscript page count is content-faithful to the cleanly compiled source after the moderate-title revision: `manuscript.pdf` 36 pages.
 - [x] Supplementary data map includes the PRM800K audit-prioritization report and summary as context-only artifacts.
-- [x] Manuscript PDF was rendered to PNG contact sheets and visually checked.
+- [ ] Manuscript PDF was rendered to PNG contact sheets and visually checked after the moderate-title revision.
 - [x] Source zip includes manuscript/supplementary LaTeX sources, bibliography, CAS files, and PNG artwork.
 - [x] Source zip excludes LaTeX auxiliary/build artifacts.
-- [x] Package verifier passes with author metadata, PDF text, and DOCX text gates:
+- [x] Package verifier passes with author metadata, PDF text, and DOCX text gates after the package refresh:
   `python scripts\verify_kbs_submission_package.py --package-dir paper\kbs_submission\final_package --require-author-metadata --require-pdf-text`
 - [x] Verifier unit tests pass:
   `pytest -q tests/test_kbs_submission_package_verifier.py`

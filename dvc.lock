@@ -1,0 +1,43 @@
+schema: '2.0'
+stages:
+  phase5:
+    cmd: python -m fma run-phase5 --config configs/demo.yaml
+    deps:
+      - path: data/synthetic_traces.jsonl
+        md5: 00000000000000000000000000000001
+    outs:
+      - path: outputs/phase5
+        md5: 00000000000000000000000000000002.dir
+  phase6:
+    cmd: python -m fma run-phase6 --input outputs/phase5/ --config configs/demo.yaml
+    deps:
+      - path: outputs/phase5
+        md5: 00000000000000000000000000000002.dir
+    outs:
+      - path: outputs/phase6
+        md5: 00000000000000000000000000000003.dir
+  phase7:
+    cmd: >
+      python scripts/run_redundancy_analysis.py
+      --structural-diagnostics outputs/phase6/structural_diagnostics.json
+      --reflection-graph outputs/phase6/reflection_graph.json
+      --necessity-scores outputs/phase5/necessity_scores.jsonl
+      --node-necessity outputs/phase6/structural_node_necessity.jsonl
+      --output-json outputs/phase7/redundancy_analysis.json
+      --output-md outputs/phase7/redundancy_analysis.md
+      --figures-dir outputs/phase7/figures
+    deps:
+      - path: outputs/phase6
+        md5: 00000000000000000000000000000003.dir
+    outs:
+      - path: outputs/phase7
+        md5: 00000000000000000000000000000004.dir
+  figures:
+    cmd: >
+      python -c "import shutil, pathlib; src = pathlib.Path('outputs/phase7/figures'); dst = pathlib.Path('outputs/figures'); dst.mkdir(parents=True, exist_ok=True); [shutil.copy(f, dst / f.name) for f in src.glob('*') if f.is_file()]"
+    deps:
+      - path: outputs/phase7
+        md5: 00000000000000000000000000000004.dir
+    outs:
+      - path: outputs/figures
+        md5: 00000000000000000000000000000005.dir

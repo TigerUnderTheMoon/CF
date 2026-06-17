@@ -17,18 +17,31 @@ c1_status: stratum_dependent
 c2_status: stratum_dependent
 c3_status: stratum_dependent
 baseline_status: integrated
-submission_status: blocked
+submission_status: blocked_for_submission
 ```
 
 ## Verdict
 
-Status: **blocked**.
+Status: **blocked_for_submission**.
 
 The Stage 2 held-out validation artifacts remain internally consistent with the supplied execution summary. They support a small aggregate FMA rank-alignment signal, not protocol-independent confirmation. C1, C2, and C3 remain `stratum_dependent` because `S_mid` and `S_rand` fail the all-strata requirement.
 
 The required baseline gate is no longer blocked by missing artifacts. `outputs/baseline_artifact_audit.md` found no hidden independent Stage 2 baseline score vectors, so random masking, span masking, graph removal, and edge dropout were evaluated with frozen conservative non-target proxy rules. All four required baselines have 840 held-out step scores and `target_leakage_status: clean`.
 
 Submission readiness remains blocked for final readiness review, citation/package completion, and claim-scope discipline. The clean proxy baselines close the missing-baseline gate but do not turn stratum-dependent Stage 2 evidence into protocol-independent confirmation.
+
+## PRM800K Stratified Decision Gate
+
+The PRM800K locked-split audit-prioritization analysis now controls the submission-status boundary for the KBS package:
+
+| Result tier | Required action |
+|---|---|
+| `strong` | Retain methodology wording only for PRM800K-like audit prioritization; do not extend to task success, PRM training, or KBS deployment. |
+| `moderate` | Weaken title/abstract to "moderate" or "preliminary real-data support"; cover letter must use the same wording. |
+| `diagnostic` | Change title to a diagnostic-framework framing; downgrade abstract, conclusion, cover letter, and package manifest. |
+| `blocked` | Set `submission_status: blocked_for_submission`; update `paper/claim_registry.md` so active empirical claims are `stratum_dependent` or `failed_validation`; do not mark the final package submission-ready; keep only an internal diagnostic package. |
+
+If the stratified analysis is unavailable, blocked, or fails the hard-stratum/simple-baseline gate, the package remains `blocked_for_submission` until the claim registry and final package are regenerated under the downgraded status.
 
 ## Artifact Paths Checked
 
@@ -90,4 +103,4 @@ Completed operational finalization items:
 
 Do **not** mark the manuscript ready for submission yet. Mark it as:
 
-> Stage 2 consistency checked; required baselines integrated as clean conservative controls; C1, C2, and C3 remain `stratum_dependent`; `submission_status` remains `blocked` pending final readiness review.
+> Stage 2 consistency checked; required baselines integrated as clean conservative controls; C1, C2, and C3 remain `stratum_dependent`; `submission_status` is `blocked_for_submission` unless the PRM800K stratified audit-prioritization gate permits a stronger package status.

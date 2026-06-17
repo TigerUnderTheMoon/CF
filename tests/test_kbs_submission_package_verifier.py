@@ -5,8 +5,8 @@ from pathlib import Path
 
 
 TITLE = (
-    "Structurally-Calibrated Functional Attribution: A Methodology for "
-    "Process Supervision Weighting in Reflective Reasoning"
+    "Structurally-Calibrated Functional Attribution for Audit Prioritization "
+    "in Knowledge-Intensive Reasoning"
 )
 
 DATA_AVAILABILITY = (
@@ -99,7 +99,8 @@ def _write_final_package(package_dir: Path) -> None:
             [
                 "Highlights",
                 TITLE,
-                "SC-FMA calibrates interventional utility into supervision weights.",
+                "SC-FMA calibrates coarse utility or proxy fidelity into auditable verification-step weights.",
+                "The PRM800K stratified readout gives moderate, preliminary support for PRM800K-like audit prioritization.",
             ]
         ),
     )

@@ -11,8 +11,8 @@ from xml.etree import ElementTree
 
 
 CURRENT_TITLE = (
-    "Structurally-Calibrated Functional Attribution: A Methodology for "
-    "Process Supervision Weighting in Reflective Reasoning"
+    "Structurally-Calibrated Functional Attribution for Audit Prioritization "
+    "in Knowledge-Intensive Reasoning"
 )
 
 DATA_AVAILABILITY = (
@@ -101,7 +101,8 @@ REQUIRED_DOCX_TEXT_SNIPPETS = {
     "Highlights.docx": (
         "Highlights",
         CURRENT_TITLE,
-        "SC-FMA calibrates interventional utility into supervision weights.",
+        "SC-FMA calibrates coarse utility or proxy fidelity into auditable verification-step weights.",
+        "moderate, preliminary support for PRM800K-like audit prioritization",
     ),
     "supplementary.docx": (
         "Supplementary Material",

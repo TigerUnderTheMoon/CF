@@ -1,4 +1,4 @@
-\begin{thebibliography}{64}
+\begin{thebibliography}{67}
 \expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
 \providecommand{\url}[1]{\texttt{#1}}
 \providecommand{\href}[2]{#2}
@@ -263,6 +263,19 @@
 \newblock \bibinfo{journal}{IEEE Transactions on Knowledge and Data
   Engineering} \bibinfo{volume}{36}, \bibinfo{pages}{1413--1430}.
 \newblock \DOIprefix\doi{10.1109/TKDE.2023.3310002}.
+%Type = Article
+\bibitem[{Huang et~al.(2025)Huang, Zhou, Lapata, Vougiouklis, Montella and
+  Pan}]{huang2025kglongtail}
+\bibinfo{author}{Huang, W.}, \bibinfo{author}{Zhou, G.},
+  \bibinfo{author}{Lapata, M.}, \bibinfo{author}{Vougiouklis, P.},
+  \bibinfo{author}{Montella, S.}, \bibinfo{author}{Pan, J.Z.},
+  \bibinfo{year}{2025}.
+\newblock \bibinfo{title}{Prompting large language models with knowledge graphs
+  for question answering involving long-tail facts}.
+\newblock \bibinfo{journal}{Knowledge-Based Systems} \bibinfo{volume}{324},
+  \bibinfo{pages}{113648}.
+\newblock \URLprefix \url{https://doi.org/10.1016/j.knosys.2025.113648},
+  \DOIprefix\doi{10.1016/j.knosys.2025.113648}.
 %Type = Inproceedings
 \bibitem[{Jain and Wallace(2019)}]{jain2019attention}
 \bibinfo{author}{Jain, S.}, \bibinfo{author}{Wallace, B.C.},
@@ -533,6 +546,16 @@
   \bibinfo{pages}{3145--3153}.
 \newblock \URLprefix \url{https://proceedings.mlr.press/v70/shrikumar17a.html}.
 %Type = Article
+\bibitem[{Siddharth and Luo(2024)}]{siddharth2024engineeringrag}
+\bibinfo{author}{Siddharth, L.}, \bibinfo{author}{Luo, J.},
+  \bibinfo{year}{2024}.
+\newblock \bibinfo{title}{Retrieval augmented generation using engineering
+  design knowledge}.
+\newblock \bibinfo{journal}{Knowledge-Based Systems} \bibinfo{volume}{303},
+  \bibinfo{pages}{112410}.
+\newblock \URLprefix \url{https://doi.org/10.1016/j.knosys.2024.112410},
+  \DOIprefix\doi{10.1016/j.knosys.2024.112410}.
+%Type = Article
 \bibitem[{Simonyan et~al.(2014)Simonyan, Vedaldi and
   Zisserman}]{simonyan2014deep}
 \bibinfo{author}{Simonyan, K.}, \bibinfo{author}{Vedaldi, A.},
@@ -633,6 +656,16 @@
   Information Processing Systems}, pp. \bibinfo{pages}{2319--2328}.
 \newblock \URLprefix
   \url{https://papers.nips.cc/paper_files/paper/2017/hash/0e55666a4ad822e0e34299df3591d979-Abstract.html}.
+%Type = Article
+\bibitem[{Yang et~al.(2025)Yang, Some, Bain and Kang}]{yang2025kbllmsurvey}
+\bibinfo{author}{Yang, W.}, \bibinfo{author}{Some, L.}, \bibinfo{author}{Bain,
+  M.}, \bibinfo{author}{Kang, B.}, \bibinfo{year}{2025}.
+\newblock \bibinfo{title}{A comprehensive survey on integrating large language
+  models with knowledge-based methods}.
+\newblock \bibinfo{journal}{Knowledge-Based Systems} \bibinfo{volume}{318},
+  \bibinfo{pages}{113503}.
+\newblock \URLprefix \url{https://doi.org/10.1016/j.knosys.2025.113503},
+  \DOIprefix\doi{10.1016/j.knosys.2025.113503}.
 %Type = Inproceedings
 \bibitem[{Yao et~al.(2023)Yao, Yu, Zhao, Shafran, Griffiths, Cao and
   Narasimhan}]{yao2023treeofthoughts}

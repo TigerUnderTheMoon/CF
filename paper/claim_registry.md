@@ -35,6 +35,7 @@ Purpose: this file is the manuscript claim contract for the SC-FMA methodologica
 - `M_PRM_BASELINE_CONTEXT` must remain context-only while PRM800K overlap risk is known or unresolved. It cannot be upgraded to external PRM generalization without a clean non-overlap audit and an independently preregistered external benchmark.
 - All diagnostic claims (`C_*`) are retained as motivation for the SC-FMA methodology but are not themselves the primary contribution.
 - The methodological claims (`M_*`) constitute the current paper's contribution.
+- If PRM800K stratified analysis is blocked, then every active empirical claim used in the KBS package must be downgraded to `stratum_dependent` or `failed_validation`, and the final package must not be labeled submission-ready.
 
 ## Legacy Route Status
 
