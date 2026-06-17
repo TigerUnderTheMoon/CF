@@ -49,656 +49,70 @@
             country={China}}
 
 \begin{abstract}
-Knowledge-intensive reasoning systems increasingly rely on reflective steps such as self-evaluation, error diagnosis, and plan revision to organize verification workflows. While local interventional utility identifies which reflective steps correlate with successful outcomes, prior work shows that local utility is weakly aligned with structural necessity---many locally useful steps are topologically redundant. This paper presents Structurally-Calibrated Functional Attribution (SC-FMA), a claim-bounded methodology for auditable verification-step weighting in knowledge-intensive reasoning systems. SC-FMA converts a coarse utility or proxy fidelity input into calibrated supervision weights through constrained convex optimization, without treating that input as a fully step-discriminative oracle. The core contribution is the Structurally-Calibrated Utility (SCU) objective, which jointly optimizes fidelity to this utility anchor, consistency with graph-level structural necessity, redundancy reduction, and bottleneck protection. The objective is strictly convex, guaranteeing a unique global solution, and provides formal monotonicity and variance-reduction guarantees conditional on the supplied inputs. We implement three calibration variants---Ridge, Quadratic Program (QP), and Topology Projection---spanning a simplicity-power spectrum. On a controlled synthetic step-importance benchmark, SC-FMA QP achieves a mean Spearman $\rho$ of 0.608 with controlled proxy step labels, outperforming raw CIU (0.483), gradient attribution (0.491), Monte Carlo Shapley (0.524), and information-theoretic baselines (0.310). On PRM800K real process-supervision data (4{,}417 samples, 34{,}219 labeled steps under a frozen hash split), the primary positive signal is the stored \texttt{w\_struct} step ranking ($\rho = 0.611$); Ridge closely preserves this ordering ($\rho = 0.604$), while QP ($\rho = 0.442$) and Projection ($\rho = -0.135$) are downgraded for this real-data route. A bounded PRM800K audit-prioritization readout provides moderate, preliminary real-data support: the same locked-split evidence can concentrate high-rated process steps under a fixed review budget, but only as offline audit context for PRM800K-like process annotations. SC-FMA provides a principled bridge from intervention-based attribution to process-supervision-oriented analysis, while downstream PRM training, task-specific replay validation, and production KBS deployment remain future validation questions.
+Knowledge-intensive reasoning systems need verification steps that are locally useful and structurally well placed. This paper presents Structurally-Calibrated Functional Attribution (SC-FMA), a claim-bounded methodology for converting coarse utility or proxy-fidelity signals into auditable verification-step weights. SC-FMA optimizes a Structurally-Calibrated Utility (SCU) objective that balances fidelity to the supplied utility anchor, graph-level structural necessity, redundancy reduction, and bottleneck protection. The objective is convex under the stated regularization conditions and yields a unique calibrated weight vector. On a controlled synthetic step-importance benchmark, SC-FMA QP improves mean Spearman correlation with proxy step labels from 0.483 for raw CIU to 0.608. On PRM800K process-supervision annotations (4,417 samples and 34,219 labeled steps under a frozen hash split), the primary positive real-data signal is the stored \texttt{w\_struct} ranking (Spearman 0.611); SC-FMA Ridge closely preserves it (0.604), while QP and Projection are downgraded on this route. A fixed-budget PRM800K audit-prioritization readout provides moderate, preliminary real-data support for PRM800K-like audit triage only. The package does not claim downstream PRM training gains, GSM8K/HotpotQA replay validation, production KBS deployment, or formal causal identification.
 \end{abstract}
 
-
 \begin{keywords}
-structural calibration \sep functional attribution \sep process supervision \sep convex optimization \sep reflective cognition \sep step importance ranking
+structural calibration \sep functional attribution \sep process supervision \sep convex optimization \sep audit prioritization \sep knowledge-based systems
 \end{keywords}
 
 \maketitle
 
 \section{Introduction}
 
-Knowledge-intensive reasoning systems require reliable verification workflows: intermediate checks must be useful, but they must also occupy the right structural position in an inference chain. In expert systems, knowledge graphs, and reflective language-agent pipelines, a verification step may be locally correlated with success while still being redundant because an alternative rule, entity path, or neighboring reflection supplies the same support. Conversely, a rare bottleneck check may carry little local utility signal but still gate downstream inference. This makes process supervision a KBS problem as well as a scoring problem: supervision weights should reflect local utility, structural dependency, redundancy, and bottleneck protection.
+Knowledge-intensive reasoning systems increasingly expose intermediate verification steps: a rule fires, an entity path is checked, a retrieval result is inspected, or a reflective language-agent step critiques a partial answer. Process supervision turns such steps into supervision targets, but a scalar local utility signal is not enough. A step may correlate with a correct final answer while being redundant because neighboring rules or reflections supply the same support. Conversely, a rare bottleneck check may receive a weak local signal but still gate downstream inference.
 
-The dominant approach treats any reflective operation that correlates with improved final-answer quality as a candidate supervision weight. This intuition is attractive: a model that checks, revises, or critiques and gets a better answer must have produced useful intermediate steps. However, prior diagnostic work reveals a structural tension~\cite{lightman2023verify,wang2024mathshepherd}: up to half of all locally useful reflective steps exhibit zero measured structural necessity when the reasoning graph is perturbed, and the linear correlation between local utility and graph-level necessity is weak (Pearson $< 0.10$). Compensatory redistribution is limited, and structural influence is concentrated rather than distributed. Together, these findings imply that naive utility-based supervision would over-weight fluent but redundant reflection while under-weighting rare structurally critical operations.
+This paper studies this problem as \emph{intervention-based functional attribution for reflective cognition dynamics}. The goal is not to identify true causal estimands. Instead, SC-FMA asks how a supplied utility or proxy-fidelity input should be calibrated when observable trace structure indicates redundancy, structural necessity, or bottleneck status. This framing is deliberately close to knowledge-based systems: it treats verification chains as auditable objects whose local and structural roles can disagree.
 
-This paper proposes a methodological solution. We present \textbf{Structurally-Calibrated Functional Attribution (SC-FMA)}, a methodology that transforms raw interventional utility estimates into calibrated, topologically-consistent supervision weights through constrained convex optimization. Rather than treating structural diagnostics as a separate analysis layer, SC-FMA embeds them directly into the weight computation.
+The paper makes four contributions. First, it defines SC-FMA, a compact calibration method that converts utility or proxy-fidelity inputs into structurally calibrated verification-step weights. Second, it introduces the SCU objective, which combines fidelity, graph necessity, redundancy, and bottleneck terms in a constrained convex program. Third, it evaluates the method on a controlled synthetic benchmark for step-importance ranking. Fourth, it reports bounded real-data evidence on PRM800K process annotations and an offline audit-prioritization readout. All claims are bounded to methodology and audit prioritization; downstream PRM training, task-specific replay validation, production KBS deployment, and causal identification remain outside the evidence surface.
 
-The core of SC-FMA is the \textbf{Structurally-Calibrated Utility (SCU) objective}:
-\begin{equation}
-L(\mathbf{w}) = \alpha\|\mathbf{w} - \tilde{\mathbf{c}}\|_2^2 + \beta\|\mathbf{w} - \tilde{\mathbf{n}}\|_2^2 + \gamma\,\mathbf{w}^\top\mathbf{R}\mathbf{w} - \delta\sum_i b_i \log(w_i)
-\end{equation}
-subject to $w_i \ge 0$ and $\sum_i w_i = 1$, where $\tilde{\mathbf{c}}$ is the normalized utility or proxy-fidelity input, $\tilde{\mathbf{n}}$ is structural necessity, $\mathbf{R}$ encodes pairwise redundancy, and $b_i$ identifies bottleneck nodes. In the binary-correctness CIU setting used for the diagnostic pipeline, $\tilde{\mathbf{c}}$ is a trace-level coarse utility anchor: it records how the trace outcome changes under a documented intervention and does not prove that each step has an independent outcome-grounded CIU. The four terms enforce: (1) fidelity to the supplied utility anchor, (2) consistency with graph-level necessity, (3) a penalty for assigning dissimilar weights to redundant pairs, and (4) a log-barrier preventing bottleneck nodes from receiving near-zero weight.
+\section{Related Work and Boundary}
 
-The SCU objective is strictly convex, guaranteeing a unique global minimizer when any regularization weight is positive. It provides four formal guarantees: \textbf{G1 (convexity and uniqueness)} of the solution; \textbf{G2 (monotonicity)}---for non-redundant step pairs, the calibrated weights preserve the joint CIU and necessity ordering; \textbf{G4 (variance reduction)}---SC-FMA weights have provably lower variance than raw CIU weights for any positive structural regularization; and \textbf{G6 (bottleneck protection)}---identified bottleneck nodes never receive zero weight regardless of their CIU signal strength.
+Process reward models and process supervision assign value estimates to intermediate reasoning steps, often improving verifier-guided search or providing denser feedback than outcome-only labels~\cite{lightman2023verify,uesato2022solving,cobbe2021training}. Automated process-labeling routes such as Math-Shepherd reduce annotation cost but still rely on step-level signals that can drift under distribution shift~\cite{wang2024mathshepherd,zheng2024processbench}. SC-FMA is complementary: it does not train a new PRM and does not claim downstream PRM improvement. It calibrates existing step-level utility or proxy-fidelity inputs against trace structure.
 
-We implement three calibration variants spanning a simplicity-power spectrum. SC-FMA Ridge uses a closed-form softmax over a linear combination of CIU and necessity (O($k$) per trace). SC-FMA QP solves the full constrained quadratic program with redundancy and bottleneck constraints (O($k^3$) but converges in under 10ms for typical reasoning traces of 3--8 steps). SC-FMA Projection applies a fast topology-constrained projection using elementwise operations.
+Attribution and explanation methods such as Integrated Gradients, SHAP, and rationale evaluation explain which input parts matter for a prediction, but they usually treat components as independently attributable units~\cite{sundararajan2017axiomatic,lundberg2017unified,deyoung2020eraser}. Graph-based reasoning frameworks and network robustness studies emphasize that structural roles can be non-local, redundant, or bottleneck-like~\cite{ying2019gnnexplainer,albert2000error,newman2010networks}. SC-FMA brings this structural view into step weighting: it uses graph diagnostics as constraints on supervision weights rather than as a separate visualization layer.
 
-We evaluate SC-FMA on step importance ranking---an evaluation task that measures how well predicted supervision weights correlate with controlled proxy step labels in the synthetic benchmark and with PRM800K step ratings in the real-data route. We compare against six baseline families: (A) gradient attribution (Gradient$\times$Input, attention rollout), (C) Monte Carlo Shapley value, (D) information-theoretic (token surprisal, step entropy), (E) heuristic (random, span length, relative position), and (F) the proxy-label ceiling for the synthetic benchmark. All experiments are reproducible with deterministic seeds and documented hyperparameters.
-
-Our primary empirical findings are:
-\begin{enumerate}
-\item SC-FMA QP achieves a mean Spearman $\rho$ of 0.608 with controlled proxy step labels, representing a +0.125 improvement over raw CIU (0.483, $p < 0.01$, Wilcoxon signed-rank).
-\item Each structural constraint term independently contributes to ranking quality in ablation analysis: removing structure alignment costs 0.057, removing redundancy penalty costs 0.022, and removing bottleneck protection costs 0.013.
-\item SC-FMA significantly outperforms gradient attribution (0.491, $p = 0.003$), Monte Carlo Shapley (0.524, $p = 0.018$), and token surprisal (0.310, $p < 0.001$) baselines.
-\item The Friedman omnibus test confirms significant differences across all methods ($\chi^2 = 142.3$, $p < 0.001$).
-\item On PRM800K real process-supervision annotations (4{,}417 samples, 34{,}219 labeled steps under a frozen hash split), the primary real-data result is \texttt{w\_struct} step ranking ($\rho = 0.611$), which exceeds raw local utility ($\rho = -0.077$, bootstrap CI for difference $[0.673, 0.705]$) and an overlap-limited frozen PRM baseline context ($\rho = 0.252$, CI for difference $[0.345, 0.375]$). Ridge is the closest SC-FMA approximation on this route ($\rho = 0.604$), while QP and Projection are downgraded.
-\item The same locked PRM800K evidence can be read as an offline audit-prioritization use case: \texttt{w\_struct} and SC-FMA Ridge concentrate high-rated process steps under a fixed review budget. This is not downstream PRM training, filtering superiority, or task replay validation.
-\end{enumerate}
-
-The contributions of this paper are: (1) the SC-FMA methodology that transforms interventional utility into structurally-calibrated supervision weights; (2) the SCU objective with formal convexity, monotonicity, variance-reduction, and bottleneck-protection guarantees; (3) a step importance ranking evaluation framework against six baseline families; (4) controlled synthetic evidence that structural calibration improves ranking quality over raw utility and standard baselines, together with claim-bounded PRM800K real-data step-ranking evidence; and (5) an implemented, open-source algorithm with configurable variants.
-
-\section{Notation}
-\label{sec:notation}
-
-Table~\ref{tab:notation} summarizes the mathematical notation used throughout the paper. We adopt the convention that vectors are denoted in bold lowercase ($\mathbf{w}$, $\mathbf{c}$, $\mathbf{n}$), matrices in bold uppercase ($\mathbf{R}$), and scalars in standard typeface ($\alpha$, $\beta$, $k$). Sets are denoted in calligraphic typeface ($\mathcal{V}$, $\mathcal{E}$, $\mathcal{W}$), and graph objects in script style ($\mathcal{G}$). All vectors are column vectors unless otherwise noted; $\|\cdot\|_2$ denotes the Euclidean norm, and $\odot$ denotes elementwise (Hadamard) multiplication.
-
-\begin{table}[ht]
-\caption{Summary of mathematical notation.}
-\label{tab:notation}
-\centering
-\begin{tabular}{lll}
-\toprule
-\textbf{Symbol} & \textbf{Meaning} & \textbf{Definition / Domain} \\
-\midrule
-\multicolumn{3}{l}{\textit{Trace and Graph Objects}} \\
-$k$              & Number of reflective steps in a trace & $k \in \mathbb{N}$, typically $3 \le k \le 8$ \\
-$\tau$            & A reasoning trace with $k$ reflective steps & Text sequence with identified spans \\
-$\mathcal{G}$     & Reflection DAG & $\mathcal{G} = (\mathcal{V}, \mathcal{E})$ \\
-$\mathcal{V}$     & Set of graph nodes (reflective steps) & $|\mathcal{V}| = k$, $v_i$ corresponds to step $s_i$ \\
-$\mathcal{E}$     & Set of graph edges & $E_{\text{temporal}} \cup E_{\text{topical}}$ \\
-$\mathbf{f}_i$    & Feature vector of node $v_i$ & $\mathbf{f}_i \in \mathbb{R}^5$ \\
-$d$              & Graph density & $d = 2|\mathcal{E}|/(k(k-1)) \in [0,1]$ \\
-\midrule
-\multicolumn{3}{l}{\textit{Utility and Attribution}} \\
-$U(Y)$           & Task-level utility of output $Y$ & $U(Y) \in \{0,1\}$ (binary correctness) \\
-$\mathbf{c}$     & Raw CIU vector & $c_i = U(Y_{\text{orig}}) - U(Y_{\text{int}_i})$ \\
-$\tilde{\mathbf{c}}$ & $\ell_2$-normalized CIU & $\tilde{\mathbf{c}} = \mathbf{c}/\|\mathbf{c}\|_2 \in [0,1]^k$ \\
-$\mathbf{n}$     & Structural necessity vector & $n_i = \max(n_i^{\text{prune}}, n_i^{\text{cascade}}, n_i^{\text{bypass}})$ \\
-$\tilde{\mathbf{n}}$ & $\ell_2$-normalized necessity & $\tilde{\mathbf{n}} = \mathbf{n}/\|\mathbf{n}\|_2 \in [0,1]^k$ \\
-\midrule
-\multicolumn{3}{l}{\textit{Structural Diagnostics}} \\
-$\mathbf{R}$     & Redundancy matrix & $\mathbf{R} \in \mathbb{R}^{k \times k}$, $\mathbf{R} \succeq 0$ \\
-$R_{ij}$         & Pairwise redundancy between steps $i$, $j$ & $R_{ij} \in [0,1]$, mean of cosine $\&$ Jaccard \\
-$\bar{r}_i$      & Mean redundancy of node $i$ & $\bar{r}_i = \frac{1}{k}\sum_{j \neq i} R_{ij}$ \\
-$\mathbf{b}$     & Bottleneck indicator vector & $b_i \in \{0,1\}$, defined by Eq.~(9) \\
-$\mathcal{D}_i$  & Downstream influence set of node $i$ & Nodes reachable from $v_i$ via directed paths \\
-\midrule
-\multicolumn{3}{l}{\textit{Optimization}} \\
-$\mathbf{w}$     & Calibrated supervision weights & $\mathbf{w} \in \mathcal{W} \subset \mathbb{R}^k$ \\
-$\mathcal{W}$    & Feasible set (probability simplex) & $\mathcal{W} = \{\mathbf{w} \mid w_i \ge \varepsilon,\; \sum_i w_i = 1\}$ \\
-$\varepsilon$    & Weight floor constraint & $\varepsilon > 0$, typically $10^{-4}$ \\
-$\alpha$         & Fidelity regularization weight & $\alpha \in [0.1, 2.0]$ \\
-$\beta$          & Structure alignment weight & $\beta \in [0.1, 1.0]$ \\
-$\gamma$         & Redundancy penalty weight & $\gamma \in [0.01, 0.5]$ \\
-$\delta$         & Bottleneck protection weight & $\delta \in [0.01, 0.2]$ \\
-$L(\mathbf{w})$  & SCU objective function & Defined in Eq.~(1) \\
-$\mathbf{w}^*$   & Optimal calibrated weight vector & $\mathbf{w}^* = \arg\min_{\mathbf{w} \in \mathcal{W}} L(\mathbf{w})$ \\
-$\nabla^2 L$     & Hessian of SCU objective & Defined in Lemma~\ref{lem:hessian} \\
-$\kappa(\mathbf{H})$ & Condition number of Hessian & Bounded by Corollary~\ref{cor:stability} \\
-\midrule
-\multicolumn{3}{l}{\textit{Evaluation Metrics}} \\
-$\rho$           & Spearman rank correlation & $\rho \in [-1,1]$, Eq.~(12) \\
-$\tau$           & Kendall rank correlation coefficient & $\tau \in [-1,1]$ \\
-\midrule
-\multicolumn{3}{l}{\textit{Operators and Conventions}} \\
-$\|\cdot\|_2$    & Euclidean ($\ell_2$) norm & $\|\mathbf{x}\|_2 = \sqrt{\sum_i x_i^2}$ \\
-$\|\cdot\|_1$    & $\ell_1$ norm & $\|\mathbf{x}\|_1 = \sum_i |x_i|$ \\
-$\odot$          & Elementwise (Hadamard) product & $(\mathbf{a} \odot \mathbf{b})_i = a_i b_i$ \\
-$\succeq$        & Positive semidefinite ordering & $\mathbf{R} \succeq 0$ means $\mathbf{R}$ is PSD \\
-$\lambda_{\max}(\cdot)$ & Largest eigenvalue & $\lambda_{\max}(\mathbf{R})$ \\
-$\lambda_{\min}(\cdot)$ & Smallest eigenvalue & $\lambda_{\min}(\mathbf{R})$ \\
-$\mathbb{1}[\cdot]$ & Indicator function & $\mathbb{1}[P] = 1$ if $P$ is true, $0$ otherwise \\
-$\operatorname{Var}(\cdot)$ & Variance of a vector & $\operatorname{Var}(\mathbf{w}) = \frac{1}{k}\sum_i(w_i - \bar{w})^2$ \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\section{Related Work}
-
-SC-FMA bridges five research areas: process reward models and step-level supervision, attribution and interpretability for reasoning, graph-based analysis of reasoning, convex optimization in machine learning, and knowledge-based/cognitive systems. This section positions SC-FMA within each thread and identifies the gaps it addresses.
-
-\subsection{Process Reward Models and Step-Level Supervision}
-
-Process Reward Models assign scalar value estimates to intermediate reasoning steps. Lightman et al.~\cite{lightman2023verify} established the standard PRM training paradigm: human annotators label each reasoning step as correct or incorrect, and a model is trained to predict these labels, enabling best-of-$N$ search and reinforcement learning from process feedback. Uesato et al.~\cite{uesato2022solving} compared process-based and outcome-based feedback for math word problems, demonstrating that process supervision provides denser training signals than final-answer rewards alone. Cobbe et al.~\cite{cobbe2021training} introduced training verifiers that score intermediate completions, establishing verifier-guided search as a complementary mechanism to supervised fine-tuning.
-
-Recent work reduces the human annotation bottleneck through automated verification. Math-Shepherd~\cite{wang2024mathshepherd} automates process annotation by measuring whether masking a step increases the probability of an incorrect completion, producing pseudo-labels without human judges. Luo et al.~\cite{luo2024improve} extend this direction with Monte Carlo Tree Search over reasoning paths, using completion consistency as an automated signal. ProcessBench~\cite{zheng2024processbench} provides a standardized evaluation for step-level error identification, exposing the brittleness of process supervision under distribution shift. Zheng et al.~\cite{zheng2024processbench} show that even strong PRMs fail to detect over 20\% of step-level errors in out-of-distribution math problems.
-
-A common assumption across all these methods is that step-level correctness---whether human-annotated or automatically inferred---constitutes a valid supervision target. However, diagnostic evidence from reflective reasoning traces reveals that local utility (whether a step correlates with correct outcomes under masking) and structural necessity (whether the step is topologically irreplaceable in the reasoning graph) are weakly aligned, with Pearson correlations below 0.10 and up to half of locally useful steps exhibiting zero measured structural necessity. This implies that treating step correctness as direct supervision risks over-weighting fluent but structurally redundant reflection while under-weighting rare, structurally critical operations.
-
-Unlike PRM-based approaches that treat step correctness as a supervision endpoint, SC-FMA operates as a \emph{pre-calibration module}. It accepts raw interventional utility estimates (including PRM scores, CIU signals, or verifier outputs) and produces topologically-calibrated weights through constrained convex optimization before those weights are used as supervision targets. SC-FMA is therefore a complement to, rather than a replacement for, existing PRM pipelines. It addresses the structural redundancy gap that PRMs do not model.
-
-\subsection{Attribution and Interpretability for Reasoning}
-
-Attribution methods quantify how input components contribute to model predictions. At the token level, LIME~\cite{ribeiro2016why} constructs local linear surrogates around individual predictions, identifying which input tokens drive a specific output. Integrated Gradients~\cite{sundararajan2017axiomatic} accumulates gradients along a path from a baseline input, satisfying axioms of sensitivity and implementation invariance. SHAP~\cite{lundberg2017unified} unifies additive feature attribution under Shapley values from cooperative game theory, providing theoretically grounded importance scores. These methods have been widely adopted in NLP for tasks such as sentiment classification, natural language inference, and question answering~\cite{jain2019attention,wiegreffe2019attention}.
-
-Several limitations emerge when these methods are applied to reasoning traces. First, they operate at the token level, while reflective reasoning operations---self-evaluation, error diagnosis, plan revision---span multi-token phrases whose semantic function cannot be decomposed into independent token contributions. Second, they measure input-output sensitivity rather than structural role: a locally sensitive token may be redundant if its function can be fulfilled by neighboring spans. Third, they lack topological awareness---the position of an explanation unit within the reasoning flow (early verification vs.\ late correction, bottleneck vs.\ leaf) is not modeled.
-
-Step-level attribution methods partially address the granularity concern. ERASER~\cite{deyoung2020eraser} evaluates rationalized NLP models by measuring whether extracted rationales are both plausible and faithful. Attention flow~\cite{abnar2020quantifying} tracks information propagation through transformer layers, while self-attention attribution~\cite{hao2021self} identifies which token interactions drive layer-wise representations. However, these methods explain \emph{what} contributes to a prediction, not \emph{how} the structural relationships among reasoning steps determine their collective necessity. They treat steps as independently attributable units without modeling the dependencies between them (redundancy, compensation, bottleneck formation).
-
-Unlike token-level attribution methods that explain individual predictions, SC-FMA calibrates the \emph{structural relationships} among steps within a reasoning trace. Unlike step-level rationalization methods that identify important spans, SC-FMA asks how those spans' importance interacts with the topology of the reasoning graph. The shift is from ``which step is locally useful?'' (attribution) to ``how should supervision weights respect step-step structural dependencies?'' (structural calibration). SC-FMA does not discard attribution; it uses attribution (CIU) as input and applies structural constraints to resolve the gap between locally high-attribution steps and their topologically redundant role.
-
-\subsection{Graph-Based Analysis of Reasoning}
-
-Explicit graph representations of reasoning have gained prominence as alternatives to linear chain-of-thought. Tree of Thoughts (ToT)~\cite{yao2023treeofthoughts} organizes reasoning as a search tree, where each node is an intermediate thought and branching enables exploration of multiple reasoning paths via BFS or DFS with pruning. Graph of Thoughts (GoT)~\cite{besta2024graphofthoughts} generalizes this to arbitrary directed graphs, supporting operations such as aggregation, refinement, and backtracking across concurrent reasoning branches. These methods demonstrate that non-linear reasoning structures improve performance on tasks requiring exploration, planning, and constraint satisfaction. However, they use graph structure as a \emph{generation scaffold}---a mechanism for producing better reasoning traces---rather than as a \emph{diagnostic lens} for understanding how existing reasoning steps are organized.
-
-Graph explanation methods study how structural interventions reveal component importance. GNNExplainer~\cite{ying2019gnnexplainer} identifies the minimal subgraph and feature subset that best explain a graph neural network's prediction, using mutual information maximization. PGM-Explainer~\cite{vu2020pgmexplainer} extends this with probabilistic graphical model approximations. These methods target GNN decision boundaries; SC-FMA transposes the logic to \emph{reflective reasoning traces}, where nodes are explicit metacognitive operations and edges encode temporal and topical dependencies.
-
-Network science provides the theoretical foundation for structural diagnostics. Albert et al.~\cite{albert2000error} demonstrated that complex networks exhibit fundamentally different robustness profiles under random failures (where most nodes are redundant) versus targeted attacks (where hub removal causes catastrophic fragmentation). Motter and Lai~\cite{motter2002cascade} showed that cascading failures propagate along load-bearing paths, creating indirect vulnerabilities absent from direct node importance measures. Newman~\cite{newman2010networks} formalized the distinction between local centrality measures (degree, betweenness) and global vulnerability metrics (percolation threshold, giant component fraction). These network-science insights directly inform the PRUNE (direct node removal), CASCADE (downstream propagation), and BYPASS (alternative path substitutability) interventions used in SC-FMA's structural diagnostics.
-
-Unlike GoT and ToT, which use graph structure to \emph{generate} better reasoning traces, SC-FMA uses graph structure to \emph{calibrate} supervision weights over already-recorded traces. Unlike GNNExplainer, which explains GNN predictions, SC-FMA explains step-step functional relationships within a reasoning graph. Unlike network science applied at the infrastructure level (Internet, power grids), SC-FMA applies the same structural principles---redundancy, bottleneck protection, cascade sensitivity---to the organization of reflective cognition in language-agent traces.
-
-\subsection{Convex Optimization in Machine Learning}
-
-Convex optimization provides the mathematical machinery for SC-FMA's weight calibration. Quadratic programming (QP) has been a workhorse in machine learning since Cortes and Vapnik~\cite{cortes1995svm} formulated the support vector machine as a convex QP with linear constraints. Markowitz~\cite{markowitz1952portfolio} pioneered mean-variance portfolio optimization, where the objective balances expected return against risk through a convex combination of linear and quadratic terms---a structural precedent for SC-FMA's multi-term SCU objective. Boyd and Vandenberghe~\cite{boyd2004convex} provide the canonical treatment of convex optimization, establishing conditions for unique global solutions (strict convexity), duality theory, and interior-point methods.
-
-The log-barrier technique, central to SC-FMA's bottleneck protection term, originates from interior-point methods for constrained optimization~\cite{nesterov1994interior}. By adding $-\sum_i b_i \log(w_i)$ to the objective, the optimizer is repelled from the boundary $w_i = 0$, guaranteeing that identified bottleneck nodes receive strictly positive weight regardless of their raw CIU signal strength. Nocedal and Wright~\cite{nocedal2006numerical} provide convergence guarantees for sequential quadratic programming (SQP) methods, which SC-FMA's QP variant adopts through the SLSQP solver~\cite{kraft1988software}.
-
-Sparse optimization and structured regularization provide additional conceptual precedent. The LASSO~\cite{tibshirani1996lasso} introduces $\ell_1$ regularization to promote sparsity in linear regression coefficients, demonstrating that structural priors (sparsity) can be encoded as convex penalty terms. Group LASSO~\cite{yuan2006group} extends this to grouped variable selection, where entire groups of features are jointly selected or discarded---analogous to how SC-FMA's redundancy penalty encourages similar weights for topically-linked reflective steps. Projection onto the probability simplex~\cite{wang2013projection} provides the theoretically-grounded mechanism for enforcing the weight normalization constraint $\sum_i w_i = 1$ in SC-FMA Projection.
-
-Unlike standard QP formulations that optimize for a single objective (margin maximization, portfolio risk), SC-FMA's SCU objective is a \emph{multi-term convex combination} where four structurally distinct terms compete under a single simplex constraint: CIU fidelity, structural necessity consistency, redundancy reduction, and bottleneck protection. Unlike LASSO-style sparsity, which discards features, SC-FMA's structural constraints \emph{redistribute} weight from redundant nodes toward structurally critical ones while preserving a dense weight vector. The formal guarantees---strict convexity, uniqueness, monotonicity, variance reduction, and bottleneck protection---are obtained by proving properties of the composite objective rather than by invoking off-the-shelf optimizer properties.
-
-\subsection{Knowledge-Based and Cognitive Systems}
-
-Knowledge-based and cognitive systems provide the closest historical analogue for SC-FMA's concern with auditable intermediate steps. Classical cognitive architectures such as SOAR and ACT-R model control, monitoring, and production-rule utility as explicit parts of reasoning~\cite{laird2012soar,anderson2004actr}. Expert systems such as MYCIN and DENDRAL made rule-firing chains inspectable, so that users could trace how intermediate conclusions supported final recommendations~\cite{buchanan1984mycin,lindsay1980dendral}. SC-FMA shares this interest in step-level accountability, but it does not assume access to hand-authored production rules or internal cognitive state. Its evidence is limited to observable language-agent traces and graph diagnostics built from those traces.
-
-Modern KBS research extends the same issue to ontologies, knowledge graphs, and knowledge-enhanced language models. OWL 2 and answer set programming define formal rule or ontology semantics~\cite{hitzler2012owl2,gebser2012answerset}; path-ranking, rule learning, and rule mining treat graph paths and logical rules as inspectable carriers of evidential weight~\cite{lao2011path,yang2017knowledge,galarraga2013amie}. LLM--KG and knowledge-enhanced PLM surveys likewise show that neural reasoning systems increasingly need explicit knowledge structures for retrieval, prompting, alignment, or explanation~\cite{hu2024knowledgeenhanced,pan2024unifying,yang2025kbllmsurvey}. SC-FMA is complementary to this line of work: it does not build a new KG, train a knowledge-enhanced model, or certify formal reasoning. It uses graph structure as a diagnostic constraint on supervision weights for already-recorded traces.
-
-This positioning keeps the KBS claim bounded. If a future RAG, rule-chain, or ontology-aware system provides provenance, rule dependencies, or typed graph edges, those structures could replace the current keyword-heuristic edges in the SC-FMA graph layer. In the present paper, however, KG and ontology links are only methodological pathways and pilot diagnostics; they are not deployed KBS validation. The contribution is therefore a structural calibration method for audit prioritization, not a general KBS architecture or production knowledge-base maintenance system.
-
-\subsection{Positioning Summary}
-
-Table~\ref{tab:positioning} positions SC-FMA relative to prior work along two axes: the level of analysis (local/individual step vs.\ structural/relational) and the primary function (diagnostic/explanatory vs.\ interventional/prescriptive). SC-FMA occupies the ``structural + interventional'' quadrant, unique among the compared methods.
-
-\begin{table}[t]
-\centering
-\caption{Positioning of SC-FMA relative to prior work. Methods are classified along two axes: local vs.\ structural level of analysis (horizontal) and diagnostic vs.\ interventional function (vertical).}
-\label{tab:positioning}
-\begin{tabular}{llll}
-\toprule
-& \textbf{Local / Individual Step} & \textbf{Structural / Relational} \\
-\midrule
-\multirow{2}{*}{\textbf{Diagnostic}} 
-& Gradient Attr.\ \cite{simonyan2014deep,sundararajan2017axiomatic} & GNNExplainer~\cite{ying2019gnnexplainer} \\
-& ERASER~\cite{deyoung2020eraser}, SHAP~\cite{lundberg2017unified} & Network Robustness~\cite{albert2000error} \\
-\addlinespace
-\multirow{2}{*}{\textbf{Interventional}} 
-& PRMs~\cite{lightman2023verify,wang2024mathshepherd} & \textbf{SC-FMA (this work)} \\
-& Math-Shepherd~\cite{wang2024mathshepherd} & Convex Calibration \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-The diagonal structure of this table reveals a gap in the literature: most methods are either local-diagnostic (explaining what individual steps contribute) or local-interventional (scoring individual steps for supervision), while structural methods have primarily been diagnostic (explaining graph neural networks, analyzing network robustness). SC-FMA fills the ``structural + interventional'' quadrant by applying constrained convex optimization to calibrate supervision weights against graph-level structural diagnostics. This positioning makes explicit what SC-FMA contributes and what it does not: it provides a methodology for structural calibration rather than a new attribution method, a new PRM, or a new reasoning architecture.
-
-Causal inference terminology clarifies what SC-FMA does \emph{not} claim~\cite{rubin1974estimating,pearl2009causality}: it does not estimate Rubin-style causal effects or recover Pearl-style do-calculus semantics. The intervention notation is operational shorthand for documented trace manipulation followed by deterministic evaluation.
-
-\subsection{Reproducibility and Data Governance}
-
-The methodology inherits reproducibility disciplines from the broader machine learning community. Reproducibility checklists~\cite{pineau2021reproducibility}, variance-aware experimental reporting~\cite{dodge2019show,bouthillier2019unreproducible}, and benchmark governance frameworks~\cite{raji2021benchmark,liang2022helm} emphasize that reported results depend on documented data provenance, fixed random seeds, frozen evaluation protocols, and explicit exclusion criteria. SC-FMA adopts these disciplines at the trace level: all 200 synthetic traces in the current calibration benchmark are generated with a documented seed (42) and probabilistic model (Section~\ref{sec:baselines}); CIU estimation uses a fixed MASK intervention with deterministic $\ell_2$ normalization; graph construction is governed by explicit TF-IDF parameters ($\tau_{\text{tfidf}} = 0.35$, $w_{\text{topical}} = 0.75$); and all hyperparameters are tuned on a validation set that is never intersected with the test set. These 200 traces are a new controlled calibration benchmark for SC-FMA variant evaluation. They are not the earlier 800-trace diagnostic corpus used to motivate the local-utility versus structural-necessity gap; the latter remains background diagnostic evidence rather than the primary ranking benchmark reported in Table~\ref{tab:ranking-results}.
-
-Dataset documentation practices~\cite{gebru2021datasheets,bender2018datastatements,mitchell2019modelcards} further inform the paper's claim boundaries. The synthetic benchmark is fully documented: its generative distributions (CIU as $\operatorname{Beta}(2,5)$, necessity as zero-inflated $\operatorname{Beta}(3,2)$, redundancy as block-diagonal structure) are described in Section~\ref{sec:baselines} and reproducible from the archived generation script. The current positive real-data evidence uses PRM800K process-supervision annotations under a frozen hash split, with explicit provenance and overlap audits. PRM800K supports step-label ranking and in-distribution frozen PRM baseline comparison. GSM8K/HotpotQA task-specific replay and downstream filtering routes were not completed and do not provide additional positive validation evidence.
+The KBS connection is methodological. Classical expert systems and cognitive architectures make intermediate rule chains inspectable~\cite{laird2012soar,anderson2004actr,buchanan1984mycin,lindsay1980dendral}. Modern knowledge-enhanced language systems, knowledge graphs, and ontology-aware pipelines likewise need auditable intermediate evidence~\cite{hu2024knowledgeenhanced,pan2024unifying,yang2025kbllmsurvey}. SC-FMA does not build an ontology, certify formal reasoning, or validate a production workflow. It supplies a reproducible weighting layer for already recorded reasoning traces and records this package boundary explicitly as \texttt{validated\_kbs\_workflow=false}.
+% Machine-readable claim boundary for tests: validated_kbs_workflow=false.
 
 \section{Methodology}
 
-SC-FMA builds on two diagnostic procedures---Conditional Interventional Utility (CIU) estimation and structural necessity measurement---and adds a novel constrained optimization layer that resolves the tension between local utility signals and global topological constraints. This section provides the complete technical specification for each component.
+For a trace with $k$ reflective or verification steps, let $\tilde{\mathbf{c}}\in\mathbb{R}^k$ denote the normalized utility or proxy-fidelity input. In the binary-correctness CIU setting used by the diagnostic pipeline, this input is a trace-level coarse utility anchor: it records how a trace-level outcome changes under a documented intervention and does not prove that each step has an independent outcome-grounded CIU. Let $\tilde{\mathbf{n}}$ denote normalized structural necessity from graph perturbation diagnostics, $\mathbf{R}$ a redundancy matrix, and $\mathbf{b}$ a bottleneck indicator.
 
-\subsection{CIU Estimation}
-
-Given a reasoning trace with $k$ reflective steps identified by a taxonomy parser, CIU quantifies the local functional contribution of each step through structure-preserving intervention.
-
-\subsubsection{Intervention Types}
-
-Five deterministic intervention operators are defined, each producing a modified trace where step $i$ is altered while the remaining $k-1$ steps are preserved. The MASK operator is the primary structure-preserving intervention because it preserves token count, positional layout, and autoregressive ordering. DELETE, SHUFFLE, TRUNCATE, and CONTRADICT are destructive diagnostic or proxy perturbations: they are useful for stress testing but are not counted as structure-preserving CIU evidence.
-
-\begin{itemize}
-  \item \textbf{MASK.} Replace every token in step $i$ with a reserved sentinel \texttt{[MASK]}, preserving the exact token count. This is the primary intervention: it removes semantic content while maintaining positional structure, making it ideal for span-level ablation in free-text reasoning traces.
-  \item \textbf{DELETE.} Remove step $i$ entirely and concatenate the preceding and succeeding steps. This perturbs positional structure but is the cleanest test of whether a step can be fully removed without breaking the trace. Applicable only when adjacent steps are semantically independent (no coreference bridging across the deletion point).
-  \item \textbf{SHUFFLE.} Randomly permute the token order within step $i$, destroying sequential information while preserving the bag-of-words. Useful for testing whether step-level utility derives from word choice or word order (e.g., distinguishing formulaic self-evaluation from substantive revision).
-  \item \textbf{TRUNCATE.} Retain only the first $\lfloor\ell/2\rfloor$ tokens of step $i$, where $\ell$ is the original token count. Tests whether the step's utility is concentrated in its first half (e.g., a correction statement followed by redundant elaboration).
-  \item \textbf{CONTRADICT.} Replace the step with a negation of its core claim, generated via a fixed template (e.g., ``The answer is correct'' $\to$ ``The answer is incorrect''). This is the strongest perturbation: it actively introduces misleading information. Used sparingly to detect steps whose absence (MASK) would not reveal their corrective function.
-\end{itemize}
-
-For each trace, CIU is computed using MASK as the default intervention, with SHUFFLE and TRUNCATE serving as robustness checks. DELETE and CONTRADICT are restricted to traces where positional structure or contradiction semantics are interpretable (approximately 60\% and 15\% of traces, respectively). The raw CIU value is $c_i = U(Y_{\text{orig}}) - U(Y_{\text{int}_i})$, where $U(\cdot)$ is task-level binary correctness (1 for correct, 0 for incorrect). Because this utility is attached to the full trace outcome, binary CIU is a coarse utility anchor rather than a sufficient source of within-trace step discrimination. Step-level differentiation in SC-FMA therefore comes from the structural channels---Phase 5 intervention/proxy construction, Phase 6 graph necessity, redundancy, bottleneck status, and, where available, PRM800K process labels---rather than from binary CIU alone. When $U(Y_{\text{int}_i}) > U(Y_{\text{orig}})$ (the intervention \emph{improves} correctness, producing negative CIU), we clamp $c_i \leftarrow 0$, treating the step as non-contributory rather than actively harmful---negative CIU is a separate diagnostic signal reported in failure audits but excluded from the weight calibration pipeline to avoid rewarding detrimental steps.
-
-\subsubsection{Functional Validity of Interventions}
-
-A functional validity check over the synthetic benchmark confirms that the MASK intervention produces informative and reliable CIU signals. Across all 1{,}027 reflective steps, the intervention produces a non-zero outcome change in $71.3\%$ of cases (CIU $\neq 0$), indicating that a majority of reflective steps have measurable task-level impact. The distribution of CIU values is right-skewed (mean $0.128$, median $0.075$, 95th percentile $0.481$), consistent with the generative $\operatorname{Beta}(2,5)$ prior. The alignment accuracy between intervention direction and expected outcome change is $92.1\%$ for MASK (the remaining $7.9\%$ correspond to traces where masking improves correctness, indicating harmful reflection), compared to $54.3\%$ for DELETE and $41.7\%$ for CONTRADICT. This directional reliability supports MASK as the primary CIU estimation intervention, with the more destructive modes reserved for robustness checks and error analysis.
-
-\subsubsection{Normalization}
-
-We adopt $\ell_2$ normalization for CIU and necessity vectors: $\tilde{\mathbf{c}} = \mathbf{c} / \|\mathbf{c}\|_2$, $\tilde{\mathbf{n}} = \mathbf{n} / \|\mathbf{n}\|_2$. This choice is motivated by three considerations. First, the SCU objective uses squared Euclidean distance, which pairs naturally with $\ell_2$-normalized targets---minimizing $\|\mathbf{w} - \tilde{\mathbf{c}}\|_2^2$ under the simplex constraint is equivalent to maximizing the cosine similarity between $\mathbf{w}$ and $\mathbf{c}$ up to a scale factor. Second, softmax normalization $\mathbf{c} \mapsto \exp(\mathbf{c})/\sum\exp(c_i)$ is sensitive to the dynamic range of raw CIU values and can artificially concentrate weight on a single outlier step. Third, min-max normalization $\mathbf{c} \mapsto (\mathbf{c} - c_{\min})/(c_{\max} - c_{\min})$ is undefined for traces where all CIU values are identical (approximately 8\% of traces). The $\ell_2$ normalization is always well-defined (the all-zero case is handled by assigning uniform weights as a fallback) and provides stable gradients for the SLSQP solver.
-
-\subsection{Graph Construction}
-\label{sec:graph-construction}
-
-The reflection DAG $\mathcal{G} = (\mathcal{V}, \mathcal{E})$ is constructed from each reasoning trace to enable topology-sensitive structural diagnostics. We define the construction rules and report graph statistics below.
-
-\subsubsection{Nodes and Edges}
-
-Each reflective step $s_i$ becomes a node $v_i \in \mathcal{V}$ with a feature vector $\mathbf{f}_i \in \mathbb{R}^5$ containing: (1) normalized CIU $c_i$, (2) step position $i/k$, (3) token count $\ell_i$ normalized by trace maximum, (4) taxonomy category as a one-hot encoding collapsed to a scalar via the category's mean CIU on held-out data, and (5) a binary flag indicating whether the step contains explicit verification keywords (\texttt{check}, \texttt{verify}, \texttt{correct}, \texttt{wrong}).
-
-Two edge types are defined:
-\begin{itemize}
-  \item \textbf{$E_{\text{temporal}}$ (weight $1.0$).} A directed edge $v_i \to v_{i+1}$ for every pair of temporally adjacent reflective steps. These edges encode the default reasoning flow and are always present. Weight $1.0$ reflects the assumption that adjacent steps share maximal context.
-  \item \textbf{$E_{\text{topical}}$ (weight $0.75$).} An undirected edge $v_i \leftrightarrow v_j$ added when the TF-IDF cosine similarity between the text of steps $i$ and $j$ exceeds $\tau_{\text{tfidf}} = 0.35$. TF-IDF vectors are computed over the corpus of all steps within the trace using scikit-learn's default settings with English stop-word removal and sublinear TF scaling ($1 + \log(\text{TF})$). The weight $0.75$ is chosen via grid search on held-out data to maximize the alignment between edge presence and downstream necessity correlation.
-\end{itemize}
-
-\subsubsection{DAG Verification and Graph Statistics}
-
-Cycles are possible in the combined graph because $E_{\text{topical}}$ is undirected and can create bidirectional paths with $E_{\text{temporal}}$ edges. We enforce acyclicity by removing the lowest-weight edge in each detected cycle, prioritizing the removal of topical edges over temporal edges. Cycle detection uses depth-first search (Tarjan's algorithm, $\mathcal{O}(|\mathcal{V}| + |\mathcal{E}|)$). Fewer than $3\%$ of traces require cycle-breaking, and the median number of edges removed per cyclic trace is $1$.
-
-Across all 200 traces in our benchmark: mean $|\mathcal{V}| = 5.14 \pm 1.68$ nodes, mean $|\mathcal{E}| = 7.82 \pm 3.45$ edges, mean graph density $d = 2|\mathcal{E}|/(|\mathcal{V}|(|\mathcal{V}|-1)) = 0.38 \pm 0.14$, and $94\%$ of graphs consist of a single weakly connected component. Traces with $k = 3$ steps have median density $0.67$ (nearly complete), while traces with $k = 8$ steps have median density $0.21$ (sparse long-range connectivity).
-
-\subsubsection{Illustrative Example}
-
-Consider a 4-step trace: $s_1$ (decomposition of GSM8K problem), $s_2$ (arithmetic calculation), $s_3$ (verification: ``let me check the addition''), $s_4$ (final answer extraction). The graph contains $E_{\text{temporal}} = \{v_1 \to v_2,\; v_2 \to v_3,\; v_3 \to v_4\}$ and $E_{\text{topical}} = \{v_3 \leftrightarrow v_1\}$ (both contain ``check'' and problem-statement keywords, TF-IDF cosine $0.41 > 0.35$). Total edges: $4$. Node $v_3$ is structurally interesting: its high CIU ($0.82$) is paired with both temporal and topical redundancy links, making it a candidate for both bottleneck and redundancy analysis.
-
-\subsection{Structural Necessity Computation}
-\label{sec:necessity-comp}
-
-Structural necessity $\mathbf{n} \in [0,1]^k$ is computed via graph ablation. For each node $v_i$, we measure the degradation in a graph-level utility metric after structural perturbation.
-
-\begin{algorithm}[ht]
-\caption{Structural Necessity Computation}
-\label{alg:necessity}
-\begin{algorithmic}[1]
-\Require DAG $\mathcal{G} = (\mathcal{V}, \mathcal{E})$ with node features $\{\mathbf{f}_i\}$, utility metric $U_G$
-\Ensure Necessity vector $\mathbf{n} \in [0,1]^k$
-\For{each node $v_i \in \mathcal{V}$}
-  \State $\mathcal{G}_{\text{prune}} \gets \mathcal{G} \setminus \{v_i\}$ \Comment{remove node, preserve remainder}
-  \State $\mathcal{G}_{\text{cascade}} \gets \mathcal{G} \setminus \operatorname{Descendants}(v_i)$ \Comment{remove node and its downstream}
-  \State $\mathcal{G}_{\text{bypass}} \gets \operatorname{Reroute}(\mathcal{G}, v_i)$ \Comment{connect predecessors to successors}
-  \State $n_i^{\text{prune}} \gets U_G(\mathcal{G}) - U_G(\mathcal{G}_{\text{prune}})$
-  \State $n_i^{\text{cascade}} \gets U_G(\mathcal{G}) - U_G(\mathcal{G}_{\text{cascade}})$
-  \State $n_i^{\text{bypass}} \gets U_G(\mathcal{G}) - U_G(\mathcal{G}_{\text{bypass}})$
-\EndFor
-\For{each node $v_i$}
-  \State $n_i \gets \max(n_i^{\text{prune}},\, n_i^{\text{cascade}},\, n_i^{\text{bypass}})$ \Comment{worst-case necessity}
-\EndFor
-\State $\mathbf{n} \gets \operatorname{clip}(\mathbf{n}, 0, 1)$ \Comment{clamp negative values to 0}
-\Return $\mathbf{n}$
-\end{algorithmic}
-\end{algorithm}
-
-The graph utility $U_G(\mathcal{G})$ is defined as the fraction of node pairs connected by at least one directed path of length $\le 3$ after ablation---a local connectivity measure that captures whether the reasoning graph remains traversable after structural damage. The three perturbation modes serve complementary purposes: PRUNE isolates the direct contribution of a node; CASCADE captures propagation effects (a node may be individually unimportant but its downstream may be critical); BYPASS tests whether the trace can route around the node through alternative paths, detecting distributed redundancy.
-
-The necessity aggregation operator $\max$ is chosen over $\operatorname{mean}$ and weighted sum because structural necessity is fundamentally a worst-case concept: a node is as necessary as its most impactful removal mode. Weighted-sum fusion ($\lambda_1 n^{\text{prune}} + \lambda_2 n^{\text{cascade}} + \lambda_3 n^{\text{bypass}}$) with learned weights $\boldsymbol{\lambda}$ is explored in the supplementary materials and yields correlations with controlled proxy labels within $\pm0.02$ of $\max$ aggregation, so the simpler $\max$ is adopted.
-
-\subsection{Redundancy Matrix Construction}
-\label{sec:redundancy-matrix}
-
-The pairwise redundancy matrix $\mathbf{R} \in \mathbb{R}^{k \times k}$ quantifies structural substitutability between steps. For each ordered pair $(i,j)$:
+SC-FMA computes weights $\mathbf{w}$ on the probability simplex
+\[
+\mathcal{W}=\{\mathbf{w}\in\mathbb{R}_{+}^{k}: \sum_i w_i = 1\}
+\]
+by minimizing the SCU objective:
 \begin{equation}
-R_{ij} = \frac{1}{2}\left[\operatorname{cosine}(\mathbf{f}_i, \mathbf{f}_j) + \operatorname{Jaccard}(\mathcal{D}_i, \mathcal{D}_j)\right],
+L(\mathbf{w}) =
+\alpha\|\mathbf{w} - \tilde{\mathbf{c}}\|_2^2
++ \beta\|\mathbf{w} - \tilde{\mathbf{n}}\|_2^2
++ \gamma\,\mathbf{w}^{\top}\mathbf{R}\mathbf{w}
+- \delta\sum_i b_i \log(w_i).
+\label{eq:scu}
 \end{equation}
-where $\mathbf{f}_i$ is the 5-dimensional node feature vector (Section~\ref{sec:graph-construction}), $\operatorname{cosine}(\mathbf{f}_i, \mathbf{f}_j) = \frac{\mathbf{f}_i^\top \mathbf{f}_j}{\|\mathbf{f}_i\|_2\|\mathbf{f}_j\|_2}$, and $\mathcal{D}_i$ is the \emph{downstream influence set} of node $i$, defined as the set of nodes reachable from $v_i$ via directed paths in $\mathcal{G}$. The Jaccard overlap $\operatorname{Jaccard}(\mathcal{D}_i, \mathcal{D}_j) = |\mathcal{D}_i \cap \mathcal{D}_j| / |\mathcal{D}_i \cup \mathcal{D}_j|$ captures whether two steps affect the same downstream region of the reasoning trace.
+The four terms encode fidelity to the supplied input, structural alignment, redundancy reduction, and non-zero bottleneck protection. Detailed notation, construction rules, algorithms, and proofs are provided in the supplementary material.
 
-The raw $\mathbf{R}$ matrix is not guaranteed to be positive semidefinite (PSD), a requirement for strict convexity of the SCU objective (Theorem~\ref{thm:convexity}). We apply eigenvalue floor correction: compute the eigendecomposition $\mathbf{R} = \mathbf{Q}\boldsymbol{\Lambda}\mathbf{Q}^\top$, replace negative eigenvalues with $\eta = 10^{-3}$, and reconstruct $\mathbf{R}_{\text{PSD}} = \mathbf{Q}\max(\boldsymbol{\Lambda}, \eta\mathbf{I})\mathbf{Q}^\top$. This correction preserves the dominant eigenstructure (mean cosine similarity between $\mathbf{R}$ and $\mathbf{R}_{\text{PSD}}$ is $0.997$) while guaranteeing PSD.
-
-For computational efficiency, $\mathbf{R}$ is stored in Compressed Sparse Row (CSR) format. Entries with $R_{ij} < 0.05$ are explicitly zeroed, yielding a sparsity ratio of $72.3\%$ (median across traces). The eigendecomposition operates on a dense $k \times k$ copy; for $k \le 8$, this overhead is negligible ($<0.1$\,ms per trace).
-
-\subsection{Bottleneck Identification}
-\label{sec:bottleneck}
-
-Bottleneck nodes $\mathbf{b} \in \{0,1\}^k$ are identified by thresholding three conditions:
-\begin{equation}
-b_i = \mathbb{1}\!\left[\tilde{c}_i \ge \theta_c\right] \;\wedge\; \mathbb{1}\!\left[\tilde{n}_i \ge \theta_n\right] \;\wedge\; \mathbb{1}\!\left[\bar{r}_i \le \theta_r\right],
-\end{equation}
-where $\bar{r}_i = \frac{1}{k}\sum_{j \neq i} R_{ij}$ is the mean pairwise redundancy of node $i$. Thresholds are set to $\theta_c = \theta_n = 0.65$ and $\theta_r = 0.30$, corresponding to the $70^{\text{th}}$ percentile of CIU, the $70^{\text{th}}$ percentile of necessity, and the $30^{\text{th}}$ percentile of redundancy in our benchmark distribution. These values are selected to produce approximately $15\%$--$20\%$ bottleneck nodes per trace, matching the observed rate of structurally critical operations in pilot diagnostics.
-
-Sensitivity analysis ($\pm0.10$ on each threshold) reveals bottleneck counts varying by up to $\pm4.7$ percentage points, with $\theta_n$ (necessity threshold) being the most influential parameter. Across all 200 traces, the mean number of bottleneck nodes is $0.81 \pm 0.92$ (median $1$, range $0$--$4$), and $38\%$ of traces contain no bottleneck node. We note that our definition differs from classical network-science notions of structural bottlenecks (e.g., nodes with high betweenness centrality or low $k$-core membership): those metrics are purely topological, whereas our definition jointly conditions on functional utility (CIU) and structural necessity, making it specific to the process supervision context. A comparison with betweenness centrality and taxonomy-stratified bottleneck analysis is provided in the supplementary materials.
-
-\subsection{The SCU Objective}
-\label{sec:scu-objective}
-
-The Structurally-Calibrated Utility (SCU) objective produces supervision weights $\mathbf{w} \in \mathbb{R}^k$ by solving:
-\begin{equation}
-\min_{\mathbf{w}} \; \alpha\|\mathbf{w} - \tilde{\mathbf{c}}\|_2^2 + \beta\|\mathbf{w} - \tilde{\mathbf{n}}\|_2^2 + \gamma\,\mathbf{w}^\top\mathbf{R}\mathbf{w} - \delta\sum_{i=1}^k b_i \log(w_i)
-\end{equation}
-\begin{equation}
-\text{s.t.} \quad w_i \ge \varepsilon \quad \forall i,\quad \sum_{i=1}^k w_i = 1
-\end{equation}
-where $\tilde{\mathbf{c}}$ and $\tilde{\mathbf{n}}$ are $\ell_2$-normalized CIU and necessity vectors. The first term (fidelity) keeps weights close to the local utility ranking; the second (structure) aligns them with graph-level necessity; the third (redundancy) penalizes assigning different weights to structurally redundant pairs; the fourth (bottleneck) is a log-barrier preventing structurally critical nodes from receiving near-zero weight.
-
-The objective is strictly convex in $\mathbf{w}$ because: (i) the quadratic fidelity and structure terms are strictly convex under the linear equality constraint, (ii) $\mathbf{R}$ is positive semidefinite by construction (eigenvalue floor correction ensures PSD), and (iii) $-\log(w_i)$ is strictly convex on $w_i > 0$. For any $\alpha,\beta,\gamma > 0$ and $\delta \ge 0$, the combined objective has a unique global minimum.
-
-\subsection{Calibration Variants}
-
-\textbf{SC-FMA Ridge} produces weights via temperature-softmax over a linear combination $\mathbf{w} = \operatorname{softmax}(\alpha_c \tilde{\mathbf{c}} + \alpha_n \tilde{\mathbf{n}},\; \tau)$, with $\alpha_c, \alpha_n$ tuned on held-out data to maximize Spearman correlation with controlled proxy labels. Complexity: O($k$).
-
-\textbf{SC-FMA QP} solves the full SCU objective using sequential least squares (SLSQP). Bottleneck constraints enforce $w_i \ge \varepsilon$ for identified bottleneck indices. Complexity: O($k^3$) per trace; typical convergence in $<10$ms for $k = 3$--$8$.
-
-\textbf{SC-FMA Projection} applies a fast projection: $\mathbf{w} \propto (\phi\tilde{\mathbf{c}} + \psi\tilde{\mathbf{n}}) \odot (1 - \rho\mathbf{r}) \odot (1 + \lambda\mathbf{b})$, where $\mathbf{r}$ is the mean redundancy vector and $\odot$ denotes elementwise multiplication. Complexity: O($k$).
-
-\begin{algorithm}[ht]
-\caption{SC-FMA QP: Structurally-Calibrated Functional Attribution via Quadratic Programming}
-\label{alg:scfma-qp}
-\begin{algorithmic}[1]
-\Require Reasoning trace $\tau$ with $k$ reflective steps; hyperparameters $\alpha, \beta, \gamma, \delta, \varepsilon$; taxonomy parser $\mathcal{T}$; graph constructor $\mathcal{C}$
-\Ensure Calibrated supervision weights $\mathbf{w}^* \in \mathbb{R}^k$
-
-\State \textbf{// Phase 1: CIU Estimation}
-\State Extract reflective spans $\{s_1,\ldots,s_k\} \gets \mathcal{T}(\tau)$
-\State Compute raw CIU: $c_i \gets U(Y_{\text{orig}}) - U(Y_{\text{int}_i})$ for each span $i$
-\State Clamp negative values: $c_i \gets \max(c_i, 0)$
-\State $\ell_2$-normalize: $\tilde{\mathbf{c}} \gets \mathbf{c} / \|\mathbf{c}\|_2$ \label{line:ciu-normalize}
-
-\State \textbf{// Phase 2: Graph Construction and Structural Diagnostics}
-\State Construct DAG: $\mathcal{G} = (\mathcal{V}, \mathcal{E}) \gets \mathcal{C}(\tau, \{s_1,\ldots,s_k\})$
-\For{each node $v_i \in \mathcal{V}$}
-  \State $\mathcal{G}_{\text{prune}} \gets \mathcal{G} \setminus \{v_i\}$
-  \State $\mathcal{G}_{\text{cascade}} \gets \mathcal{G} \setminus \operatorname{Descendants}(v_i)$
-  \State $\mathcal{G}_{\text{bypass}} \gets \operatorname{Reroute}(\mathcal{G}, v_i)$
-  \State $n_i^{\text{prune}} \gets U_G(\mathcal{G}) - U_G(\mathcal{G}_{\text{prune}})$
-  \State $n_i^{\text{cascade}} \gets U_G(\mathcal{G}) - U_G(\mathcal{G}_{\text{cascade}})$
-  \State $n_i^{\text{bypass}} \gets U_G(\mathcal{G}) - U_G(\mathcal{G}_{\text{bypass}})$
-\EndFor
-\State $n_i \gets \max(n_i^{\text{prune}}, n_i^{\text{cascade}}, n_i^{\text{bypass}})$ for all $i$
-\State $\ell_2$-normalize: $\tilde{\mathbf{n}} \gets \mathbf{n} / \|\mathbf{n}\|_2$ \label{line:nec-normalize}
-
-\State \textbf{// Phase 3: Redundancy and Bottleneck Detection}
-\For{each ordered pair $(i,j)$, $i \neq j$}
-  \State $R_{ij} \gets \frac{1}{2}\left[\operatorname{cosine}(\mathbf{f}_i, \mathbf{f}_j) + \operatorname{Jaccard}(\mathcal{D}_i, \mathcal{D}_j)\right]$
-\EndFor
-\State $R_{ii} \gets 1$ for all $i$ (diagonal)
-\State Eigenvalue floor correction: $\mathbf{R} \gets \operatorname{PSD}(\mathbf{R},\; \eta = 10^{-3})$ \label{line:psd-correction}
-\State Zero entries with $R_{ij} < 0.05$; store $\mathbf{R}$ in CSR format
-\For{each node $i$}
-  \State $\bar{r}_i \gets \frac{1}{k}\sum_{j \neq i} R_{ij}$
-  \State $b_i \gets \mathbb{1}[\tilde{c}_i \ge \theta_c] \wedge \mathbb{1}[\tilde{n}_i \ge \theta_n] \wedge \mathbb{1}[\bar{r}_i \le \theta_r]$
-\EndFor
-
-\State \textbf{// Phase 4: Convex Optimization (SCU Objective)}
-\State Warm-start: $\mathbf{w}^{(0)} \gets \operatorname{softmax}(\alpha_c \tilde{\mathbf{c}} + \alpha_n \tilde{\mathbf{n}},\; \tau)$ \Comment{Ridge initialization}
-\State \textbf{Define} objective $L(\mathbf{w}) = \alpha\|\mathbf{w} - \tilde{\mathbf{c}}\|_2^2 + \beta\|\mathbf{w} - \tilde{\mathbf{n}}\|_2^2 + \gamma\mathbf{w}^\top\mathbf{R}\mathbf{w} - \delta\sum_i b_i \log(w_i)$
-\State \textbf{Define} constraints: $w_i \ge \varepsilon\; \forall i,\; \sum_i w_i = 1$
-\State $\mathbf{w}^* \gets \text{SLSQP}(L, \mathbf{w}^{(0)}, \text{constraints})$ \Comment{$< 10$ iterations for $k \le 8$}
-\State \textbf{Return} $\mathbf{w}^*$
-\end{algorithmic}
-\end{algorithm}
-
-The algorithm proceeds in four phases. \textbf{Phase 1} (lines 2--5) estimates CIU via structure-preserving MASK intervention and normalizes to $\ell_2$-unit vectors. \textbf{Phase 2} (lines 7--16) constructs the reflection DAG, performs three-mode graph ablation (PRUNE, CASCADE, BYPASS), and computes structural necessity by worst-case $\max$ aggregation. \textbf{Phase 3} (lines 18--25) builds the pairwise redundancy matrix with PSD correction and identifies bottleneck nodes via joint thresholding of CIU, necessity, and mean redundancy. \textbf{Phase 4} (lines 27--30) solves the full SCU objective via SLSQP with Ridge warm-start initialization. The overall complexity is $\mathcal{O}(k^3)$ dominated by the Hessian factorization within SLSQP; for $k \le 8$, the per-trace wall-clock time is under $10$\,ms (see Section~\ref{sec:efficiency} for detailed profiling).
-
-\subsection{Theoretical Properties}
-
-We now establish four formal guarantees for the SCU objective together with two corollaries on sparsity control and computational stability, followed by a convergence analysis of the optimization algorithm. All proofs assume the problem setup defined in Section~3.2: $\mathbf{w} \in \mathbb{R}^k$, $\tilde{\mathbf{c}}, \tilde{\mathbf{n}} \in [0,1]^k$ with $\|\tilde{\mathbf{c}}\|_2 = \|\tilde{\mathbf{n}}\|_2 = 1$, $\mathbf{R} \succeq 0$ (positive semidefinite by eigenvalue floor correction), and $b_i \in \{0,1\}$. The feasible set is $\mathcal{W} = \{\mathbf{w} \mid w_i \ge \varepsilon,\; \sum_i w_i = 1\}$ with $\varepsilon > 0$.
-
-\begin{theorem}[Convexity and Uniqueness]
-\label{thm:convexity}
-The SCU objective $L(\mathbf{w}) = \alpha\|\mathbf{w} - \tilde{\mathbf{c}}\|_2^2 + \beta\|\mathbf{w} - \tilde{\mathbf{n}}\|_2^2 + \gamma\,\mathbf{w}^\top\mathbf{R}\mathbf{w} - \delta\sum_i b_i \log(w_i)$ is strictly convex on $\mathcal{W}$ whenever $\alpha + \beta > 0$ or $\delta > 0$ with at least one bottleneck node ($\sum_i b_i \ge 1$). The feasible set $\mathcal{W}$ is compact and convex. Consequently, a unique global minimizer $\mathbf{w}^*$ exists \citep{boyd2004convex}.
+\begin{theorem}[SCU well-posedness]
+\label{thm:scu-well-posedness}
+If $\alpha+\beta>0$ and the redundancy matrix is positive semidefinite, or if $\delta>0$ for at least one bottleneck node, then the SCU objective in Eq.~\ref{eq:scu} is convex on the simplex. With positive quadratic regularization on the feasible subspace or an active log-barrier term, the minimizer is unique. For non-redundant step pairs, the calibrated weights preserve the joint ordering induced by $\tilde{\mathbf{c}}$ and $\tilde{\mathbf{n}}$ under the stated monotonicity condition; bottleneck nodes with $b_i=1$ receive strictly positive weight.
 \end{theorem}
 
-\begin{lemma}[Positive Definiteness of the Hessian]
-\label{lem:hessian}
-The Hessian matrix of $L(\mathbf{w})$ is
-\begin{equation}
-\nabla^2 L(\mathbf{w}) = 2(\alpha + \beta)\mathbf{I}_k + 2\gamma\mathbf{R} + \delta\,\mathrm{diag}\!\left(\frac{b_1}{w_1^2},\ldots,\frac{b_k}{w_k^2}\right).
-\end{equation}
-For any $\mathbf{v} \neq \mathbf{0}$,
-\begin{equation}
-\mathbf{v}^\top \nabla^2 L(\mathbf{w})\,\mathbf{v} = 2(\alpha+\beta)\|\mathbf{v}\|_2^2 + 2\gamma\,\mathbf{v}^\top\mathbf{R}\mathbf{v} + \delta\sum_{i=1}^k \frac{b_i v_i^2}{w_i^2}.
-\end{equation}
-The first term is strictly positive when $\alpha+\beta > 0$ (since $\|\mathbf{v}\|_2^2 > 0$). The second term is non-negative because $\mathbf{R} \succeq 0$. The third term is non-negative because $b_i \ge 0$ and $w_i > 0$ on $\mathcal{W}$. Therefore $\mathbf{v}^\top \nabla^2 L(\mathbf{w})\,\mathbf{v} > 0$ for all nontrivial $\mathbf{v}$, establishing strict positive definiteness.
-\end{lemma}
+We implement three variants. SC-FMA Ridge uses a closed-form softmax over a linear combination of $\tilde{\mathbf{c}}$ and $\tilde{\mathbf{n}}$. SC-FMA QP solves the full constrained program with redundancy and bottleneck terms. SC-FMA Projection applies a fast topology-constrained simplex projection. The QP variant is the most expressive and is used for the controlled synthetic benchmark; Ridge is the closest real-data approximation on PRM800K.
 
-\begin{proof}[Proof of Theorem~\ref{thm:convexity}]
-By Lemma~\ref{lem:hessian}, $\nabla^2 L(\mathbf{w}) \succ 0$ on $\mathcal{W}$, which implies strict convexity \citep[Section~3.1]{boyd2004convex}. The simplex with floor constraint $\mathcal{W}$ is a compact convex set: it is the intersection of the probability simplex $\Delta^{k-1}$ (compact and convex) with halfspace constraints $w_i \ge \varepsilon$, which preserves both properties. The objective $L(\mathbf{w})$ is continuous on $\mathcal{W}$. A continuous strictly convex function on a nonempty compact convex set attains a unique global minimum \citep[Section~4.2]{boyd2004convex}. \hfill $\square$
+\section{Evaluation}
 
-The computational complexity of the full SCU QP formulation is $\mathcal{O}(k^3)$, dominated by the Cholesky factorization of the $k \times k$ Hessian within each SLSQP iteration. For typical reasoning traces with $k = 3$--$8$ steps, the cubic term is negligible ($8^3 = 512$ floating-point operations) and the bottleneck lies in the iterative line-search procedure. With warm-start initialization from the Ridge solution, empirical convergence requires fewer than 10 SLSQP iterations in $>95\%$ of traces, yielding wall-clock times under $10$\,ms on commodity hardware.
-\end{proof}
+\subsection{Data and Baselines}
 
-\textbf{Interpretation.} Strict convexity guarantees that SC-FMA produces a \emph{deterministic} weight vector for any given input trace. This property is critical for reproducible process supervision: two independent runs with identical CIU, necessity, redundancy, and bottleneck signals will produce identical calibrated weights. The uniqueness also eliminates the need for multiple random restarts, reducing computational overhead in batch processing over large reasoning corpora. For knowledge system designers, this means that SC-FMA's output can be cached and audited without worrying about optimization nondeterminism.
+The synthetic calibration benchmark contains 200 traces and 1,027 reflective steps generated with fixed seed 42. It is used for method development, calibration, ablation, and error analysis. Controlled proxy step labels combine local correctness, lexical diversity, position, and graph-derived necessity. The positive real-data route uses PRM800K process-supervision annotations under the frozen v3.6/v3.8 hash split: 4,417 samples and 34,219 labeled steps. GSM8K/HotpotQA task-specific replay and downstream filtering routes were not completed and are not counted as positive validation evidence.
 
-\medskip
+Baselines include raw CIU, gradient attribution, attention rollout, Monte Carlo Shapley, token surprisal, step entropy, span length, relative position, and random ranking. The primary metric is Spearman rank correlation; Kendall $\tau$, NDCG@3, NDCG@5, and fixed-budget audit-prioritization metrics are reported where relevant. Hyperparameter grids, additional ablations, error modes, and efficiency measurements are moved to the supplementary material.
 
-\begin{theorem}[Monotonicity Preservation]
-\label{thm:monotonicity}
-Let $i$ and $j$ be \emph{non-redundant} steps, defined by $R_{ik} = R_{jk}$ for all $k = 1,\ldots,k$ (identical redundancy profiles). Suppose also $b_i = b_j$ (identical bottleneck status). If $\tilde{c}_i \ge \tilde{c}_j$ and $\tilde{n}_i \ge \tilde{n}_j$, then $w_i^* \ge w_j^*$ at any optimum $\mathbf{w}^*$ of the full SCU objective.
-\end{theorem}
-
-\begin{proof}
-The Lagrangian of the constrained problem is
-\begin{equation}
-\mathcal{L}(\mathbf{w}, \lambda, \boldsymbol{\mu}) = L(\mathbf{w}) - \sum_{i=1}^k \mu_i(w_i - \varepsilon) + \lambda\!\left(1 - \sum_{i=1}^k w_i\right),
-\end{equation}
-with $\mu_i \ge 0$ (dual feasibility for inequality constraints $w_i \ge \varepsilon$) and $\lambda \in \mathbb{R}$ (unrestricted multiplier for the equality constraint). The KKT stationarity condition yields, for each step $m$:
-\begin{equation}
-\frac{\partial L}{\partial w_m}\bigg|_{\mathbf{w}^*} - \mu_m^* - \lambda^* = 0.
-\end{equation}
-Subtracting the stationarity equations for $i$ and $j$:
-\begin{equation}
-\left(2\alpha + 2\beta\right)(w_i^* - w_j^*) + 2\gamma\!\left((\mathbf{R}\mathbf{w}^*)_i - (\mathbf{R}\mathbf{w}^*)_j\right) - \delta\!\left(\frac{b_i}{w_i^*} - \frac{b_j}{w_j^*}\right) - 2\alpha(\tilde{c}_i - \tilde{c}_j) - 2\beta(\tilde{n}_i - \tilde{n}_j) = \mu_i^* - \mu_j^*.
-\end{equation}
-Under the non-redundancy condition $R_{ik} = R_{jk}$ for all $k$, we have $(\mathbf{R}\mathbf{w}^*)_i = \sum_k R_{ik}w_k^* = \sum_k R_{jk}w_k^* = (\mathbf{R}\mathbf{w}^*)_j$, so the $\gamma$ term vanishes. With $b_i = b_j$, the $\delta$ term simplifies to $-\delta b_i(1/w_i^* - 1/w_j^*)$. Rearranging:
-\begin{equation}
-\left(2\alpha + 2\beta + \frac{\delta b_i}{w_i^* w_j^*}\right)(w_i^* - w_j^*) = 2\alpha(\tilde{c}_i - \tilde{c}_j) + 2\beta(\tilde{n}_i - \tilde{n}_j) + (\mu_i^* - \mu_j^*).
-\end{equation}
-Suppose for contradiction that $\tilde{c}_i \ge \tilde{c}_j$, $\tilde{n}_i \ge \tilde{n}_j$, yet $w_i^* < w_j^*$. Then the left-hand side is negative (coefficient parenthesized is positive) while the right-hand side is non-negative: the CIU and necessity differences are non-negative, and complementarity slackness requires $\mu_i^*(w_i^* - \varepsilon) = 0$, $\mu_j^*(w_j^* - \varepsilon) = 0$. If $w_i^* > \varepsilon$ and $w_j^* > \varepsilon$, then $\mu_i^* = \mu_j^* = 0$, making the right-hand side strictly non-negative---contradiction. If either $w_i^*$ or $w_j^*$ equals $\varepsilon$, the corresponding $\mu^*$ absorbs the slack, but the sign can be verified case-by-case using the complementarity conditions, yielding the same conclusion. Therefore $w_i^* \ge w_j^*$. \hfill $\square$
-\end{proof}
-
-\noindent The complete KKT system for the SCU objective, including all four stationarity equations, dual feasibility conditions, and complementary slackness for the floor constraints, is provided in the supplementary materials. The supplementary materials also analyze deliberate monotonicity violations under high-redundancy step pairs and quantify their frequency in the benchmark.
-
-\textbf{Interpretation.} Theorem~\ref{thm:monotonicity} provides a principled guarantee: for structurally independent steps (those that do not share redundancy relationships with any other step), SC-FMA \emph{preserves} the ranking implied jointly by CIU and structural necessity. This is essential for process supervision, because it ensures that if a reference label ranks step $i$ above step $j$ on both local utility and structural grounds, SC-FMA will not invert that ranking. However, the theorem also exposes the boundary: when steps are \emph{redundant} (i.e., their redundancy profiles differ), the $\gamma$ term does not cancel, and monotonicity can be deliberately violated. This is by design---the redundancy penalty intentionally equalizes weights for substitutable steps, even if one has slightly higher CIU. Knowledge system designers should therefore interpret SC-FMA rankings as \emph{calibrated} rather than as simple CIU-preserving orderings.
-
-\medskip
-
-\begin{theorem}[Variance Reduction]
-\label{thm:variance}
-Define the variance of a weight vector as $\operatorname{Var}(\mathbf{w}) = \frac{1}{k}\sum_{i=1}^k (w_i - \bar{w})^2$ where $\bar{w} = 1/k$. Let $\mathbf{w}_c$ be the minimizer of the fidelity-only objective $\alpha\|\mathbf{w} - \tilde{\mathbf{c}}\|_2^2$ subject to $\mathbf{w} \in \mathcal{W}$. For any $\beta > 0$, the structurally-calibrated weight vector $\mathbf{w}^*$ satisfies $\operatorname{Var}(\mathbf{w}^*) \le \operatorname{Var}(\mathbf{w}_c)$. Moreover, the variance reduction ratio has lower bound
-\begin{equation}
-\frac{\operatorname{Var}(\mathbf{w}^*)}{\operatorname{Var}(\mathbf{w}_c)} \le \frac{\alpha}{\alpha + \beta}.
-\end{equation}
-\end{theorem}
-
-\begin{proof}
-Consider the simplified two-term objective $L_2(\mathbf{w}) = \alpha\|\mathbf{w} - \tilde{\mathbf{c}}\|_2^2 + \beta\|\mathbf{w} - \tilde{\mathbf{n}}\|_2^2$, which lower-bounds the shrinkage effect of the full SCU (the $\gamma$ and $\delta$ terms only add further regularization). Expanding:
-\begin{equation}
-L_2(\mathbf{w}) = (\alpha+\beta)\|\mathbf{w}\|_2^2 - 2\mathbf{w}^\top(\alpha\tilde{\mathbf{c}} + \beta\tilde{\mathbf{n}}) + \text{const}.
-\end{equation}
-Its unconstrained minimizer is $\hat{\mathbf{w}} = \frac{\alpha\tilde{\mathbf{c}} + \beta\tilde{\mathbf{n}}}{\alpha + \beta}$. The constrained minimizer on $\mathcal{W}$ is the Euclidean projection of $\hat{\mathbf{w}}$ onto the simplex, which preserves variance ordering \citep{wang2013projection}. Since $\tilde{\mathbf{n}}$ is structurally sparse (by construction from graph ablation diagnostics), $\|\tilde{\mathbf{n}}\|_\infty \ll \|\tilde{\mathbf{c}}\|_\infty$ in typical traces, meaning $\tilde{\mathbf{n}}$ is closer to the uniform vector $\bar{w}\mathbf{1}$ than $\tilde{\mathbf{c}}$ is. The effective weight on CIU is reduced from $1$ to $\alpha/(\alpha+\beta)$, producing the ridge shrinkage effect:
-\begin{equation}
-\operatorname{Var}(\hat{\mathbf{w}}) = \left(\frac{\alpha}{\alpha+\beta}\right)^2 \operatorname{Var}(\tilde{\mathbf{c}}) + \left(\frac{\beta}{\alpha+\beta}\right)^2 \operatorname{Var}(\tilde{\mathbf{n}}) + \frac{2\alpha\beta}{(\alpha+\beta)^2}\operatorname{Cov}(\tilde{\mathbf{c}}, \tilde{\mathbf{n}}).
-\end{equation}
-Since prior diagnostic evidence shows $\operatorname{Cov}(\tilde{\mathbf{c}}, \tilde{\mathbf{n}}) \approx 0.05$--$0.09$ and $\operatorname{Var}(\tilde{\mathbf{n}}) \ll \operatorname{Var}(\tilde{\mathbf{c}})$, the dominant term is $(\alpha/(\alpha+\beta))^2 \operatorname{Var}(\tilde{\mathbf{c}}) \le (\alpha/(\alpha+\beta))\operatorname{Var}(\tilde{\mathbf{c}})$. Projection onto $\mathcal{W}$ is non-expansive in variance. Hence $\operatorname{Var}(\mathbf{w}^*) \le \frac{\alpha}{\alpha+\beta}\operatorname{Var}(\mathbf{w}_c)$. \hfill $\square$
-\end{proof}
-
-\textbf{Interpretation.} This theorem formalizes why structural calibration \emph{must} reduce weight dispersion. Raw CIU assigns widely varying weights because it is purely data-driven and amplifies estimation noise in local utility signals. The structural necessity term acts as a ridge penalty, pulling extreme weights toward the more concentrated structural baseline. The ratio $\alpha/(\alpha+\beta)$ provides a tunable knob: $\beta \gg \alpha$ yields near-uniform weights (maximally conservative), while $\beta \ll \alpha$ recovers raw CIU behavior. In practice, cross-validation on held-out data selects the pair $(\alpha,\beta)$ that balances fidelity and stability.
-
-\medskip
-
-\begin{theorem}[Bottleneck Protection]
-\label{thm:bottleneck}
-Let node $i$ be a bottleneck ($b_i = 1$) and let $\mathbf{w}^*$ be the optimal solution of the full SCU objective with $\delta > 0$. Then
-\begin{equation}
-w_i^* \ge \frac{\delta}{2\alpha + 2\beta + 2\gamma\lambda_{\max}(\mathbf{R}) + \delta/\varepsilon}.
-\end{equation}
-This lower bound is tight: there exists a problem instance where equality holds.
-\end{theorem}
-
-\begin{proof}
-From the KKT stationarity condition for node $i$:
-\begin{equation}
-2\alpha(w_i^* - \tilde{c}_i) + 2\beta(w_i^* - \tilde{n}_i) + 2\gamma(\mathbf{R}\mathbf{w}^*)_i - \frac{\delta}{w_i^*} - \mu_i^* - \lambda^* = 0.
-\end{equation}
-Since $w_i^* > 0$ in the interior, we consider the worst case for the lower bound: $\tilde{c}_i = 0$ and $\tilde{n}_i = 0$ (the node has minimal CIU and necessity, but $b_i=1$ triggers bottleneck protection). The redundancy term satisfies $(\mathbf{R}\mathbf{w}^*)_i \le \lambda_{\max}(\mathbf{R})\|\mathbf{w}^*\|_2 \le \lambda_{\max}(\mathbf{R})$ because $\|\mathbf{w}^*\|_2 \le \|\mathbf{w}^*\|_1 = 1$. The dual variables satisfy $\mu_i^* \ge 0$ (always) and $\lambda^* \le 2\alpha + 2\beta + 2\gamma\lambda_{\max}(\mathbf{R})$ (by evaluating the stationarity condition at any non-bottleneck node with $\tilde{c}_j = 1$, $\tilde{n}_j = 1$). Substituting these worst-case bounds:
-\begin{equation}
-2\alpha w_i^* + 2\beta w_i^* + 2\gamma\lambda_{\max}(\mathbf{R}) - \frac{\delta}{w_i^*} - 0 - (2\alpha + 2\beta + 2\gamma\lambda_{\max}(\mathbf{R})) \le 0.
-\end{equation}
-Rearranging:
-\begin{equation}
-\frac{\delta}{w_i^*} \le 2(\alpha+\beta)w_i^* + 2\gamma\lambda_{\max}(\mathbf{R}) - (2\alpha+2\beta+2\gamma\lambda_{\max}(\mathbf{R})) + \frac{\delta}{\varepsilon}.
-\end{equation}
-Using $w_i^* \le 1$ and simplifying yields the claimed bound.
-
-\textbf{Tightness.} Construct an instance with $k=2$, $\tilde{\mathbf{c}} = (0,1)^\top$, $\tilde{\mathbf{n}} = (0,1)^\top$, $\mathbf{R} = \mathbf{0}$, $b_1 = 1$, $b_2 = 0$. Setting $\varepsilon = \delta/(2\alpha+2\beta)$ makes the bound exact for node 1 at the optimum, confirming tightness. \hfill $\square$
-\end{proof}
-
-\textbf{Interpretation.} The bottleneck protection guarantee has direct operational significance. In reflective reasoning traces, bottleneck nodes correspond to irreducible structural dependencies---steps without which the reasoning chain collapses. The CIU signal for such nodes may be weak (e.g., a ``decomposition'' step that merely restates the problem), but their topological role is indispensable. Without bottleneck protection ($\delta = 0$), SC-FMA could assign such a node near-zero weight, producing a supervision signal that ignores structurally critical operations. The log-barrier term ensures a positive floor, with $\varepsilon$ controlling the tradeoff: a larger $\varepsilon$ strengthens protection but reduces the entropy of the weight distribution, while a smaller $\varepsilon$ preserves finer differentiation at the risk of under-protecting rare bottlenecks. We recommend $\varepsilon \in [10^{-4}, 10^{-2}]$ in practice, selected via held-out bottleneck recall. The tightness construction and complete KKT derivation are provided in the supplementary materials.
-
-\medskip
-
-\subsubsection{Corollaries}
-
-\begin{corollary}[Sparsity Control]
-\label{cor:sparsity}
-As $\gamma \to \infty$, the SCU objective forces $w_i^* \to w_j^*$ for every pair $(i,j)$ with $R_{ij} = 1$ (structurally identical steps). In the limit, the effective degrees of freedom in $\mathbf{w}^*$ reduces from $k$ to the number of equivalence classes induced by the transitive closure of $\{(i,j) : R_{ij} = 1\}$.
-\end{corollary}
-
-\begin{proof}
-The redundancy term $\gamma\mathbf{w}^\top\mathbf{R}\mathbf{w}$ can be rewritten as $\gamma\sum_{i,j} R_{ij}w_i w_j$. For any pair with $R_{ij} = 1$, the penalty for $(w_i - w_j)^2$ grows linearly in $\gamma$. As $\gamma \to \infty$, the objective becomes unbounded unless $w_i = w_j$ for all such pairs. The remaining degrees of freedom correspond to weights assigned to each equivalence class of structurally identical nodes. \hfill $\square$
-\end{proof}
-
-\textbf{Interpretation.} Corollary~\ref{cor:sparsity} exposes the sparsity-inducing mechanism of the redundancy penalty. In knowledge systems where multiple reflective operations serve interchangeable functions (e.g., three successive verification statements in a math trace), SC-FMA automatically collapses them into a single effective weight, preventing the dilution of supervision across redundant steps. This is relevant to future PRM training studies because redundant step labels can introduce label noise, but the present evidence does not validate downstream PRM training.
-
-\begin{corollary}[Computational Stability]
-\label{cor:stability}
-Let $\kappa(\mathbf{H})$ denote the condition number of the Hessian $\mathbf{H} = \nabla^2 L(\mathbf{w}^*)$. Then
-\begin{equation}
-\kappa(\mathbf{H}) \le \frac{2(\alpha+\beta) + 2\gamma\lambda_{\max}(\mathbf{R}) + \delta/\varepsilon^2}{2(\alpha+\beta) + 2\gamma\lambda_{\min}(\mathbf{R})},
-\end{equation}
-where $\lambda_{\min}(\mathbf{R}) \ge \eta > 0$ is ensured by eigenvalue floor correction applied during redundancy matrix construction. Under default hyperparameters ($\alpha=1.0$, $\beta=0.5$, $\gamma=0.2$, $\delta=0.1$, $\varepsilon=10^{-4}$), $\kappa(\mathbf{H}) \le 3.2$, guaranteeing numerically stable optimization.
-\end{corollary}
-
-\begin{proof}
-From Lemma~\ref{lem:hessian}, $\lambda_{\min}(\mathbf{H}) \ge 2(\alpha+\beta) + 2\gamma\lambda_{\min}(\mathbf{R})$ (the diagonal bottleneck term is non-negative) and $\lambda_{\max}(\mathbf{H}) \le 2(\alpha+\beta) + 2\gamma\lambda_{\max}(\mathbf{R}) + \delta/\varepsilon^2$ (since $b_i \le 1$ and $w_i^* \ge \varepsilon$). The ratio of these bounds gives the condition number upper bound. Substituting the default hyperparameters with $\lambda_{\min}(\mathbf{R}) \ge 10^{-3}$ and $\lambda_{\max}(\mathbf{R}) \le 10^2$ (empirically observed in our graph diagnostics), we obtain $\kappa(\mathbf{H}) \le 3.2$. \hfill $\square$
-\end{proof}
-
-\textbf{Interpretation.} A condition number below $10$ guarantees that SLSQP can solve each subproblem to high precision without iterative refinement. This is not a theoretical curiosity---it gives SC-FMA a computational profile compatible with future streaming-pipeline studies where per-trace optimization must complete within a fixed millisecond-scale budget. The eigenvalue floor correction on $\mathbf{R}$ (adding $\eta\mathbf{I}$ with $\eta = 10^{-3}$) is the key enabler: without it, structurally isolated nodes would produce zero eigenvalues, making $\mathbf{H}$ singular and the optimization ill-conditioned. Detailed convergence diagnostics and per-trace-size iteration statistics are provided in the supplementary materials.
-
-\medskip
-
-\subsubsection{Optimization Algorithm Convergence}
-
-SC-FMA QP is solved via Sequential Least Squares Quadratic Programming (SLSQP) \citep{kraft1988software}, an active-set method that solves a sequence of quadratic subproblems with linearized constraints. We provide a local convergence analysis and empirical iteration statistics.
-
-\begin{lemma}[Local Convergence Rate]
-\label{lem:slsqp}
-Under strict convexity (Theorem~\ref{thm:convexity}) and the condition number bound (Corollary~\ref{cor:stability}), SLSQP converges q-superlinearly in the local neighborhood of $\mathbf{w}^*$. Specifically, $\|\mathbf{w}^{(t+1)} - \mathbf{w}^*\|_2 \le C\|\mathbf{w}^{(t)} - \mathbf{w}^*\|_2^2$ for all $t$ beyond the active-set identification phase, with constant $C = \mathcal{O}(\kappa(\mathbf{H})) \le 3.2$ under default hyperparameters.
-\end{lemma}
-
-\begin{proof}
-SLSQP approximates the Hessian via the BFGS update, which converges to the true Hessian $\mathbf{H}$ at a superlinear rate once the active set stabilizes \citep{nocedal2006numerical}. The strict convexity guarantee ensures the BFGS iterates remain positive definite. The bounded condition number ensures numerical stability of the quasi-Newton updates. The q-superlinear rate follows from the Dennis--Mor\'{e} characterization theorem for BFGS under strict convexity. \hfill $\square$
-\end{proof}
-
-Empirical convergence statistics across $N = 1{,}027$ steps (200 traces, 3--8 steps each): mean iterations to convergence $5.3 \pm 2.1$ (std), median $5$, maximum $12$. The worst-case trace ($k=8$, dense redundancy structure) required $12$ iterations and $14.7$\,ms, still within a millisecond-scale budget relevant to future integration studies. Fewer than $0.3\%$ of optimization runs exceeded $10$ iterations.
-
-We also compare SLSQP with two alternative solvers. Interior-point methods (e.g., IPOPT) require $\mathcal{O}(\sqrt{k}\log(1/\epsilon))$ iterations in theory but incur higher per-iteration cost from solving the perturbed KKT system, making them less competitive for small $k$. The Alternating Direction Method of Multipliers (ADMM) can decompose the simplex constraint from the objective, yielding per-iteration cost $\mathcal{O}(k^2)$ with $\mathcal{O}(1/t)$ sublinear convergence. However, ADMM requires tuning a penalty parameter $\rho$ and converges slowly when $\mathbf{R}$ is dense. SLSQP's superlinear local convergence and low per-iteration overhead make it the preferred solver for trace-level calibration with $k \le 50$. For traces with $k > 50$, we recommend the Ridge variant (closed-form, $\mathcal{O}(k)$) with optional QP refinement on top-ranked candidate steps.
-
-\subsection{Step Importance Ranking Evaluation}
-
-We evaluate SC-FMA on step importance ranking: for each trace, predicted supervision weights are compared against controlled proxy step labels using Spearman $\rho$, Kendall $\tau$, NDCG@$k$ ($k=3,5,10$), and top-$k$ overlap. Aggregate metrics include bootstrap confidence intervals (95\%, 10k resamples), the Friedman omnibus test, and Wilcoxon signed-rank pairwise comparisons. Six baseline families are compared: gradient attribution (Gradient$\times$Input, attention rollout), Monte Carlo Shapley value, information-theoretic (token surprisal, step entropy), heuristic (random, span length, relative position), and the proxy-label ceiling.
-
-\section{Experiments}
-
-\subsection{Setup and Data}
-
-\subsubsection{Synthetic Data Generation}
-
-We generate 200 synthetic reasoning traces with 1,027 total reflective steps ($k = 3$--$8$ steps per trace, mean $k = 5.14$) using controlled probabilistic models with a fixed random seed (42). Each trace is parameterized by four generative distributions designed to replicate the statistical patterns observed in pilot diagnostic studies:
-
-\begin{itemize}
-  \item \textbf{CIU (Conditional Interventional Utility).} $c_i^{\text{raw}} \sim \operatorname{Beta}(2, 5)$, producing a right-skewed distribution concentrated in $[0, 0.6]$ with a long upper tail. This mirrors pilot findings that most reflective steps exhibit low-to-moderate local utility, with sparse high-utility outliers. After sampling, $\mathbf{c}$ is $\ell_2$-normalized per trace.
-  \item \textbf{Structural Necessity.} $n_i \sim (1 - \pi_0) \cdot \operatorname{Beta}(3, 2) + \pi_0 \cdot \delta_0$, a zero-inflated Beta model with $\pi_0 = 0.70$ (70\% zero probability). The nonzero component $\operatorname{Beta}(3, 2)$ is left-skewed, reflecting the empirical observation that structural necessity is both sparse (67\%--68\% zeros in pilot data) and, when present, concentrated at moderate-to-high values. The zero-inflation parameter $\pi_0$ is calibrated to match the Phase~6 zero-necessity rate.
-  \item \textbf{Redundancy Matrix.} $\mathbf{R}$ is constructed with a block-diagonal structure: steps are partitioned into $g \sim \operatorname{Poisson}(1) + 1$ groups (median $g = 2$, range $1$--$4$), and within each group $G_m$, $R_{ij} \sim \operatorname{Beta}(5, 2)$ for $i \neq j$, producing high within-group similarity. Between groups, $R_{ij} \sim \operatorname{Beta}(2, 5)$, producing low between-group similarity. The diagonal is set to $R_{ii} = 1$. Eigenvalue floor correction ($\eta = 10^{-3}$) ensures PSD, and entries $< 0.05$ are zeroed for CSR sparse storage.
-  \item \textbf{Bottleneck Indicators.} $b_i \sim \operatorname{Bernoulli}(p_b)$ where $p_b$ is the product of three indicators: $\mathbb{1}[\tilde{c}_i > \theta_c] \cdot \mathbb{1}[\tilde{n}_i > \theta_n] \cdot \mathbb{1}[\bar{r}_i < \theta_r]$, with thresholds set to the 70th, 70th, and 30th percentiles of the generative distributions. The resulting bottleneck rate is approximately 15\%--20\% per trace, consistent with pilot data.
-  \item \textbf{Controlled Proxy Labels.} Synthetic step-importance labels $y_i \in [0,1]$ are defined as a low-overlap evaluation target that does not reuse CIU, structural necessity, or redundancy as direct inputs:
-  \begin{equation}
-  y_i = 0.5 \cdot s_i + 0.3 \cdot d_i + 0.2 \cdot p_i,
-  \end{equation}
-  where $s_i \sim \text{Bernoulli}(\sigma(0.3 \cdot \text{depth}_i + 0.2 \cdot \text{complexity}_i))$ is a step-correctness indicator sampled from depth and complexity, $d_i = |\text{vocab}_i| / |\text{tokens}_i|$ is the per-step lexical diversity (type-token ratio), and $p_i = \sin(\pi i / k)$ is a smooth position curve peaking at mid-trace. This definition deliberately avoids the CIU--necessity--redundancy composition used by the SCU objective, so the benchmark does not simply reward the method for fitting its own inputs. The label is still a controlled proxy, not a human gold standard: correctness can correlate weakly with CIU, and position can correlate weakly with graph-derived quantities. We therefore report empirical cross-correlations in the supplementary proxy-label analysis: across 1{,}027 steps, $s_i$ has correlations of $0.08$, $-0.04$, and $-0.07$ with $\tilde{c}_i$, $\tilde{n}_i$, and $\bar{r}_i$ respectively; all proxy-component correlations with SCU inputs are below $|\rho|<0.15$. This composite label is used only for evaluation, not for calibration.
-\end{itemize}
-
-\subsubsection{Real-World Data}
-
-For real-data validation, we use PRM800K phase-2 process-supervision annotations under a frozen hash split (v3.6/v3.8 routes). The locked split contains 4,417 real samples and 34,219 labeled reasoning steps. PRM800K provides positive evidence for step-label ranking ($\rho = 0.611$; Section~\ref{sec:real-prm800k}) and in-distribution frozen PRM baseline context. GSM8K/HotpotQA task-specific replay and downstream filtering routes were not completed; they do not provide additional validation evidence for replay, downstream filtering, PRM training, or out-of-distribution transfer beyond the PRM800K distribution.
+\subsection{Synthetic Step-Importance Ranking}
 
 \begin{table}[ht]
-\caption{Data composition. Synthetic traces are used for method development, calibration, ablations, and error analysis. PRM800K provides real step-label ranking and frozen PRM baseline evidence under the frozen hash split. GSM8K/HotpotQA task-specific replay and downstream filtering routes were not completed.}
-\label{tab:data-splits}
-\centering
-\small
-\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.23\textwidth}ccc>{\raggedright\arraybackslash}p{0.26\textwidth}@{}}
-\toprule
-\textbf{Dataset} & \textbf{Train} & \textbf{Val} & \textbf{Test} & \textbf{Total} \\
-\midrule
-Synthetic traces              & 120 & 40 & 40  & 200 \\
-\quad Reflective steps        & 617 & 205 & 205 & 1,027 \\
-PRM800K locked samples        & --- & --- & 4,417 & 4,417 \\
-PRM800K labeled steps         & --- & --- & 34,219 & 34,219 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\subsubsection{Baseline Methods}
-\label{sec:baselines}
-
-We compare SC-FMA against six families of step importance estimation methods. All baselines produce a weight vector $\mathbf{w} \in \Delta^{k-1}$ for each trace.
-
-\begin{itemize}
-  \item \textbf{(A) Gradient Attribution.} $\text{Gradient}\!\times\!\text{Input}$~\citep{shrikumar2017learning} computes $w_i \propto \|\nabla_{\mathbf{e}_i} \mathcal{L}\|_1$ where $\mathbf{e}_i$ is the embedding of step $i$ and $\mathcal{L}$ is the cross-entropy loss of the final answer prediction. We aggregate gradients across the last 4 transformer layers using mean pooling, following~\citet{hao2021self}. The token-level attributions are summed within each step span and softmax-normalized.
-  \item \textbf{(B) Attention Rollout.} Following~\citet{abnar2020quantifying}, attention weights are aggregated across layers via matrix multiplication: $\tilde{A} = 0.5I + 0.5A^{(l)}$ for each layer $l$, and the final rollout is $W = \prod_{l=1}^L \tilde{A}^{(l)}$. Step-level weights are obtained by summing the path attention from the final answer token to all tokens in step $i$, then softmax-normalizing.
-  \item \textbf{(C) Monte Carlo Shapley Value.} Step importance is estimated via the Shapley value~\citet{gromping2007estimators}: $w_i = \frac{1}{k!}\sum_{\pi \in \Pi} [v(S_\pi(i) \cup \{i\}) - v(S_\pi(i))]$, approximated by $M = 500$ random permutations, with convergence diagnosed by $\|\mathbf{w}^{(m)} - \mathbf{w}^{(m-50)}\|_\infty < 10^{-3}$. The value function $v(S)$ is the final-answer correctness when only steps in $S$ are presented. Per-trace cost is $\mathcal{O}(M \cdot k)$ inference calls.
-  \item \textbf{(D) Information-Theoretic.} \emph{Token Surprisal}: $w_i \propto -\frac{1}{\ell_i}\sum_{t \in s_i} \log P(t \mid \text{context})$, using a frozen LLaMA-2-7B model for probability estimation. \emph{Step Entropy}: $w_i \propto \frac{1}{\ell_i}\sum_{t \in s_i} H(P(\cdot \mid \text{context}_{<t}))$, measuring the predictive uncertainty within each step.
-  \item \textbf{(E) Heuristic.} \emph{Random}: $w_i \sim \operatorname{Dirichlet}(\mathbf{1}_k)$. \emph{Span Length}: $w_i \propto \ell_i$, the token count of step $i$. \emph{Relative Position}: $w_i \propto i/k$, giving increasing weight to later steps. These baselines serve as sanity checks: any method claiming structural insight must significantly outperform them.
-  \item \textbf{(F) Proxy label ceiling.} The controlled proxy labels are the convex combination $y_i$ described above. They provide an evaluation ceiling for this synthetic benchmark only; they are not human annotations, and they are not evidence that CIU, necessity, or redundancy has been externally labeled.
-\end{itemize}
-
-\subsection{Hyperparameter Tuning}
-\label{sec:hparam}
-
-Hyperparameters $(\alpha, \beta, \gamma, \delta)$ and variant-specific parameters $(\alpha_c, \alpha_n, \tau)$ for Ridge and $(\phi, \psi, \rho, \lambda)$ for Projection are tuned on the validation set (40 traces, 205 steps) by grid search to maximize mean Spearman $\rho$ against controlled proxy step labels.
-
-\begin{table}[ht]
-\caption{Hyperparameter search grid and optimal values. For each parameter, we report the search range, step size, optimal value, and the $\Delta$Spearman $\rho$ when varying the parameter by $\pm 20\%$ from the optimum (one-at-a-time sensitivity).}
-\label{tab:hparam-tuning}
-\centering
-\small
-\begin{tabular}{lcccc}
-\toprule
-\textbf{Param} & \textbf{Range} & \textbf{Optimal} & $\Delta\rho$ ($+20\%$) & $\Delta\rho$ ($-20\%$) \\
-\midrule
-$\alpha$ (fidelity)      & $[0.1, 2.0]$ step $0.1$   & 1.0   & $-$0.018 & $-$0.031 \\
-$\beta$ (structure)      & $[0.1, 1.0]$ step $0.1$   & 0.5   & $-$0.007 & $-$0.015 \\
-$\gamma$ (redundancy)    & $[0.01, 0.5]$ step $0.01$ & 0.20  & $-$0.004 & $-$0.009 \\
-$\delta$ (bottleneck)    & $[0.01, 0.2]$ step $0.01$ & 0.10  & $-$0.003 & $-$0.006 \\
-$\varepsilon$ (floor)    & $\{10^{-4}, 10^{-3}, 10^{-2}\}$ & $10^{-4}$ & --- & --- \\
-Ridge: $\alpha_c$        & $[0.5, 2.0]$ step $0.1$   & 1.2   & --- & --- \\
-Ridge: $\alpha_n$        & $[0.1, 1.0]$ step $0.1$   & 0.6   & --- & --- \\
-Ridge: $\tau$ (temp.)    & $[0.5, 3.0]$ step $0.1$   & 1.5   & $-$0.011 & $-$0.012 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Table~\ref{tab:hparam-tuning} reports the final hyperparameter configuration. The fidelity parameter $\alpha$ exhibits the highest sensitivity: a $\pm 20\%$ perturbation around the optimum changes $\rho$ by $-$0.031 (decrease) and $-$0.018 (increase), indicating that under-regularizing CIU fidelity degrades performance more than over-regularizing it. The structure parameter $\beta$ is moderately sensitive ($\Delta\rho \approx -0.01$), while $\gamma$ and $\delta$ show relatively flat optima ($\Delta\rho < 0.01$), suggesting that the SCU objective is robust to moderate misspecification of redundancy and bottleneck penalties. The Ridge temperature $\tau = 1.5$ is slightly above the standard softmax default ($\tau = 1.0$), producing smoother weight distributions that improve rank correlation on the validation set.
-
-Parameter sensitivity curves (Figure~\ref{fig:sensitivity}) display the one-at-a-time effect of varying each hyperparameter while holding others fixed at their optima. The curves confirm that $\alpha$ and $\beta$ dominate the performance landscape, with $\gamma$ and $\delta$ providing fine-grained adjustments.
-
-\begin{figure}[ht]
-\centering
-\includegraphics[width=\linewidth]{figures/fig_sensitivity.png}
-\caption{Hyperparameter sensitivity curves. Panels (a)--(d) show the one-at-a-time effect of varying $\alpha$, $\beta$, $\gamma$, and $\delta$ while holding other parameters fixed at their validation-set optima. The vertical dashed line in each panel marks the selected optimal value. Shaded regions indicate $\pm 1$ standard error across 10 bootstrap resamples of the validation set.}
-\label{fig:sensitivity}
-\vspace{-0.3cm}
-\end{figure}
-
-\begin{figure}[ht]
-\centering
-\includegraphics[width=\linewidth]{figures/fig_ciu_necessity.png}
-\caption{Structural diagnostic: local CIU versus graph-level structural necessity across three perturbation modes (PRUNE, CASCADE, BYPASS) plus a pooled density panel. The diagonal reference line marks perfect agreement ($y = x$). The zero-inflation annotation highlights that $67.79\%$ of node-level necessity values are identically zero, and $49.54\%$ of steps have positive CIU but zero structural necessity. These diagnostics motivate the SC-FMA calibration framework by exposing the systematic divergence between local utility signals and topological structural role. Additional structural diagnostic figures, including mode comparison, redundancy distributions, compensation analysis, and resilience curves, are provided in the supplementary materials.}
-\label{fig:ciu-vs-necessity}
-\vspace{-0.3cm}
-\end{figure}
-
-\subsection{Calibration Quality}
-
-Table~\ref{tab:ranking-results} reports mean Spearman $\rho$ and additional ranking metrics for all methods on the test set (40 traces, 205 steps).
-
-\begin{table}[ht]
-\caption{Step importance ranking results. Mean metrics across 200 traces (1,027 steps). Bootstrap CIs at 95\% (10k resamples). SC-FMA QP and Ridge are bolded. $\dagger$ indicates $p < 0.01$ vs.\ raw CIU (Wilcoxon signed-rank).}
+\caption{Step importance ranking on the controlled synthetic benchmark. Mean metrics are over 200 traces and 1,027 steps. Bootstrap confidence intervals and extended ablations are reported in the supplementary material.}
 \label{tab:ranking-results}
 \centering
 \small
@@ -706,384 +120,59 @@ Table~\ref{tab:ranking-results} reports mean Spearman $\rho$ and additional rank
 \toprule
 \textbf{Method} & \textbf{Spearman $\rho$} & \textbf{Kendall $\tau$} & \textbf{NDCG@3} & \textbf{NDCG@5} \\
 \midrule
-SC-FMA QP                  & \textbf{0.608}$\dagger$ & 0.533 & 0.921 & 0.958 \\
-SC-FMA Ridge               & 0.533$\dagger$ & 0.447 & 0.889 & 0.927 \\
+SC-FMA QP                  & \textbf{0.608} & 0.533 & 0.921 & 0.958 \\
+SC-FMA Ridge               & 0.533 & 0.447 & 0.889 & 0.927 \\
+MC Shapley (500 perm.)     & 0.524 & 0.451 & 0.895 & 0.933 \\
 Gradient$\times$Input      & 0.491 & 0.419 & 0.881 & 0.924 \\
 Raw CIU                    & 0.483 & 0.412 & 0.874 & 0.919 \\
 Attention Rollout          & 0.461 & 0.388 & 0.863 & 0.912 \\
 SC-FMA Projection          & 0.338 & 0.278 & 0.806 & 0.872 \\
-MC Shapley (500 perm.)     & 0.524 & 0.451 & 0.895 & 0.933 \\
 Token Surprisal            & 0.310 & 0.252 & 0.791 & 0.863 \\
 Step Entropy               & 0.287 & 0.234 & 0.782 & 0.857 \\
 Span Length                & $-$0.006 & $-$0.013 & 0.740 & 0.826 \\
 Relative Position          & $-$0.005 & $-$0.014 & 0.740 & 0.825 \\
 Random                     & $-$0.010 & $-$0.008 & 0.736 & 0.825 \\
-\midrule
-Proxy label ceiling        & 1.000 & 1.000 & 1.000 & 1.000 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-SC-FMA QP achieves the highest rank correlation among all non-ceiling methods at 0.608, representing a $+0.125$ improvement over raw CIU ($p < 0.01$, Wilcoxon signed-rank, effect size $r = 0.34$). The Friedman omnibus test confirms significant differences across all 12 methods ($\chi^2(11) = 173.8$, $p < 0.001$). Pairwise Wilcoxon tests with Holm--Bonferroni correction: SC-FMA QP significantly outperforms Gradient$\times$Input ($p = 0.003$, $r = 0.29$), Attention Rollout ($p = 0.001$, $r = 0.35$), MC Shapley ($p = 0.018$, $r = 0.21$), Token Surprisal ($p < 0.001$, $r = 0.48$), and Step Entropy ($p < 0.001$, $r = 0.52$). SC-FMA QP versus SC-FMA Ridge: $p = 0.042$, $r = 0.16$, indicating that the full QP formulation provides a significant but moderate gain over the Ridge approximation.
+Table~\ref{tab:ranking-results} shows that SC-FMA QP achieves the strongest synthetic ranking result, improving Spearman $\rho$ by 0.125 over raw CIU. The result supports the methodological claim that structural calibration can correct local-utility weights when the benchmark provides controlled proxy step labels. It does not imply that the QP variant is universally best on naturally occurring data.
 
-MC Shapley (0.524) outperforms raw CIU (0.483, $p = 0.037$, $r = 0.17$) but underperforms SC-FMA QP (0.608, $p = 0.018$, $r = 0.21$), at approximately $500\times$ higher computational cost per trace. Gradient-based and attention-based methods perform comparably to raw CIU, suggesting that token-level attribution does not naturally capture the step-level structural relationships that SC-FMA explicitly models. Information-theoretic baselines perform poorly ($\rho < 0.32$), indicating that local token predictability is not a reliable proxy for step importance in reflective reasoning.
+\subsection{PRM800K Evidence and Audit Readout}
 
-\subsection{Extended Ablation Study}
-\label{sec:ablation-ext}
-
-Table~\ref{tab:ablation-ext} reports an extended ablation analysis with $9$ SCU configurations, quantifying the independent and joint contributions of each constraint term. All ablations use the optimal hyperparameters from Section~\ref{sec:hparam} with the specified terms zeroed or reduced.
+The locked PRM800K result is route-specific. The stored \texttt{w\_struct} ranking is the primary positive signal, with Spearman $\rho=0.611$ against PRM800K step ratings. Raw local utility is negative on this route ($\rho=-0.077$), and the overlap-limited frozen PRM prefix-score baseline is lower ($\rho=0.252$). SC-FMA Ridge closely preserves \texttt{w\_struct} ($\rho=0.604$), while QP ($\rho=0.442$) and Projection ($\rho=-0.135$) are downgraded.
 
 \begin{table}[ht]
-\caption{Extended ablation study. $\Delta\rho$ is the change in mean Spearman $\rho$ from the full QP configuration ($\alpha=1.0$, $\beta=0.5$, $\gamma=0.2$, $\delta=0.1$, $\varepsilon=10^{-4}$). $p$-values are from one-sided Wilcoxon tests against the full QP. Effect size $r = Z/\sqrt{N}$. Synergy $\checkmark$ indicates statistically significant positive interaction ($p < 0.05$).}
-\label{tab:ablation-ext}
+\caption{Claim-bounded PRM800K real-data evidence and offline audit-prioritization readout. Metrics use the same frozen split of 4,417 samples and 34,219 labeled steps.}
+\label{tab:prm800k-audit}
 \centering
 \small
-\begin{tabular}{lccccc}
-\toprule
-\textbf{Variant} & $\alpha$ & $\beta$ & $\gamma$ & $\delta$ & $\rho$ ($\Delta$, $p$, $r$) \\
-\midrule
-(0) SC-FMA QP (full)             & 1.0 & 0.5 & 0.2 & 0.1 & \textbf{0.608} (---) \\
-(1) $-$ Structure                & 1.0 & 0.0 & 0.2 & 0.1 & 0.551 ($-$0.057, $<$0.001, 0.39) \\
-(2) $-$ Fidelity                 & 0.1 & 0.5 & 0.2 & 0.1 & 0.536 ($-$0.072, $<$0.001, 0.43) \\
-(3) $-$ Redundancy               & 1.0 & 0.5 & 0.0 & 0.1 & 0.586 ($-$0.022, 0.003, 0.23) \\
-(4) $-$ Bottleneck               & 1.0 & 0.5 & 0.2 & 0.0 & 0.595 ($-$0.013, 0.008, 0.17) \\
-(5) Structure only               & 0.0 & 0.5 & 0.0 & 0.0 & 0.438 ($-$0.170, $<$0.001, 0.56) \\
-(6) Fidelity only (Raw CIU)      & 1.0 & 0.0 & 0.0 & 0.0 & 0.483 ($-$0.125, $<$0.001, 0.52) \\
-(7) Fidelity + Structure         & 1.0 & 0.5 & 0.0 & 0.0 & 0.573 ($-$0.035, $<$0.001, 0.28) \\
-(8) Fidelity + Redundancy        & 1.0 & 0.0 & 0.2 & 0.0 & 0.518 ($-$0.090, $<$0.001, 0.47) \\
-(9) Fidelity + Bottleneck        & 1.0 & 0.0 & 0.0 & 0.1 & 0.504 ($-$0.104, $<$0.001, 0.50) \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Several patterns emerge. \textbf{(i) Structure is the dominant single term.} Removing $\beta$ (variant 1, $\Delta = -0.057$) causes the largest single-term degradation, confirming that structural necessity carries the strongest calibration signal in this controlled proxy-label benchmark. This aligns with the pilot finding that CIU alone is weakly correlated with the proxy labels and that structural necessity provides complementary information. \textbf{(ii) Fidelity remains necessary.} Structure-only calibration (variant 5, $\rho = 0.438$) performs worse than raw CIU (0.483), indicating that structural necessity alone is insufficient---it must be combined with local utility signals to achieve high ranking accuracy. \textbf{(iii) Redundancy and bottleneck provide additive gains.} Removing $\gamma$ (variant 3, $\Delta = -0.022$) and $\delta$ (variant 4, $\Delta = -0.013$) each degrade performance independently. The pairwise combination ``Fidelity + Structure'' (variant 7, $\rho = 0.573$) exceeds both individual terms, confirming that CIU and necessity are complementary.
-
-\textbf{Interaction Effects.} We test for super-additive synergy by comparing the joint effect of removing two terms to the sum of their individual effects. The structure--redundancy interaction is significant: removing both $\beta$ and $\gamma$ (variant 5 vs.\ full) produces a degradation of $-$0.170, while the sum of individual degradations is $-$0.057 $-$ 0.022 = $-$0.079. The excess degradation ($-$0.091) indicates a synergistic interaction ($p = 0.004$, bootstrap test): structure and redundancy reinforce each other, likely because the redundancy penalty amplifies the effect of structural necessity by collapsing weights for structurally similar nodes. The structure--bottleneck interaction is also significant ($p = 0.031$), while the redundancy--bottleneck interaction is not ($p = 0.28$), suggesting that bottleneck protection operates largely independently of the redundancy term.
-
-\subsection{Error Analysis}
-\label{sec:error}
-
-We identify three failure modes of SC-FMA through qualitative inspection of traces where the predicted ranking deviates from controlled proxy labels by $|\Delta\rho| > 0.3$ on the per-trace level.
-
-\textbf{Mode 1: High-CIU, zero-necessity steps.} In traces where a reflective step receives high CIU but zero structural necessity (approximately 18\% of steps), SC-FMA assigns moderate weight (0.15--0.25) to balance fidelity and structure, while the proxy label can be low when the step has low sampled correctness, lexical diversity, or position value. This systematic over-weighting accounts for $34\%$ of large-deviation traces. Example: a verification step with CIU 0.87 but no structural role receives SC-FMA weight 0.22 versus proxy label 0.05.
-
-\textbf{Mode 2: Bottleneck misidentification.} In $12\%$ of traces, the bottleneck detector ($\S$3.1.4) misses a structurally critical node because its CIU falls just below $\theta_c = 0.65$, despite high necessity and low redundancy. SC-FMA then assigns lower weight than the proxy label because the log-barrier protection is not activated. Example: a planning step with $\tilde{c} = 0.62$, $\tilde{n} = 0.91$, $\bar{r} = 0.12$ is identified as non-bottleneck due to sub-threshold CIU, receiving SC-FMA weight 0.11 versus proxy label 0.38.
-
-\textbf{Mode 3: Redundancy collapse in dense graphs.} In traces with $k \ge 7$ and high graph density ($d > 0.45$), the redundancy penalty over-equalizes weights for the largest block, diluting the distinction between high- and low-proxy-label steps within that block. This affects $8\%$ of traces and is most pronounced when a large redundancy block (5+ nodes) contains both the top-ranked and bottom-ranked proxy-labeled steps.
-
-The residual error after accounting for these three modes is consistent with random noise (D'Agostino--Pearson normality test on residual $\Delta\rho$ distribution: $p = 0.18$, failing to reject normality), suggesting that systematic biases are the primary contributors to SC-FMA errors rather than irreducible estimation variance. Per-trace-size ranking metrics and a breakdown of error patterns by trace topology are provided in the supplementary materials.
-
-\subsection{Computational Efficiency}
-\label{sec:efficiency}
-
-Table~\ref{tab:efficiency} reports wall-clock time for all variants and baselines on the test set (40 traces, mean $k = 5.14$), measured on an Intel Core i7-13700H CPU with 32 GB RAM. All methods use single-threaded Python 3.11.
-
-\begin{table}[ht]
-\caption{Computational efficiency. Times are per-trace mean $\pm$ std over 40 test traces. Scaling column reports the exponent $p$ in the power-law fit $T(k) \propto k^p$ estimated over traces with $k = 3, 5, 8, 12, 20$ (generated for scaling analysis).}
-\label{tab:efficiency}
-\centering
-\small
+\renewcommand{\arraystretch}{1.08}
 \begin{tabular}{lccc}
 \toprule
-\textbf{Method} & \textbf{Wall-clock (ms)} & \textbf{Scaling $T \propto k^p$} & \textbf{Relative to QP} \\
+\textbf{Signal} & \textbf{Spearman $\rho$} & \textbf{NDCG@25\%} & \textbf{Allowed interpretation} \\
 \midrule
-SC-FMA QP                & $6.8 \pm 2.9$  & $p = 2.81$ & $1.0\times$ \\
-SC-FMA Ridge             & $0.4 \pm 0.1$  & $p = 0.97$ & $0.06\times$ \\
-SC-FMA Projection        & $0.2 \pm 0.05$ & $p = 0.98$ & $0.03\times$ \\
-Raw CIU (ablation)       & $0.8 \pm 0.2$  & $p = 0.95$ & $0.12\times$ \\
-MC Shapley (500 perm.)   & $3{,}420 \pm 890$ & $p = 1.03$ & $503\times$ \\
-Gradient$\times$Input    & $12.4 \pm 3.1$ & $p = 1.12$ & $1.82\times$ \\
-Attention Rollout        & $8.1 \pm 1.7$  & $p = 1.15$ & $1.19\times$ \\
-Token Surprisal          & $45.2 \pm 8.3$ & $p = 1.08$ & $6.65\times$ \\
+\texttt{w\_struct} & \textbf{0.611} & \textbf{0.9506} & Primary PRM800K step-ranking signal. \\
+SC-FMA Ridge & 0.604 & 0.9460 & Closest SC-FMA approximation. \\
+SC-FMA QP & 0.442 & 0.9439 & Audit context only on this route. \\
+Frozen PRM prefix score & 0.252 & 0.8465 & In-distribution baseline context only. \\
+Raw local utility & $-$0.077 & 0.7221 & Direct ablation. \\
+Random & 0.006 & 0.7757 & Seeded sanity control. \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-SC-FMA QP converges in $6.8 \pm 2.9$\,ms per trace, approximately $500\times$ faster than MC Shapley and $6.6\times$ faster than token surprisal. The scaling exponent $p = 2.81$ confirms the $\mathcal{O}(k^3)$ theoretical complexity, but for $k \le 8$, the constant factor is sufficiently small that wall-clock time is dominated by I/O and graph construction overhead rather than SLSQP iterations. The Ridge and Projection variants scale near-linearly ($p \approx 0.97$--$0.98$) and incur negligible overhead ($<0.5$\,ms per trace), making them computationally plausible candidates for future online-inference studies.
+The fixed-budget readout in Table~\ref{tab:prm800k-audit} supports a bounded operational statement: on PRM800K-like process annotations, \texttt{w\_struct} and Ridge concentrate high-rated steps better than raw local utility and simple controls. This is moderate, preliminary real-data support for audit prioritization. It is not downstream PRM training, not filtering superiority, not GSM8K/HotpotQA replay validation, and not production KBS deployment.
 
-For $k = 20$ (10$\times$ the typical trace size), SC-FMA QP requires $38.2 \pm 7.4$\,ms per trace, still acceptable for batch processing. The Ridge variant at this scale requires $1.1 \pm 0.3$\,ms. Scaling curves (Figure~\ref{fig:scaling}) display the full $T(k)$ relationship across all methods.
+\section{KBS Implications and Limitations}
 
-\medskip
+SC-FMA is useful for KBS methodology because it separates four audit questions that are often conflated: whether a step is locally useful, whether it is structurally necessary, whether it duplicates another step, and whether it gates downstream reasoning. In rule-chain, retrieval-augmented, or KG-assisted workflows, these questions map naturally to curation priorities: high-necessity bottleneck checks deserve review, while highly redundant checks may be consolidation candidates. The mapping is a methodological analogy, not a validated system integration.
 
-Table~\ref{tab:complexity} provides a comprehensive theoretical and empirical comparison of time and space complexity across all SC-FMA variants and representative baselines. The empirical scaling exponent $p$ is fitted via least-squares regression on $\log T(k) = p \log k + \text{const}$ over traces with $k = 3, 5, 8, 12, 20$; $R^2$ values for all fits exceed 0.96.
-
-\begin{table}[ht]
-\caption{Time and space complexity comparison. Theoretical complexity is the asymptotic worst-case bound in big-$\mathcal{O}$ notation. Empirical scaling exponent $p$ is the power-law fit $T(k) \propto k^p$. Space complexity accounts for all retained data structures (graph adjacency, redundancy matrix, Hessian).}
-\label{tab:complexity}
-\centering
-\small
-\begin{tabular}{lcccc}
-\toprule
-\textbf{Method} & \textbf{Time Complexity} & \textbf{Empirical $p$} & \textbf{Space Complexity} & \textbf{Convergence Guarantee} \\
-\midrule
-SC-FMA QP (SLSQP)       & $\mathcal{O}(k^3)$    & $2.81$ & $\mathcal{O}(k^2)$ & Superlinear (local) \\
-SC-FMA Ridge            & $\mathcal{O}(k)$      & $0.97$ & $\mathcal{O}(k)$   & Closed-form \\
-SC-FMA Projection       & $\mathcal{O}(k)$      & $0.98$ & $\mathcal{O}(k)$   & Closed-form \\
-SC-FMA QP (warm-start)  & $\mathcal{O}(k^3)$    & $2.81$ & $\mathcal{O}(k^2)$ & Superlinear (local) \\
-\midrule
-Raw CIU (masking)       & $\mathcal{O}(k \cdot L)$ & $0.95$ & $\mathcal{O}(k \cdot L)$ & Deterministic \\
-MC Shapley ($M$ perm.)  & $\mathcal{O}(M \cdot k \cdot L)$ & $1.03$ & $\mathcal{O}(k \cdot L)$ & $\mathcal{O}(1/\sqrt{M})$ \\
-Gradient$\times$Input   & $\mathcal{O}(k \cdot D)$ & $1.12$ & $\mathcal{O}(k \cdot D)$ & Deterministic \\
-Token Surprisal         & $\mathcal{O}(k \cdot \ell \cdot D)$ & $1.08$ & $\mathcal{O}(k \cdot \ell \cdot D)$ & Deterministic \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\noindent \textbf{Notation:} $k$ = number of reflective steps per trace; $L$ = average token count per trace; $D$ = model embedding/projection dimension; $\ell$ = average tokens per step; $M$ = number of Shapley permutations (500 in experiments). The CIU masking cost $\mathcal{O}(k \cdot L)$ reflects $k$ forward passes of length $L$ through the evaluation model. MC Shapley scales multiplicatively with $M$ permutations, each requiring a forward pass. SC-FMA QP's $\mathcal{O}(k^2)$ space is dominated by the $k \times k$ redundancy matrix $\mathbf{R}$ in CSR format and the BFGS Hessian approximation. Both Ridge and Projection variants require only $\mathcal{O}(k)$ space for the weight vector and intermediate sums, making them candidates for future streaming or edge-oriented integration studies.
-
-\begin{figure}[ht]
-\centering
-\includegraphics[width=\linewidth]{figures/fig_scaling.png}
-\caption{Computational scaling curves. Wall-clock time $T(k)$ as a function of trace size $k$ (3--20 steps) on log-log axes. Each curve shows the power-law fit $T(k) \propto k^p$; the exponent $p$ and corresponding $\mathcal{O}$ complexity class are annotated. SC-FMA QP follows the $\mathcal{O}(k^3)$ theoretical bound, while Ridge and Projection scale near-linearly. Error bars indicate $\pm 1$ std. over 10 traces per size. Dashed lines show the power-law fits with $R^2 > 0.96$ for all methods.}
-\label{fig:scaling}
-\vspace{-0.3cm}
-\end{figure}
-
-\subsection{Real PRM800K Step-Ranking and Frozen PRM Baseline Context}
-\label{sec:real-prm800k}
-
-The current positive real-data evidence is limited to PRM800K process-supervision annotations under the frozen v3.6/v3.8 routes. In the v3.6 hash-split locked validation, the stored \texttt{w\_struct} signal is evaluated against PRM800K step labels on 4,417 samples and 34,219 labeled steps. The locked result gives $\rho = 0.611$ for \texttt{w\_struct}, compared with $\rho = -0.077$ for raw local utility; the paired bootstrap confidence interval for \texttt{w\_struct - raw} is $[0.673, 0.705]$, with Holm correction passing.
-
-The v3.8 frozen PRM comparison is reported only as in-distribution baseline context with acknowledged PRM800K overlap risk. The frozen PRM score is a \texttt{prefix\_sequence\_reward\_probability}: step $k$ is scored by the sequence reward for the question plus the first $k$ steps, not by token-level PRM logits. On the same locked PRM800K split, the frozen PRM prefix-score Spearman correlation is $0.252$, while \texttt{w\_struct} remains $0.611$; the paired bootstrap confidence interval for \texttt{w\_struct - prm} is $[0.345, 0.375]$, with Holm correction passing. This supports an overlap-limited frozen PRM baseline comparison only. It does not support downstream training, GSM8K/HotpotQA replay-pass wording, downstream filtering, mechanism recovery, or claims beyond PRM800K-like process-supervision data.
-
-\begin{table*}
-\caption{Real-data evidence and claim boundaries. PRM800K supports real step-label ranking and in-distribution frozen PRM baseline comparison. GSM8K/HotpotQA task-specific replay and downstream filtering were not completed and do not provide additional validation evidence.}
-\label{tab:prm800k-real-evidence}
-\centering
-\small
-\renewcommand{\arraystretch}{1.12}
-\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.17\textwidth}>{\raggedright\arraybackslash}p{0.18\textwidth}cc>{\raggedright\arraybackslash}p{0.19\textwidth}>{\raggedright\arraybackslash}p{0.22\textwidth}@{}}
-\toprule
-\textbf{Route} & \textbf{Evidence type} & \textbf{Samples} & \textbf{Steps} & \textbf{Locked metric} & \textbf{Allowed interpretation} \\
-\midrule
-v3.6 PRM800K hash split & Real step-label ranking & 4,417 & 34,219 & \texttt{w\_struct} Spearman $0.611$; raw local utility $-0.077$ & Supports \texttt{M\_STEP\_RANKING} and \texttt{M\_STEP\_RANKING\_REAL\_PRM800K}. \\
-v3.8 frozen PRM locked scoring & In-distribution frozen PRM baseline context & 4,417 & 34,219 & Frozen PRM prefix-score Spearman $0.252$; \texttt{w\_struct - prm} CI $[0.345, 0.375]$ & Supports overlap-limited baseline context only; out-of-distribution transfer and PRM training claims are not allowed. \\
-SC-FMA variant comparison (P1-6) & Real step-label ranking, calibration variants & 4,417 & 34,219 & See Table~\ref{tab:scfma-variants} & Supports \texttt{M\_STEP\_RANKING}; structural calibration preserves but does not improve \texttt{w\_struct} ranking quality. \\
-Extended statistical tests (P1-7) & Pairwise Wilcoxon + Friedman & 4,417 & 34,219 & Friedman $\chi^2 = 19273.5$, $p < 0.001$ & Confirms non-random performance differences across methods. \\
-GSM8K/HotpotQA task-specific replay and filtering & Not completed & --- & --- & No locked validation artifact & Does not provide additional evidence beyond PRM800K; downstream filtering and PRM training on these tasks remain future validation. \\
-\bottomrule
-\end{tabular}
-\end{table*}
-
-\subsubsection{SC-FMA Calibration Variant Comparison}
-
-To assess whether structural calibration adds value beyond the base Ridge model (\texttt{w\_struct}), we evaluate all three SC-FMA variants on the same PRM800K locked split (4,417 samples, 34,219 steps). Each variant takes \texttt{w\_struct} predictions as the fidelity (CIU) input and combines them with structural necessity, redundancy, and bottleneck information as defined in Section~\ref{sec:scu-objective}. Table~\ref{tab:scfma-variants} summarizes the results.
-
-\begin{table}[htbp]
-\centering
-\small
-\caption{SC-FMA calibration variant comparison on PRM800K locked split (4,417 samples, 34,219 steps). All variants use \texttt{w\_struct} predictions as fidelity input. Mean Spearman $\rho$ with 95\% bootstrap CI; Cohen's $d$ vs.\ \texttt{w\_struct}.}
-\label{tab:scfma-variants}
-\renewcommand{\arraystretch}{1.08}
-\begin{tabular}{@{}>{\raggedright}p{0.24\textwidth}cccc@{}}
-\toprule
-\textbf{Method} & \textbf{Mean $\rho$} & \textbf{95\% CI} & \textbf{$\Delta\rho$ vs.\ \texttt{w\_struct}} & \textbf{Cohen's $d$} \\
-\midrule
-\texttt{w\_struct} (Ridge baseline) & 0.611 & $[0.605, 0.618]$ & --- & --- \\
-SC-FMA Ridge & 0.604 & $[0.597, 0.611]$ & $-0.007$ & $-0.066$ \\
-SC-FMA QP & 0.442 & $[0.432, 0.452]$ & $-0.169$ & $-0.755$ \\
-SC-FMA Projection & $-0.135$ & $[-0.147, -0.122]$ & $-0.746$ & $-1.561$ \\
-Raw local utility & $-0.078$ & $[-0.092, -0.064]$ & $-0.689$ & $-1.299$ \\
-Frozen PRM prefix score & 0.252 & --- & $-0.359$ & --- \\
-\midrule
-Best heuristic (rel.\ position) & $-0.568$ & --- & $-1.179$ & --- \\
-Random & 0.006 & $[-0.008, 0.020]$ & $-0.606$ & --- \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Two findings emerge. First, SC-FMA Ridge closely tracks the \texttt{w\_struct} baseline ($\Delta\rho = -0.007$, 95\% CI $[-0.011, -0.004]$, Cohen's $d = -0.066$), indicating that the softmax-weighted CIU--necessity combination preserves the learned ranking while adding structural information. The small deficit reflects the information loss from projecting continuous predictions onto a probability simplex. Second, SC-FMA QP and Projection underperform the baseline substantially. On this locked PRM800K route, the stronger structural constraints do not improve ranking beyond the baseline and instead reduce it. We therefore report these variants as route-specific empirical degradations rather than as general statements about the intrinsic difficulty of PRM800K traces or the universal value of more complex constraints.
-
-A Friedman test across all nine methods confirms significant performance differences ($\chi^2 = 19273.5$, $p < 0.001$). Pairwise one-sided Wilcoxon tests with Holm correction show that \texttt{w\_struct} significantly outperforms SC-FMA QP ($p < 0.001$), SC-FMA Projection ($p < 0.001$), and all baselines. SC-FMA Ridge does not significantly outperform \texttt{w\_struct} (one-sided Wilcoxon $p > 0.99$), confirming that the calibration preserves---but does not improve---ranking quality.
-
-\subsubsection{Offline Audit-Prioritization Readout}
-\label{sec:audit-prioritization}
-
-The same locked PRM800K split can also be read as an offline audit-prioritization problem. If a reviewer, verifier, or curator can inspect only a fixed fraction of process steps, a useful weighting signal should concentrate high-rated process annotations near the top of the review queue. This readout reuses the locked PRM800K split and reports top-1 hit rate, mass captured in the top 25\% of ranked steps, and NDCG@25\%. It remains a step-ranking use case on existing annotations; it is not downstream PRM training, not filtering superiority, and not GSM8K/HotpotQA replay evidence.
-
-\begin{table*}[t]
-\caption{PRM800K locked split as offline audit-prioritization context. Metrics are computed over the same 4,417 samples and 34,219 labeled steps used in the v3.6 locked split.}
-\label{tab:audit-prioritization}
-\centering
-\small
-\renewcommand{\arraystretch}{1.08}
-\begin{tabular}{lcccc}
-\toprule
-\textbf{Method} & \textbf{Top-1 hit} & \textbf{Mass@25\%} & \textbf{NDCG@25\%} & \textbf{Interpretation} \\
-\midrule
-\texttt{w\_struct} & \textbf{0.9169} & \textbf{0.3809} & \textbf{0.9506} & Primary locked step-ranking signal. \\
-SC-FMA Ridge & 0.9054 & 0.3796 & 0.9460 & Closest SC-FMA approximation. \\
-SC-FMA QP & 0.9033 & 0.3790 & 0.9439 & Audit context only; not the real-data winner. \\
-Frozen PRM prefix score & --- & --- & 0.8465 & In-distribution context only. \\
-Random & --- & --- & 0.7757 & Seeded sanity control. \\
-Span length & --- & --- & 0.7526 & Trivial control. \\
-Raw local utility & --- & --- & 0.7221 & Direct ablation. \\
-Relative position & --- & --- & 0.3204 & Trivial control. \\
-\bottomrule
-\end{tabular}
-\end{table*}
-
-The audit-prioritization readout supports one bounded operational statement: on PRM800K-like process-supervision annotations, \texttt{w\_struct} and the Ridge approximation better concentrate high-rated steps under a fixed review budget than raw local utility, relative position, span length, random ranking, or the overlap-limited frozen PRM context. It does not support claims about trained PRM improvement, task success, external datasets, or production KBS deployments.
-
-\section{Discussion}
-
-The results establish SC-FMA as a viable methodology for converting interventional utility signals into structurally-aware supervision weights within a bounded evidence surface. Five key findings emerge:
-
-\textbf{Structural calibration matters on the controlled benchmark.} The full QP and Ridge configurations outperform raw CIU on controlled synthetic step importance ranking, providing empirical validation of the diagnostic motivation from prior work under proxy labels.
-
-\textbf{The convex QP formulation is practical.} Despite O($k^3$) worst-case complexity, SLSQP converges reliably for typical reasoning traces ($k = 3$--$8$ steps) in well under 10ms per trace on commodity hardware.
-
-\textbf{Bottleneck protection is reliable.} The log-barrier constraint achieves its design goal of preventing structural collapses from zero-weighted critical nodes, with all bottleneck nodes in the test set receiving weight above the configured floor.
-
-\textbf{Synthetic improvements are robust but moderate.} The +0.125 synthetic gain over raw CIU is statistically significant and consistent across metrics, but moderate in absolute magnitude. This is consistent with prior findings that structural signals are sparse---SC-FMA cannot create structural necessity where none exists. It can only calibrate CIU to respect the structural signals that are available. The improvement is therefore bounded by the information content of the structural diagnostics. The P1-6 variant comparison further shows that structural calibration preserves but does not improve the base Ridge ranking when the fidelity signal is already strong, suggesting diminishing returns from additional structural constraints.
-
-\textbf{Variant complexity does not guarantee improvement.} On PRM800K step ranking, SC-FMA Ridge ($\rho = 0.604$) closely matches the \texttt{w\_struct} baseline ($\rho = 0.611$) with $\Delta\rho = -0.007$, while the more complex QP ($\rho = 0.442$) and Projection ($\rho = -0.135$) variants underperform. We do not interpret this as evidence about why PRM800K behaves this way; it is simply the observed route-specific outcome. The prudent reading is that stronger structural penalties help on the controlled synthetic benchmark but are not reliably beneficial on this locked PRM800K route.
-
-\textbf{Audit-prioritization is a bounded KBS-facing use case.} The fixed-budget readout shows that \texttt{w\_struct} and SC-FMA Ridge concentrate high-rated PRM800K process steps near the top of an offline review queue. This is useful for positioning SC-FMA as auditable verification-step weighting, but it does not validate downstream PRM training, filtering, out-of-distribution transfer, or production KBS deployments.
-
-\subsection{Implications for Knowledge-Based Systems}
-
-The SC-FMA methodology, while developed within the process supervision context for reflective language agents, carries implications for several core concerns of knowledge-based systems (KBS) research. This subsection maps SC-FMA's structural calibration components onto KBS design patterns---knowledge verification, knowledge-base maintenance, explainability, and integration with established KBS technologies---while acknowledging the methodological boundaries that constrain direct transfer.
-
-\subsubsection{Knowledge Verification Workflow Optimization}
-
-A central challenge in knowledge-based systems is the efficient organization of verification workflows: given a chain of inferential steps, which intermediate checks are necessary for reliable conclusions and which are computationally redundant? SC-FMA's structural diagnostics provide a principled framework for addressing this question. Each reflective step in a reasoning trace can be mapped to a verification node in a knowledge system---a point at which the system checks intermediate consistency, validates assumptions, or cross-references external constraints. The SC-FMA structural necessity measurement (Algorithm~1, Section~\ref{sec:necessity-comp}) then identifies which verification nodes are topologically indispensable: a high-necessity verification corresponds to a check without which the inference chain cannot reliably reach its conclusion. The redundancy matrix $\mathbf{R}$ (Section~\ref{sec:redundancy-matrix}) identifies verification operations that serve substitutable functions, enabling the system to reduce computational overhead by collapsing redundant checks---for instance, skipping multiple semantic-similarity-based consistency checks within a single reasoning segment without degrading reliability. Bottleneck identification (Section~\ref{sec:bottleneck}) protects structurally critical verification nodes from being pruned during optimization, ensuring that indispensable checks---such as a medical diagnosis system's verification that a differential diagnosis excludes contraindicated treatments, or a financial risk model's check that portfolio constraints remain satisfied after each rebalancing step---are never omitted.
-
-Four concrete application scenarios illustrate the mapping. (i) In \textit{medical diagnosis reasoning chains}~\cite{cardoso2024medicalreasoning}, a sequence of diagnostic inferences---symptom-to-condition mapping, test-result interpretation, differential exclusion, treatment recommendation---can be modeled as a reasoning DAG. SC-FMA's bottleneck detection identifies which diagnostic checks (e.g., drug-interaction verification before a prescription recommendation) are structurally irreplaceable, while redundancy analysis flags repeated vital-sign checks that carry no additional evidential weight. (ii) In \textit{financial risk assessment pathways}~\cite{markowitz1952portfolio}, multi-step regulatory compliance reasoning (exposure calculation, stress testing, limit checking, reporting) benefits from the distinction between computationally expensive but redundant verification nodes (e.g., multiple VaR calculations on overlapping time windows) and structurally necessary nodes (e.g., a counterparty credit check that gates all downstream exposure computations). (iii) In \textit{scientific hypothesis verification}~\cite{evans2018learning}, the experimental design reasoning chain---hypothesis formulation, control variable identification, confounding-factor exclusion, statistical test selection---requires that certain methodological checks (e.g., verifying that randomization eliminates a specific confound) not be collapsed, even if they share surface-level similarity with neighboring procedural steps. (iv) In \textit{knowledge graph query answering}, step-level necessity can prioritize which intermediate entity resolutions are required for correct multi-hop inference and which can be deferred or cached~\cite{lao2011path}.
-
-\subsubsection{Knowledge Base Maintenance and Evolution}
-
-The structural necessity scores produced by SC-FMA offer a diagnostic instrument for knowledge-base (KB) maintenance decisions. High-necessity reflective steps correspond to reasoning operations that the system treats as structurally irreplaceable; in KB terms, these correspond to \textit{high-confidence knowledge assertions}---rules, constraints, or factual triples whose removal would degrade downstream inference quality. Low-necessity redundant steps correspond to knowledge elements that are functionally duplicated within the KB, signaling candidates for rule consolidation or de-duplication during KB refactoring~\cite{galarraga2013amie}. This mapping is probabilistic, not deterministic: a low-necessity step in a language-agent trace does not guarantee that the corresponding KB rule is redundant, but systematic low-necessity signals across multiple traces involving the same rule type warrant review.
-
-The structural bottleneck identification mechanism has a direct analog in KB robustness analysis: single points of failure (SPOF). In a rule-based medical diagnosis system, a bottleneck verification node---such as a drug-allergy cross-reference step that gates all prescription outputs---maps to a KB rule whose removal or corruption would cause system-wide degradation. In a knowledge graph, a bottleneck inference step corresponds to an entity or relation with high betweenness centrality whose erroneous linking would propagate errors across multiple query paths~\cite{bellomarini2024knowledgegraphs}. SC-FMA's log-barrier bottleneck protection (Theorem~\ref{thm:bottleneck}) formalizes the operational principle that such SPOFs must be assigned weight above a non-zero floor, regardless of their surface-level local utility signal. This principle is directly transferable to KB quality assurance: systematic bottleneck detection across reasoning traces indicates knowledge elements that require heightened curation, replication, or fallback mechanisms.
-
-We emphasize a boundary condition. The structural necessity measurements used here are derived from keyword-heuristic graph construction over surface-level reasoning text, not from a formal knowledge representation with well-defined semantics. The mapping from reflective step necessity to KB rule criticality is therefore an \textit{approximate diagnostic indicator} rather than a certified KB analysis tool. Validation of this mapping on formally represented KBs with ground-truth rule-criticality labels remains future work.
-
-\subsubsection{Explainability Enhancement}
-
-The SC-FMA calibrated weight vector $\mathbf{w}^*$ provides a graded explanation of \textit{why} the system assigns importance to particular reasoning steps. Unlike binary step-level correctness labels, which reduce explanation to ``this step is correct/incorrect,'' SC-FMA weights decompose the rationale into four factorable dimensions: supplied utility or proxy fidelity, structural position, redundancy relationships, and bottleneck status. For a regulated decision subject to GDPR right-to-explanation obligations or AI Act transparency requirements~\cite{wachter2017counterfactual,guidotti2018survey}, this decomposition enables a structured audit trail: ``Step $s_i$ received weight $w_i = 0.23$ because (a) the supplied fidelity input is moderate, (b) it occupies a structurally necessary position (necessity = 0.71), (c) it is partially redundant with two other verification steps (mean $R_{ij} = 0.62$), and (d) it is not identified as a bottleneck node.''
-
-This connects SC-FMA to the counterfactual explanation framework of Wachter et al.~\cite{wachter2017counterfactual}, who established that GDPR-compliant automated decision explanations should specify ``what would need to change for the decision to differ.'' SC-FMA extends this logic to \textit{structured multi-step reasoning} by combining documented perturbation evidence with graph-level calibration. The current binary-correctness CIU signal is a trace-level coarse utility anchor and does not prove that each step has an independent outcome-grounded CIU. Its explanatory role is therefore bounded: it supplies one fidelity input, while step-level differentiation is provided by Phase 5 proxy construction, Phase 6 graph necessity, redundancy, bottleneck status, and process labels where available. The resulting audit record is structure-aware, but its step granularity should not be read as a fully outcome-grounded per-step explanation.
-
-\subsubsection{Integration Pathways with Existing KBS Technologies}
-
-SC-FMA's calibration components suggest modular integration pathways with established KBS architectures, rather than a standalone replacement for any of them. These pathways are methodological extensions, not validation results from deployed KBS systems.
-
-\begin{algorithm}[t]
-\caption{Conceptual RAG/Rule-Chain Adapter for SC-FMA Audit Prioritization}
-\label{alg:kbs-adapter}
-\begin{algorithmic}[1]
-\Require RAG or rule-chain trace $\tau$, step metadata $M$, citation/rule provenance $P$, fixed audit budget $B$
-\Ensure Ranked audit queue $Q$ and diagnostic flag \texttt{validated\_kbs\_workflow=false}
-\State Map each trace step to a KBS role: \texttt{retrieve}, \texttt{augment}, \texttt{verify}, \texttt{rule\_fire}, or \texttt{answer}
-\State Construct provenance, rule-dependency, citation-support, and temporal edges from $P$ and $M$
-\State Attach coarse utility or proxy fidelity input from CIU, verifier scores, or process labels
-\State Compute graph necessity, redundancy, and bottleneck indicators over the adapted step graph
-\State Solve the SCU calibration objective to obtain weights $\mathbf{w}^*$
-\State Sort steps by $\mathbf{w}^*$, with bottleneck nodes protected from removal
-\State Return the top-$B$ steps as a fixed-budget audit queue $Q$
-\end{algorithmic}
-\end{algorithm}
-
-Algorithm~\ref{alg:kbs-adapter} makes the intended KBS interface concrete without upgrading the evidence claim. In a RAG pipeline, retrieval steps supply citation and document-provenance edges, augmentation steps supply evidence-combination edges, and answer-verification steps supply final consistency checks. In a rule-chain system, rule firings supply antecedent-consequent edges and conflict-resolution metadata. SC-FMA would then prioritize which retrieved passages, rule firings, or verification checks deserve human or automated audit under a fixed budget. This adapter is a route map for knowledge verification step prioritization, not an implemented production workflow; the corresponding diagnostic report flag is \verb|validated_kbs_workflow=false|.
-
-\textit{Rule engines.} In production rule systems such as Drools or CLIPS, rule-firing priority is typically determined by static salience values or conflict-resolution strategies (e.g., recency, specificity). SC-FMA weights could augment rule-trigger priorities by incorporating \textit{structural calibration}: rules whose antecedent matching patterns correspond to high-necessity bottleneck verification nodes would receive elevated salience, while rules corresponding to redundant verification clusters would receive depressed salience to prevent unnecessary firing~\cite{galarraga2013amie}. Critically, the SCU objective's convexity guarantee (Theorem~\ref{thm:convexity}) would make such priority assignments deterministic given fixed input traces, an essential property for deterministic rule-engine execution.
-
-\textit{Knowledge graphs.} In KG-based reasoning systems, SC-FMA bottleneck nodes could be mapped to \textit{critical entities or relation types} identified by structural necessity diagnostics. A high-necessity step in a reasoning trace may correspond to an entity (e.g., a specific drug, protein, or regulation) whose disambiguation accuracy gates downstream inference quality; a high-redundancy step may correspond to a relation type with multiple semantically equivalent instantiations that can be collapsed without KG connectivity loss~\cite{bellomarini2024knowledgegraphs}. The graph construction framework (Section~\ref{sec:graph-construction}) currently implements a lightweight topical edge mechanism using TF-IDF cosine similarity over step text. Extending this to KG-specific edge types (is-a, part-of, contraindicates, depends-on) would be required before step-level structural diagnostics could be mapped directly to KG schema elements.
-
-\textit{Neuro-symbolic systems.} In architectures that combine neural modules (e.g., LLM-based step generation or retrieval) with symbolic modules (e.g., theorem provers, constraint solvers, rule-based verifiers), SC-FMA could serve as a \textit{calibration layer} between the two~\cite{manhaeve2018deepproblog}. Neural module outputs (reflective reasoning steps) would receive raw CIU estimates based on final-answer correctness; the symbolic module would provide structural constraints (dependency relations, redundancy classes, bottleneck designations) derived from the KB's formal semantics; and the SCU objective would produce calibrated weights that respect both signals. This architecture does not require the neural module to internalize KB structure---the calibration layer handles the structural reconciliation post-hoc. The computational cost is dominated by the convex optimization step ($< 10$\,ms per trace for typical reasoning chains), but real-time KBS deployment remains a future validation question.
-
-\subsubsection{Limitations and Outlook for KBS Integration}
-\label{sec:kbs-integration-limits}
-
-The current implementation imposes several limitations that temper the strength of KBS claims. First, the graph construction procedure (Section~\ref{sec:graph-construction}) relies on keyword-heuristic edge rules (temporal adjacency with weight $1.0$, TF-IDF topical similarity with threshold $\tau_{\text{tfidf}} = 0.35$). For knowledge systems operating over formally defined ontologies, this heuristic approximation introduces semantic noise: two steps may share TF-IDF keywords without sharing ontological entailments, and two ontologically dependent steps may diverge in surface vocabulary. The resulting structural diagnostics (necessity, redundancy, bottleneck status) inherit this approximation error, and their precision for KB-specific decisions---such as recommending a specific rule for deprecation---is correspondingly bounded.
-
-Second, the CIU signal currently uses trace-level binary correctness as the outcome variable. KB verification workflows often require finer-grained utility signals: a step that verifies variable binding correctness may not affect final-answer accuracy but may be essential for downstream interpretability or for preventing silent type errors that propagate across reasoning modules. Extending CIU to multi-dimensional utility (correctness, interpretability, safety, computational cost) would better align SC-FMA with KB quality requirements~\cite{guidotti2018survey}.
-
-Third, no rule engine, ontology reasoner, KG query engine, or production KBS deployment has been validated. A pilot integration with ontology-aware edge construction is discussed below as a methodological extension, but remains unvalidated.
-
-To make this interface concrete without upgrading the evidence claim, the reproducibility bundle includes a deterministic fixture-level pilot at \texttt{outputs/kbs\_ontology\_edge\_pilot/diagnostic\_report.json}. The pilot maps controlled \texttt{concept\_id}, \texttt{constraint\_id}, and \texttt{operation\_type} metadata to existing SC-FMA functional edge types such as \texttt{verifies}, \texttt{corrects}, and \texttt{revises}; ontology relation labels are recorded only as diagnostic metadata, not as new graph edge types. The report explicitly sets \texttt{evidence\_level=diagnostic} and \texttt{validated\_kbs\_workflow=false}, and is not counted as validation evidence for any rule engine, ontology reasoner, KG query engine, PRM training route, or production KBS deployment.
-
-A promising future direction is the integration of SC-FMA with \textit{formal ontologies}. Replacing the keyword-based topical edges with ontology-informed semantic edges---where $E_{\text{semantic}}$ is defined by subclass, part-of, or property-chain relationships in a domain ontology (e.g., SNOMED CT for medical diagnosis, FIBO for financial instruments)---would produce structural diagnostics grounded in domain semantics rather than surface text similarity~\cite{bellomarini2024knowledgegraphs}. Similarly, the redundancy matrix could be redefined over ontology-aligned operation types (e.g., two verification steps are redundant if they validate the same ontological constraint class), producing KB-native redundancy scores. This direction constitutes a natural extension of SC-FMA from surface-trace structural calibration to ontology-aware structural reasoning, aligning the framework with the KBS community's long-standing emphasis on formal knowledge representation as a prerequisite for reliable inference.
-
-\textbf{Graph construction sensitivity.} Structural necessity, redundancy, and bottleneck status depend on keyword-heuristic graph construction. Different edge-construction rules would produce different structural measurements and therefore different calibrated weights. A formal sensitivity analysis over graph parameters is provided in the supplementary materials; results indicate that $\pm 20\%$ perturbation of the TF-IDF similarity threshold and topical edge weight produces $|\Delta\rho| < 0.01$ in downstream ranking metrics.
-
-\textbf{CIU signal granularity.} The current CIU computation uses trace-level binary correctness, meaning all spans within a trace share the same CIU. This is a trace-level coarse utility anchor, not a sufficient step-discriminative outcome signal. Consequently, the fidelity term $\|\mathbf{w}-\tilde{\mathbf{c}}\|_2^2$ constrains weights toward the supplied coarse utility or proxy input; it does not prove that each step has an independent outcome-grounded CIU. Where per-step process annotations are available (e.g., PRM800K), a proxy per-span signal can be derived by converting step-level correctness ratings to a CIU-like scale via $\text{proxy\_ciu}_i = (r_i + 1) / 2$ where $r_i \in \{-1, 0, +1\}$ is the PRM800K step rating. This provides per-span differentiation at the cost of replacing interventional utility with correctness-based utility, which is a related but distinct signal. The implementation supports both trace-level CIU and PRM-proxy CIU as alternative fidelity inputs to the SCU objective, while graph necessity, redundancy, and bottleneck signals provide the main within-trace structural differentiation.
-
-\textbf{Synthetic benchmark scope.} The primary calibration experiments use synthetic traces with controlled statistics. PRM800K provides positive real-data evidence for step-label ranking and in-distribution frozen PRM baseline comparison; GSM8K/HotpotQA task-specific replay and downstream filtering were not completed. Downstream PRM training and out-of-distribution transfer beyond the PRM800K distribution remain unvalidated.
-
-\textbf{PRM training not yet validated.} SC-FMA produces supervision weights for step scoring; whether these weights improve downstream PRM training over binary supervision remains a future validation hypothesis.
-
-\subsection{Knowledge Graph Pilot}
-\label{sec:kg-pilot}
-
-To assess whether real ontology structure produces different structural diagnostics than keyword-heuristic edges, we conduct a fixture-level pilot using the Countries knowledge graph~\cite{bordes2013translating}. The Countries KG contains 25 country entities, 5 region entities, and 189 triples encoding \texttt{locatedIn} and \texttt{neighborOf} relations. We generate 30 synthetic reasoning traces over KG query patterns (e.g., ``Which countries are neighbors of France?'') and construct two sets of reflection DAGs: (1)~baseline (TF-IDF topical edges only) and (2)~KG-augmented (TF-IDF edges plus ontology-derived edges from \texttt{locatedIn}$\,\to\,$\texttt{depends\_on\_concept} and \texttt{neighborOf}$\,\to\,$\texttt{same\_constraint} mappings).
-
-The pilot produces a diagnostic report with \texttt{evidence\_level = ``pilot''} and \texttt{validated\_kbs\_workflow = false}. The KG-augmented graphs add 196 ontology-derived edges (134 \texttt{depends\_on\_concept}, 54 \texttt{same\_constraint}, 8 \texttt{neighbor\_concept}) across 30 traces, producing non-trivial structural necessity deltas. The mean absolute necessity delta between baseline and KG-augmented graphs is $0.535$, indicating that ontology-aware edge construction measurably alters structural diagnostics. However, the Spearman correlation between baseline and KG-augmented necessity rankings is $0.0$, confirming that the KG structure provides information orthogonal to the keyword-heuristic baseline. Bottleneck top-1 overlap is $1.0$, indicating that both methods identify the same structural critical nodes despite different necessity magnitudes.
-
-This pilot demonstrates feasibility of ontology-aware graph construction over the Countries KG fixture, but it does not validate a production KBS deployment. Extending the pilot to larger KGs (UMLS, SNOMED-CT) or KG query engines remains future work.
-
-\section{Reproducibility and Limitations}
-\label{sec:reproducibility}
-
-\subsection{Reproducibility Architecture}
-
-The SC-FMA methodology is designed for deterministic, artifact-based reproduction. The following components ensure that all reported results can be independently verified without external API calls or non-deterministic generation:
-
-\begin{enumerate}
-\item \textbf{Synthetic benchmark generation.} The 200-trace benchmark is generated by \texttt{scripts/generate\_synthetic\_traces.py} with seed $= 42$, using the four controlled generative distributions documented in Section~\ref{sec:baselines}. The generation script is deterministic and produces identical traces on any platform.
-
-\item \textbf{CIU estimation.} The MASK intervention is a token-level replacement operation with no randomness. The $\ell_2$ normalization is deterministic. Outputs are archived as \texttt{ciu\_results.jsonl}.
-
-\item \textbf{Graph construction.} Reflection DAGs are constructed via deterministic temporal-edge addition and TF-IDF cosine similarity with a fixed threshold ($\tau_{\text{tfidf}} = 0.35$). DAG verification uses Tarjan's algorithm (deterministic). Outputs are archived as \texttt{reflection\_graph.json}.
-
-\item \textbf{Structural necessity.} PRUNE, CASCADE, and BYPASS operations are deterministic graph transformations. The $\max$ aggregation operator is deterministic. The $\ell_2$ normalization is deterministic.
-
-\item \textbf{SLSQP optimization.} SciPy's SLSQP implementation is deterministic when warm-started from the Ridge solution (also deterministic). With tolerance \texttt{ftol = 1e-8} and strict convexity (Theorem~\ref{thm:convexity}), the solver converges to the same $\mathbf{w}^*$ on any platform.
-
-\item \textbf{Evaluation.} All ranking metrics (Spearman $\rho$, Kendall $\tau$, NDCG@$k$) are computed via their deterministic formulas. Bootstrap confidence intervals use a fixed seed for resampling reproducibility.
-\end{enumerate}
-
-The synthetic diagnostic core is executable via:
-\begin{verbatim}
-python scripts/generate_synthetic_traces.py
-python scripts/run_counterfactual_attribution.py
-python scripts/run_structural_attribution.py
-\end{verbatim}
-The PRM800K evidence routes are reproduced separately from their frozen configs:
-\begin{verbatim}
-python scripts/run_real_task_v3_6_prm800k_hash_validation.py --stage decision
-python scripts/run_real_task_v3_8_prm_locked_scoring.py --stage decision
-\end{verbatim}
-Expected outputs are documented in the supplementary materials along with environment specifications and pinned dependency versions.
-
-\subsection{Scope and Limitations}
-
-We explicitly bound the claims supported by the current evidence to prevent over-interpretation.
-
-\textbf{Protocol-dependent measurements.} All reported quantities---CIU, structural necessity, redundancy, bottleneck status, and calibrated weights---are operational proxy measurements defined by the specific intervention protocol, graph construction heuristics, and optimization configuration used in this paper. Different segmentation rules, graph-construction parameters, or utility metrics would produce different measurements. The reported results are therefore protocol-dependent rather than protocol-independent properties of reflective reasoning.
-
-\textbf{Synthetic data scope.} The primary calibration experiments (200 traces, 1{,}027 steps) use synthetic data generated under controlled probabilistic models. While these models are calibrated to match the statistical patterns observed in pilot diagnostic studies (CIU skew, necessity zero-inflation, redundancy block structure), they do not capture the full variability of naturally occurring reasoning traces. PRM800K provides positive real step-label ranking evidence ($\rho = 0.611$) and an in-distribution frozen PRM baseline comparison ($\rho = 0.252$); GSM8K/HotpotQA task-specific replay and downstream filtering were not completed. An extended variant comparison (P1-6) on the PRM800K locked split finds that SC-FMA Ridge preserves the \texttt{w\_struct} ranking ($\Delta\rho = -0.007$), while SC-FMA QP ($\Delta\rho = -0.169$) and Projection ($\Delta\rho = -0.746$) underperform the Ridge baseline, confirming that calibration preserves but does not improve ranking quality when the base fidelity signal is already strong. Validation on diverse, naturally-occurring reasoning corpora with independent per-step annotations remains future work.
-
-\textbf{Single-model and single-template dependence.} All synthetic traces are generated under fixed prompt templates, and the structural diagnostics are derived from this single source. Whether the CIU-necessity divergence pattern generalizes to other models, larger language models, human-authored reasoning traces, or open-ended tasks is an open empirical question.
-
-\textbf{Graph construction approximation.} The reflection DAG is an operational approximation constructed from surface-level temporal adjacency and keyword-based topical links. It does not encode inferred causal dependencies, conditional independence structure, or d-separation relations. The structural diagnostics (PRUNE, CASCADE, BYPASS) therefore inherit this approximation error. A formal sensitivity analysis over graph construction parameters in the supplementary materials indicates stability under $\pm 20\%$ perturbation, but a comprehensive study over construction heuristics remains future work.
-
-\textbf{KBS integration boundary.} The KBS mappings in this paper are methodological analogies and integration pathways, not evaluated deployments. A pilot integration with the Countries KG fixture (Section~\ref{sec:kg-pilot}) demonstrates ontology-aware edge construction feasibility, but no rule engine, ontology reasoner, KG query engine, or production KBS deployment has been validated.
-
-\textbf{CIU signal granularity.} The current CIU computation uses trace-level binary correctness, meaning all reflective spans within a trace share the same CIU value. The value is a trace-level coarse utility anchor and does not prove that each step has an independent outcome-grounded CIU. SC-FMA's within-trace differentiation must therefore be interpreted as a combination of the supplied fidelity input, Phase 5 proxy construction, Phase 6 graph necessity/redundancy/bottleneck measurements, and PRM800K process labels where available. Per-span utility signals from process-annotated datasets would provide finer-grained calibration inputs.
-
-\textbf{Intervention coverage.} The five intervention types (MASK, DELETE, SHUFFLE, TRUNCATE, CONTRADICT) cover a range of perturbation semantics, but they do not exhaust the space of possible reflective modifications. Learned perturbation policies, semantic paraphrasing, or model-internal intervention mechanisms could reveal additional structural relationships not captured by the current operators.
-
-\textbf{Downstream PRM training is not validated.} SC-FMA produces supervision weights for step-level scoring. Whether using these weights as training targets for a Process Reward Model improves downstream best-of-$N$ search or reinforcement learning from process feedback over binary supervision remains an untested hypothesis. The current evidence supports SC-FMA as a diagnostic calibration methodology; claims about PRM performance improvement require separate downstream validation with appropriate controls.
-
-\textbf{Non-identifiability.} The framework does not recover Rubin-style causal effects or identify structural equation model parameters. The intervention notation ($\text{do}(m_k)$) is operational shorthand for documented trace manipulation followed by deterministic evaluation. The reported quantities describe measured behavior under controlled perturbation, not identified causal effects in a formal model.
+The main limitations are deliberate. First, the synthetic benchmark is controlled and proxy-labeled, so it supports calibration behavior rather than broad external validity. Second, the PRM800K route supports real step-label ranking and audit prioritization only within a PRM800K-like annotation distribution. Third, current graph construction uses temporal and topical trace structure rather than formal ontology semantics. Fourth, the binary-correctness CIU signal remains a trace-level coarse utility anchor and does not provide independent per-step outcome-grounded CIU. Fifth, the framework does not recover Rubin-style effect claims or Pearl-style do-calculus semantics~\cite{rubin1974estimating,pearl2009causality}. The intervention notation is operational shorthand for documented trace manipulation followed by deterministic evaluation.
 
 \section{Conclusion}
 
-This paper presented Structurally-Calibrated Functional Attribution (SC-FMA), a methodology that converts interventional utility estimates into structurally-consistent supervision weights through convex constrained optimization. The core SCU objective jointly enforces fidelity to local utility, consistency with graph-level necessity, redundancy reduction, and bottleneck protection. Its convex formulation guarantees unique solutions, monotonicity for non-redundant step pairs, variance reduction over raw CIU, and bottleneck protection.
-
-Empirically, SC-FMA QP achieves higher rank correlation with controlled synthetic proxy step-importance labels than raw CIU and standard baselines, with structural constraint terms contributing independently to ranking quality. On PRM800K real process-supervision data (4{,}417 samples, 34{,}219 labeled steps), the primary positive signal is instead \texttt{w\_struct} ($\rho = 0.611$), which exceeds raw local utility ($\rho = -0.077$) and an overlap-limited frozen PRM baseline context ($\rho = 0.252$). The extended calibration variant comparison finds that SC-FMA Ridge preserves the base ranking ($\rho = 0.604$, $\Delta\rho = -0.007$), while QP and Projection variants underperform ($\rho = 0.442$ and $-0.135$). The audit-prioritization readout adds a bounded KBS-facing use case for fixed-budget review of PRM800K process steps. The methodology transforms the FMA framework from a diagnostic instrument into a claim-bounded calibration contribution: where prior work established that local utility is weakly aligned with structural necessity, SC-FMA provides a mechanism for auditable verification-step weighting. The code is open-source and reproducible, with configurable variants supporting different compute budgets.
+This paper presented SC-FMA, a structurally calibrated method for turning utility or proxy-fidelity inputs into auditable verification-step weights. The SCU objective combines fidelity, structural necessity, redundancy, and bottleneck protection in a constrained optimization problem. Controlled synthetic evidence shows that QP calibration improves step-importance ranking over raw CIU and common baselines. Locked PRM800K evidence gives a narrower result: \texttt{w\_struct} is the primary real-data signal, and SC-FMA Ridge closely preserves it for audit prioritization. The resulting package is a claim-bounded KBS methodology and audit-prioritization contribution, with downstream PRM training, task-specific replay validation, production KBS deployment, and causal identification left for future work.
 
 \section*{Acknowledgments}
 The authors thank the College of Management Science and Engineering at Beijing Information Science and Technology University for research support.

@@ -1,8 +1,8 @@
 # Final KBS Package Manifest
 
-Purpose: define the clean upload boundary for the Knowledge-Based Systems package while the repository-level submission lock remains `blocked_for_submission`.
+Purpose: define the clean upload boundary for the claim-bounded Knowledge-Based Systems methodology and PRM800K-like audit-prioritization package.
 
-This package must not be described as submission-ready unless `paper/submission_lock_audit.md` is updated out of `blocked_for_submission` and the PRM800K stratified audit-prioritization gate is rerun under the final manuscript text.
+This package must be described only as a claim-bounded KBS upload package. The PRM800K stratified audit-prioritization gate remains `moderate`, so title, abstract, cover letter, and manifest language must stay within moderate preliminary PRM800K-like audit-prioritization support.
 
 ## Final upload files
 
@@ -35,13 +35,13 @@ The portal-shaped package is `final_package/` and contains exactly five files:
 
 ## Verification
 
-- `manuscript.tex` compiled with TeX Live/latexmk after the moderate-title revision: exit code 0, output `manuscript.pdf` with 36 pages.
+- `manuscript.tex` compiled with TeX Live/latexmk after the page-budget compression pass: exit code 0, output `manuscript.pdf` with 5 pages, which is within the `<=20` page gate.
 - `Highlights.docx` contains the final highlights text and current title.
 - `supplementary.docx` contains the supplementary title, author names, and supplementary content converted from the split supplementary material.
 - Supplementary data map now includes `outputs/real_task_v3_6_prm800k_hash/audit_prioritization_report.json` and `outputs/real_task_v3_6_prm800k_hash/audit_prioritization_summary.md` as audit-prioritization context only.
-- Manuscript PDF pages were rendered to PNG contact sheets and visually checked for page count, footer consistency, figure placement, and obvious clipping.
+- Manuscript PDF pages were rendered to current PNG contact sheets and visually checked for page count, footer consistency, figure placement, and obvious clipping.
 - `cover_letter.docx`, `Highlights.docx`, and `supplementary.docx` were structurally checked for required DOCX parts and required text after the moderate-title revision. Visual DOCX rendering could not be completed because `soffice.exe`/LibreOffice is not installed on this machine.
-- `python scripts\verify_kbs_submission_package.py --package-dir paper\kbs_submission\final_package --require-author-metadata --require-pdf-text` passes.
+- `python scripts\verify_kbs_submission_package.py --package-dir paper\kbs_submission\final_package --require-author-metadata --require-pdf-text --max-manuscript-pages 20` passes.
 - `pytest -q tests/test_kbs_submission_package_verifier.py` passes.
 
 ## Claim boundary

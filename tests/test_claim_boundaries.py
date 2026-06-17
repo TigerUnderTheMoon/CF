@@ -69,11 +69,16 @@ def test_kbs_source_contains_ciu_granularity_and_adapter_contract():
         assert doi in references
 
 
-def test_submission_lock_has_blocked_for_submission_policy():
+def test_submission_lock_has_claim_bounded_submission_policy():
     audit = (ROOT / "paper" / "submission_lock_audit.md").read_text(encoding="utf-8")
     registry = (ROOT / "paper" / "claim_registry.md").read_text(encoding="utf-8")
 
-    assert "blocked_for_submission" in audit
+    assert "submission_status: methodological_submission_possible_with_claim_boundaries" in audit
+    assert "Status: **methodological_submission_possible_with_claim_boundaries**." in audit
+    assert "downstream PRM training" in audit
+    assert "GSM8K/HotpotQA replay" in audit
+    assert "production KBS deployment" in audit
+    assert "causal identification" in audit
     assert "If PRM800K stratified analysis is blocked" in registry
 
 

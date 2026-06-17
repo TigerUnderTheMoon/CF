@@ -1,105 +1,74 @@
 from __future__ import annotations
 
-import subprocess
-import sys
 from pathlib import Path
-
-import yaml
 
 
 ROOT = Path(__file__).resolve().parents[1]
 PAPER = ROOT / "paper"
+KBS = PAPER / "kbs_submission"
+FINAL_SOURCE = KBS / "final_source"
+FINAL_PACKAGE = KBS / "final_package"
+
+TITLE = (
+    "Structurally-Calibrated Functional Attribution for Audit Prioritization "
+    "in Knowledge-Intensive Reasoning"
+)
 
 
-def test_quarto_book_project_declares_requested_chapters_and_formats() -> None:
-    config_path = PAPER / "_quarto.yml"
-    assert config_path.exists()
+def test_kbs_submission_source_declares_current_latex_contract() -> None:
+    manuscript = (FINAL_SOURCE / "manuscript.tex").read_text(encoding="utf-8")
+    supplementary = (FINAL_SOURCE / "supplementary.tex").read_text(encoding="utf-8")
+    references = (FINAL_SOURCE / "references.bib").read_text(encoding="utf-8")
 
-    config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
-    assert config["project"]["type"] == "book"
-    assert config["execute"]["cache"] is True
-    assert config["bibliography"] == "references.bib"
-    assert set(config["format"]) >= {"html", "pdf"}
-
-    expected_chapters = [
-        "index.qmd",
-        "chapters/01_introduction.qmd",
-        "chapters/02_related_work.qmd",
-        "chapters/03_methodology.qmd",
-        "chapters/04_experiments.qmd",
-        "chapters/05_results.qmd",
-        "chapters/06_limitations.qmd",
-        "chapters/07_conclusion.qmd",
-    ]
-    assert config["book"]["chapters"] == expected_chapters
-    assert config["book"]["appendices"] == ["chapters/appendix.qmd"]
-
-    for chapter in expected_chapters + config["book"]["appendices"]:
-        assert (PAPER / chapter).exists()
+    assert TITLE in manuscript
+    assert f"Supplementary Material for {TITLE}" in supplementary
+    assert "moderate, preliminary real-data support" in manuscript
+    assert "validated_kbs_workflow=false" in manuscript
+    assert "10.1016/j.knosys.2025.113503" in references
+    assert "10.1016/j.knosys.2025.113648" in references
+    assert "10.1016/j.knosys.2024.112410" in references
 
 
-def test_results_chapter_executes_outputs_and_defines_required_crossrefs() -> None:
-    results_qmd = PAPER / "chapters" / "05_results.qmd"
-    text = results_qmd.read_text(encoding="utf-8")
+def test_kbs_final_upload_boundary_contains_exact_required_files() -> None:
+    expected = {
+        "cover_letter.docx",
+        "Highlights.docx",
+        "latex_source.zip",
+        "manuscript.pdf",
+        "supplementary.docx",
+    }
 
-    required_snippets = [
-        "```{python}",
-        "outputs/counterfactual_summary.json",
-        "outputs/structural_diagnostics.json",
-        "outputs/redundancy_analysis.json",
-        "import matplotlib",
-        "import seaborn",
-        "pd.DataFrame",
-        ".to_markdown(",
-        "#fig-attribution-prune",
-        "@fig-attribution-prune",
-        "#tbl-core-diagnostics",
-        "@tbl-core-diagnostics",
-    ]
-    for snippet in required_snippets:
-        assert snippet in text
+    observed = {path.name for path in FINAL_PACKAGE.iterdir() if path.is_file()}
+
+    assert observed == expected
+    assert (FINAL_PACKAGE / "manuscript.pdf").read_bytes().startswith(b"%PDF-")
 
 
-def test_reference_bibliography_is_available_at_quarto_root() -> None:
-    references = (PAPER / "references.bib").read_text(encoding="utf-8")
-
-    for key in (
-        "@inproceedings{shinn2023reflexion",
-        "@inproceedings{madaan2023selfrefine",
-        "@article{lightman2023verify",
-    ):
-        assert key in references
-
-
-def test_paper_build_workflow_and_inventory_check_are_wired() -> None:
-    workflow_path = ROOT / ".github" / "workflows" / "paper-build.yml"
-    assert workflow_path.exists()
-
-    workflow_text = workflow_path.read_text(encoding="utf-8")
-    for snippet in (
-        "paths:",
-        "outputs/**",
-        "paper/**",
-        "quarto-dev/quarto-actions/setup",
-        "quarto render paper",
-        "check_paper_figure_inventory.py",
-        "paper/_book/*.pdf",
-    ):
-        assert snippet in workflow_text
-
-
-def test_figure_inventory_checker_accepts_current_quarto_chapter() -> None:
-    result = subprocess.run(
-        [
-            sys.executable,
-            "scripts/check_paper_figure_inventory.py",
-            "--paper-dir",
-            "paper",
-        ],
-        cwd=ROOT,
-        text=True,
-        capture_output=True,
-        check=False,
+def test_paper_build_workflow_is_wired_to_current_kbs_package() -> None:
+    workflow_text = (ROOT / ".github" / "workflows" / "paper-build.yml").read_text(
+        encoding="utf-8"
     )
 
-    assert result.returncode == 0, result.stderr
+    required_snippets = [
+        "scripts/check_claim_boundaries.py --active-only",
+        "curl -I -L https://doi.org/",
+        "scripts/verify_kbs_submission_package.py",
+        "--package-dir paper/kbs_submission/final_package",
+        "--max-manuscript-pages 20",
+        "latexmk -pdf -interaction=nonstopmode -halt-on-error manuscript.tex",
+        "DVC remote unavailable in CI; pipeline contract-only check passed",
+        "tests/test_prm800k_audit_prioritization.py",
+        "tests/test_kbs_submission_package_verifier.py",
+    ]
+    for snippet in required_snippets:
+        assert snippet in workflow_text
+
+    assert "quarto-dev/quarto-actions/setup" not in workflow_text
+    assert "quarto render paper" not in workflow_text
+
+
+def test_legacy_quarto_sources_are_not_active_submission_gate() -> None:
+    legacy_quarto = ROOT / "docs" / "legacy" / "diagnostic_fma_paper" / "_quarto.yml"
+
+    assert legacy_quarto.exists()
+    assert not (PAPER / "_quarto.yml").exists()

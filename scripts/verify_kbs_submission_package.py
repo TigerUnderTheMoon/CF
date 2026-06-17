@@ -394,6 +394,65 @@ def _check_pdf_text(
         _check_forbidden_text({f"rendered {filename}": pdf_text}, errors)
 
 
+def _extract_pdf_page_count(package_dir: Path, filename: str, errors: list[str]) -> int | None:
+    pdf_path = package_dir / filename
+    try:
+        result = subprocess.run(
+            ["pdfinfo", str(pdf_path)],
+            cwd=package_dir,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            capture_output=True,
+            check=False,
+        )
+    except FileNotFoundError:
+        errors.append("pdfinfo is required for rendered PDF page-count verification")
+        return None
+
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout).strip()
+        errors.append(f"pdfinfo failed for {filename}: {detail}")
+        return None
+
+    match = re.search(r"^Pages:\s*(\d+)\s*$", result.stdout or "", flags=re.MULTILINE)
+    if match is None:
+        errors.append(f"pdfinfo output for {filename} did not include a Pages field")
+        return None
+    return int(match.group(1))
+
+
+def _check_pdf_page_count(
+    package_dir: Path,
+    errors: list[str],
+    *,
+    expected_manuscript_pages: int | None,
+    max_manuscript_pages: int | None,
+    pdf_page_count_by_name: dict[str, int] | None,
+) -> None:
+    if expected_manuscript_pages is None and max_manuscript_pages is None:
+        return
+
+    filename = "manuscript.pdf"
+    observed = (
+        pdf_page_count_by_name[filename]
+        if pdf_page_count_by_name is not None and filename in pdf_page_count_by_name
+        else _extract_pdf_page_count(package_dir, filename, errors)
+    )
+    if observed is None:
+        return
+    if expected_manuscript_pages is not None and observed != expected_manuscript_pages:
+        errors.append(
+            f"rendered {filename} page count {observed} does not match expected "
+            f"{expected_manuscript_pages}"
+        )
+    if max_manuscript_pages is not None and observed > max_manuscript_pages:
+        errors.append(
+            f"rendered {filename} page count {observed} exceeds maximum "
+            f"{max_manuscript_pages}"
+        )
+
+
 def check_package(
     package_dir: Path,
     *,
@@ -401,6 +460,9 @@ def check_package(
     require_pdf_text: bool = False,
     pdf_text: str | None = None,
     pdf_text_by_name: dict[str, str] | None = None,
+    expected_manuscript_pages: int | None = None,
+    max_manuscript_pages: int | None = None,
+    pdf_page_count_by_name: dict[str, int] | None = None,
 ) -> VerificationReport:
     errors: list[str] = []
     warnings: list[str] = []
@@ -432,6 +494,13 @@ def check_package(
     )
     if require_pdf_text:
         _check_pdf_text(package_dir, errors, pdf_text_by_name=pdf_text_by_name)
+    _check_pdf_page_count(
+        package_dir,
+        errors,
+        expected_manuscript_pages=expected_manuscript_pages,
+        max_manuscript_pages=max_manuscript_pages,
+        pdf_page_count_by_name=pdf_page_count_by_name,
+    )
 
     return VerificationReport(errors=errors, warnings=warnings)
 
@@ -456,12 +525,26 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Fail if rendered PDF text does not contain the current title and required statements.",
     )
+    parser.add_argument(
+        "--expected-manuscript-pages",
+        type=int,
+        default=None,
+        help="Fail if rendered manuscript.pdf does not have this page count.",
+    )
+    parser.add_argument(
+        "--max-manuscript-pages",
+        type=int,
+        default=None,
+        help="Fail if rendered manuscript.pdf exceeds this page count.",
+    )
     args = parser.parse_args(argv)
 
     report = check_package(
         args.package_dir,
         require_author_metadata=args.require_author_metadata,
         require_pdf_text=args.require_pdf_text,
+        expected_manuscript_pages=args.expected_manuscript_pages,
+        max_manuscript_pages=args.max_manuscript_pages,
     )
     for warning in report.warnings:
         print(f"warning: {warning}", file=sys.stderr)

@@ -6,7 +6,7 @@
     "external_generalization": false,
     "gsm8k_hotpotqa_replay_validation": false
   },
-  "elapsed_seconds": 127.51,
+  "elapsed_seconds": 131.57,
   "method_order": [
     "w_struct",
     "scfma_ridge",
@@ -375,9 +375,9 @@
   "n_steps": 34219,
   "route_id": "real_task_v3_6_prm800k_hash_audit_prioritization",
   "source": {
-    "config": "D:\\CF\\configs\\real_task_v3_6_prm800k_hash_validation.yaml",
-    "frozen_prm_scores": "D:\\CF\\outputs\\real_task_v3_8_prm_locked_scoring\\locked_prm_scores.jsonl",
-    "git_revision": "aaf2fef934e1d42dfc41f4350b14a9011033d911"
+    "config": "configs\\real_task_v3_6_prm800k_hash_validation.yaml",
+    "frozen_prm_scores": "outputs\\real_task_v3_8_prm_locked_scoring\\locked_prm_scores.jsonl",
+    "git_revision": "91d741165ae2243fc71c8a220cfb78c6508f1f8b"
   },
   "strata": [
     {

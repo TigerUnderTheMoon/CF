@@ -69,7 +69,8 @@ jobs:
           python scripts/verify_kbs_submission_package.py \
             --package-dir paper/kbs_submission/final_package \
             --require-author-metadata \
-            --require-pdf-text
+            --require-pdf-text \
+            --max-manuscript-pages 20
 
       - name: Build KBS LaTeX source
         working-directory: paper/kbs_submission/final_source

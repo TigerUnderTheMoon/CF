@@ -143,6 +143,8 @@ def test_kbs_verifier_passes_final_submission_boundary(tmp_path: Path) -> None:
         require_author_metadata=True,
         require_pdf_text=True,
         pdf_text_by_name=_pdf_text_by_name(),
+        expected_manuscript_pages=35,
+        pdf_page_count_by_name={"manuscript.pdf": 35},
     )
 
     assert report.ok, report.errors
@@ -214,6 +216,87 @@ def test_kbs_verifier_blocks_stale_rendered_pdf_text(tmp_path: Path) -> None:
 
     assert not report.ok
     assert any("rendered manuscript.pdf text does not contain current title" in error for error in report.errors)
+
+
+def test_kbs_verifier_blocks_unexpected_manuscript_page_count(tmp_path: Path) -> None:
+    from scripts.verify_kbs_submission_package import check_package
+
+    package_dir = tmp_path / "final_package"
+    _write_final_package(package_dir)
+
+    report = check_package(
+        package_dir,
+        expected_manuscript_pages=35,
+        pdf_page_count_by_name={"manuscript.pdf": 36},
+    )
+
+    assert not report.ok
+    assert any(
+        "rendered manuscript.pdf page count 36 does not match expected 35" in error
+        for error in report.errors
+    )
+
+
+def test_kbs_verifier_allows_manuscript_page_count_at_or_below_maximum(tmp_path: Path) -> None:
+    from scripts.verify_kbs_submission_package import check_package
+
+    package_dir = tmp_path / "final_package"
+    _write_final_package(package_dir)
+
+    report = check_package(
+        package_dir,
+        max_manuscript_pages=20,
+        pdf_page_count_by_name={"manuscript.pdf": 19},
+    )
+
+    assert report.ok, report.errors
+
+
+def test_kbs_verifier_blocks_manuscript_page_count_above_maximum(tmp_path: Path) -> None:
+    from scripts.verify_kbs_submission_package import check_package
+
+    package_dir = tmp_path / "final_package"
+    _write_final_package(package_dir)
+
+    report = check_package(
+        package_dir,
+        max_manuscript_pages=20,
+        pdf_page_count_by_name={"manuscript.pdf": 21},
+    )
+
+    assert not report.ok
+    assert any(
+        "rendered manuscript.pdf page count 21 exceeds maximum 20" in error
+        for error in report.errors
+    )
+
+
+def test_kbs_verifier_reads_pdfinfo_with_utf8_replacement(tmp_path: Path, monkeypatch) -> None:
+    from scripts import verify_kbs_submission_package
+    from scripts.verify_kbs_submission_package import check_package
+
+    package_dir = tmp_path / "final_package"
+    _write_final_package(package_dir)
+
+    calls: list[dict[str, object]] = []
+
+    class PdfInfoResult:
+        returncode = 0
+        stdout = "Title: contains replacement-safe metadata\nPages: 35\n"
+        stderr = ""
+
+    def fake_run(*_args, **kwargs):
+        calls.append(kwargs)
+        assert kwargs["encoding"] == "utf-8"
+        assert kwargs["errors"] == "replace"
+        return PdfInfoResult()
+
+    monkeypatch.setattr(verify_kbs_submission_package.subprocess, "run", fake_run)
+
+    report = check_package(package_dir, expected_manuscript_pages=35)
+
+    assert report.ok, report.errors
+    assert calls
 
 
 def test_kbs_verifier_blocks_legacy_split_pdfs(tmp_path: Path) -> None:

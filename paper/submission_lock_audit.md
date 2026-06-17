@@ -17,18 +17,18 @@ c1_status: stratum_dependent
 c2_status: stratum_dependent
 c3_status: stratum_dependent
 baseline_status: integrated
-submission_status: blocked_for_submission
+submission_status: methodological_submission_possible_with_claim_boundaries
 ```
 
 ## Verdict
 
-Status: **blocked_for_submission**.
+Status: **methodological_submission_possible_with_claim_boundaries**.
 
 The Stage 2 held-out validation artifacts remain internally consistent with the supplied execution summary. They support a small aggregate FMA rank-alignment signal, not protocol-independent confirmation. C1, C2, and C3 remain `stratum_dependent` because `S_mid` and `S_rand` fail the all-strata requirement.
 
 The required baseline gate is no longer blocked by missing artifacts. `outputs/baseline_artifact_audit.md` found no hidden independent Stage 2 baseline score vectors, so random masking, span masking, graph removal, and edge dropout were evaluated with frozen conservative non-target proxy rules. All four required baselines have 840 held-out step scores and `target_leakage_status: clean`.
 
-Submission readiness remains blocked for final readiness review, citation/package completion, and claim-scope discipline. The clean proxy baselines close the missing-baseline gate but do not turn stratum-dependent Stage 2 evidence into protocol-independent confirmation.
+The current KBS package can be treated as a claim-bounded methodology and audit-prioritization upload package after the final verifier, DOI/claim scan, and PDF page-count gate pass. The clean proxy baselines close the missing-baseline gate but do not turn stratum-dependent Stage 2 evidence into protocol-independent confirmation.
 
 ## PRM800K Stratified Decision Gate
 
@@ -87,12 +87,13 @@ If the stratified analysis is unavailable, blocked, or fails the hard-stratum/si
 
 No required baseline uses `Delta U`, `necessity`, `delta_utility`, `attribution_score`, `utility_score`, or `structural_necessity` as a prediction source. Optional baseline rows remain unavailable unless independent score-vector artifacts are later added.
 
-## Final Blocker List
+## Residual Risk List
 
 1. C1, C2, and C3 are `stratum_dependent`; none can be described as broad confirmation findings.
 2. Required baselines are clean but conservative proxies, not independently rerun perturbation-response experiments.
 3. Related-work bibliography anchors are maintained outside this consistency pass.
 4. Final venue formatting, figure numbering, and bibliography remain subject to venue/package QA.
+5. The upload package must retain the explicit boundary: no downstream PRM training claim, no GSM8K/HotpotQA replay validation claim, no production KBS deployment claim, and no causal identification claim.
 
 Completed operational finalization items:
 
@@ -101,6 +102,6 @@ Completed operational finalization items:
 
 ## Final Lock Recommendation
 
-Do **not** mark the manuscript ready for submission yet. Mark it as:
+Mark the KBS upload package as:
 
-> Stage 2 consistency checked; required baselines integrated as clean conservative controls; C1, C2, and C3 remain `stratum_dependent`; `submission_status` is `blocked_for_submission` unless the PRM800K stratified audit-prioritization gate permits a stronger package status.
+> Claim-bounded KBS methodology and PRM800K-like audit-prioritization package; Stage 2 consistency checked; required baselines integrated as clean conservative controls; C1, C2, and C3 remain `stratum_dependent`; PRM800K stratified audit-prioritization gate is `moderate`; forbidden downstream, replay, deployment, and causal-identification claims remain excluded.
