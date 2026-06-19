@@ -54,6 +54,7 @@ def test_paper_build_workflow_is_wired_to_current_kbs_package() -> None:
         "curl -I -L https://doi.org/",
         "scripts/verify_kbs_submission_package.py",
         "--package-dir paper/kbs_submission/final_package",
+        "--min-manuscript-pages 12",
         "--max-manuscript-pages 20",
         "latexmk -pdf -interaction=nonstopmode -halt-on-error manuscript.tex",
         "DVC remote unavailable in CI; pipeline contract-only check passed",

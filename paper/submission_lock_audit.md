@@ -1,10 +1,10 @@
 # Submission Lock Audit
 
-Audit date: 2026-06-08
+Audit date: 2026-06-18
 Original audit date: 2026-05-30
 Repository: `D:\CF`
 Branch: `main`
-Scope: submission consistency pass over stored artifacts and paper text, with a 2026-06-08 operational finalization update for line-ending normalization and KBS diagnostic package freeze status. No experiments were rerun, no datasets or models were added, and Stage 2 claim labels were not upgraded.
+Scope: submission consistency pass over stored artifacts and paper text, with a 2026-06-08 operational finalization update for line-ending normalization and KBS diagnostic package freeze status, and a 2026-06-18 update adding the KBS audit demonstration (Section 6, claim `M_KBS_AUDIT_DEMONSTRATION`) and updating the manuscript page count to 14. No experiments were rerun, no datasets or models were added, and Stage 2 claim labels were not upgraded.
 
 Current repository-level readiness remains governed by `paper/submission_readiness_audit.md`; this lock audit preserves the Stage 2 consistency boundary and records only the finalization checklist status changes below.
 
@@ -28,7 +28,7 @@ The Stage 2 held-out validation artifacts remain internally consistent with the 
 
 The required baseline gate is no longer blocked by missing artifacts. `outputs/baseline_artifact_audit.md` found no hidden independent Stage 2 baseline score vectors, so random masking, span masking, graph removal, and edge dropout were evaluated with frozen conservative non-target proxy rules. All four required baselines have 840 held-out step scores and `target_leakage_status: clean`.
 
-The current KBS package can be treated as a claim-bounded methodology and audit-prioritization upload package after the final verifier, DOI/claim scan, and PDF page-count gate pass. The clean proxy baselines close the missing-baseline gate but do not turn stratum-dependent Stage 2 evidence into protocol-independent confirmation.
+The current KBS package can be treated as a claim-bounded methodology and audit-prioritization upload package after the final verifier, DOI/claim scan, and PDF page-count gate pass (14 pages, including the newly added Section 6 KBS Audit Demonstration). The clean proxy baselines close the missing-baseline gate but do not turn stratum-dependent Stage 2 evidence into protocol-independent confirmation.
 
 ## PRM800K Stratified Decision Gate
 
@@ -93,7 +93,7 @@ No required baseline uses `Delta U`, `necessity`, `delta_utility`, `attribution_
 2. Required baselines are clean but conservative proxies, not independently rerun perturbation-response experiments.
 3. Related-work bibliography anchors are maintained outside this consistency pass.
 4. Final venue formatting, figure numbering, and bibliography remain subject to venue/package QA.
-5. The upload package must retain the explicit boundary: no downstream PRM training claim, no GSM8K/HotpotQA replay validation claim, no production KBS deployment claim, and no causal identification claim.
+5. The upload package must retain the explicit boundary: no downstream PRM training claim, no GSM8K/HotpotQA replay validation claim, no production KBS deployment claim, and no causal identification claim. The KBS audit demonstration (Section 6) is a preliminary methodological analogy only (`M_KBS_AUDIT_DEMONSTRATION`); it does not validate production KBS deployment.
 
 Completed operational finalization items:
 

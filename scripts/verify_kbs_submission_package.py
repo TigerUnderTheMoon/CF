@@ -427,10 +427,15 @@ def _check_pdf_page_count(
     errors: list[str],
     *,
     expected_manuscript_pages: int | None,
+    min_manuscript_pages: int | None,
     max_manuscript_pages: int | None,
     pdf_page_count_by_name: dict[str, int] | None,
 ) -> None:
-    if expected_manuscript_pages is None and max_manuscript_pages is None:
+    if (
+        expected_manuscript_pages is None
+        and min_manuscript_pages is None
+        and max_manuscript_pages is None
+    ):
         return
 
     filename = "manuscript.pdf"
@@ -445,6 +450,11 @@ def _check_pdf_page_count(
         errors.append(
             f"rendered {filename} page count {observed} does not match expected "
             f"{expected_manuscript_pages}"
+        )
+    if min_manuscript_pages is not None and observed < min_manuscript_pages:
+        errors.append(
+            f"rendered {filename} page count {observed} is below minimum "
+            f"{min_manuscript_pages}"
         )
     if max_manuscript_pages is not None and observed > max_manuscript_pages:
         errors.append(
@@ -461,6 +471,7 @@ def check_package(
     pdf_text: str | None = None,
     pdf_text_by_name: dict[str, str] | None = None,
     expected_manuscript_pages: int | None = None,
+    min_manuscript_pages: int | None = None,
     max_manuscript_pages: int | None = None,
     pdf_page_count_by_name: dict[str, int] | None = None,
 ) -> VerificationReport:
@@ -498,6 +509,7 @@ def check_package(
         package_dir,
         errors,
         expected_manuscript_pages=expected_manuscript_pages,
+        min_manuscript_pages=min_manuscript_pages,
         max_manuscript_pages=max_manuscript_pages,
         pdf_page_count_by_name=pdf_page_count_by_name,
     )
@@ -537,6 +549,12 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help="Fail if rendered manuscript.pdf exceeds this page count.",
     )
+    parser.add_argument(
+        "--min-manuscript-pages",
+        type=int,
+        default=None,
+        help="Fail if rendered manuscript.pdf is below this page count.",
+    )
     args = parser.parse_args(argv)
 
     report = check_package(
@@ -544,6 +562,7 @@ def main(argv: list[str] | None = None) -> int:
         require_author_metadata=args.require_author_metadata,
         require_pdf_text=args.require_pdf_text,
         expected_manuscript_pages=args.expected_manuscript_pages,
+        min_manuscript_pages=args.min_manuscript_pages,
         max_manuscript_pages=args.max_manuscript_pages,
     )
     for warning in report.warnings:

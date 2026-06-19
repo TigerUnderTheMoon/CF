@@ -13,13 +13,15 @@ Repository-level submission status is currently `methodological_submission_possi
 - [x] Manuscript PDF compiled from `final_source/manuscript.tex` after the moderate-title revision.
 - [x] Supplementary content was converted to `supplementary.docx`; reproducible source remains in `final_source/supplementary.tex` and `latex_source.zip`.
 - [x] Highlights content was converted to `Highlights.docx`.
-- [x] Manuscript page count is content-faithful to the cleanly compiled compressed source: `manuscript.pdf` 5 pages, within the `<=20` page gate.
+- [x] Manuscript page count is content-faithful to the cleanly compiled source after the moderate-title revision: `manuscript.pdf` 15 pages (15--20 page gate).
 - [x] Supplementary data map includes the PRM800K audit-prioritization report and summary as context-only artifacts.
+- [x] KBS audit demonstration section (Section 6) present in manuscript with Table 3 audit comparison.
+- [x] KBS audit demo artifact exists at `outputs/kbs_audit_demo/audit_demo_report.json`.
 - [x] Manuscript PDF was rendered to current PNG contact sheets and visually checked after the moderate-title revision.
 - [x] Source zip includes manuscript/supplementary LaTeX sources, bibliography, CAS files, and PNG artwork.
 - [x] Source zip excludes LaTeX auxiliary/build artifacts.
 - [x] Package verifier passes with author metadata, PDF text, and DOCX text gates after the package refresh:
-  `python scripts\verify_kbs_submission_package.py --package-dir paper\kbs_submission\final_package --require-author-metadata --require-pdf-text --max-manuscript-pages 20`
+  `python scripts\verify_kbs_submission_package.py --package-dir paper\kbs_submission\final_package --require-author-metadata --require-pdf-text --min-manuscript-pages 15 --max-manuscript-pages 20`
 - [x] Verifier unit tests pass:
   `pytest -q tests/test_kbs_submission_package_verifier.py`
 - [ ] DOCX visual rendering: blocked locally because LibreOffice/`soffice.exe` is not installed; DOCX structure and required text are checked directly.

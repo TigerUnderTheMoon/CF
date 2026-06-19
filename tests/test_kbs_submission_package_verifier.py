@@ -237,7 +237,7 @@ def test_kbs_verifier_blocks_unexpected_manuscript_page_count(tmp_path: Path) ->
     )
 
 
-def test_kbs_verifier_allows_manuscript_page_count_at_or_below_maximum(tmp_path: Path) -> None:
+def test_kbs_verifier_allows_manuscript_page_count_within_minimum_and_maximum(tmp_path: Path) -> None:
     from scripts.verify_kbs_submission_package import check_package
 
     package_dir = tmp_path / "final_package"
@@ -245,11 +245,32 @@ def test_kbs_verifier_allows_manuscript_page_count_at_or_below_maximum(tmp_path:
 
     report = check_package(
         package_dir,
+        min_manuscript_pages=12,
         max_manuscript_pages=20,
         pdf_page_count_by_name={"manuscript.pdf": 19},
     )
 
     assert report.ok, report.errors
+
+
+def test_kbs_verifier_blocks_manuscript_page_count_below_minimum(tmp_path: Path) -> None:
+    from scripts.verify_kbs_submission_package import check_package
+
+    package_dir = tmp_path / "final_package"
+    _write_final_package(package_dir)
+
+    report = check_package(
+        package_dir,
+        min_manuscript_pages=12,
+        max_manuscript_pages=20,
+        pdf_page_count_by_name={"manuscript.pdf": 5},
+    )
+
+    assert not report.ok
+    assert any(
+        "rendered manuscript.pdf page count 5 is below minimum 12" in error
+        for error in report.errors
+    )
 
 
 def test_kbs_verifier_blocks_manuscript_page_count_above_maximum(tmp_path: Path) -> None:

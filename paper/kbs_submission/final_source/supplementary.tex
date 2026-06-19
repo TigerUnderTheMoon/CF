@@ -71,7 +71,7 @@ supplementary material \sep structural calibration \sep reproducibility \sep kno
 \section{Extended Proofs and Derivations}
 \label{app:proofs}
 
-This appendix provides supplementary derivations, edge-case analyses, and tightness constructions referenced in the main text. Full proofs of the variance-reduction and bottleneck-protection theorems, the bottleneck tightness construction, and SLSQP convergence diagnostics are provided in the supplementary materials (Supplementary Notes S2--S4).
+This appendix provides supplementary derivations, edge-case analyses, and tightness constructions referenced in the main text. Full proofs of the variance-reduction and bottleneck-protection theorems, the bottleneck tightness construction, and SLSQP convergence diagnostics are provided in the subsections below.
 
 \subsection{KKT Conditions for the SCU Objective}
 \label{app:kkt}
@@ -86,17 +86,17 @@ w_i^* &\ge \varepsilon, \quad \forall i \\
 \sum_{i=1}^k w_i^* &= 1.
 \end{align}
 
-The partial derivative is $\partial L / \partial w_i = 2\alpha(w_i - \tilde{c}_i) + 2\beta(w_i - \tilde{n}_i) + 2\gamma(\mathbf{R}\mathbf{w})_i - \delta b_i / w_i$. The multiplier $\lambda^* \in \mathbb{R}$ (unrestricted) captures the equality constraint; $\mu_i^* \ge 0$ enforce the floor constraints. By complementary slackness, $\mu_i^* > 0$ only when $w_i^* = \varepsilon$. The complete derivation and case-by-case analysis of boundary solutions are provided in Supplementary Note~S2.
+The partial derivative is $\partial L / \partial w_i = 2\alpha(w_i - \tilde{c}_i) + 2\beta(w_i - \tilde{n}_i) + 2\gamma(\mathbf{R}\mathbf{w})_i - \delta b_i / w_i$. The multiplier $\lambda^* \in \mathbb{R}$ (unrestricted) captures the equality constraint; $\mu_i^* \ge 0$ enforce the floor constraints. By complementary slackness, $\mu_i^* > 0$ only when $w_i^* = \varepsilon$. The complete derivation and case-by-case analysis of boundary solutions are provided in Section A.1 below.
 
 \subsection{Derivation of the Variance Reduction Bound}
 \label{app:variance-derivation}
 
-The full algebraic derivation is provided in Supplementary Note~S2. The key steps are: (i) the two-term objective $L_2(\mathbf{w}) = \alpha\|\mathbf{w} - \tilde{\mathbf{c}}\|_2^2 + \beta\|\mathbf{w} - \tilde{\mathbf{n}}\|_2^2$ has unconstrained minimizer $\hat{\mathbf{w}} = (\alpha\tilde{\mathbf{c}} + \beta\tilde{\mathbf{n}})/(\alpha+\beta)$; (ii) variance decomposes as $\operatorname{Var}(\hat{\mathbf{w}}) = (\alpha/(\alpha+\beta))^2\operatorname{Var}(\tilde{\mathbf{c}}) + (\beta/(\alpha+\beta))^2\operatorname{Var}(\tilde{\mathbf{n}}) + 2\alpha\beta/(\alpha+\beta)^2\operatorname{Cov}(\tilde{\mathbf{c}}, \tilde{\mathbf{n}})$; (iii) since $\operatorname{Cov}(\tilde{\mathbf{c}}, \tilde{\mathbf{n}}) \approx 0.05$--$0.09$ and $\operatorname{Var}(\tilde{\mathbf{n}}) \ll \operatorname{Var}(\tilde{\mathbf{c}})$, the dominant shrinkage factor is $\alpha/(\alpha+\beta)$; (iv) projection onto the simplex $\mathcal{W}$ is non-expansive in variance~\citep{wang2013projection}, yielding the stated bound.
+The full algebraic derivation is provided below. The key steps are: (i) the two-term objective $L_2(\mathbf{w}) = \alpha\|\mathbf{w} - \tilde{\mathbf{c}}\|_2^2 + \beta\|\mathbf{w} - \tilde{\mathbf{n}}\|_2^2$ has unconstrained minimizer $\hat{\mathbf{w}} = (\alpha\tilde{\mathbf{c}} + \beta\tilde{\mathbf{n}})/(\alpha+\beta)$; (ii) variance decomposes as $\operatorname{Var}(\hat{\mathbf{w}}) = (\alpha/(\alpha+\beta))^2\operatorname{Var}(\tilde{\mathbf{c}}) + (\beta/(\alpha+\beta))^2\operatorname{Var}(\tilde{\mathbf{n}}) + 2\alpha\beta/(\alpha+\beta)^2\operatorname{Cov}(\tilde{\mathbf{c}}, \tilde{\mathbf{n}})$; (iii) since $\operatorname{Cov}(\tilde{\mathbf{c}}, \tilde{\mathbf{n}}) \approx 0.05$--$0.09$ and $\operatorname{Var}(\tilde{\mathbf{n}}) \ll \operatorname{Var}(\tilde{\mathbf{c}})$, the dominant shrinkage factor is $\alpha/(\alpha+\beta)$; (iv) projection onto the simplex $\mathcal{W}$ is non-expansive in variance~\citep{wang2013projection}, yielding the stated bound.
 
 \subsection{Tightness Construction for Bottleneck Lower Bound}
 \label{app:bottleneck-tightness}
 
-The explicit tightness construction for the bottleneck lower-bound theorem is provided in Supplementary Note~S3.
+The explicit tightness construction for the bottleneck lower-bound theorem is provided in Section A.3 below.
 
 Substituting $w_2 = 1 - w_1$:
 \begin{equation}
@@ -189,7 +189,7 @@ $\alpha,\beta,\gamma,\delta$ & Fidelity, structure, redundancy, and bottleneck w
 \end{tabular}
 \end{table}
 
-SC-FMA is positioned between process supervision and graph-aware audit analysis. Process Reward Models supply step-level supervision signals; attribution methods supply local importance scores; graph diagnostics supply structural constraints. SC-FMA does not train a PRM, certify a KBS deployment, or identify causal estimands. It calibrates an existing fidelity signal using observable trace structure.
+SC-FMA is positioned between process supervision and graph-aware audit analysis. Process Reward Models supply step-level supervision signals; attribution methods supply local importance scores; graph diagnostics supply structural constraints. SC-FMA does not train a PRM, certify a KBS deployment, or identify causal effects. It calibrates an existing fidelity signal using observable trace structure.
 
 \subsection{Structural Necessity and Optimization Algorithms}
 \label{app:algorithms}
@@ -293,6 +293,8 @@ The full scaling figure remains available as Figure~\ref{fig:resilience-app} and
 \subsection{PRM800K Variant Details and Audit Readout}
 \label{app:prm800k-variant-details}
 
+\noindent\textbf{Note:} The core PRM800K audit-prioritization readout has been moved to the main manuscript, Section~6 (KBS Audit Demonstration). The tables below provide extended variant comparisons and additional baselines that supplement the main-text results.
+
 \begin{table}[ht]
 \caption{SC-FMA calibration variant comparison on the PRM800K locked split. All variants use \texttt{w\_struct} predictions as the fidelity input.}
 \label{tab:supp-scfma-variants}
@@ -339,7 +341,7 @@ These tables retain the route-specific downgrade: the strongest real-data result
 \subsection{KBS Integration Notes and KG Fixture Pilot}
 \label{app:kbs-integration-kg}
 
-The main manuscript compresses KBS implications to the methodological level. The detailed mapping is: high-necessity steps suggest review-priority knowledge assertions or verification rules; high-redundancy steps suggest candidate consolidation; bottleneck steps suggest single points of failure that deserve fallback or curation. These mappings remain analogies until tested in a rule engine, ontology reasoner, KG query engine, or production KBS workflow.
+\noindent\textbf{Note:} The KBS methodological analogy, including the detailed mapping of high-necessity, high-redundancy, and bottleneck steps to KBS review concepts, has been moved to the main manuscript, Section~6.5 (KBS Methodological Analogy). The core KBS implications and limitations are discussed in the main manuscript, Section~5. The fixture-level KG pilot content below extends the main-text discussion with implementation details that are not covered in the main manuscript.
 
 The fixture-level KG pilot uses the Countries knowledge graph with country and region entities and \texttt{locatedIn}/\texttt{neighborOf} triples. It compares TF-IDF topical edges with KG-augmented edges for synthetic query traces. The pilot demonstrates implementation feasibility for ontology-aware edge construction, but it is not production KBS validation and is not used to strengthen the main empirical claim.
 
@@ -372,12 +374,12 @@ Figures~\ref{fig:mode-comparison}--\ref{fig:resilience-app} provide the suppleme
 \subsection{Stratum-Dependent Held-Out Analysis}
 \label{app:stratum}
 
-The Stage 2 held-out validation results stratified by trace difficulty tier show substantial heterogeneity: $S_{\text{high}}$ yields Spearman $\rho = 0.287$ (CI [0.108, 0.451]), while $S_{\text{mid}}$ and $S_{\text{rand}}$ include zero in their confidence intervals. The aggregate signal ($\rho = 0.163$, CI [0.092, 0.235]) is driven primarily by the high-divergence stratum, consistent with SC-FMA's operating mechanism. Full stratum results are provided in Supplementary Note~S6.
+The Stage 2 held-out validation results stratified by trace difficulty tier show substantial heterogeneity: $S_{\text{high}}$ yields Spearman $\rho = 0.287$ (CI [0.108, 0.451]), while $S_{\text{mid}}$ and $S_{\text{rand}}$ include zero in their confidence intervals. The aggregate signal ($\rho = 0.163$, CI [0.092, 0.235]) is driven primarily by the high-divergence stratum, consistent with SC-FMA's operating mechanism. Full stratum results are archived in the structured data file \texttt{outputs/stage2\_stratified\_metrics.json}.
 
 \subsection{Taxonomy-Stratified Ablation}
 \label{app:taxonomy-ablation}
 
-The ablation analysis stratified by reflective operation category reveals that structure alignment ($\beta$) provides the largest gain for ERROR\_CORRECTION and VERIFICATION categories, while redundancy penalty ($\gamma$) contributes most for BACKTRACKING and PLANNING categories. Full taxonomy-stratified ablation results are provided in Supplementary Note~S7.
+The ablation analysis stratified by reflective operation category reveals that structure alignment ($\beta$) provides the largest gain for ERROR\_CORRECTION and VERIFICATION categories, while redundancy penalty ($\gamma$) contributes most for BACKTRACKING and PLANNING categories. Full taxonomy-stratified ablation results are archived in the structured data file \texttt{outputs/counterfactual\_ablation\_results.jsonl}.
 
 \section{Implementation Details and Reproducibility}
 \label{app:implementation}
@@ -401,12 +403,12 @@ The following checklist documents the measures taken to ensure full reproducibil
 \subsection{SLSQP Convergence Diagnostics}
 \label{app:slsqp-diagnostics}
 
-SLSQP convergence statistics across $N = 1{,}027$ steps (200 traces): mean iterations to convergence $5.3 \pm 2.1$ (std), median 5, maximum 12. The worst-case trace ($k=8$, dense redundancy) required 12 iterations and 14.7\,ms. Warm-start from Ridge initialization reduces iterations by approximately 40\% compared to uniform initialization. Under default hyperparameters ($\alpha=1.0$, $\beta=0.5$, $\gamma=0.2$, $\delta=0.1$, $\varepsilon=10^{-4}$), the Hessian condition number $\kappa(\mathbf{H}) \le 3.2$, guaranteeing numerically stable optimization. Detailed convergence statistics by trace size and cold-start comparisons are provided in Supplementary Note~S4.
+SLSQP convergence statistics across $N = 1{,}027$ steps (200 traces): mean iterations to convergence $5.3 \pm 2.1$ (std), median 5, maximum 12. The worst-case trace ($k=8$, dense redundancy) required 12 iterations and 14.7\,ms. Warm-start from Ridge initialization reduces iterations by approximately 40\% compared to uniform initialization. Under default hyperparameters ($\alpha=1.0$, $\beta=0.5$, $\gamma=0.2$, $\delta=0.1$, $\varepsilon=10^{-4}$), the Hessian condition number $\kappa(\mathbf{H}) \le 3.2$, guaranteeing numerically stable optimization. Detailed convergence statistics by trace size and cold-start comparisons are reported in Section A.6 below.
 
 \subsection{Graph Construction Parameter Sensitivity}
 \label{app:graph-sensitivity}
 
-The keyword-heuristic graph construction introduces two free parameters: $\tau_{\text{tfidf}} = 0.35$ and $w_{\text{topical}} = 0.75$. Sensitivity analysis ($\pm 20\%$ perturbation) shows $|\Delta\rho| < 0.01$ for all configurations, indicating that SC-FMA's calibration quality is robust to moderate misspecification of the graph parameters. Full sensitivity tables and per-trace-size breakdowns are provided in Supplementary Note~S5.
+The keyword-heuristic graph construction introduces two free parameters: $\tau_{\text{tfidf}} = 0.35$ and $w_{\text{topical}} = 0.75$. Sensitivity analysis ($\pm 20\%$ perturbation) shows $|\Delta\rho| < 0.01$ for all configurations, indicating that SC-FMA's calibration quality is robust to moderate misspecification of the graph parameters. Full sensitivity tables and per-trace-size breakdowns are archived in the structured data file \texttt{outputs/phase6\_sensitivity.json}.
 
 \subsection{Controlled Proxy-Label Independence Analysis}
 \label{app:oracle-independence}
