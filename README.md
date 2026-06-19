@@ -87,19 +87,25 @@ For the KBS package, historical Phase 5-7 evidence may be materialized from `out
 
 ## Paper Package
 
-Primary manuscript files:
+Primary KBS manuscript files:
 
-- `paper/manuscript.md`
-- `paper/kbs_submission/main.tex`
+- `paper/kbs_submission/final_source/manuscript.tex`
+- `paper/kbs_submission/final_package/manuscript.pdf`
+- `paper/kbs_submission/final_package/latex_source.zip`
 - `paper/kbs_submission/cover_letter.md`
-- `paper/submission_readiness_audit.md`
 - `paper/claim_registry.md`
+- `paper/submission_lock_audit.md`
+
+`paper/manuscript.md` is a superseded Markdown pointer, not the active manuscript.
+The current KBS calibration benchmark uses 200 synthetic traces / 1,027 steps.
+Earlier Phase 5-7 synthetic diagnostics are retained as historical diagnostic
+evidence and must not be merged into the current ranking benchmark counts.
 
 Build the KBS PDF from:
 
 ```bash
-cd paper/kbs_submission
-latexmk -pdf -interaction=nonstopmode -halt-on-error main.tex
+cd paper/kbs_submission/final_source
+latexmk -pdf -interaction=nonstopmode -halt-on-error manuscript.tex
 ```
 
 ## Citation

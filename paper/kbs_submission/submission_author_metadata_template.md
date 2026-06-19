@@ -4,7 +4,7 @@ Purpose: record the author and statement metadata inserted into the final Knowle
 
 ## Manuscript
 
-- Title: Structurally-Calibrated Functional Attribution: A Methodology for Process Supervision Weighting in Reflective Reasoning
+- Title: Structurally-Calibrated Functional Attribution for Audit Prioritization in Knowledge-Intensive Reasoning
 - Article type: Regular Article
 
 ## Authors

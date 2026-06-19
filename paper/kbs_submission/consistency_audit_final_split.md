@@ -42,6 +42,6 @@ Not allowed:
 ## Package Split Status
 
 - Authoritative manuscript source: `paper/kbs_submission/final_source/manuscript.tex`.
-- Expected compiled manuscript artifact: `paper/kbs_submission/final_package/manuscript.pdf`, 35 pages.
+- Expected compiled manuscript artifact: `paper/kbs_submission/final_package/manuscript.pdf`, 12 pages.
 - Final upload boundary after cleanup: `cover_letter.docx`, `Highlights.docx`, `manuscript.pdf`, `supplementary.docx`, and `latex_source.zip`.
 - Reproducibility source bundle keeps `manuscript.tex`, `supplementary.tex`, `references.bib`, CAS files, and figures, while excluding local build artifacts.

@@ -1,10 +1,12 @@
-# Final KBS Submission Manifest
+# Final KBS Package Manifest
 
-Purpose: define the clean upload boundary for the Knowledge-Based Systems submission package.
+Purpose: define the clean upload boundary for the claim-bounded Knowledge-Based Systems methodology and PRM800K-like audit-prioritization package.
+
+This package must be described only as a claim-bounded KBS upload package. The PRM800K stratified audit-prioritization gate remains `moderate`, so title, abstract, cover letter, and manifest language must stay within moderate preliminary PRM800K-like audit-prioritization support.
 
 ## Final upload files
 
-The portal-facing package is `final_package/` and contains exactly five files:
+The portal-shaped package is `final_package/` and contains exactly five files:
 
 - `cover_letter.docx` -- Word cover letter with named authors and bounded KBS positioning.
 - `Highlights.docx` -- Word highlights file converted from the standalone highlights content.
@@ -33,15 +35,15 @@ The portal-facing package is `final_package/` and contains exactly five files:
 
 ## Verification
 
-- `manuscript.tex` compiled with TeX Live/latexmk: exit code 0, output `manuscript.pdf` with 35 pages.
+- `manuscript.tex` compiled with TeX Live/latexmk after the moderate-title revision: exit code 0, output `manuscript.pdf` with 14 pages (includes Section 6 KBS Audit Demonstration).
 - `Highlights.docx` contains the final highlights text and current title.
 - `supplementary.docx` contains the supplementary title, author names, and supplementary content converted from the split supplementary material.
-- Supplementary data map now includes `outputs/real_task_v3_6_prm800k_hash/audit_prioritization_report.json` and `outputs/real_task_v3_6_prm800k_hash/audit_prioritization_summary.md` as audit-prioritization context only.
-- Manuscript PDF pages were rendered to PNG contact sheets and visually checked for page count, footer consistency, figure placement, and obvious clipping.
-- `cover_letter.docx`, `Highlights.docx`, and `supplementary.docx` were structurally checked for required DOCX parts and required text. Visual DOCX rendering could not be completed because `soffice.exe`/LibreOffice is not installed on this machine.
-- `python scripts\verify_kbs_submission_package.py --package-dir paper\kbs_submission\final_package --require-author-metadata --require-pdf-text` passes.
+- Supplementary data map now includes `outputs/real_task_v3_6_prm800k_hash/audit_prioritization_report.json` and `outputs/real_task_v3_6_prm800k_hash/audit_prioritization_summary.md` as audit-prioritization context only, and `outputs/kbs_audit_demo/audit_demo_report.json` as the KBS audit demonstration artifact (Section 6).
+- Manuscript PDF pages were rendered to current PNG contact sheets and visually checked for page count, footer consistency, figure placement, and obvious clipping.
+- `cover_letter.docx`, `Highlights.docx`, and `supplementary.docx` were structurally checked for required DOCX parts and required text after the moderate-title revision. Visual DOCX rendering could not be completed because `soffice.exe`/LibreOffice is not installed on this machine.
+- `python scripts\verify_kbs_submission_package.py --package-dir paper\kbs_submission\final_package --require-author-metadata --require-pdf-text --min-manuscript-pages 12 --max-manuscript-pages 20` passes.
 - `pytest -q tests/test_kbs_submission_package_verifier.py` passes.
 
 ## Claim boundary
 
-The package supports a methodological KBS submission: SC-FMA calibration, controlled synthetic proxy-label ranking evidence, PRM800K step-label ranking with `w_struct` as the primary real-data result, Ridge as the closest SC-FMA approximation on that route, offline PRM800K audit-prioritization context, and a fixture-level ontology-aware edge pilot as diagnostic context. It does not claim downstream PRM/filtering gains, GSM8K/HotpotQA replay-pass evidence, production knowledge-base deployment validation, or formal causal identification.
+The package supports a bounded KBS-facing diagnostic and audit-prioritization contribution: SC-FMA calibration, controlled synthetic proxy-label ranking evidence, PRM800K step-label ranking with `w_struct` as the primary real-data result, Ridge as the closest SC-FMA approximation on that route, moderate preliminary PRM800K audit-prioritization context, a preliminary KBS audit demonstration (Section 6, claim `M_KBS_AUDIT_DEMONSTRATION`) applying SC-FMA to knowledge-base structured audit prioritization, and a fixture-level ontology-aware edge pilot as diagnostic context. It does not claim downstream PRM/filtering gains, GSM8K/HotpotQA replay-pass evidence, production knowledge-base deployment validation, or formal causal identification.

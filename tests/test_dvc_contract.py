@@ -23,6 +23,14 @@ def test_dvc_yaml_defines_phase_pipeline_contract() -> None:
     assert stages["figures"]["outs"] == ["outputs/figures"]
 
 
+def test_dvc_lock_is_versioned_with_phase_stages() -> None:
+    lock_path = ROOT / "dvc.lock"
+    assert lock_path.exists()
+
+    lock = yaml.safe_load(lock_path.read_text(encoding="utf-8"))
+    assert set(lock["stages"]) >= {"phase5", "phase6", "phase7", "figures"}
+
+
 def test_dvcignore_does_not_hide_data_or_outputs_from_dvc() -> None:
     lines = (ROOT / ".dvcignore").read_text(encoding="utf-8").splitlines()
     active_patterns = {
@@ -52,3 +60,22 @@ def test_prepare_dvc_synthetic_traces_writes_jsonl(tmp_path: Path) -> None:
         '{"sample_id": "a", "value": 1}',
         '{"sample_id": "b", "value": 2}',
     ]
+
+
+def test_ci_uses_dvc_remote_fallback_and_claim_checks() -> None:
+    workflow = (ROOT / ".github" / "workflows" / "paper-build.yml").read_text(
+        encoding="utf-8"
+    )
+
+    required_snippets = [
+        "dvc repro",
+        "dvc status --quiet",
+        "dvc dag --dry",
+        "dvc status --show-json",
+        "DVC remote unavailable in CI; pipeline contract-only check passed",
+        "scripts/check_claim_boundaries.py --active-only",
+        "curl -I -L https://doi.org/",
+        "latexmk -pdf -interaction=nonstopmode -halt-on-error manuscript.tex",
+    ]
+    for snippet in required_snippets:
+        assert snippet in workflow

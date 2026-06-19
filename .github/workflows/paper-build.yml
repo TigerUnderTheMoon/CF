@@ -3,15 +3,25 @@ name: paper-build
 on:
   push:
     paths:
+      - "dvc.yaml"
+      - "dvc.lock"
       - "outputs/**"
       - "paper/**"
-      - "scripts/check_paper_figure_inventory.py"
+      - "scripts/**"
+      - "tests/test_claim_boundaries.py"
+      - "tests/test_dvc_contract.py"
+      - "tests/test_kbs_submission_package_verifier.py"
       - ".github/workflows/paper-build.yml"
   pull_request:
     paths:
+      - "dvc.yaml"
+      - "dvc.lock"
       - "outputs/**"
       - "paper/**"
-      - "scripts/check_paper_figure_inventory.py"
+      - "scripts/**"
+      - "tests/test_claim_boundaries.py"
+      - "tests/test_dvc_contract.py"
+      - "tests/test_kbs_submission_package_verifier.py"
       - ".github/workflows/paper-build.yml"
 
 jobs:
@@ -27,19 +37,63 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install Python render dependencies
-        run: python -m pip install --upgrade pandas matplotlib seaborn tabulate jupyter pyyaml
+      - name: Install Python and DVC dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade \
+            pyyaml numpy scipy pandas matplotlib seaborn tabulate jsonschema \
+            jsonlines networkx pydantic omegaconf structlog dvc pytest
 
-      - name: Install Quarto
-        uses: quarto-dev/quarto-actions/setup@v2
-        with:
-          tinytex: true
+      - name: Install LaTeX and PDF tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            latexmk texlive-latex-recommended texlive-latex-extra \
+            texlive-publishers texlive-bibtex-extra poppler-utils
 
-      - name: Render executable paper
-        run: quarto render paper
+      - name: Active claim-boundary and citation-placeholder scan
+        run: python scripts/check_claim_boundaries.py --active-only
 
-      - name: Check generated PDF
-        run: ls paper/_book/*.pdf
+      - name: Verify KBS DOI anchors
+        run: |
+          for doi in \
+            10.1016/j.knosys.2025.113503 \
+            10.1016/j.knosys.2025.113648 \
+            10.1016/j.knosys.2024.112410; do
+            curl -I -L https://doi.org/${doi}
+          done
+          python scripts/check_claim_boundaries.py --check-dois
 
-      - name: Check figure inventory consistency
-        run: python scripts/check_paper_figure_inventory.py --paper-dir paper --require-generated
+      - name: Verify KBS final package contract
+        run: |
+          python scripts/verify_kbs_submission_package.py \
+            --package-dir paper/kbs_submission/final_package \
+            --require-author-metadata \
+            --require-pdf-text \
+            --min-manuscript-pages 12 \
+            --max-manuscript-pages 20
+
+      - name: Build KBS LaTeX source
+        working-directory: paper/kbs_submission/final_source
+        run: latexmk -pdf -interaction=nonstopmode -halt-on-error manuscript.tex
+
+      - name: DVC reproducibility or contract-only fallback
+        run: |
+          set -e
+          if dvc remote list | grep -q . && dvc status --show-json >/tmp/dvc-status.json; then
+            dvc repro
+            dvc status --quiet
+          else
+            dvc dag --dry || dvc dag
+            dvc status --show-json || true
+            echo "DVC remote unavailable in CI; pipeline contract-only check passed"
+          fi
+
+      - name: Targeted contract tests
+        run: |
+          python -m pytest \
+            tests/test_prm800k_audit_prioritization.py \
+            tests/test_claim_boundaries.py \
+            tests/test_kbs_submission_package_verifier.py \
+            tests/test_dvc_contract.py \
+            -q

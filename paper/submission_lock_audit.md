@@ -1,10 +1,10 @@
 # Submission Lock Audit
 
-Audit date: 2026-06-08
+Audit date: 2026-06-18
 Original audit date: 2026-05-30
 Repository: `D:\CF`
 Branch: `main`
-Scope: submission consistency pass over stored artifacts and paper text, with a 2026-06-08 operational finalization update for line-ending normalization and KBS diagnostic package freeze status. No experiments were rerun, no datasets or models were added, and Stage 2 claim labels were not upgraded.
+Scope: submission consistency pass over stored artifacts and paper text, with a 2026-06-08 operational finalization update for line-ending normalization and KBS diagnostic package freeze status, and a 2026-06-18 update adding the KBS audit demonstration (Section 6, claim `M_KBS_AUDIT_DEMONSTRATION`) and updating the manuscript page count to 14. No experiments were rerun, no datasets or models were added, and Stage 2 claim labels were not upgraded.
 
 Current repository-level readiness remains governed by `paper/submission_readiness_audit.md`; this lock audit preserves the Stage 2 consistency boundary and records only the finalization checklist status changes below.
 
@@ -17,18 +17,31 @@ c1_status: stratum_dependent
 c2_status: stratum_dependent
 c3_status: stratum_dependent
 baseline_status: integrated
-submission_status: blocked
+submission_status: methodological_submission_possible_with_claim_boundaries
 ```
 
 ## Verdict
 
-Status: **blocked**.
+Status: **methodological_submission_possible_with_claim_boundaries**.
 
 The Stage 2 held-out validation artifacts remain internally consistent with the supplied execution summary. They support a small aggregate FMA rank-alignment signal, not protocol-independent confirmation. C1, C2, and C3 remain `stratum_dependent` because `S_mid` and `S_rand` fail the all-strata requirement.
 
 The required baseline gate is no longer blocked by missing artifacts. `outputs/baseline_artifact_audit.md` found no hidden independent Stage 2 baseline score vectors, so random masking, span masking, graph removal, and edge dropout were evaluated with frozen conservative non-target proxy rules. All four required baselines have 840 held-out step scores and `target_leakage_status: clean`.
 
-Submission readiness remains blocked for final readiness review, citation/package completion, and claim-scope discipline. The clean proxy baselines close the missing-baseline gate but do not turn stratum-dependent Stage 2 evidence into protocol-independent confirmation.
+The current KBS package can be treated as a claim-bounded methodology and audit-prioritization upload package after the final verifier, DOI/claim scan, and PDF page-count gate pass (14 pages, including the newly added Section 6 KBS Audit Demonstration). The clean proxy baselines close the missing-baseline gate but do not turn stratum-dependent Stage 2 evidence into protocol-independent confirmation.
+
+## PRM800K Stratified Decision Gate
+
+The PRM800K locked-split audit-prioritization analysis now controls the submission-status boundary for the KBS package:
+
+| Result tier | Required action |
+|---|---|
+| `strong` | Retain methodology wording only for PRM800K-like audit prioritization; do not extend to task success, PRM training, or KBS deployment. |
+| `moderate` | Weaken title/abstract to "moderate" or "preliminary real-data support"; cover letter must use the same wording. |
+| `diagnostic` | Change title to a diagnostic-framework framing; downgrade abstract, conclusion, cover letter, and package manifest. |
+| `blocked` | Set `submission_status: blocked_for_submission`; update `paper/claim_registry.md` so active empirical claims are `stratum_dependent` or `failed_validation`; do not mark the final package submission-ready; keep only an internal diagnostic package. |
+
+If the stratified analysis is unavailable, blocked, or fails the hard-stratum/simple-baseline gate, the package remains `blocked_for_submission` until the claim registry and final package are regenerated under the downgraded status.
 
 ## Artifact Paths Checked
 
@@ -74,12 +87,13 @@ Submission readiness remains blocked for final readiness review, citation/packag
 
 No required baseline uses `Delta U`, `necessity`, `delta_utility`, `attribution_score`, `utility_score`, or `structural_necessity` as a prediction source. Optional baseline rows remain unavailable unless independent score-vector artifacts are later added.
 
-## Final Blocker List
+## Residual Risk List
 
 1. C1, C2, and C3 are `stratum_dependent`; none can be described as broad confirmation findings.
 2. Required baselines are clean but conservative proxies, not independently rerun perturbation-response experiments.
 3. Related-work bibliography anchors are maintained outside this consistency pass.
 4. Final venue formatting, figure numbering, and bibliography remain subject to venue/package QA.
+5. The upload package must retain the explicit boundary: no downstream PRM training claim, no GSM8K/HotpotQA replay validation claim, no production KBS deployment claim, and no causal identification claim. The KBS audit demonstration (Section 6) is a preliminary methodological analogy only (`M_KBS_AUDIT_DEMONSTRATION`); it does not validate production KBS deployment.
 
 Completed operational finalization items:
 
@@ -88,6 +102,6 @@ Completed operational finalization items:
 
 ## Final Lock Recommendation
 
-Do **not** mark the manuscript ready for submission yet. Mark it as:
+Mark the KBS upload package as:
 
-> Stage 2 consistency checked; required baselines integrated as clean conservative controls; C1, C2, and C3 remain `stratum_dependent`; `submission_status` remains `blocked` pending final readiness review.
+> Claim-bounded KBS methodology and PRM800K-like audit-prioritization package; Stage 2 consistency checked; required baselines integrated as clean conservative controls; C1, C2, and C3 remain `stratum_dependent`; PRM800K stratified audit-prioritization gate is `moderate`; forbidden downstream, replay, deployment, and causal-identification claims remain excluded.

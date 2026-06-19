@@ -29,10 +29,17 @@ if str(SCRIPTS_DIR) not in sys.path:
 
 import run_scfma_variants_prm800k as variants
 from fma.eval.prm800k_audit_prioritization import (
+    assign_error_uncertainty_stratum,
+    assign_label_entropy_stratum,
+    assign_trace_length_stratum,
+    classify_stratified_decision,
+    label_entropy,
     label_mass_at_budget,
     max_label_hit_at_budget,
     ndcg_at_budget,
     summarize_audit_prioritization,
+    summarize_audit_prioritization_by_stratum,
+    tertile_cutpoints,
 )
 
 DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "outputs" / "real_task_v3_6_prm800k_hash"
@@ -107,13 +114,21 @@ def main(argv: Sequence[str] | None = None) -> None:
     frozen_scores = load_frozen_prm_scores(args.frozen_prm_scores)
 
     print("Computing audit-prioritization rows...")
-    rows = build_audit_rows(locked_samples, model, frozen_scores=frozen_scores)
+    rows = assign_audit_strata(build_audit_rows(locked_samples, model, frozen_scores=frozen_scores))
     methods = [method for method in METHOD_ORDER if any(method in row["scores_by_method"] for row in rows)]
     summaries = summarize_audit_prioritization(rows, methods=methods)
+    stratified = summarize_audit_prioritization_by_stratum(
+        rows,
+        methods=methods,
+        strata=["trace_length", "label_entropy", "error_uncertainty"],
+    )
+    stratified_decision = classify_stratified_decision(stratified)
 
     report = build_report(
         rows,
         summaries,
+        stratified,
+        stratified_decision,
         methods=methods,
         config_path=args.config,
         frozen_prm_scores_path=args.frozen_prm_scores,
@@ -124,11 +139,14 @@ def main(argv: Sequence[str] | None = None) -> None:
 
     report_path = args.output_dir / "audit_prioritization_report.json"
     summary_path = args.output_dir / "audit_prioritization_summary.md"
+    stratified_summary_path = args.output_dir / "audit_prioritization_stratified_summary.md"
     write_json(report_path, report)
     summary_path.write_text(render_markdown_summary(report), encoding="utf-8")
+    stratified_summary_path.write_text(render_stratified_markdown_summary(report), encoding="utf-8")
 
     print(f"Report written to {report_path}")
     print(f"Summary written to {summary_path}")
+    print(f"Stratified summary written to {stratified_summary_path}")
 
 
 def load_frozen_prm_scores(path: Path) -> dict[str, list[float]]:
@@ -183,6 +201,8 @@ def build_audit_rows(
                 "row_index": sample.row_index,
                 "question_hash": sample.question_hash,
                 "n_steps": len(labels),
+                "label_entropy": label_entropy(labels),
+                "error_uncertainty_stratum": assign_error_uncertainty_stratum(sample.feature_rows),
                 "labels": labels.tolist(),
                 "scores_by_method": {
                     method: np.asarray(values, dtype=float).tolist()
@@ -191,6 +211,27 @@ def build_audit_rows(
             }
         )
     return rows
+
+
+def assign_audit_strata(rows: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
+    trace_cutpoints = tertile_cutpoints([float(row["n_steps"]) for row in rows])
+    entropy_cutpoints = tertile_cutpoints([float(row["label_entropy"]) for row in rows])
+    assigned: list[dict[str, Any]] = []
+    for row in rows:
+        copied = dict(row)
+        copied["strata"] = {
+            "trace_length": assign_trace_length_stratum(
+                int(copied["n_steps"]),
+                trace_cutpoints,
+            ),
+            "label_entropy": assign_label_entropy_stratum(
+                float(copied["label_entropy"]),
+                entropy_cutpoints,
+            ),
+            "error_uncertainty": str(copied["error_uncertainty_stratum"]),
+        }
+        assigned.append(copied)
+    return assigned
 
 
 def compute_scfma_scores(
@@ -258,6 +299,8 @@ def compute_scfma_scores(
 def build_report(
     rows: Sequence[Mapping[str, Any]],
     summaries: Sequence[Any],
+    stratified: Sequence[Mapping[str, Any]],
+    stratified_decision: Mapping[str, str],
     *,
     methods: Sequence[str],
     config_path: Path,
@@ -300,6 +343,8 @@ def build_report(
         "n_samples": len(rows),
         "n_steps": sum(int(row["n_steps"]) for row in rows),
         "methods": method_entries,
+        "strata": list(stratified),
+        "stratified_decision": dict(stratified_decision),
         "method_order": list(methods),
         "source": {
             "config": str(config_path),
@@ -403,6 +448,40 @@ def render_markdown_summary(report: Mapping[str, Any]) -> str:
             )
         )
     lines.extend(["", operational_note(report), ""])
+    return "\n".join(lines)
+
+
+def render_stratified_markdown_summary(report: Mapping[str, Any]) -> str:
+    lines = [
+        "# PRM800K Stratified Audit-Prioritization Summary",
+        "",
+        "This stratified readout reuses the locked PRM800K split. It remains "
+        "audit-prioritization context only and does not validate downstream PRM "
+        "training, GSM8K/HotpotQA replay, external generalization, or deployed "
+        "KBS workflows.",
+        "",
+        f"- Decision: `{report['stratified_decision']['decision']}`",
+        f"- Required action: {report['stratified_decision']['required_action']}",
+        "",
+        "| Stratum type | Stratum | Method | N | Steps | Spearman | Top-1 hit | "
+        "NDCG@25% |",
+        "|---|---|---|---:|---:|---:|---:|---:|",
+    ]
+    for row in report["strata"]:
+        lines.append(
+            "| {stype} | {stratum} | {method} | {n} | {steps} | {rho:.4f} | "
+            "{top1:.4f} | {ndcg25:.4f} |".format(
+                stype=row["stratum_type"],
+                stratum=row["stratum"],
+                method=DISPLAY_NAMES.get(str(row["method"]), str(row["method"])),
+                n=int(row["n_samples"]),
+                steps=int(row["n_steps"]),
+                rho=float(row["mean_spearman"]),
+                top1=float(row["mean_top1_hit"]),
+                ndcg25=float(row["mean_ndcg_at_25"]),
+            )
+        )
+    lines.append("")
     return "\n".join(lines)
 
 
