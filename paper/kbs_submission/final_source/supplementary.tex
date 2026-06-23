@@ -242,48 +242,44 @@ $\varepsilon$ & $\{10^{-6},10^{-5},10^{-4},10^{-3}\}$ & $10^{-4}$ & Numerical fl
 \end{table}
 
 \begin{table}[ht]
-\caption{Extended ablation results moved from the main manuscript. $\Delta\rho$ is relative to full SC-FMA QP.}
+\caption{Extended ablation results from \texttt{outputs/m3\_ablation\_study.json}. All variants reuse the canonical downstream synthetic generator (seed 42, 200 traces, 1,027 steps). $\Delta\rho$ is relative to full SC-FMA QP.}
 \label{tab:supp-ablation}
 \centering
 \small
-\begin{tabular}{lcc}
+\begin{tabular}{lccc}
 \toprule
-\textbf{Variant} & \textbf{Spearman $\rho$} & \textbf{$\Delta\rho$} \\
+\textbf{Variant} & \textbf{Spearman $\rho$} & \textbf{Kendall $\tau$} & \textbf{$\Delta\rho$} \\
 \midrule
-SC-FMA QP (full) & \textbf{0.608} & --- \\
-$-$ Structure & 0.551 & $-$0.057 \\
-$-$ Fidelity & 0.536 & $-$0.072 \\
-$-$ Redundancy & 0.586 & $-$0.022 \\
-$-$ Bottleneck & 0.595 & $-$0.013 \\
-Structure only & 0.438 & $-$0.170 \\
-Fidelity only (Raw CIU) & 0.483 & $-$0.125 \\
-Fidelity + Structure & 0.573 & $-$0.035 \\
-Fidelity + Redundancy & 0.518 & $-$0.090 \\
-Fidelity + Bottleneck & 0.504 & $-$0.104 \\
+SC-FMA QP (full) & \textbf{0.522} & \textbf{0.437} & --- \\
+$-$ Fidelity & 0.337 & 0.274 & $-$0.186 \\
+$-$ Structure & 0.489 & 0.423 & $-$0.034 \\
+$-$ Bottleneck & 0.521 & 0.436 & $-$0.001 \\
+$-$ Redundancy & 0.523 & 0.436 & $+$0.001 \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+The canonical-seed ablation shows that fidelity is the dominant term, structure alignment is second, and the bottleneck and redundancy terms have small route-specific effects. The slight improvement after removing redundancy is not used as positive evidence against the redundancy term; it indicates that the redundancy penalty should be interpreted as a regularizer whose value depends on the trace distribution rather than as a universally positive contributor.
 
 \subsection{Efficiency and Scaling}
 \label{app:efficiency-scaling}
 
 \begin{table}[ht]
-\caption{Computational efficiency moved from the main manuscript. Times are per-trace mean over the synthetic test set.}
+\caption{Computational efficiency from \texttt{outputs/s1\_efficiency\_benchmark.json}. Times are measured on the canonical synthetic test set (seed 42, 200 traces, 1,027 steps, three repeats). Only methods measured by the current S1 runner are reported.}
 \label{tab:supp-efficiency}
 \centering
 \small
-\begin{tabular}{lcc}
+\begin{tabular}{lccc}
 \toprule
-\textbf{Method} & \textbf{Wall-clock (ms)} & \textbf{Scaling exponent $p$} \\
+\textbf{Method} & \textbf{Total time (s)} & \textbf{ms/trace} & \textbf{ms/step} \\
 \midrule
-SC-FMA QP & $6.8 \pm 2.9$ & 2.81 \\
-SC-FMA Ridge & $0.4 \pm 0.1$ & 0.97 \\
-SC-FMA Projection & $0.2 \pm 0.05$ & 0.98 \\
-Raw CIU & $0.8 \pm 0.2$ & 0.95 \\
-MC Shapley (500 permutations) & $3{,}420 \pm 890$ & 1.03 \\
-Gradient$\times$Input & $12.4 \pm 3.1$ & 1.12 \\
-Attention Rollout & $8.1 \pm 1.7$ & 1.15 \\
-Token Surprisal & $45.2 \pm 8.3$ & 1.08 \\
+SC-FMA QP & 1.139 & 5.697 & 1.109 \\
+SC-FMA Ridge & 0.022 & 0.108 & 0.021 \\
+SC-FMA Projection & 0.013 & 0.065 & 0.013 \\
+Raw CIU & 0.006 & 0.030 & 0.006 \\
+Random & 0.014 & 0.068 & 0.013 \\
+Span length & 0.005 & 0.023 & 0.004 \\
+Relative position & 0.003 & 0.016 & 0.003 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -391,8 +387,9 @@ The following checklist documents the measures taken to ensure full reproducibil
 
 \begin{enumerate}
 \item \textbf{Environment.} Python 3.11, dependencies specified in \texttt{requirements.txt} with pinned versions. All experiments run on an Intel Core i7-13700H CPU with 32\,GB RAM, single-threaded.
-\item \textbf{Random seeds.} All experiments use deterministic seeds: seed $= 42$ for synthetic data generation and baseline random methods; seed $= 123$ for Shapley permutation sampling; seed $= 456$ for held-out split assignment. NumPy, PyTorch, and Python random states are all seeded.
-\item \textbf{Synthetic data.} Traces are generated via the controlled probabilistic model described in the Synthetic Data Generation section of the main manuscript. The generation script (\texttt{scripts/generate\_synthetic\_traces.py}) is deterministic given the seed. Generated traces are archived as JSON artifacts.
+\item \textbf{Random seeds.} The synthetic ranking route uses five fixed seeds (42, 123, 456, 789, and 1024) for multi-seed reporting. Seed 42 is retained for representative-seed ablations, efficiency timing, and baseline random methods; seed 123 is used for Shapley permutation sampling; seed 456 is used for held-out split assignment. NumPy, PyTorch, and Python random states are all seeded where those libraries are used.
+\item \textbf{Synthetic data.} Traces are generated via the canonical downstream ranking generator reused by the M1, M3, and S1 scripts. Generated traces and summaries are archived as JSON artifacts, including the seed-42 parity count of 200 traces and 1,027 steps.
+\item \textbf{KBS-style audit data.} The offline HotpotQA supporting-fact audit route constructs deterministic retrieval, entity-binding, evidence-check, answer-synthesis, and distractor-rejection steps with a 30/70 hash split. It is archived as a failure-audit artifact because the locked split does not meet the predefined support threshold; it is not a validated KBS deployment workflow.
 \item \textbf{Hyperparameter tuning.} Grid search on the validation set (40 traces) with the ranges reported in the hyperparameter tuning table of the main manuscript. No test-set information is used during tuning. The optimal configuration is frozen before test-set evaluation.
 \item \textbf{Baseline methods.} All baselines use publicly available implementations: Captum for Gradient$\times$Input and Integrated Gradients; transformers library for attention extraction; custom NumPy implementation for MC Shapley with $M = 500$ permutations and convergence tolerance $10^{-3}$.
 \item \textbf{SLSQP solver.} SciPy's \texttt{scipy.optimize.minimize} with method \texttt{SLSQP}, tolerance \texttt{ftol = 1e-8}, maximum iterations $= 100$. Warm-start from Ridge solution.
@@ -438,4 +435,3 @@ All cross-correlations are below $|\rho| < 0.15$, confirming low overlap between
 \bibliography{references}
 
 \end{document}
-

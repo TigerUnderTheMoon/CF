@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import sys
 import time
+from copy import deepcopy
 from pathlib import Path
 
 import numpy as np
@@ -18,6 +19,9 @@ if str(PROJECT_ROOT / "src") not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
 from fma.ranking import rank_steps_by_method
+
+sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
+from run_downstream_ranking import _generate_synthetic_ranking_data  # noqa: E402
 
 SEED = 42
 N_SAMPLES = 200
@@ -34,43 +38,12 @@ N_REPEATS = 3  # Repeat to get stable timing
 
 
 def generate_synthetic_data(seed: int = 42, n_samples: int = 200) -> list[dict]:
-    """Same generation logic as run_downstream_ranking.py."""
-    rng = np.random.default_rng(seed)
-    samples = []
-    for i in range(n_samples):
-        n_steps = int(rng.integers(3, 8))
-        gt = np.abs(rng.normal(0.5, 0.3, n_steps))
-        gt = gt / np.sum(gt)
-        ciu = gt + rng.normal(0, 0.15, n_steps)
-        ciu = np.clip(ciu, 0.0, 1.0)
-        nec = gt + rng.normal(0, 0.2, n_steps)
-        nec = np.clip(nec, 0.0, 1.0)
-        for j in range(n_steps - 1):
-            if rng.random() < 0.3:
-                nec[j] = 0.0
-        red_mat = np.zeros((n_steps, n_steps))
-        for a in range(n_steps):
-            for b in range(a + 1, n_steps):
-                if rng.random() < 0.15:
-                    sim = float(rng.random() * 0.5 + 0.3)
-                    red_mat[a, b] = sim
-                    red_mat[b, a] = sim
-        bottlenecks = set()
-        for j in range(n_steps):
-            if nec[j] > 0.7 and gt[j] > 0.5:
-                bottlenecks.add(j)
-        samples.append({
-            "sample_id": f"synth_{i:04d}",
-            "n_steps": n_steps,
-            "ground_truth_scores": gt.tolist(),
-            "ciu_scores": ciu.tolist(),
-            "necessity_scores": nec.tolist(),
-            "redundancy_matrix": red_mat,
-            "bottleneck_indices": sorted(bottlenecks),
-            "span_lengths": [10] * n_steps,
-            "step_indices": list(range(n_steps)),
-        })
-    return samples
+    """Reuse the canonical synthetic ranking generator exactly."""
+    return deepcopy(_generate_synthetic_ranking_data(n_samples=n_samples, seed=seed))
+
+
+def total_synthetic_steps(samples: list[dict]) -> int:
+    return int(sum(int(sample["n_steps"]) for sample in samples))
 
 
 def time_method(samples: list[dict], method: str, n_repeats: int = 3) -> dict:
@@ -82,7 +55,7 @@ def time_method(samples: list[dict], method: str, n_repeats: int = 3) -> dict:
         for sample in samples:
             ciu = sample["ciu_scores"]
             nec = sample["necessity_scores"]
-            R = sample["redundancy_matrix"]
+            R = np.array(sample["redundancy_matrix"], dtype=float)
             bot = set(sample["bottleneck_indices"])
             try:
                 scores = rank_steps_by_method(
@@ -98,7 +71,7 @@ def time_method(samples: list[dict], method: str, n_repeats: int = 3) -> dict:
         t1 = time.perf_counter()
         times_per_repeat.append(t1 - t0)
 
-    total_steps = sum(s["n_steps"] for s in samples)
+    total_steps = total_synthetic_steps(samples)
     return {
         "method": method,
         "n_samples": len(samples),
@@ -121,7 +94,7 @@ def main() -> None:
     print(f"\nSeed: {SEED}, Samples: {N_SAMPLES}, Repeats: {N_REPEATS}")
 
     samples = generate_synthetic_data(seed=SEED, n_samples=N_SAMPLES)
-    total_steps = sum(s["n_steps"] for s in samples)
+    total_steps = total_synthetic_steps(samples)
     print(f"Generated {len(samples)} samples, {total_steps} total steps\n")
 
     results = {}

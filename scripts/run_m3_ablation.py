@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import sys
+from copy import deepcopy
 from pathlib import Path
 
 import numpy as np
@@ -24,6 +25,9 @@ if str(PROJECT_ROOT / "src") not in sys.path:
 
 from fma.calibration import scfma_calibrate
 from fma.calibration.types import BottleneckConstraint
+
+sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
+from run_downstream_ranking import _generate_synthetic_ranking_data  # noqa: E402
 
 SEED = 42
 N_SAMPLES = 200
@@ -37,41 +41,8 @@ CONFIGS = {
 
 
 def generate_synthetic_data(seed: int = 42, n_samples: int = 200) -> list[dict]:
-    """Same generation logic as run_downstream_ranking.py."""
-    rng = np.random.default_rng(seed)
-    samples = []
-    for i in range(n_samples):
-        n_steps = int(rng.integers(3, 8))
-        gt = np.abs(rng.normal(0.5, 0.3, n_steps))
-        gt = gt / np.sum(gt)
-        ciu = gt + rng.normal(0, 0.15, n_steps)
-        ciu = np.clip(ciu, 0.0, 1.0)
-        nec = gt + rng.normal(0, 0.2, n_steps)
-        nec = np.clip(nec, 0.0, 1.0)
-        for j in range(n_steps - 1):
-            if rng.random() < 0.3:
-                nec[j] = 0.0
-        red_mat = np.zeros((n_steps, n_steps))
-        for a in range(n_steps):
-            for b in range(a + 1, n_steps):
-                if rng.random() < 0.15:
-                    sim = float(rng.random() * 0.5 + 0.3)
-                    red_mat[a, b] = sim
-                    red_mat[b, a] = sim
-        bottlenecks = set()
-        for j in range(n_steps):
-            if nec[j] > 0.7 and gt[j] > 0.5:
-                bottlenecks.add(j)
-        samples.append({
-            "sample_id": f"synth_{i:04d}",
-            "n_steps": n_steps,
-            "ground_truth_scores": gt.tolist(),
-            "ciu_scores": ciu.tolist(),
-            "necessity_scores": nec.tolist(),
-            "redundancy_matrix": red_mat,
-            "bottleneck_indices": sorted(bottlenecks),
-        })
-    return samples
+    """Reuse the canonical synthetic ranking generator exactly."""
+    return deepcopy(_generate_synthetic_ranking_data(n_samples=n_samples, seed=seed))
 
 
 def run_ablation_config(
@@ -90,7 +61,7 @@ def run_ablation_config(
         ciu = np.array(sample["ciu_scores"])
         nec = np.array(sample["necessity_scores"])
         gt = sample["ground_truth_scores"]
-        R = np.array(sample["redundancy_matrix"])
+        R = np.array(sample["redundancy_matrix"], dtype=float)
         n = len(ciu)
         n_total_steps += n
 
