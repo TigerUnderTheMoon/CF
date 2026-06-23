@@ -29,6 +29,16 @@ REQUIRED_FILES = (
     "latex_source.zip",
 )
 
+# Optional files allowed in the upload boundary for double-blind review
+# and graphical abstract requirements.
+OPTIONAL_FILES = (
+    "manuscript_anonymous.pdf",
+    "graphical_abstract.png",
+    "graphical_abstract.pdf",
+    "graphical_abstract.tiff",
+    "graphical_abstract.tif",
+)
+
 REQUIRED_ZIP_FILES = (
     "manuscript.tex",
     "supplementary.tex",
@@ -70,6 +80,34 @@ AUTHOR_PLACEHOLDERS = (
     "anonymous submission package",
 )
 
+COVER_LETTER_VENUE = "Information Processing & Management"
+
+# Patterns that must NOT appear in cover_letter.docx / Highlights.docx /
+# supplementary.docx rendered text. ``Knowledge-Based Systems`` is the prior
+# venue label and must not leak into the IPM upload. The bare token ``KBS`` is
+# also blocked as a system-type label, but the machine-readable claim-boundary
+# marker ``validated_kbs_workflow`` is exempt because it is a venue-neutral
+# claim-governance key, not venue wording.
+FORBIDDEN_VENUE_PATTERNS = (
+    "Knowledge-Based Systems",
+    re.compile(r"\bKBS\b"),
+)
+
+
+def _has_forbidden_venue_wording(text: str) -> list[str]:
+    hits: list[str] = []
+    for pattern in FORBIDDEN_VENUE_PATTERNS:
+        if isinstance(pattern, str):
+            if pattern in text:
+                hits.append(pattern)
+        else:
+            seen: set[str] = set()
+            for match in pattern.findall(text):
+                if match and match not in seen:
+                    seen.add(match)
+                    hits.append(match)
+    return hits
+
 FORBIDDEN_SNIPPETS = {
     "Functional Metacognitive Attribution: A Diagnostic and Design Framework": (
         "old cover-letter title remains"
@@ -84,16 +122,24 @@ FORBIDDEN_SNIPPETS = {
 
 REQUIRED_MANUSCRIPT_SNIPPETS = (
     CURRENT_TITLE,
+)
+
+# For double-blind review, the LaTeX source in the zip MUST be anonymized.
+# These snippets must NOT appear in the zip's manuscript.tex.
+FORBIDDEN_MANUSCRIPT_SNIPPETS = (
     "Haoran Ma",
     "Ningning Wang",
     "mahaoran0000@foamail.com",
     "wangningning@bistu.edu.cn",
+    "Beijing Information Science and Technology University",
+    "ESG Intelligent Application Innovation Research Center",
     "National Social Science Fund of China Project (24BSH018)",
     "Beijing Natural Science Foundation Project (L252145)",
+    r"\section*{Acknowledgments}",
+    r"\section*{Funding}",
     r"\section*{Declaration of Competing Interest}",
-    "The authors declared that they have no conflicts of interest to this work.",
+    r"\section*{Declaration of generative AI",
     r"\section*{Data Availability}",
-    DATA_AVAILABILITY,
     r"\section*{CRediT authorship contribution statement}",
 )
 
@@ -101,8 +147,8 @@ REQUIRED_DOCX_TEXT_SNIPPETS = {
     "Highlights.docx": (
         "Highlights",
         CURRENT_TITLE,
-        "SC-FMA calibrates coarse utility or proxy fidelity into auditable verification-step weights.",
-        "moderate, preliminary support for PRM800K-like audit prioritization",
+        "SC-FMA calibrates utility or proxy fidelity into auditable step weights.",
+        "PRM800K stratified readout supports audit prioritization moderately.",
     ),
     "supplementary.docx": (
         "Supplementary Material",
@@ -157,7 +203,7 @@ def _check_required_files(package_dir: Path, errors: list[str]) -> None:
 
 
 def _check_top_level_boundary(package_dir: Path, errors: list[str]) -> None:
-    allowed = set(REQUIRED_FILES)
+    allowed = set(REQUIRED_FILES) | set(OPTIONAL_FILES)
     for path in sorted(p for p in package_dir.iterdir() if p.is_file()):
         if path.name not in allowed:
             errors.append(f"unexpected file in final upload boundary: {path.name}")
@@ -223,9 +269,12 @@ def _check_cover_letter(package_dir: Path, errors: list[str]) -> None:
     cover_text = _read_docx_text(package_dir / "cover_letter.docx", errors)
     if not cover_text:
         return
-    for snippet in (CURRENT_TITLE, "Knowledge-Based Systems", "Haoran Ma", "Ningning Wang"):
+    for snippet in (CURRENT_TITLE, COVER_LETTER_VENUE, "Haoran Ma", "Ningning Wang"):
         if snippet not in cover_text:
             errors.append(f"cover_letter.docx missing required text: {snippet}")
+    venue_hits = _has_forbidden_venue_wording(cover_text)
+    for hit in venue_hits:
+        errors.append(f"cover_letter.docx contains residual KBS venue wording: {hit}")
     _check_forbidden_text({"cover_letter.docx": cover_text}, errors)
 
 
@@ -239,6 +288,9 @@ def _check_docx_text(package_dir: Path, errors: list[str]) -> dict[str, str]:
         for snippet in snippets:
             if not _contains_snippet(docx_text, snippet):
                 errors.append(f"{filename} missing required text: {snippet}")
+        venue_hits = _has_forbidden_venue_wording(docx_text)
+        for hit in venue_hits:
+            errors.append(f"{filename} contains residual KBS venue wording: {hit}")
     _check_forbidden_text(text_by_name, errors)
     return text_by_name
 
@@ -282,9 +334,33 @@ def _check_source_zip(package_dir: Path, errors: list[str]) -> dict[str, str]:
     if CURRENT_TITLE not in supplementary:
         errors.append("supplementary.tex missing current title")
 
+    # Double-blind: the zip's manuscript.tex MUST NOT contain author
+    # identifying information or title-page sections.
+    for snippet in FORBIDDEN_MANUSCRIPT_SNIPPETS:
+        if snippet in manuscript:
+            errors.append(
+                f"manuscript.tex contains forbidden author-identifying snippet for "
+                f"double-blind review: {snippet}"
+            )
+    for snippet in FORBIDDEN_MANUSCRIPT_SNIPPETS:
+        if snippet in supplementary:
+            errors.append(
+                f"supplementary.tex contains forbidden author-identifying snippet for "
+                f"double-blind review: {snippet}"
+            )
+
     _check_includegraphics_paths_in_zip(names, manuscript, "manuscript.tex", errors)
     _check_includegraphics_paths_in_zip(names, supplementary, "supplementary.tex", errors)
     _check_forbidden_text(text_by_name, errors)
+    for name, text in text_by_name.items():
+        # ``.bib`` entries may legitimately cite works published in the
+        # journal ``Knowledge-Based Systems``; exempt bibliographic files
+        # from the venue-wording residual check.
+        if name.endswith(".bib"):
+            continue
+        venue_hits = _has_forbidden_venue_wording(text)
+        for hit in venue_hits:
+            errors.append(f"{name} contains residual KBS venue wording: {hit}")
     return text_by_name
 
 
@@ -326,8 +402,14 @@ def _check_author_metadata(
     errors: list[str],
     warnings: list[str],
 ) -> None:
+    # Zip source files are expected to be anonymized for double-blind review;
+    # exclude them from the placeholder check. Only check non-zip artifacts
+    # (manuscript.pdf text, docx files, cover letter) for author metadata.
+    zip_source_extensions = (".tex", ".cls", ".sty", ".bst", ".bib")
     placeholders: list[str] = []
-    for text in text_by_name.values():
+    for name, text in text_by_name.items():
+        if name.endswith(zip_source_extensions):
+            continue
         placeholders.extend(
             placeholder for placeholder in AUTHOR_PLACEHOLDERS if placeholder in text
         )
@@ -516,13 +598,13 @@ def check_package(
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Verify the final Knowledge-Based Systems submission upload boundary."
+        description="Verify the final Information Processing & Management submission upload boundary."
     )
     parser.add_argument(
         "--package-dir",
         type=Path,
-        default=Path("paper") / "kbs_submission" / "final_package",
-        help="Path to the final KBS submission package directory.",
+        default=Path("paper") / "ipm_submission" / "final_package",
+        help="Path to the final IPM submission package directory.",
     )
     parser.add_argument(
         "--require-author-metadata",
@@ -568,7 +650,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"error: {error}", file=sys.stderr)
 
     if report.ok:
-        print("KBS final submission package check passed")
+        print("IPM final submission package check passed")
         return 0
     return 1
 
