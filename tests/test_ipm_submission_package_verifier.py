@@ -58,25 +58,15 @@ def _write_source_zip(
     manuscript_tex = manuscript_tex or "\n".join(
         [
             rf"\title[mode=title]{{{TITLE}}}",
-            r"\author[1]{Haoran Ma}",
-            r"\author[1,2]{Ningning Wang}",
-            "mahaoran0000@foamail.com",
-            "wangningning@bistu.edu.cn",
-            "National Social Science Fund of China Project (24BSH018)",
-            "Beijing Natural Science Foundation Project (L252145)",
-            r"\section*{Declaration of Competing Interest}",
-            "The authors declared that they have no conflicts of interest to this work.",
-            r"\section*{Data Availability}",
-            DATA_AVAILABILITY,
-            r"\section*{CRediT authorship contribution statement}",
-            "Haoran Ma: Conceptualization. Ningning Wang: Supervision.",
+            r"\author[1]{Anonymous Author(s)}",
+            r"\affiliation[1]{organization={Anonymous Institution}}",
             r"\includegraphics{figures/fig_sensitivity.png}",
         ]
     )
     supplementary_tex = supplementary_tex or "\n".join(
         [
             rf"\title[mode=title]{{Supplementary Material for {TITLE}}}",
-            "Haoran Ma and Ningning Wang",
+            "Anonymous Author(s)",
             r"\includegraphics{figures/fig_scaling.png}",
         ]
     )
@@ -100,8 +90,8 @@ def _write_final_package(package_dir: Path) -> None:
             [
                 "Highlights",
                 TITLE,
-                "SC-FMA calibrates coarse utility or proxy fidelity into auditable verification-step weights.",
-                "The PRM800K stratified readout gives moderate, preliminary support for PRM800K-like audit prioritization.",
+                "SC-FMA calibrates utility or proxy fidelity into auditable step weights.",
+                "PRM800K stratified readout supports audit prioritization moderately.",
             ]
         ),
     )
@@ -170,20 +160,20 @@ def test_ipm_verifier_requires_final_upload_files(tmp_path: Path) -> None:
     assert any("unexpected file in final upload boundary: main.pdf" in error for error in report.errors)
 
 
-def test_ipm_verifier_blocks_author_placeholders_in_source_zip(tmp_path: Path) -> None:
+def test_ipm_verifier_blocks_real_author_identity_in_source_zip(tmp_path: Path) -> None:
     from scripts.verify_ipm_submission_package import check_package
 
     package_dir = tmp_path / "final_package"
     _write_final_package(package_dir)
     _write_source_zip(
         package_dir / "latex_source.zip",
-        manuscript_tex="Anonymous Author(s)\nAnonymous Institution\n",
+        manuscript_tex="Haoran Ma\nmahaoran0000@foamail.com\n",
     )
 
     report = check_package(package_dir, require_author_metadata=True)
 
     assert not report.ok
-    assert any("author metadata placeholders remain" in error for error in report.errors)
+    assert any("forbidden author-identifying snippet" in error for error in report.errors)
 
 
 def test_ipm_verifier_checks_source_zip_manifest(tmp_path: Path) -> None:

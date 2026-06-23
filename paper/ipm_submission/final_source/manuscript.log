@@ -7,7 +7,7 @@ entering extended mode
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-04-28>
 (./cas-sc.cls
-Document Class: cas-sc 2024/05/04, 2.4: Formatting class for CAS single column 
+Document Class: cas-sc 2024/05/04, 2.4: Formatting class for CAS single column
 articles
 \c@blind=\count276
 \@bls=\dimen150
@@ -142,7 +142,7 @@ LaTeX Font Info:    Overwriting math alphabet `\mathfrak' in version `bold'
 Package: amssymb 2013/01/14 v3.01 AMS font symbols
 )
 (d:/DevelopTools/texlive/2026/texmf-dist/tex/latex/l3kernel/expl3.sty
-Package: expl3 2026-04-28 L3 programming layer (loader) 
+Package: expl3 2026-04-28 L3 programming layer (loader)
 
 (d:/DevelopTools/texlive/2026/texmf-dist/tex/latex/l3backend/l3backend-pdftex.d
 ef
@@ -504,7 +504,7 @@ LaTeX Font Info:    Changing ? sub-encoding to TS1/0 on input line 75.
 )
 LaTeX Encoding Info:    Text command \textpertenthousand (encoding T1) is not d
 eclared on input line 51.
-LaTeX Encoding Info:    Redeclaring text command \textpertenthousand (encoding 
+LaTeX Encoding Info:    Redeclaring text command \textpertenthousand (encoding
 ?) on input line 52.
 Now handling font encoding LS1 ...
 ... no UTF-8 mapping file for font encoding LS1
@@ -670,7 +670,7 @@ Package: ifthen 2024/03/16 v1.1e Standard LaTeX ifthen package (DPC)
 )
 (d:/DevelopTools/texlive/2026/texmf-dist/tex/latex/algorithmicx/algpseudocode.s
 ty
-Package: algpseudocode 
+Package: algpseudocode
 
 (d:/DevelopTools/texlive/2026/texmf-dist/tex/latex/algorithmicx/algorithmicx.st
 y
@@ -718,7 +718,7 @@ LaTeX Font Info:    ... okay on input line 25.
 LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 25.
 LaTeX Font Info:    ... okay on input line 25.
 LaTeX Font Info:    Checking defaults for LS1/stix/m/n on input line 25.
-LaTeX Font Info:    Trying to load font information for LS1+stix on input line 
+LaTeX Font Info:    Trying to load font information for LS1+stix on input line
 25.
 
 (d:/DevelopTools/texlive/2026/texmf-dist/tex/latex/stix/ls1stix.fd
@@ -726,7 +726,7 @@ File: ls1stix.fd 2015/04/17 v1.1.2-latex STIX LS1 font definitions
 )
 LaTeX Font Info:    ... okay on input line 25.
 LaTeX Font Info:    Checking defaults for LS2/stix/m/n on input line 25.
-LaTeX Font Info:    Trying to load font information for LS2+stix on input line 
+LaTeX Font Info:    Trying to load font information for LS2+stix on input line
 25.
 
 (d:/DevelopTools/texlive/2026/texmf-dist/tex/latex/stix/ls2stix.fd
@@ -773,7 +773,7 @@ Package hyperref Info: Link coloring ON on input line 25.
 * paper: custom
 * layout: <same size as paper>
 * layoutoffset:(h,v)=(0.0pt,0.0pt)
-* modes: 
+* modes:
 * h-part:(L,W,R)=(38.98026pt, 468.3324pt, 38.98026pt)
 * v-part:(T,H,B)=(54.06023pt, 637.34175pt, 54.06023pt)
 * \paperwidth=546.29291pt
@@ -927,18 +927,18 @@ Underfull \hbox (badness 10000) in paragraph at lines 194--194
 [5 <./figures/fig_ciu_necessity.png>] [6
 pdfTeX warning (ext4): destination with the same identifier (name{table.1}) has
  been already used, duplicate ignored
-<argument> ...shipout:D \box_use:N \l_shipout_box 
+<argument> ...shipout:D \box_use:N \l_shipout_box
                                                   \__shipout_drop_firstpage_...
-l.235 
-      
+l.235
+
 pdfTeX warning (ext4): destination with the same identifier (name{table.2}) has
  been already used, duplicate ignored
-<argument> ...shipout:D \box_use:N \l_shipout_box 
+<argument> ...shipout:D \box_use:N \l_shipout_box
                                                   \__shipout_drop_firstpage_...
-l.235 
+l.235
       ]
 Overfull \hbox (8.89462pt too wide) in paragraph at lines 250--263
- [][] 
+ [][]
  []
 
 
@@ -953,11 +953,11 @@ Package pdftex.def Info: figures/prm_comparison.png  used on input line 269.
 [7
 pdfTeX warning (ext4): destination with the same identifier (name{table.3}) has
  been already used, duplicate ignored
-<argument> ...shipout:D \box_use:N \l_shipout_box 
+<argument> ...shipout:D \box_use:N \l_shipout_box
                                                   \__shipout_drop_firstpage_...
-l.275 
+l.275
       ] [8] [9] [10]
-LaTeX Font Info:    Trying to load font information for TS1+stix on input line 
+LaTeX Font Info:    Trying to load font information for TS1+stix on input line
 347.
 
 (d:/DevelopTools/texlive/2026/texmf-dist/tex/latex/stix/ts1stix.fd
@@ -969,9 +969,9 @@ LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <10> not available
  [12
 pdfTeX warning (ext4): destination with the same identifier (name{table.4}) has
  been already used, duplicate ignored
-<argument> ...shipout:D \box_use:N \l_shipout_box 
+<argument> ...shipout:D \box_use:N \l_shipout_box
                                                   \__shipout_drop_firstpage_...
-l.412 
+l.412
       ]
 Overfull \hbox (5.47246pt too wide) in paragraph at lines 425--426
 []\T1/stix/m/n/10 This map-ping is a method-olog-i-cal anal-ogy, not a val-i-da
@@ -988,13 +988,13 @@ ot domain-correctness ver-i-fi-ca-tion or maintenance-cost
 [13] (./manuscript.bbl [14]) [15] [16
 pdfTeX warning (ext4): destination with the same identifier (name{figure.1}) ha
 s been already used, duplicate ignored
-<argument> ...shipout:D \box_use:N \l_shipout_box 
+<argument> ...shipout:D \box_use:N \l_shipout_box
                                                   \__shipout_drop_firstpage_...
 l.453 \end{document}
-                    
+
 pdfTeX warning (ext4): destination with the same identifier (name{figure.3}) ha
 s been already used, duplicate ignored
-<argument> ...shipout:D \box_use:N \l_shipout_box 
+<argument> ...shipout:D \box_use:N \l_shipout_box
                                                   \__shipout_drop_firstpage_...
 l.453 \end{document}
                      <./figures/redundancy_density_histogram.png> <./figures/pr
@@ -1005,7 +1005,7 @@ L3 programming layer <2026-04-28>
  ***********
 Package rerunfilecheck Info: File `manuscript.out' has not changed.
 (rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
- ) 
+ )
 Here is how much of TeX's memory you used:
  17379 strings out of 467341
  263677 string characters out of 5412745
@@ -1035,4 +1035,3 @@ PDF statistics:
  269 compressed objects within 3 object streams
  86 named destinations out of 1000 (max. 500000)
  21 words of extra memory for PDF output out of 10000 (max. 10000000)
-

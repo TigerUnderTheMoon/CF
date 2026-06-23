@@ -1,11 +1,11 @@
 %%
 %% This is file `cas-model2-names.bst'  (Version 2.4),
-%% 
+%%
 %% Copyright 2009-2024 Elsevier Ltd
-%% 
+%%
 %% This file is part of the 'Elsarticle Bundle'.
 %% ---------------------------------------------
-%% 
+%%
 %% It may be distributed under the conditions of the LaTeX Project Public
 %% License, either version 1.3c of this license or (at your option) any
 %% later version.  The latest version of this license is in
@@ -13,10 +13,10 @@
 %% and version 1.3c or later is part of all distributions of LaTeX
 %% version 1999/12/01 or later.
 %%
-%% $Id: cas-model2-names.bst$ 
+%% $Id: cas-model2-names.bst$
 %%
 %% $URL: https://lenova.river-valley.com/svn/elscastemplates/trunk/cas-model2-names.bst $
-%% 
+%%
 
 ENTRY
   { address
@@ -72,7 +72,7 @@ FUNCTION {init.state.consts}
 STRINGS { s t}
 FUNCTION {output.comma}
 { ", " * write$}
-   
+
 FUNCTION {output.nonnull}
 { 's :=
   output.state mid.sentence =
@@ -333,7 +333,7 @@ MACRO {tcs} {"Theor. Comput. Sci."}
 
 %% Begin - Added on March 13, 2013
 
-MACRO {aj} {"Astron. J."} 
+MACRO {aj} {"Astron. J."}
 MACRO {actaa} {"Acta Astron."}
 MACRO {araa} {"Annu. Rev. Astron. Astrophys."}
 MACRO {apj}  {"Astrophys. J."}
@@ -1632,7 +1632,7 @@ FUNCTION {begin.bib}
 }
 EXECUTE {begin.bib}
 EXECUTE {init.state.consts}
-EXECUTE {init.web.variables} 
+EXECUTE {init.web.variables}
 ITERATE {call.type$}
 FUNCTION {end.bib}
 { newline$

@@ -4,8 +4,8 @@ Final Word version: `final_package/cover_letter.docx`.
 
 June 15, 2026
 
-Editorial Office  
-Information Processing & Management  
+Editorial Office
+Information Processing & Management
 Elsevier
 
 Dear Editor,

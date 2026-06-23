@@ -426,12 +426,13 @@ def _check_author_metadata(
 
 def _extract_pdf_text(package_dir: Path, filename: str, errors: list[str]) -> str:
     pdf_path = package_dir / filename
-    text_path = package_dir / f".{filename}.text-check.txt"
     try:
         result = subprocess.run(
-            ["pdftotext", str(pdf_path), str(text_path)],
+            ["pdftotext", str(pdf_path), "-"],
             cwd=package_dir,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             capture_output=True,
             check=False,
         )
@@ -444,11 +445,7 @@ def _extract_pdf_text(package_dir: Path, filename: str, errors: list[str]) -> st
         errors.append(f"pdftotext failed for {filename}: {detail}")
         return ""
 
-    try:
-        return text_path.read_text(encoding="utf-8", errors="ignore")
-    finally:
-        if text_path.exists():
-            text_path.unlink()
+    return result.stdout
 
 
 def _check_pdf_text(

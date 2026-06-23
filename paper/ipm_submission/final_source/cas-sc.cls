@@ -3,17 +3,17 @@
 %%
 %% This file is part of the 'CAS Bundle'.
 %% ......................................
-%% 
+%%
 %% It may be distributed under the conditions of the LaTeX Project Public
 %% License, either version 1.3c of this license or (at your option) any
 %% later version.  The latest version of this license is in
 %%    http://www.latex-project.org/lppl.txt
 %% and version 1.3c or later is part of all distributions of LaTeX
 %% version 1999/12/01 or later.
-%% 
+%%
 %% The list of all files belonging to the 'CAS Bundle' is
 %% given in the file `manifest.txt'.
-%% 
+%%
 
 %% $Id: cas-sc.cls 96 2024-05-04 09:29:44Z rishi $
 
@@ -27,7 +27,7 @@
 \def\ABD{\AtBeginDocument}
 %
 % switches
-% 
+%
 \newif\iflongmktitle    \longmktitlefalse
 \newif\ifdc             \global\dcfalse
 \newif\ifsc             \global\sctrue
@@ -81,7 +81,7 @@
 % \AtEndDocument{\hypersetup
 %   {pdftitle={\csuse{__short_title:}},
 %   pdfauthor={\csuse{__short_authors:}}}}
- 
+
  \let\comma\@empty
 \let\tnotesep\@empty
 \let\@title\@empty
@@ -99,19 +99,19 @@
 \RenewDocumentCommand \maketitle {}
 {
   \ifbool { usecasgrabsbox }
-    { 
+    {
       \setcounter{page}{0}
       \thispagestyle{empty}
-      \unvbox\casgrabsbox  
-    } { }  
-  \pagebreak  
+      \unvbox\casgrabsbox
+    } { }
+  \pagebreak
   \ifbool { usecashlsbox }
-    { 
+    {
       \setcounter{page}{0}
       \thispagestyle{empty}
       \unvbox\casauhlbox
-    } { }    
-  \pagebreak  
+    } { }
+  \pagebreak
   \thispagestyle{first}
   \ifbool{longmktitle}
   {
@@ -147,7 +147,7 @@
 {
   \file_if_exist:nTF { charis.sty }
   {
-    \RequirePackage[notext]{stix} 
+    \RequirePackage[notext]{stix}
     \RequirePackage{charis}
   }
   { \RequirePackage{stix} }
@@ -181,9 +181,7 @@
 
 
 \endinput
-  
+
 %
 % End of class 'cas-sc'
 %
-
-
