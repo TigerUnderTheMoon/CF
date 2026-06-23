@@ -1,0 +1,23 @@
+\begin{thebibliography}{1}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+\providecommand{\url}[1]{\texttt{#1}}
+\providecommand{\href}[2]{#2}
+\providecommand{\path}[1]{#1}
+\providecommand{\DOIprefix}{doi:}
+\providecommand{\ArXivprefix}{arXiv:}
+\providecommand{\URLprefix}{URL: }
+\providecommand{\Pubmedprefix}{pmid:}
+\providecommand{\doi}[1]{\href{http://dx.doi.org/#1}{\path{#1}}}
+\providecommand{\Pubmed}[1]{\href{pmid:#1}{\path{#1}}}
+\providecommand{\bibinfo}[2]{#2}
+\ifx\xfnm\relax \def\xfnm[#1]{\unskip,\space#1}\fi
+%Type = Article
+\bibitem[{Wang and Carreira-Perpi{\~n}{\'a}n(2013)}]{wang2013projection}
+\bibinfo{author}{Wang, W.}, \bibinfo{author}{Carreira-Perpi{\~n}{\'a}n,
+  M.{\'A}.}, \bibinfo{year}{2013}.
+\newblock \bibinfo{title}{Projection onto the probability simplex: An
+  {$\ell_1$}-ball approach}.
+\newblock \bibinfo{journal}{arXiv preprint arXiv:1309.1541} \URLprefix
+  \url{https://arxiv.org/abs/1309.1541}.
+
+\end{thebibliography}

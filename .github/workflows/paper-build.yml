@@ -11,6 +11,7 @@ on:
       - "tests/test_claim_boundaries.py"
       - "tests/test_dvc_contract.py"
       - "tests/test_kbs_submission_package_verifier.py"
+      - "tests/test_ipm_submission_package_verifier.py"
       - ".github/workflows/paper-build.yml"
   pull_request:
     paths:
@@ -22,6 +23,7 @@ on:
       - "tests/test_claim_boundaries.py"
       - "tests/test_dvc_contract.py"
       - "tests/test_kbs_submission_package_verifier.py"
+      - "tests/test_ipm_submission_package_verifier.py"
       - ".github/workflows/paper-build.yml"
 
 jobs:
@@ -77,6 +79,19 @@ jobs:
         working-directory: paper/kbs_submission/final_source
         run: latexmk -pdf -interaction=nonstopmode -halt-on-error manuscript.tex
 
+      - name: Verify IPM final package contract
+        run: |
+          python scripts/verify_ipm_submission_package.py \
+            --package-dir paper/ipm_submission/final_package \
+            --require-author-metadata \
+            --require-pdf-text \
+            --min-manuscript-pages 12 \
+            --max-manuscript-pages 20
+
+      - name: Build IPM LaTeX source
+        working-directory: paper/ipm_submission/final_source
+        run: latexmk -pdf -interaction=nonstopmode -halt-on-error manuscript.tex
+
       - name: DVC reproducibility or contract-only fallback
         run: |
           set -e
@@ -95,5 +110,6 @@ jobs:
             tests/test_prm800k_audit_prioritization.py \
             tests/test_claim_boundaries.py \
             tests/test_kbs_submission_package_verifier.py \
+            tests/test_ipm_submission_package_verifier.py \
             tests/test_dvc_contract.py \
             -q
