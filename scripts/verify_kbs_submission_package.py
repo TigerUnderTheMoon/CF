@@ -16,10 +16,25 @@ CURRENT_TITLE = (
 )
 
 DATA_AVAILABILITY = (
-    "PRM800K is publicly available from its original source. Derived locked-split reports, "
+    "PRM800K and MuSiQue are publicly available from their original sources. Derived locked-split reports, "
     "audit-prioritization artifacts, and reproduction scripts will be made available by the "
     "authors on request."
 )
+
+DATA_AVAILABILITY_PDF = (
+    "PRM800K and MuSiQue are publicly available from their original sources."
+)
+
+MUSIQUE_DATA_AVAILABILITY_SOURCE = (
+    r"The MuSiQue KBS-style audit route is reproducible from "
+    r"\texttt{outputs/kbs\_real\_audit\_v1}"
+)
+
+MUSIQUE_DATA_AVAILABILITY_PDF = (
+    "reproducible from outputs/kbs_real_audit_v1"
+)
+
+MUSIQUE_BOUNDARY = "kbs_style_audit_prioritization_evidence_only"
 
 REQUIRED_FILES = (
     "Highlights.docx",
@@ -94,6 +109,8 @@ REQUIRED_MANUSCRIPT_SNIPPETS = (
     "The authors declared that they have no conflicts of interest to this work.",
     r"\section*{Data Availability}",
     DATA_AVAILABILITY,
+    MUSIQUE_DATA_AVAILABILITY_SOURCE,
+    MUSIQUE_BOUNDARY,
     r"\section*{CRediT authorship contribution statement}",
 )
 
@@ -109,6 +126,8 @@ REQUIRED_DOCX_TEXT_SNIPPETS = {
         CURRENT_TITLE,
         "Haoran Ma",
         "Ningning Wang",
+        "MuSiQue KBS-style Knowledge-Audit Details",
+        MUSIQUE_BOUNDARY,
     ),
 }
 
@@ -121,7 +140,9 @@ REQUIRED_PDF_TEXT_SNIPPETS = {
         "Haoran Ma",
         "Ningning Wang",
         "National Social Science Fund of China Project (24BSH018)",
-        DATA_AVAILABILITY,
+        DATA_AVAILABILITY_PDF,
+        MUSIQUE_DATA_AVAILABILITY_PDF,
+        MUSIQUE_BOUNDARY,
     ),
 }
 

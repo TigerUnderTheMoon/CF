@@ -10,10 +10,23 @@ TITLE = (
 )
 
 DATA_AVAILABILITY = (
-    "PRM800K is publicly available from its original source. Derived locked-split reports, "
+    "PRM800K and MuSiQue are publicly available from their original sources. Derived locked-split reports, "
     "audit-prioritization artifacts, and reproduction scripts will be made available by the "
     "authors on request."
 )
+
+DATA_AVAILABILITY_PDF = (
+    "PRM800K and MuSiQue are publicly available from their original sources."
+)
+
+MUSIQUE_DATA_AVAILABILITY_SOURCE = (
+    r"The MuSiQue KBS-style audit route is reproducible from "
+    r"\texttt{outputs/kbs\_real\_audit\_v1}"
+)
+
+MUSIQUE_DATA_AVAILABILITY_PDF = "reproducible from outputs/kbs_real_audit_v1"
+
+MUSIQUE_BOUNDARY = "kbs_style_audit_prioritization_evidence_only"
 
 
 def _write_docx(path: Path, text: str | None = None) -> None:
@@ -67,6 +80,8 @@ def _write_source_zip(
             "The authors declared that they have no conflicts of interest to this work.",
             r"\section*{Data Availability}",
             DATA_AVAILABILITY,
+            MUSIQUE_DATA_AVAILABILITY_SOURCE,
+            MUSIQUE_BOUNDARY,
             r"\section*{CRediT authorship contribution statement}",
             "Haoran Ma: Conceptualization. Ningning Wang: Supervision.",
             r"\includegraphics{figures/fig_sensitivity.png}",
@@ -76,6 +91,8 @@ def _write_source_zip(
         [
             rf"\title[mode=title]{{Supplementary Material for {TITLE}}}",
             "Haoran Ma and Ningning Wang",
+            r"\subsection{MuSiQue KBS-style Knowledge-Audit Details}",
+            MUSIQUE_BOUNDARY,
             r"\includegraphics{figures/fig_scaling.png}",
         ]
     )
@@ -107,7 +124,10 @@ def _write_final_package(package_dir: Path) -> None:
     _write_pdf(package_dir / "manuscript.pdf")
     _write_docx(
         package_dir / "supplementary.docx",
-        f"Supplementary Material\n{TITLE}\nHaoran Ma\nNingning Wang",
+        (
+            f"Supplementary Material\n{TITLE}\nHaoran Ma\nNingning Wang\n"
+            f"MuSiQue KBS-style Knowledge-Audit Details\n{MUSIQUE_BOUNDARY}"
+        ),
     )
     _write_source_zip(package_dir / "latex_source.zip")
 
@@ -124,7 +144,9 @@ def _pdf_text_by_name() -> dict[str, str]:
             "mahaoran0000@foamail.com",
             "wangningning@bistu.edu.cn",
             "National Social Science Fund of China Project (24BSH018)",
-            DATA_AVAILABILITY,
+            DATA_AVAILABILITY_PDF,
+            MUSIQUE_DATA_AVAILABILITY_PDF,
+            MUSIQUE_BOUNDARY,
         ]
     )
     return {

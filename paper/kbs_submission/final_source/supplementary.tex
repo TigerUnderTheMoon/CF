@@ -338,6 +338,39 @@ Relative position & --- & --- & 0.3204 \\
 
 These tables retain the route-specific downgrade: the strongest real-data result is \texttt{w\_struct}; Ridge is a close approximation; QP and Projection are not reported as real-data winners.
 
+\subsection{MuSiQue KBS-style Knowledge-Audit Details}
+\label{app:musique-kbs-audit}
+
+The MuSiQue route is an offline, deterministic KBS-style audit-prioritization experiment. It constructs trace records from MuSiQue decomposition evidence chains with retrieval, entity-binding, evidence-check, distractor-rejection, and answer-synthesis steps. The label source is \texttt{musique\_decomposition\_constructed\_audit\_labels}; these labels are constructed from decomposition support structure and are not production-scene human curation labels. The route is therefore reported only as \texttt{kbs\_style\_audit\_prioritization\_evidence\_only}.
+
+The split is locked by hash: 585 samples are used for dev training or calibration, and 1,415 samples with 12,715 steps are reserved for final reporting. No API calls are used. The leakage audit reports that locked labels are not used for scoring, forbidden fields are excluded from scoring, and label permutation reduces the mean diagnostic delta from 0.1347 to 0.0078.
+
+\begin{table}[ht]
+\caption{Full MuSiQue KBS-style knowledge-audit prioritization results on the locked split (1,415 samples, 12,715 steps).}
+\label{tab:supp-musique-kbs-audit}
+\centering
+\small
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Method} & \textbf{Spearman $\rho$} & \textbf{Top-1 hit} & \textbf{Mass@25\%} & \textbf{NDCG@25\%} & \textbf{AUPRC} \\
+\midrule
+\texttt{w\_struct} & 0.9652 & 1.0000 & 0.3939 & 1.0000 & 1.0000 \\
+SC-FMA Ridge & \textbf{0.9653} & 1.0000 & 0.3939 & 1.0000 & 1.0000 \\
+SC-FMA QP & 0.9105 & 1.0000 & 0.3939 & 1.0000 & 1.0000 \\
+SC-FMA Projection & 0.9111 & 0.2728 & 0.3939 & 0.9544 & 0.6364 \\
+Graph centrality & 0.6573 & 1.0000 & 0.3494 & 0.8807 & 1.0000 \\
+Simple average & 0.8380 & 1.0000 & 0.3433 & 0.8653 & 1.0000 \\
+Relative position & 0.2815 & 1.0000 & 0.2243 & 0.6841 & 1.0000 \\
+Raw local utility & 0.7596 & 0.0000 & 0.2952 & 0.5797 & 0.3078 \\
+Random & 0.0165 & 0.1152 & 0.2585 & 0.5449 & 0.3195 \\
+Retrieval overlap & $-$0.0589 & 0.0000 & 0.2354 & 0.4242 & 0.2561 \\
+Span length & $-$0.3216 & 0.0035 & 0.2168 & 0.3800 & 0.1571 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The support decision is based on the best SC-FMA method versus the strongest non-SC-FMA control. SC-FMA QP reaches NDCG@25\% of 1.0000; graph centrality, the best control, reaches 0.8807. The resulting $\Delta$NDCG@25\% is 0.1193, with bootstrap 95\% CI [0.1187, 0.1199], exceeding the required threshold of 0.05. This supports KBS-style audit prioritization on constructed MuSiQue evidence-chain traces only; it is not production KBS deployment validation.
+
 \subsection{KBS Integration Notes and KG Fixture Pilot}
 \label{app:kbs-integration-kg}
 
@@ -397,7 +430,8 @@ The following checklist documents the measures taken to ensure full reproducibil
 \item \textbf{Baseline methods.} All baselines use publicly available implementations: Captum for Gradient$\times$Input and Integrated Gradients; transformers library for attention extraction; custom NumPy implementation for MC Shapley with $M = 500$ permutations and convergence tolerance $10^{-3}$.
 \item \textbf{SLSQP solver.} SciPy's \texttt{scipy.optimize.minimize} with method \texttt{SLSQP}, tolerance \texttt{ftol = 1e-8}, maximum iterations $= 100$. Warm-start from Ridge solution.
 \item \textbf{Statistical tests.} Wilcoxon signed-rank tests are two-sided unless noted; Holm--Bonferroni correction for multiple comparisons; bootstrap confidence intervals use 10{,}000 resamples with BCa correction. Effect sizes reported as $r = Z/\sqrt{N}$.
-\item \textbf{Output artifacts.} All raw results (CIU vectors, necessity scores, redundancy matrices, calibrated weights, ranking metrics) are saved as JSONL artifacts in the \texttt{outputs/} directory. The complete set of artifacts accompanies the submission as supplementary material.
+\item \textbf{MuSiQue audit route.} The KBS-style MuSiQue audit route is reproduced with \texttt{python scripts/run\_knowledge\_audit\_eval.py --hf-dataset dgslibisey/MuSiQue --source-format musique --hf-split train --max-records 2000 --shuffle-seed 42 --bootstrap-samples 1000 --bootstrap-seed 42}. It writes \texttt{outputs/kbs\_real\_audit\_v1/knowledge\_audit\_report.json}, \texttt{knowledge\_audit\_summary.md}, \texttt{knowledge\_audit\_traces.jsonl}, and \texttt{dataset\_manifest.json}; the run uses zero API calls.
+\item \textbf{Output artifacts.} All raw results (CIU vectors, necessity scores, redundancy matrices, calibrated weights, ranking metrics) are saved as JSONL or JSON artifacts in the \texttt{outputs/} directory. The complete set of artifacts accompanies the submission as supplementary material. The MuSiQue route is archived under \texttt{outputs/kbs\_real\_audit\_v1} and is labeled \texttt{kbs\_style\_audit\_prioritization\_evidence\_only}.
 \end{enumerate}
 
 \subsection{SLSQP Convergence Diagnostics}
@@ -438,4 +472,3 @@ All cross-correlations are below $|\rho| < 0.15$, confirming low overlap between
 \bibliography{references}
 
 \end{document}
-
