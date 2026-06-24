@@ -1,4 +1,4 @@
-\begin{thebibliography}{27}
+\begin{thebibliography}{37}
 \expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
 \providecommand{\url}[1]{\texttt{#1}}
 \providecommand{\href}[2]{#2}
@@ -73,6 +73,17 @@
 \newblock \URLprefix \url{https://doi.org/10.1016/j.knosys.2025.113060},
   \DOIprefix\doi{10.1016/j.knosys.2025.113060}.
 %Type = Inproceedings
+\bibitem[{Dalvi et~al.(2021)Dalvi, Jansen, Tafjord, Xie, Smith, Pipatanangkura
+  and Clark}]{dalvi2021entailmenttrees}
+\bibinfo{author}{Dalvi, B.}, \bibinfo{author}{Jansen, P.},
+  \bibinfo{author}{Tafjord, O.}, \bibinfo{author}{Xie, Z.},
+  \bibinfo{author}{Smith, H.}, \bibinfo{author}{Pipatanangkura, L.},
+  \bibinfo{author}{Clark, P.}, \bibinfo{year}{2021}.
+\newblock \bibinfo{title}{Explaining answers with entailment trees}, in:
+  \bibinfo{booktitle}{Advances in Neural Information Processing Systems}, pp.
+  \bibinfo{pages}{22358--22369}.
+\newblock \URLprefix \url{https://arxiv.org/abs/2104.08661}.
+%Type = Inproceedings
 \bibitem[{DeYoung et~al.(2020)DeYoung, Jain, Rajani, Lehman, Xiong, Socher and
   Wallace}]{deyoung2020eraser}
 \bibinfo{author}{DeYoung, J.}, \bibinfo{author}{Jain, S.},
@@ -85,6 +96,19 @@
   \bibinfo{pages}{4443--4458}.
 \newblock \URLprefix \url{https://aclanthology.org/2020.acl-main.408/},
   \DOIprefix\doi{10.18653/v1/2020.acl-main.408}.
+%Type = Article
+\bibitem[{Gao et~al.(2024)Gao, Xiong, Gao, Jia, Pan, Bi, Dai, Sun, Wang and
+  Wang}]{gao2023ragsurvey}
+\bibinfo{author}{Gao, Y.}, \bibinfo{author}{Xiong, Y.}, \bibinfo{author}{Gao,
+  X.}, \bibinfo{author}{Jia, K.}, \bibinfo{author}{Pan, J.},
+  \bibinfo{author}{Bi, Y.}, \bibinfo{author}{Dai, Y.}, \bibinfo{author}{Sun,
+  J.}, \bibinfo{author}{Wang, M.}, \bibinfo{author}{Wang, H.},
+  \bibinfo{year}{2024}.
+\newblock \bibinfo{title}{Retrieval-augmented generation for large language
+  models: A survey}.
+\newblock \bibinfo{journal}{arXiv preprint arXiv:2312.10997} \URLprefix
+  \url{https://arxiv.org/abs/2312.10997},
+  \DOIprefix\doi{10.48550/arXiv.2312.10997}.
 %Type = Article
 \bibitem[{Hu et~al.(2024)Hu, Liu, Zhao, Hou, Nie and
   Li}]{hu2024knowledgeenhanced}
@@ -110,6 +134,21 @@
 \newblock \URLprefix \url{https://doi.org/10.1016/j.knosys.2025.113648},
   \DOIprefix\doi{10.1016/j.knosys.2025.113648}.
 %Type = Article
+\bibitem[{Ji et~al.(2023)Ji, Lee, Frieske, Yu, Su, Xu, Ishii, Bang, Chen, Dai,
+  Chan, Madotto and Fung}]{ji2023survey}
+\bibinfo{author}{Ji, Z.}, \bibinfo{author}{Lee, N.}, \bibinfo{author}{Frieske,
+  R.}, \bibinfo{author}{Yu, T.}, \bibinfo{author}{Su, D.}, \bibinfo{author}{Xu,
+  Y.}, \bibinfo{author}{Ishii, E.}, \bibinfo{author}{Bang, Y.},
+  \bibinfo{author}{Chen, D.}, \bibinfo{author}{Dai, W.}, \bibinfo{author}{Chan,
+  H.S.}, \bibinfo{author}{Madotto, A.}, \bibinfo{author}{Fung, P.},
+  \bibinfo{year}{2023}.
+\newblock \bibinfo{title}{Survey of hallucination in natural language
+  generation}.
+\newblock \bibinfo{journal}{ACM Computing Surveys} \bibinfo{volume}{55},
+  \bibinfo{pages}{1--38}.
+\newblock \URLprefix \url{https://arxiv.org/abs/2202.03629},
+  \DOIprefix\doi{10.1145/3571730}.
+%Type = Article
 \bibitem[{Kaplan et~al.(2024)Kaplan, Uusitalo and Lensu}]{kaplan2024xai}
 \bibinfo{author}{Kaplan, S.}, \bibinfo{author}{Uusitalo, H.},
   \bibinfo{author}{Lensu, L.}, \bibinfo{year}{2024}.
@@ -125,6 +164,20 @@
 \newblock \bibinfo{title}{The {Soar} Cognitive Architecture}.
 \newblock \bibinfo{publisher}{MIT Press}.
 \newblock \DOIprefix\doi{10.7551/mitpress/7688.001.0001}.
+%Type = Inproceedings
+\bibitem[{Lewis et~al.(2020)Lewis, Perez, Piktus, Petroni, Karpukhin, Goyal,
+  K{\"u}ttler, Lewis, Yih, Rockt{\"a}schel, Riedel and Kiela}]{lewis2020rag}
+\bibinfo{author}{Lewis, P.}, \bibinfo{author}{Perez, E.},
+  \bibinfo{author}{Piktus, A.}, \bibinfo{author}{Petroni, F.},
+  \bibinfo{author}{Karpukhin, V.}, \bibinfo{author}{Goyal, N.},
+  \bibinfo{author}{K{\"u}ttler, H.}, \bibinfo{author}{Lewis, M.},
+  \bibinfo{author}{Yih, W.t.}, \bibinfo{author}{Rockt{\"a}schel, T.},
+  \bibinfo{author}{Riedel, S.}, \bibinfo{author}{Kiela, D.},
+  \bibinfo{year}{2020}.
+\newblock \bibinfo{title}{Retrieval-augmented generation for
+  knowledge-intensive {NLP} tasks}, in: \bibinfo{booktitle}{Advances in Neural
+  Information Processing Systems}, pp. \bibinfo{pages}{9459--9474}.
+\newblock \URLprefix \url{https://arxiv.org/abs/2005.11401}.
 %Type = Article
 \bibitem[{Lightman et~al.(2023)Lightman, Kosaraju, Burda, Edwards, Baker, Lee,
   Leike, Schulman, Sutskever and Cobbe}]{lightman2023verify}
@@ -166,6 +219,23 @@
   Processing Systems}, pp. \bibinfo{pages}{1--11}.
 \newblock \URLprefix
   \url{https://papers.nips.cc/paper/7062-a-unified-approach-to-interpreting-model-predictions}.
+%Type = Inproceedings
+\bibitem[{Madaan et~al.(2023)Madaan, Tandon, Gupta, Hallinan, Gao, Wiegreffe,
+  Alon, Dziri, Prabhumoye, Yang, Gupta, Majumder, Hermann, Welleck,
+  Yazdanbakhsh and Clark}]{madaan2023selfrefine}
+\bibinfo{author}{Madaan, A.}, \bibinfo{author}{Tandon, N.},
+  \bibinfo{author}{Gupta, P.}, \bibinfo{author}{Hallinan, S.},
+  \bibinfo{author}{Gao, L.}, \bibinfo{author}{Wiegreffe, S.},
+  \bibinfo{author}{Alon, U.}, \bibinfo{author}{Dziri, N.},
+  \bibinfo{author}{Prabhumoye, S.}, \bibinfo{author}{Yang, Y.},
+  \bibinfo{author}{Gupta, S.}, \bibinfo{author}{Majumder, B.P.},
+  \bibinfo{author}{Hermann, K.}, \bibinfo{author}{Welleck, S.},
+  \bibinfo{author}{Yazdanbakhsh, A.}, \bibinfo{author}{Clark, P.},
+  \bibinfo{year}{2023}.
+\newblock \bibinfo{title}{{Self-Refine}: Iterative refinement with
+  self-feedback}, in: \bibinfo{booktitle}{Advances in Neural Information
+  Processing Systems}.
+\newblock \URLprefix \url{https://arxiv.org/abs/2303.17651}.
 %Type = Book
 \bibitem[{Newman(2010)}]{newman2010networks}
 \bibinfo{author}{Newman, M.}, \bibinfo{year}{2010}.
@@ -196,6 +266,17 @@
 \newblock \bibinfo{journal}{Journal of Educational Psychology}
   \bibinfo{volume}{66}, \bibinfo{pages}{688--701}.
 \newblock \DOIprefix\doi{10.1037/h0037350}.
+%Type = Inproceedings
+\bibitem[{Shinn et~al.(2023)Shinn, Cassano, Berman, Gopinath, Narasimhan and
+  Yao}]{shinn2023reflexion}
+\bibinfo{author}{Shinn, N.}, \bibinfo{author}{Cassano, F.},
+  \bibinfo{author}{Berman, E.}, \bibinfo{author}{Gopinath, A.},
+  \bibinfo{author}{Narasimhan, K.}, \bibinfo{author}{Yao, S.},
+  \bibinfo{year}{2023}.
+\newblock \bibinfo{title}{{Reflexion}: Language agents with verbal
+  reinforcement learning}, in: \bibinfo{booktitle}{Advances in Neural
+  Information Processing Systems}.
+\newblock \URLprefix \url{https://arxiv.org/abs/2305.10601}.
 %Type = Article
 \bibitem[{Siddharth and Luo(2024)}]{siddharth2024retrieval}
 \bibinfo{author}{Siddharth, L.}, \bibinfo{author}{Luo, J.},
@@ -245,6 +326,31 @@
   \bibinfo{pages}{9426--9439}.
 \newblock \URLprefix \url{https://aclanthology.org/2024.acl-long.510/},
   \DOIprefix\doi{10.18653/v1/2024.acl-long.510}.
+%Type = Inproceedings
+\bibitem[{Wang et~al.(2023)Wang, Wei, Schuurmans, Le, Chi, Narang, Chowdhery
+  and Zhou}]{wang2022selfconsistency}
+\bibinfo{author}{Wang, X.}, \bibinfo{author}{Wei, J.},
+  \bibinfo{author}{Schuurmans, D.}, \bibinfo{author}{Le, Q.},
+  \bibinfo{author}{Chi, E.}, \bibinfo{author}{Narang, S.},
+  \bibinfo{author}{Chowdhery, A.}, \bibinfo{author}{Zhou, D.},
+  \bibinfo{year}{2023}.
+\newblock \bibinfo{title}{Self-consistency improves chain of thought reasoning
+  in language models}, in: \bibinfo{booktitle}{Proceedings of the 11th
+  International Conference on Learning Representations}.
+\newblock \URLprefix \url{https://arxiv.org/abs/2203.11171}.
+%Type = Article
+\bibitem[{Wei et~al.(2022)Wei, Wang, Schuurmans, Bosma, Ichter, Xia, Chi, Le
+  and Zhou}]{wei2022cot}
+\bibinfo{author}{Wei, J.}, \bibinfo{author}{Wang, X.},
+  \bibinfo{author}{Schuurmans, D.}, \bibinfo{author}{Bosma, M.},
+  \bibinfo{author}{Ichter, B.}, \bibinfo{author}{Xia, F.},
+  \bibinfo{author}{Chi, E.}, \bibinfo{author}{Le, Q.}, \bibinfo{author}{Zhou,
+  D.}, \bibinfo{year}{2022}.
+\newblock \bibinfo{title}{Chain-of-thought prompting elicits reasoning in large
+  language models}.
+\newblock \bibinfo{journal}{Advances in Neural Information Processing Systems}
+  \bibinfo{volume}{35}, \bibinfo{pages}{24824--24837}.
+\newblock \URLprefix \url{https://arxiv.org/abs/2201.11903}.
 %Type = Article
 \bibitem[{Wijekoon and Wiratunga(2023)}]{wijekoon2023counterfactual}
 \bibinfo{author}{Wijekoon, A.}, \bibinfo{author}{Wiratunga, N.},
@@ -265,6 +371,28 @@
   \bibinfo{pages}{113503}.
 \newblock \URLprefix \url{https://doi.org/10.1016/j.knosys.2025.113503},
   \DOIprefix\doi{10.1016/j.knosys.2025.113503}.
+%Type = Inproceedings
+\bibitem[{Yao et~al.(2023a)Yao, Yu, Zhao, Shafran, Griffiths, Cao and
+  Narasimhan}]{yao2023tot}
+\bibinfo{author}{Yao, S.}, \bibinfo{author}{Yu, D.}, \bibinfo{author}{Zhao,
+  J.}, \bibinfo{author}{Shafran, I.}, \bibinfo{author}{Griffiths, T.L.},
+  \bibinfo{author}{Cao, Y.}, \bibinfo{author}{Narasimhan, K.},
+  \bibinfo{year}{2023}a.
+\newblock \bibinfo{title}{Tree of thoughts: Deliberate problem solving with
+  large language models}, in: \bibinfo{booktitle}{Advances in Neural
+  Information Processing Systems}.
+\newblock \URLprefix \url{https://arxiv.org/abs/2305.10601}.
+%Type = Inproceedings
+\bibitem[{Yao et~al.(2023b)Yao, Zhao, Yu, Du, Shafran, Narasimhan and
+  Cao}]{yao2022react}
+\bibinfo{author}{Yao, S.}, \bibinfo{author}{Zhao, J.}, \bibinfo{author}{Yu,
+  D.}, \bibinfo{author}{Du, N.}, \bibinfo{author}{Shafran, I.},
+  \bibinfo{author}{Narasimhan, K.}, \bibinfo{author}{Cao, Y.},
+  \bibinfo{year}{2023}b.
+\newblock \bibinfo{title}{{ReAct}: Synergizing reasoning and acting in language
+  models}, in: \bibinfo{booktitle}{Proceedings of the 11th International
+  Conference on Learning Representations}.
+\newblock \URLprefix \url{https://arxiv.org/abs/2210.03629}.
 %Type = Inproceedings
 \bibitem[{Ying et~al.(2019)Ying, Bourgeois, You, Zitnik and
   Leskovec}]{ying2019gnnexplainer}

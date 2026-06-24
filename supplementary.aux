@@ -4,9 +4,8 @@
 \providecommand\HyField@AuxAddToCoFields[2]{}
 \emailauthor{mahaoran0000@foamail.com}{Haoran Ma}
 \emailauthor{wangningning@bistu.edu.cn}{Ningning Wang\corref {cor1}}
-\csxdef{mark@corau2}{1}
+\csxdef{mark@corau2}{0}
 \NewLabel{cor1}{1}
-\csxdef{mark@corau2}{1}
 \citation{wang2013projection}
 \@writefile{toc}{\contentsline {section}{\numberline {A}Extended Proofs and Derivations}{1}{section.A}\protected@file@percent }
 \newlabel{app:proofs}{{A}{1}{Extended Proofs and Derivations}{section.A}{}}
@@ -56,34 +55,3 @@
 \newlabel{tab:supp-audit-prioritization}{{C.7}{5}{Offline PRM800K audit-prioritization readout under a fixed review budget}{table.7}{}}
 \@writefile{lot}{\contentsline {table}{\numberline {C.8}{\ignorespaces Full MuSiQue constructed-label feasibility demonstration on the locked split (1,415 samples, 12,715 steps). Both audit labels and scoring features are deterministic functions of step type, so metrics are reported as a feasibility demonstration only.}}{5}{table.8}\protected@file@percent }
 \newlabel{tab:supp-musique-kbs-audit}{{C.8}{5}{Full MuSiQue constructed-label feasibility demonstration on the locked split (1,415 samples, 12,715 steps). Both audit labels and scoring features are deterministic functions of step type, so metrics are reported as a feasibility demonstration only}{table.8}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {C.7}KBS Integration Notes and KG Fixture Pilot}{6}{subsection.C.7}\protected@file@percent }
-\newlabel{app:kbs-integration-kg}{{C.7}{6}{KBS Integration Notes and KG Fixture Pilot}{subsection.C.7}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {C.8}Supplementary Diagnostic Figures}{6}{subsection.C.8}\protected@file@percent }
-\newlabel{app:supp-figures}{{C.8}{6}{Supplementary Diagnostic Figures}{subsection.C.8}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {C.9}Stratum-Dependent Held-Out Analysis}{6}{subsection.C.9}\protected@file@percent }
-\newlabel{app:stratum}{{C.9}{6}{Stratum-Dependent Held-Out Analysis}{subsection.C.9}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {C.10}Taxonomy-Stratified Ablation}{6}{subsection.C.10}\protected@file@percent }
-\newlabel{app:taxonomy-ablation}{{C.10}{6}{Taxonomy-Stratified Ablation}{subsection.C.10}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {D}Implementation Details and Reproducibility}{6}{section.D}\protected@file@percent }
-\newlabel{app:implementation}{{D}{6}{Implementation Details and Reproducibility}{section.D}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {D.1}Reproducibility Checklist}{6}{subsection.D.1}\protected@file@percent }
-\newlabel{app:repro-checklist}{{D.1}{6}{Reproducibility Checklist}{subsection.D.1}{}}
-\bibstyle{cas-model2-names}
-\bibdata{references}
-\bibcite{wang2013projection}{{1}{2013}{{Wang and Carreira-Perpi{\~n}{\'a}n}}{{}}}
-\@writefile{lot}{\contentsline {table}{\numberline {D.9}{\ignorespaces Cross-correlation between controlled proxy-label components and SCU inputs across 1{,}027 steps. All correlations are below $|\rho | < 0.15$, confirming low input overlap.}}{7}{table.9}\protected@file@percent }
-\newlabel{tab:oracle-independence}{{D.9}{7}{Cross-correlation between controlled proxy-label components and SCU inputs across 1{,}027 steps. All correlations are below $|\rho | < 0.15$, confirming low input overlap}{table.9}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {D.2}SLSQP Convergence Diagnostics}{7}{subsection.D.2}\protected@file@percent }
-\newlabel{app:slsqp-diagnostics}{{D.2}{7}{SLSQP Convergence Diagnostics}{subsection.D.2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {D.3}Graph Construction Parameter Sensitivity}{7}{subsection.D.3}\protected@file@percent }
-\newlabel{app:graph-sensitivity}{{D.3}{7}{Graph Construction Parameter Sensitivity}{subsection.D.3}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {D.4}Controlled Proxy-Label Independence Analysis}{7}{subsection.D.4}\protected@file@percent }
-\newlabel{app:oracle-independence}{{D.4}{7}{Controlled Proxy-Label Independence Analysis}{subsection.D.4}{}}
-\csxdef{lastpage}{8}
-\@writefile{lof}{\contentsline {figure}{\numberline {C.1}{\ignorespaces Structural diagnostic summary by perturbation mode. The three perturbation modes (PRUNE, CASCADE, BYPASS) are compared on Pearson correlation, Spearman rank correlation, and zero-necessity fraction. Error bars indicate 95\% bootstrap confidence intervals. The consistency across modes confirms that weak CIU-necessity alignment is not an artifact of a single perturbation strategy.}}{9}{figure.1}\protected@file@percent }
-\newlabel{fig:mode-comparison}{{C.1}{9}{Structural diagnostic summary by perturbation mode. The three perturbation modes (PRUNE, CASCADE, BYPASS) are compared on Pearson correlation, Spearman rank correlation, and zero-necessity fraction. Error bars indicate 95\% bootstrap confidence intervals. The consistency across modes confirms that weak CIU-necessity alignment is not an artifact of a single perturbation strategy}{figure.1}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {C.2}{\ignorespaces Redundancy density and compensation analysis. Panel (a): per-trace redundancy density distribution (mean $0.3842$). Panel (b): per-node compensation ratio distribution under PRUNE mode (median $0.000$, mean $0.0084$). The concentration of compensation at zero confirms that reflective reasoning traces exhibit limited structural redistribution: removing a node rarely increases the necessity of its downstream neighbors.}}{9}{figure.2}\protected@file@percent }
-\newlabel{fig:redundancy-comp}{{C.2}{9}{Redundancy density and compensation analysis. Panel (a): per-trace redundancy density distribution (mean $0.3842$). Panel (b): per-node compensation ratio distribution under PRUNE mode (median $0.000$, mean $0.0084$). The concentration of compensation at zero confirms that reflective reasoning traces exhibit limited structural redistribution: removing a node rarely increases the necessity of its downstream neighbors}{figure.2}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {C.3}{\ignorespaces Resilience curves under ordered node removal. Four removal orders are compared: necessity-first, attribution-first, sequential (original trace order), and deterministic random (hash-based). The $y$-axis shows remaining structural necessity fraction; the $x$-axis is the fraction of nodes removed. AUC values are annotated. The necessity-first curve degrades sharply (AUC $0.1488$), while attribution-first (AUC $0.4761$) is close to random (AUC $0.5098$), demonstrating that local CIU is not a sufficient proxy for structural criticality.}}{10}{figure.3}\protected@file@percent }
-\newlabel{fig:resilience-app}{{C.3}{10}{Resilience curves under ordered node removal. Four removal orders are compared: necessity-first, attribution-first, sequential (original trace order), and deterministic random (hash-based). The $y$-axis shows remaining structural necessity fraction; the $x$-axis is the fraction of nodes removed. AUC values are annotated. The necessity-first curve degrades sharply (AUC $0.1488$), while attribution-first (AUC $0.4761$) is close to random (AUC $0.5098$), demonstrating that local CIU is not a sufficient proxy for structural criticality}{figure.3}{}}
-\gdef \@abspage@last{10}

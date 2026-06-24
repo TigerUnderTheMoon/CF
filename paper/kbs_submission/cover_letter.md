@@ -2,7 +2,7 @@
 
 Final Word version: `final_package/cover_letter.docx`.
 
-June 15, 2026
+June 24, 2026
 
 Editorial Office  
 Knowledge-Based Systems  
