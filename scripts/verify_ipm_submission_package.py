@@ -129,7 +129,7 @@ REQUIRED_MANUSCRIPT_SNIPPETS = (
 FORBIDDEN_MANUSCRIPT_SNIPPETS = (
     "Haoran Ma",
     "Ningning Wang",
-    "mahaoran0000@foamail.com",
+    "mahaoran0000@foxmail.com",
     "wangningning@bistu.edu.cn",
     "Beijing Information Science and Technology University",
     "ESG Intelligent Application Innovation Research Center",

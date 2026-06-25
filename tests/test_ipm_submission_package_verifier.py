@@ -112,7 +112,7 @@ def _pdf_text_by_name() -> dict[str, str]:
             "CRediT authorship contribution statement",
             "Haoran Ma",
             "Ningning Wang",
-            "mahaoran0000@foamail.com",
+            "mahaoran0000@foxmail.com",
             "wangningning@bistu.edu.cn",
             "National Social Science Fund of China Project (24BSH018)",
             DATA_AVAILABILITY,
@@ -167,7 +167,7 @@ def test_ipm_verifier_blocks_real_author_identity_in_source_zip(tmp_path: Path) 
     _write_final_package(package_dir)
     _write_source_zip(
         package_dir / "latex_source.zip",
-        manuscript_tex="Haoran Ma\nmahaoran0000@foamail.com\n",
+        manuscript_tex="Haoran Ma\nmahaoran0000@foxmail.com\n",
     )
 
     report = check_package(package_dir, require_author_metadata=True)

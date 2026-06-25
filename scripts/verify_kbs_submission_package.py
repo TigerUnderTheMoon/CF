@@ -35,6 +35,10 @@ MUSIQUE_DATA_AVAILABILITY_PDF = (
 )
 
 MUSIQUE_BOUNDARY = "kbs_style_audit_prioritization_evidence_only"
+STRESS_TEST_SOURCE_SNIPPET = "SCU component contribution on a structural stress-test benchmark"
+STRESS_TEST_PDF_SNIPPET = "structural stress-test benchmark"
+KG_PILOT_SOURCE_SNIPPET = r"\subsection{Real-Knowledge-Graph Graph Construction Pilot}"
+KG_PILOT_PDF_SNIPPET = "Real-Knowledge-Graph Graph Construction Pilot"
 
 REQUIRED_FILES = (
     "Highlights.docx",
@@ -101,7 +105,7 @@ REQUIRED_MANUSCRIPT_SNIPPETS = (
     CURRENT_TITLE,
     "Haoran Ma",
     "Ningning Wang",
-    "mahaoran0000@foamail.com",
+    "mahaoran0000@foxmail.com",
     "wangningning@bistu.edu.cn",
     "National Social Science Fund of China Project (24BSH018)",
     "Beijing Natural Science Foundation Project (L252145)",
@@ -111,6 +115,8 @@ REQUIRED_MANUSCRIPT_SNIPPETS = (
     DATA_AVAILABILITY,
     MUSIQUE_DATA_AVAILABILITY_SOURCE,
     MUSIQUE_BOUNDARY,
+    STRESS_TEST_SOURCE_SNIPPET,
+    KG_PILOT_SOURCE_SNIPPET,
     r"\section*{CRediT authorship contribution statement}",
 )
 
@@ -118,8 +124,8 @@ REQUIRED_DOCX_TEXT_SNIPPETS = {
     "Highlights.docx": (
         "Highlights",
         CURRENT_TITLE,
-        "SC-FMA calibrates coarse utility or proxy fidelity into auditable verification-step weights.",
-        "moderate, preliminary support for PRM800K-like audit prioritization",
+        "auditable verification-step weights",
+        "preliminary audit-prioritization support",
     ),
     "supplementary.docx": (
         "Supplementary Material",
@@ -143,6 +149,8 @@ REQUIRED_PDF_TEXT_SNIPPETS = {
         DATA_AVAILABILITY_PDF,
         MUSIQUE_DATA_AVAILABILITY_PDF,
         MUSIQUE_BOUNDARY,
+        STRESS_TEST_PDF_SNIPPET,
+        KG_PILOT_PDF_SNIPPET,
     ),
 }
 

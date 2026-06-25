@@ -32,7 +32,7 @@
 \title[mode=title]{Supplementary Material for Structurally-Calibrated Functional Attribution for Audit Prioritization in Knowledge-Intensive Reasoning}
 
 \author[1]{Haoran Ma}
-\ead{mahaoran0000@foamail.com}
+\ead{mahaoran0000@foxmail.com}
 
 \author[1,2]{Ningning Wang\corref{cor1}}
 \ead{wangningning@bistu.edu.cn}
@@ -164,7 +164,7 @@ The improvement $\Delta$(QP $-$ CIU) increases monotonically with $k$ (from $+0.
 \section{Main-Text Material Moved to Supplementary}
 \label{app:moved-main-material}
 
-This appendix records material that was removed from the compressed manuscript to keep the upload manuscript under the requested 20-page limit. The move is editorial only: it does not change the evidence boundary, hyperparameters, ranking metrics, or allowed claims.
+This appendix records material that was removed from the compressed manuscript to keep the upload manuscript within the project-specific 12--25 page gate. The move is editorial only: it does not change the evidence boundary, hyperparameters, ranking metrics, or allowed claims.
 
 \subsection{Notation and Positioning}
 \label{app:notation-positioning}
@@ -242,24 +242,19 @@ $\varepsilon$ & $\{10^{-6},10^{-5},10^{-4},10^{-3}\}$ & $10^{-4}$ & Numerical fl
 \end{table}
 
 \begin{table}[ht]
-\caption{Extended ablation results moved from the main manuscript. $\Delta\rho$ is relative to full SC-FMA QP.}
+\caption{Controlled synthetic component-contribution diagnostic. Values are five-seed means from the component-contribution run; $\Delta\rho$ is relative to \texttt{full\_scu}. This diagnostic has a different synthetic configuration from the main ranking table, so within-table deltas are the interpretable quantity.}
 \label{tab:supp-ablation}
 \centering
 \small
-\begin{tabular}{lcc}
+\begin{tabular}{lccc}
 \toprule
-\textbf{Variant} & \textbf{Spearman $\rho$} & \textbf{$\Delta\rho$} \\
+\textbf{Variant} & \textbf{Spearman $\rho$ mean$\pm$std} & \textbf{Kendall $\tau$ mean$\pm$std} & \textbf{$\Delta\rho$} \\
 \midrule
-SC-FMA QP (full) & \textbf{0.608} & --- \\
-$-$ Structure & 0.551 & $-$0.057 \\
-$-$ Fidelity & 0.536 & $-$0.072 \\
-$-$ Redundancy & 0.586 & $-$0.022 \\
-$-$ Bottleneck & 0.595 & $-$0.013 \\
-Structure only & 0.438 & $-$0.170 \\
-Fidelity only (Raw CIU) & 0.483 & $-$0.125 \\
-Fidelity + Structure & 0.573 & $-$0.035 \\
-Fidelity + Redundancy & 0.518 & $-$0.090 \\
-Fidelity + Bottleneck & 0.504 & $-$0.104 \\
+\texttt{full\_scu} & 0.5103 $\pm$ 0.0320 & 0.4297 $\pm$ 0.0287 & 0.0000 \\
+\texttt{no\_fidelity} & 0.2850 $\pm$ 0.0153 & 0.2366 $\pm$ 0.0138 & $-$0.2253 \\
+\texttt{no\_structure} & 0.4841 $\pm$ 0.0334 & 0.4053 $\pm$ 0.0285 & $-$0.0263 \\
+\texttt{no\_redundancy} & 0.5093 $\pm$ 0.0321 & 0.4273 $\pm$ 0.0273 & $-$0.0010 \\
+\texttt{no\_bottleneck} & 0.5090 $\pm$ 0.0304 & 0.4279 $\pm$ 0.0274 & $-$0.0013 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -374,7 +369,7 @@ The support decision is reported for completeness but is not interpreted as posi
 \subsection{KBS Integration Notes and KG Fixture Pilot}
 \label{app:kbs-integration-kg}
 
-\noindent\textbf{Note:} The KBS methodological analogy, including the detailed mapping of high-necessity, high-redundancy, and bottleneck steps to KBS review concepts, has been moved to the main manuscript, Section~6.5 (KBS Methodological Analogy). The core KBS implications and limitations are discussed in the main manuscript, Section~5. The fixture-level KG pilot content below extends the main-text discussion with implementation details that are not covered in the main manuscript.
+\noindent\textbf{Note:} The KBS methodological analogy, including the detailed mapping of high-necessity, high-redundancy, and bottleneck steps to KBS review concepts, is discussed in the main manuscript's KBS methodological analogy subsection. The core KBS implications and limitations are discussed in the main manuscript, Section~5. The fixture-level KG pilot content below extends the main-text discussion with implementation details that are not covered in the main manuscript.
 
 The fixture-level KG pilot uses the Countries knowledge graph with country and region entities and \texttt{locatedIn}/\texttt{neighborOf} triples. It compares TF-IDF topical edges with KG-augmented edges for synthetic query traces. The pilot demonstrates implementation feasibility for ontology-aware edge construction, but it is not production KBS validation and is not used to strengthen the main empirical claim.
 

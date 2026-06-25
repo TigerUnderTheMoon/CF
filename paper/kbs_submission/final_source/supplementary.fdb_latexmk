@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex supplementary"] 1782282072.45129 "supplementary.aux" "supplementary.bbl" "supplementary" 1782282077.65363 0
+["bibtex supplementary"] 1782321774.72368 "supplementary.aux" "supplementary.bbl" "supplementary" 1782321780.38702 0
   "./cas-model2-names.bst" 1714792130 31802 28b630660245c09f173aac55be552b29 ""
-  "./references.bib" 1781884338 10392 1d4f0f93cde58fee7c56e8b2dead3b18 ""
-  "supplementary.aux" 1782282075 13523 fda0bafb7bf4e3b39d6d1d1871dabed7 "pdflatex"
+  "./references.bib" 1782313517 15664 00885b0afb24b586139fd8ae47032185 ""
+  "supplementary.aux" 1782321778 13935 d4a1fd5e0183e0465e8ac796e2188823 "pdflatex"
   (generated)
   "supplementary.bbl"
   "supplementary.blg"
   (rewritten before read)
-["pdflatex"] 1782282073.17441 "supplementary.tex" "supplementary.pdf" "supplementary" 1782282077.6553 0
+["pdflatex"] 1782321775.57302 "supplementary.tex" "supplementary.pdf" "supplementary" 1782321780.38952 0
   "cas-common.sty" 1781590858 76651 31515d583d75b614317d78d376474675 ""
   "cas-sc.cls" 1714793356 4410 65b518b1d7581e9c4ebe84b81471ee59 ""
   "d:/DevelopTools/texlive/2026/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc" 1779287267 2971 def0b6c1f0b107b3b936def894055589 ""
@@ -158,11 +158,11 @@
   "figures/fig_mode_comparison.png" 1781520337 63358 cee4226d34f60e34543c87eef7aef275 ""
   "figures/fig_redundancy_comp.png" 1781520337 61316 e7ffd7f485b7769c8265aa7f7f4b8bfe ""
   "figures/fig_resilience.png" 1781520337 97891 ba227f17ee96a1b46f5b57f22623c86c ""
-  "supplementary.abs" 1782282074 295 97233475df44368ca95c20d3cef5af5c "pdflatex"
-  "supplementary.aux" 1782282075 13523 fda0bafb7bf4e3b39d6d1d1871dabed7 "pdflatex"
-  "supplementary.bbl" 1782282073 975 fb9f230fc78b0398bdcb83894c6a993e "bibtex supplementary"
-  "supplementary.out" 1782282074 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
-  "supplementary.tex" 1782281739 30957 12c515a9acdc3126cb776dec1c356cde ""
+  "supplementary.abs" 1782321777 295 97233475df44368ca95c20d3cef5af5c "pdflatex"
+  "supplementary.aux" 1782321778 13935 d4a1fd5e0183e0465e8ac796e2188823 "pdflatex"
+  "supplementary.bbl" 1782321775 975 fb9f230fc78b0398bdcb83894c6a993e "bibtex supplementary"
+  "supplementary.out" 1782321777 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
+  "supplementary.tex" 1782321756 31225 070633b1bcf20fa46eb81ac1f0a0fd97 ""
   (generated)
   "supplementary.abs"
   "supplementary.aux"

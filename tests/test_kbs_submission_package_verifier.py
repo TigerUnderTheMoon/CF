@@ -27,6 +27,10 @@ MUSIQUE_DATA_AVAILABILITY_SOURCE = (
 MUSIQUE_DATA_AVAILABILITY_PDF = "reproducible from outputs/kbs_real_audit_v1"
 
 MUSIQUE_BOUNDARY = "kbs_style_audit_prioritization_evidence_only"
+STRESS_TEST_SOURCE_SNIPPET = "SCU component contribution on a structural stress-test benchmark"
+STRESS_TEST_PDF_SNIPPET = "structural stress-test benchmark"
+KG_PILOT_SOURCE_SNIPPET = r"\subsection{Real-Knowledge-Graph Graph Construction Pilot}"
+KG_PILOT_PDF_SNIPPET = "Real-Knowledge-Graph Graph Construction Pilot"
 
 
 def _write_docx(path: Path, text: str | None = None) -> None:
@@ -72,7 +76,7 @@ def _write_source_zip(
             rf"\title[mode=title]{{{TITLE}}}",
             r"\author[1]{Haoran Ma}",
             r"\author[1,2]{Ningning Wang}",
-            "mahaoran0000@foamail.com",
+            "mahaoran0000@foxmail.com",
             "wangningning@bistu.edu.cn",
             "National Social Science Fund of China Project (24BSH018)",
             "Beijing Natural Science Foundation Project (L252145)",
@@ -82,6 +86,8 @@ def _write_source_zip(
             DATA_AVAILABILITY,
             MUSIQUE_DATA_AVAILABILITY_SOURCE,
             MUSIQUE_BOUNDARY,
+            STRESS_TEST_SOURCE_SNIPPET,
+            KG_PILOT_SOURCE_SNIPPET,
             r"\section*{CRediT authorship contribution statement}",
             "Haoran Ma: Conceptualization. Ningning Wang: Supervision.",
             r"\includegraphics{figures/fig_sensitivity.png}",
@@ -116,8 +122,8 @@ def _write_final_package(package_dir: Path) -> None:
             [
                 "Highlights",
                 TITLE,
-                "SC-FMA calibrates coarse utility or proxy fidelity into auditable verification-step weights.",
-                "The PRM800K stratified readout gives moderate, preliminary support for PRM800K-like audit prioritization.",
+                "SC-FMA calibrates utility into auditable verification-step weights.",
+                "PRM800K readout gives preliminary audit-prioritization support.",
             ]
         ),
     )
@@ -141,12 +147,14 @@ def _pdf_text_by_name() -> dict[str, str]:
             "CRediT authorship contribution statement",
             "Haoran Ma",
             "Ningning Wang",
-            "mahaoran0000@foamail.com",
+            "mahaoran0000@foxmail.com",
             "wangningning@bistu.edu.cn",
             "National Social Science Fund of China Project (24BSH018)",
             DATA_AVAILABILITY_PDF,
             MUSIQUE_DATA_AVAILABILITY_PDF,
             MUSIQUE_BOUNDARY,
+            STRESS_TEST_PDF_SNIPPET,
+            KG_PILOT_PDF_SNIPPET,
         ]
     )
     return {

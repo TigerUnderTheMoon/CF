@@ -325,7 +325,7 @@ def _generate_location_query_trace(
             "utility_score": round(rng.uniform(0.50, 0.85), 2),
         })
     neighbors_of_last: list[str] = []
-    for n in _KG_NEIGHBOR_SET.get(selected[-1], set()):
+    for n in sorted(_KG_NEIGHBOR_SET.get(selected[-1], set())):
         if n in _KG_LOCATED_IN:
             neighbors_of_last.append(n)
             if len(neighbors_of_last) >= 2:
