@@ -134,6 +134,51 @@ def test_scu_component_contribution_fixture_outputs_multiseed_table(tmp_path: Pa
     )
 
 
+def test_scu_hyperparameter_sensitivity_fixture_outputs_gamma_delta_grid(
+    tmp_path: Path,
+) -> None:
+    output_dir = tmp_path / "scu_hyperparameter_sensitivity"
+    result = run_script(
+        "run_scu_hyperparameter_sensitivity.py",
+        output_dir,
+        "--samples-per-seed",
+        "8",
+    )
+    assert result.returncode == 0, result.stderr + result.stdout
+
+    report = load_report(output_dir, "scu_hyperparameter_sensitivity.json")
+    assert_common_report_fields(report, output_dir, "mechanism_ablation")
+    assert report["gamma_values"] == [0.0, 0.1, 0.2, 0.5, 0.8]
+    assert report["delta_values"] == [0.0, 0.05, 0.1, 0.2, 0.4]
+    assert report["recommended_default"] == {
+        "gamma": 0.2,
+        "delta": 0.1,
+        "selection_role": "synthetic structural-stress default for QP diagnostics",
+    }
+    assert len(report["grid"]) == 25
+    for row in report["grid"]:
+        assert {
+            "gamma",
+            "delta",
+            "spearman_mean",
+            "spearman_std",
+            "kendall_mean",
+            "kendall_std",
+            "convergence_rate",
+            "delta_spearman_vs_default",
+        } <= set(row)
+
+    csv_path = output_dir / "gamma_delta_grid.csv"
+    assert csv_path.exists()
+    assert "gamma,delta,spearman_mean" in csv_path.read_text(encoding="utf-8")
+
+    md_path = output_dir / "scu_hyperparameter_sensitivity.md"
+    assert md_path.exists()
+    markdown = md_path.read_text(encoding="utf-8").lower()
+    assert "hyperparameter sensitivity" in markdown
+    assert "not positive external validation" in markdown
+
+
 def test_failure_taxonomy_fixture_outputs_labels_and_cases(tmp_path: Path) -> None:
     output_dir = tmp_path / "failure_taxonomy"
     result = run_script(

@@ -16,13 +16,14 @@ CURRENT_TITLE = (
 )
 
 DATA_AVAILABILITY = (
-    "PRM800K and MuSiQue are publicly available from their original sources. Derived locked-split reports, "
-    "audit-prioritization artifacts, and reproduction scripts will be made available by the "
-    "authors on request."
+    "PRM800K, MuSiQue, and WebQSP are publicly available from their original sources. "
+    "Derived locked-split reports, audit-prioritization artifacts, trace-audit diagnostics, "
+    "and reproduction scripts will be deposited in an anonymous public repository for review "
+    "and released with the final article."
 )
 
 DATA_AVAILABILITY_PDF = (
-    "PRM800K and MuSiQue are publicly available from their original sources."
+    "PRM800K, MuSiQue, and WebQSP are publicly available from their original sources."
 )
 
 MUSIQUE_DATA_AVAILABILITY_SOURCE = (
@@ -158,6 +159,11 @@ FORBIDDEN_PDF_SNIPPETS = {
     "manuscript.pdf": ("Highlights",),
 }
 
+FORBIDDEN_DOCX_MARKERS = (
+    "[/TABLE]",
+    "[TABLE]",
+)
+
 
 @dataclass(frozen=True)
 class VerificationReport:
@@ -265,6 +271,11 @@ def _check_docx_text(package_dir: Path, errors: list[str]) -> dict[str, str]:
         if not docx_text:
             continue
         text_by_name[filename] = docx_text
+        for marker in FORBIDDEN_DOCX_MARKERS:
+            if marker in docx_text:
+                errors.append(
+                    f"{filename} residual table-conversion marker remains: {marker}"
+                )
         for snippet in snippets:
             if not _contains_snippet(docx_text, snippet):
                 errors.append(f"{filename} missing required text: {snippet}")

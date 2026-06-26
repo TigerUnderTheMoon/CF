@@ -2,7 +2,7 @@
 
 Purpose: define the clean upload boundary for the claim-bounded Knowledge-Based Systems methodology and PRM800K-like audit-prioritization package.
 
-This package must be described only as a claim-bounded KBS upload package. The PRM800K stratified audit-prioritization gate remains `moderate`, so title, abstract, cover letter, and manifest language must stay within moderate preliminary PRM800K-like audit-prioritization support.
+This package must be described only as a claim-bounded KBS upload package. The PRM800K stratified audit-prioritization gate remains `moderate`, so title, abstract, cover letter, and manifest language must stay within moderate preliminary PRM800K-like audit-prioritization support. The current manuscript revision foregrounds preservation plus auditability: Explainable Audit Prioritization, transparent audit triage, decomposable priority rules, and fixed-budget review.
 
 ## Final upload files
 
@@ -23,7 +23,7 @@ The portal-shaped package is `final_package/` and contains exactly five files:
 - Emails: `mahaoran0000@foxmail.com`; `wangningning@bistu.edu.cn`.
 - Funding: National Social Science Fund of China Project (24BSH018); Beijing Natural Science Foundation Project (L252145).
 - Declaration of Competing Interest: The authors declared that they have no conflicts of interest to this work.
-- Data Availability: PRM800K is publicly available from its original source. Derived locked-split reports, audit-prioritization artifacts, and reproduction scripts will be made available by the authors on request.
+- Data Availability: PRM800K, MuSiQue, and WebQSP are publicly available from their original sources. Derived locked-split reports, audit-prioritization artifacts, trace-audit diagnostics, and reproduction scripts will be deposited in an anonymous public repository for review and released with the final article.
 
 ## Source boundary
 
@@ -35,15 +35,16 @@ The portal-shaped package is `final_package/` and contains exactly five files:
 
 ## Verification
 
-- `manuscript.tex` compiled with TeX Live/latexmk after the structural stress-test, Countries-KG pilot, and MuSiQue compression revisions: exit code 0, output `manuscript.pdf` with 20 pages (within the project-specific 12--25 page gate).
+- `manuscript.tex` compiled with TeX Live/latexmk after the PRM800K auditability revision, the formalized `Why Structure Adds Value` subsection, the new `Why Calibration Beyond Direct Ranking` subsection, Complexity Summary Table, KBS audit-card interpretation paragraph, and Audit Cards: exit code 0, output `manuscript.pdf` within the project-specific 12--25 page gate.
 - `Highlights.docx` contains the final highlights text and current title.
 - `supplementary.docx` contains the supplementary title, author names, and supplementary content converted from the split supplementary material.
-- Supplementary data map now includes `outputs/real_task_v3_6_prm800k_hash/audit_prioritization_report.json` and `outputs/real_task_v3_6_prm800k_hash/audit_prioritization_summary.md` as audit-prioritization context only, and `outputs/kbs_audit_demo/audit_demo_report.json` as the KBS audit demonstration artifact (Section 6).
+- Supplementary data map now includes `outputs/real_task_v3_6_prm800k_hash/audit_prioritization_report.json` and `outputs/real_task_v3_6_prm800k_hash/audit_prioritization_summary.md` as audit-prioritization context only, the Section 6 KBS-facing audit-card interpretation as a workflow illustration rather than a new deployment experiment, and `outputs/webqsp_trace_audit_v1_test/diagnostics/separability_report.json` as supplementary diagnostic evidence only.
 - Manuscript PDF pages were rendered to current PNG contact sheets and visually checked for page count, footer consistency, figure placement, and obvious clipping.
 - `cover_letter.docx`, `Highlights.docx`, and `supplementary.docx` were structurally checked for required DOCX parts and required text after the evidence-boundary revision. They were rendered through LibreOffice to PDF/PNG for visual QA; no page clipping, table overflow, or text overlap was observed. The supplementary DOCX is a readable Word/table conversion, while authoritative mathematical layout remains in the LaTeX source bundle.
+- `python scripts\check_claim_boundaries.py --active-only --check-dois` passes after the checker excludes inactive `.omo/` planning files and treats claim-registry blocked-wording cells as boundary-contract text.
 - `python scripts\verify_kbs_submission_package.py --package-dir paper\kbs_submission\final_package --require-author-metadata --require-pdf-text --min-manuscript-pages 12 --max-manuscript-pages 25` passes.
-- `pytest -q tests/test_kbs_submission_package_verifier.py` passes.
+- `python -m pytest tests/test_claim_boundaries.py tests/test_kbs_submission_package_verifier.py -q` passes.
 
 ## Claim boundary
 
-The package supports a bounded KBS-facing diagnostic and audit-prioritization contribution: SC-FMA calibration, controlled synthetic proxy-label ranking evidence, structural stress-test evidence that redundancy and bottleneck terms matter in their designed regime, PRM800K step-label ranking with `w_struct` as the primary real-data result, Ridge as a preservation-with-decomposition approximation on that route, moderate preliminary PRM800K audit-prioritization context, a preliminary KBS audit demonstration (Section 6, claim `M_KBS_AUDIT_DEMONSTRATION`) applying SC-FMA to knowledge-base structured audit prioritization, a MuSiQue constructed-label feasibility demonstration (downgraded; labels and features share a step-type source, so it provides no independent audit-prioritization evidence), and a Countries-KG ontology-edge pilot as diagnostic context (`validated_kbs_workflow=false`). It does not claim downstream PRM/filtering gains, GSM8K/HotpotQA replay-pass evidence, production knowledge-base deployment validation, MuSiQue-derived audit-prioritization evidence, or formal causal identification.
+The package supports a bounded KBS-facing diagnostic and audit-prioritization contribution: Explainable Audit Prioritization as the first contribution, SC-FMA calibration, controlled synthetic proxy-label ranking evidence, structural stress-test evidence that redundancy and bottleneck terms matter in their designed regime, PRM800K step-label ranking with `w_struct` as the primary real-data result, Ridge as a preservation-with-decomposition approximation on that route, moderate preliminary PRM800K audit-prioritization context, a KBS-facing audit demonstration (Section 6) that translates the established PRM800K audit fields into a rule/RAG/KG-style audit-card workflow illustration, a MuSiQue constructed-label feasibility demonstration (downgraded; labels and features share a step-type source, so it provides no independent audit-prioritization evidence), a WebQSP fixed-schema trace-audit diagnostic showing linear separability and metric artifacts, and a Countries-KG ontology-edge pilot as diagnostic context (`validated_kbs_workflow=false`). It does not claim downstream PRM/filtering gains, GSM8K/HotpotQA replay-pass evidence, WebQSP KGQA improvement, production knowledge-base deployment validation, MuSiQue-derived audit-prioritization evidence, or formal causal identification.

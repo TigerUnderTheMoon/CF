@@ -5,6 +5,7 @@ from pathlib import Path
 from scripts.check_claim_boundaries import (
     ACTIVE_KBS_DOIS,
     iter_active_files,
+    scan_active_files,
     scan_text,
     strip_fenced_code,
 )
@@ -92,3 +93,17 @@ def test_active_file_scope_excludes_superseded_manuscripts_and_plan_docs():
     assert "paper/introduction.md" not in active
     assert "paper/related_work.md" not in active
     assert not any(path.startswith("docs/superpowers/") for path in active)
+    assert not any(path.startswith(".omo/") for path in active)
+
+
+def test_claim_registry_blocked_wording_column_is_boundary_language():
+    text = """| Claim ID | Claim | Status | Artifact owner | Allowed wording | Blocked wording |
+|---|---|---|---|---|---|
+| `M_X` | Diagnostic claim. | `supported` | `artifact.json` | bounded audit wording | external generalization; PRM training improvement; deployed KBS validation |
+"""
+
+    assert scan_text("paper/claim_registry.md", text) == []
+
+
+def test_active_claim_boundary_scan_is_clean():
+    assert scan_active_files(ROOT) == []

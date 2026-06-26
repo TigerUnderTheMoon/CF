@@ -50,6 +50,7 @@ ACTIVE_EXTENSIONS = {".md", ".tex", ".yml", ".yaml"}
 ACTIVE_ROOT_FILES = {"README.md", "AGENTS.md", "dvc.yaml", "dvc.lock"}
 EXCLUDED_PREFIXES = (
     ".git/",
+    ".omo/",
     ".pytest_cache/",
     "docs/legacy/",
     "docs/superpowers/",
@@ -78,6 +79,8 @@ def scan_text(path: str, text: str) -> list[ClaimFinding]:
     findings: list[ClaimFinding] = []
     lines = scanned.splitlines()
     for line_number, line in enumerate(lines, start=1):
+        if _is_claim_registry_blocked_wording_row(path, line):
+            continue
         if "[XX]" in line:
             findings.append(ClaimFinding(path, line_number, "[XX]", line.strip()))
         lower_line = line.lower()
@@ -141,6 +144,13 @@ def _is_boundary_language(line: str, pattern: str) -> bool:
         return False
     window = line[max(0, index - 80) : min(len(line), index + len(pattern) + 80)]
     return any(marker in window for marker in NEGATION_MARKERS)
+
+
+def _is_claim_registry_blocked_wording_row(path: str, line: str) -> bool:
+    if path.replace("\\", "/") != "paper/claim_registry.md":
+        return False
+    cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+    return len(cells) == 6 and cells[-1] and not cells[-1].startswith("---")
 
 
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:

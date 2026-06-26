@@ -10,13 +10,14 @@ TITLE = (
 )
 
 DATA_AVAILABILITY = (
-    "PRM800K and MuSiQue are publicly available from their original sources. Derived locked-split reports, "
-    "audit-prioritization artifacts, and reproduction scripts will be made available by the "
-    "authors on request."
+    "PRM800K, MuSiQue, and WebQSP are publicly available from their original sources. "
+    "Derived locked-split reports, audit-prioritization artifacts, trace-audit diagnostics, "
+    "and reproduction scripts will be deposited in an anonymous public repository for review "
+    "and released with the final article."
 )
 
 DATA_AVAILABILITY_PDF = (
-    "PRM800K and MuSiQue are publicly available from their original sources."
+    "PRM800K, MuSiQue, and WebQSP are publicly available from their original sources."
 )
 
 MUSIQUE_DATA_AVAILABILITY_SOURCE = (
@@ -363,3 +364,23 @@ def test_kbs_verifier_blocks_legacy_split_pdfs(tmp_path: Path) -> None:
     assert not report.ok
     assert any("unexpected file in final upload boundary: Highlights.pdf" in error for error in report.errors)
     assert any("unexpected file in final upload boundary: supplementary.pdf" in error for error in report.errors)
+
+
+def test_kbs_verifier_blocks_docx_table_conversion_markers(tmp_path: Path) -> None:
+    from scripts.verify_kbs_submission_package import check_package
+
+    package_dir = tmp_path / "final_package"
+    _write_final_package(package_dir)
+    _write_docx(
+        package_dir / "supplementary.docx",
+        (
+            f"Supplementary Material\n{TITLE}\nHaoran Ma\nNingning Wang\n"
+            f"MuSiQue KBS-style Knowledge-Audit Details\n{MUSIQUE_BOUNDARY}\n"
+            "Cross-correlation table [/TABLE]"
+        ),
+    )
+
+    report = check_package(package_dir)
+
+    assert not report.ok
+    assert any("residual table-conversion marker remains" in error for error in report.errors)
