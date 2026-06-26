@@ -30,6 +30,19 @@ Thumbs.db
 # Jupyter
 .ipynb_checkpoints/
 
+# LaTeX build artifacts
+*.aux
+*.log
+*.fls
+*.fdb_latexmk
+*.out
+*.abs
+*.bbl
+*.blg
+*.toc
+*.synctex.gz
+$out/
+
 # Lock files (optional, depending on team preference)
 # poetry.lock
 # pdm.lock
