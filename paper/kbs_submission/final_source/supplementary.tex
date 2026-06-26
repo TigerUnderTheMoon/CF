@@ -169,6 +169,8 @@ This appendix records material that was removed from the compressed manuscript t
 \subsection{Notation and Positioning}
 \label{app:notation-positioning}
 
+Table~\ref{tab:supp-notation} provides the compact notation reference used throughout the paper.
+
 \begin{table}[ht]
 \caption{Compact notation reference for the SC-FMA objective.}
 \label{tab:supp-notation}
@@ -223,6 +225,8 @@ SC-FMA is positioned between process supervision and graph-aware audit analysis.
 \subsection{Hyperparameters and Ablations}
 \label{app:hyperparameters-ablation}
 
+Table~\ref{tab:supp-hyperparameters} lists the hyperparameter search grid and the selected values used for the controlled synthetic benchmark, and Table~\ref{tab:supp-ablation} reports the corresponding component-contribution diagnostic.
+
 \begin{table}[ht]
 \caption{Hyperparameter search grid and selected values used for the controlled synthetic benchmark.}
 \label{tab:supp-hyperparameters}
@@ -262,6 +266,8 @@ $\varepsilon$ & $\{10^{-6},10^{-5},10^{-4},10^{-3}\}$ & $10^{-4}$ & Numerical fl
 \subsection{Efficiency and Scaling}
 \label{app:efficiency-scaling}
 
+Table~\ref{tab:supp-efficiency} reports the per-trace computational cost moved from the main manuscript.
+
 \begin{table}[ht]
 \caption{Computational efficiency moved from the main manuscript. Times are per-trace mean over the synthetic test set.}
 \label{tab:supp-efficiency}
@@ -283,12 +289,12 @@ Token Surprisal & $45.2 \pm 8.3$ & 1.08 \\
 \end{tabular}
 \end{table}
 
-The full scaling figure remains available as Figure~\ref{fig:resilience-app} and in the source figure bundle. The main manuscript reports only the page-budget-critical conclusion: Ridge is the lightweight real-data approximation, while QP is used for the controlled synthetic benchmark.
+The full scaling figure remains available in the source figure bundle. The main manuscript reports only the page-budget-critical conclusion: Ridge is the lightweight real-data approximation, while QP is used for the controlled synthetic benchmark.
 
 \subsection{PRM800K Variant Details and Audit Readout}
 \label{app:prm800k-variant-details}
 
-\noindent\textbf{Note:} The core PRM800K audit-prioritization readout has been moved to the main manuscript, Section~6 (KBS Audit Demonstration). The tables below provide extended variant comparisons and additional baselines that supplement the main-text results.
+\noindent\textbf{Note:} The core PRM800K audit-prioritization readout has been moved to the main manuscript, Section~6 (KBS Audit Demonstration). Tables~\ref{tab:supp-scfma-variants} and~\ref{tab:supp-audit-prioritization} provide extended variant comparisons and additional baselines that supplement the main-text results.
 
 \begin{table}[ht]
 \caption{SC-FMA calibration variant comparison on the PRM800K locked split. All variants use \texttt{w\_struct} predictions as the fidelity input.}
@@ -303,7 +309,7 @@ The full scaling figure remains available as Figure~\ref{fig:resilience-app} and
 SC-FMA Ridge & 0.604 & $[0.597,0.611]$ & $-$0.007 \\
 SC-FMA QP & 0.442 & $[0.432,0.452]$ & $-$0.169 \\
 SC-FMA Projection & $-$0.135 & $[-0.147,-0.122]$ & $-$0.746 \\
-Raw local utility & $-$0.078 & $[-0.092,-0.064]$ & $-$0.689 \\
+Raw local utility & $-$0.077 & $[-0.092,-0.064]$ & $-$0.689 \\
 Frozen PRM prefix score & 0.252 & --- & $-$0.359 \\
 Random & 0.006 & $[-0.008,0.020]$ & $-$0.606 \\
 \bottomrule
@@ -338,7 +344,7 @@ These tables retain the route-specific downgrade: the strongest real-data result
 
 The MuSiQue route is an offline, deterministic KBS-style audit-prioritization experiment. It constructs trace records from MuSiQue decomposition evidence chains with retrieval, entity-binding, evidence-check, distractor-rejection, and answer-synthesis steps. The label source is \texttt{musique\_decomposition\_constructed\_audit\_labels}; these labels are assigned deterministically by step type (e.g., answer synthesis 2.0, bridge binding 1.7, distractor rejection 0.0) and are not production-scene human curation labels. The scoring features are likewise deterministic functions of step type: \texttt{raw\_local\_utility} is a per-type constant, and \texttt{evidence\_role}/\texttt{bridge\_role} are one-hot subsets of step type. The labels and the \texttt{w\_struct} features therefore share a common source (\texttt{step\_type}), so the route tests whether a learned linear combination of step-type-derived features reproduces a step-type-derived label vector, not whether step-type-derived features recover an independently grounded audit priority. The route is therefore reported only as a feasibility demonstration (\texttt{kbs\_style\_audit\_prioritization\_evidence\_only}) and provides no independent audit-prioritization evidence.
 
-The split is locked by hash: 585 samples are used for dev training or calibration, and 1,415 samples with 12,715 steps are reserved for final reporting. No API calls are used. The leakage audit reports that locked labels are not used for scoring, forbidden fields are excluded from scoring, and label permutation reduces the mean diagnostic delta from 0.1347 to 0.0078.
+The split is locked by hash: 585 samples are used for dev training or calibration, and 1,415 samples with 12,715 steps are reserved for final reporting. No API calls are used. The leakage audit reports that locked labels are not used for scoring, forbidden fields are excluded from scoring, and label permutation reduces the mean diagnostic delta from 0.1347 to 0.0078. Table~\ref{tab:supp-musique-kbs-audit} reports the full feasibility-demonstration metrics on this locked split.
 
 \begin{table}[ht]
 \caption{Full MuSiQue constructed-label feasibility demonstration on the locked split (1,415 samples, 12,715 steps). Both audit labels and scoring features are deterministic functions of step type, so metrics are reported as a feasibility demonstration only.}
@@ -376,27 +382,13 @@ The fixture-level KG pilot uses the Countries knowledge graph with country and r
 \subsection{Supplementary Diagnostic Figures}
 \label{app:supp-figures}
 
-Figures~\ref{fig:mode-comparison}--\ref{fig:resilience-app} provide the supplementary structural diagnostic figures referenced in the main text.
+Figure~\ref{fig:redundancy-comp} provides the supplementary structural diagnostic figure referenced in the main text.
 
-\begin{figure}[ht]
-\centering
-\includegraphics[width=\linewidth]{figures/fig_mode_comparison.png}
-\caption{Structural diagnostic summary by perturbation mode. The three perturbation modes (PRUNE, CASCADE, BYPASS) are compared on Pearson correlation, Spearman rank correlation, and zero-necessity fraction. Error bars indicate 95\% bootstrap confidence intervals. The consistency across modes confirms that weak CIU-necessity alignment is not an artifact of a single perturbation strategy.}
-\label{fig:mode-comparison}
-\end{figure}
-
-\begin{figure}[ht]
+\begin{figure}[pos=ht]
 \centering
 \includegraphics[width=\linewidth]{figures/fig_redundancy_comp.png}
-\caption{Redundancy density and compensation analysis. Panel (a): per-trace redundancy density distribution (mean $0.3842$). Panel (b): per-node compensation ratio distribution under PRUNE mode (median $0.000$, mean $0.0084$). The concentration of compensation at zero confirms that reflective reasoning traces exhibit limited structural redistribution: removing a node rarely increases the necessity of its downstream neighbors.}
+\caption{Redundancy density and compensation analysis. Panel (a): per-trace redundancy density distribution (mean $0.3530$). Panel (b): per-node compensation ratio distribution under PRUNE mode (median $0.000$, mean $0.0084$). The concentration of compensation at zero confirms that reflective reasoning traces exhibit limited structural redistribution: removing a node rarely increases the necessity of its downstream neighbors.}
 \label{fig:redundancy-comp}
-\end{figure}
-
-\begin{figure}[ht]
-\centering
-\includegraphics[width=\linewidth]{figures/fig_resilience.png}
-\caption{Resilience curves under ordered node removal. Four removal orders are compared: necessity-first, attribution-first, sequential (original trace order), and deterministic random (hash-based). The $y$-axis shows remaining structural necessity fraction; the $x$-axis is the fraction of nodes removed. AUC values are annotated. The necessity-first curve degrades sharply (AUC $0.1488$), while attribution-first (AUC $0.4761$) is close to random (AUC $0.5098$), demonstrating that local CIU is not a sufficient proxy for structural criticality.}
-\label{fig:resilience-app}
 \end{figure}
 
 \subsection{Stratum-Dependent Held-Out Analysis}
@@ -442,7 +434,7 @@ The keyword-heuristic graph construction introduces two free parameters: $\tau_{
 \subsection{Controlled Proxy-Label Independence Analysis}
 \label{app:oracle-independence}
 
-We verify that the controlled proxy-label definition used in the synthetic benchmark does not share input features with the SCU objective. The correlation between each proxy-label component and each SCU input is:
+We verify that the controlled proxy-label definition used in the synthetic benchmark does not share input features with the SCU objective. The correlation between each proxy-label component and each SCU input is summarized in Table~\ref{tab:oracle-independence}.
 
 \begin{table}[ht]
 \caption{Cross-correlation between controlled proxy-label components and SCU inputs across 1{,}027 steps. All correlations are below $|\rho| < 0.15$, confirming low input overlap.}

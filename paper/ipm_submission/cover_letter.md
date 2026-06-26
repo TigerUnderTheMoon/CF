@@ -20,7 +20,7 @@ The evidence package includes a controlled synthetic benchmark where QP and Ridg
 
 This work was supported by the National Social Science Fund of China Project (24BSH018) and the Beijing Natural Science Foundation Project (L252145). The authors declared that they have no conflicts of interest to this work. PRM800K is publicly available from its original source; derived reports and reproduction artifacts will be made available by the authors on request.
 
-Correspondence may be directed to Ningning Wang at `wangningning@bistu.edu.cn`. Haoran Ma can be reached at `mahaoran0000@foamail.com`.
+Correspondence may be directed to Ningning Wang at `wangningning@bistu.edu.cn`. Haoran Ma can be reached at `mahaoran0000@foxmail.com`.
 
 Sincerely,
 

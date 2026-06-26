@@ -20,7 +20,7 @@ The portal-shaped package is `final_package/` and contains exactly five files:
 - Affiliations:
   - College of Management Science and Engineering, Beijing Information Science and Technology University, Beijing 102200, China.
   - Institute of Information Systems, ESG Intelligent Application Innovation Research Center, Beijing 102200, China.
-- Emails: `mahaoran0000@foamail.com`; `wangningning@bistu.edu.cn`.
+- Emails: `mahaoran0000@foxmail.com`; `wangningning@bistu.edu.cn`.
 - Funding: National Social Science Fund of China Project (24BSH018); Beijing Natural Science Foundation Project (L252145).
 - Declaration of Competing Interest: The authors declared that they have no conflicts of interest to this work.
 - Data Availability: PRM800K is publicly available from its original source. Derived locked-split reports, audit-prioritization artifacts, and reproduction scripts will be made available by the authors on request.
@@ -40,8 +40,8 @@ The portal-shaped package is `final_package/` and contains exactly five files:
 - `supplementary.docx` contains the supplementary title, author names, and supplementary content converted from the split supplementary material.
 - Supplementary data map now includes `outputs/real_task_v3_6_prm800k_hash/audit_prioritization_report.json` and `outputs/real_task_v3_6_prm800k_hash/audit_prioritization_summary.md` as audit-prioritization context only, and `outputs/kbs_audit_demo/audit_demo_report.json` as the audit demonstration artifact (Section 6).
 - Manuscript PDF pages were rendered to current PNG contact sheets and visually checked for page count, footer consistency, figure placement, and obvious clipping.
-- `cover_letter.docx`, `Highlights.docx`, and `supplementary.docx` were structurally checked for required DOCX parts and required text after the moderate-title revision. Visual DOCX rendering could not be completed because `soffice.exe`/LibreOffice is not installed on this machine.
-- `python scripts/verify_ipm_submission_package.py --package-dir paper/ipm_submission/final_package --require-author-metadata --require-pdf-text --min-manuscript-pages 12 --max-manuscript-pages 20` passes.
+- `cover_letter.docx`, `Highlights.docx`, and `supplementary.docx` were structurally checked for required DOCX parts and required text after the moderate-title revision. They were rendered through LibreOffice to PDF for visual QA; all three render cleanly (2 / 1 / 10 pages respectively) with no garbled text, missing fonts, or layout breakage, and required text snippets and title are present in each rendered PDF.
+- `python scripts/verify_ipm_submission_package.py --package-dir paper/ipm_submission/final_package --require-author-metadata --require-pdf-text --min-manuscript-pages 15 --max-manuscript-pages 20` passes.
 - `pytest -q tests/test_ipm_submission_package_verifier.py` passes.
 
 ## Claim boundary

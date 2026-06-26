@@ -1,0 +1,74 @@
+experiment:
+  route_id: webqsp_trace_audit_v1
+  claim: "SC-FMA ranks functionally indispensable reasoning steps ahead of recoverable reasoning steps."
+  evidence_level: trace_audit_experiment
+  dataset: WebQSP
+  not_a_kgqa_benchmark: true
+  validated_kbs_workflow: false
+
+data:
+  development_source_path: data/raw/webqsp/WebQSP.train.json
+  final_source_path: data/raw/webqsp/WebQSP.test.json
+  development_source_split: train
+  final_source_split: test
+  processed_train_dir: data/processed/webqsp_trace_audit_v1_train
+  processed_test_dir: data/processed/webqsp_trace_audit_v1_test
+
+trace_generation:
+  generator: deterministic_rule_execution
+  llm_used_for_trace_generation: false
+  shortest_path_generation_allowed: false
+  required_step_types:
+    - entity_linking
+    - relation_traversal
+    - candidate_generation
+    - candidate_verification
+    - ambiguity_resolution
+    - answer_verification
+
+replay:
+  rule_replay: true
+  llm_replay_optional: true
+  llm_trace_generation_allowed: false
+  cache_path: outputs/webqsp_trace_audit_v1/cache/llm_replay.sqlite
+  importance_target: "0.7 * rule_delta + 0.3 * llm_delta"
+  replay_failure_rate_policy: descriptive_only_no_fixed_hard_threshold
+
+verification_graph:
+  backend: networkx
+  edge_categories:
+    - Temporal
+    - Dependency
+    - Support
+
+audit:
+  checks:
+    - missing_entities
+    - disconnected_subgraphs
+    - duplicated_traces
+    - replay_failures
+    - answer_leakage
+
+output:
+  development_output_dir: outputs/webqsp_trace_audit_v1_train
+  final_output_dir: outputs/webqsp_trace_audit_v1_test
+  required_artifacts:
+    - data/samples.jsonl
+    - traces/reasoning_traces.jsonl
+    - replay/replay_results.jsonl
+    - replay/importance_targets.jsonl
+    - graphs/verification_graphs.jsonl
+    - ranking/ranking_results.json
+    - metrics/audit_metrics.json
+    - metrics/data_audit.json
+    - case_studies/case_studies.json
+    - case_studies/case_studies.md
+    - figures/method_comparison.png
+    - figures/importance_distribution.png
+
+experiment_review:
+  decision_label: Experiment Review
+  positioning_options:
+    - kbs_main_experiment_candidate
+    - supplementary_diagnostic_evidence
+    - future_work_only

@@ -129,6 +129,22 @@ The redundancy matrix $\mathbf{R}$ captures pairwise similarity between steps. H
 
 Bottleneck detection addresses the opposite diagnostic pattern. Some nodes are not redundant, and their downstream exposure can make them useful to inspect even if the supplied fidelity signal is modest. The log-barrier term prevents identified bottleneck nodes from being assigned near-zero weight. In KBS terms, this is analogous to keeping a single point of failure visible to the reviewer. The term does not prove that the node is uniquely responsible for correctness or that an unobserved mechanism exists; it enforces a conservative audit regularizer when observed structure marks the node as difficult to replace.
 
+Figure~\ref{fig:ciu-necessity} illustrates the CIU-necessity mismatch. Figure~\ref{fig:mode-comparison} compares the three perturbation modes, and Figure~\ref{fig:resilience} shows the resilience curves.
+
+\begin{figure}[pos=ht]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_mode_comparison.png}
+\caption{Structural diagnostic summary by perturbation mode. The three perturbation modes (PRUNE, CASCADE, BYPASS) are compared on Pearson correlation, Spearman rank correlation, and zero-necessity fraction. Error bars indicate 95\% bootstrap confidence intervals. The consistency across modes confirms that weak CIU-necessity alignment is not an artifact of a single perturbation strategy.}
+\label{fig:mode-comparison}
+\end{figure}
+
+\begin{figure}[pos=ht]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_resilience.png}
+\caption{Resilience curves under ordered node removal. Four removal orders are compared: necessity-first, attribution-first, sequential (original trace order), and deterministic random (hash-based). The $y$-axis shows remaining structural necessity fraction; the $x$-axis is the fraction of nodes removed. AUC values are annotated. The necessity-first curve degrades sharply (AUC $0.1488$), while attribution-first (AUC $0.4761$) is close to random (AUC $0.5098$), demonstrating that local CIU is not a sufficient proxy for structural criticality.}
+\label{fig:resilience}
+\end{figure}
+
 \begin{theorem}[SCU well-posedness]
 \label{thm:scu-well-posedness}
 If $\alpha+\beta>0$ and the redundancy matrix is positive semidefinite, or if $\delta>0$ for at least one bottleneck node, then the SCU objective in Eq.~\ref{eq:scu} is convex on the simplex. With positive quadratic regularization on the feasible subspace or an active log-barrier term, the minimizer is unique. For non-redundant step pairs, the calibrated weights preserve the joint ordering induced by $\tilde{\mathbf{c}}$ and $\tilde{\mathbf{n}}$ under the stated monotonicity condition; bottleneck nodes with $b_i=1$ receive strictly positive weight.
@@ -144,12 +160,12 @@ This decomposition also prevents a common interpretation error. SC-FMA does not 
 
 Finally, the method keeps route-specific evidence attached to the variant that produced it. QP is reported as the strongest synthetic calibration variant because the controlled benchmark contains proxy labels designed to test structural calibration. Ridge is reported as the closest SC-FMA approximation on PRM800K because it preserves the stored structural ranking signal under the locked split. This variant-specific reporting is deliberate. It avoids retrofitting the strongest synthetic result onto the real-data route and makes the audit boundary reproducible from the stored artifacts.
 
-\begin{center}
-\refstepcounter{figure}\label{fig:ciu-necessity}
+\begin{figure}[pos=ht]
+\centering
 \includegraphics[width=\linewidth]{figures/fig_ciu_necessity.png}
-
-\small\textbf{Figure~\thefigure.} Structural diagnostic motivating calibration. Local utility and graph-level necessity are not interchangeable: many locally useful steps have low measured structural necessity, while some structurally exposed steps do not receive strong local utility signals. SC-FMA uses this mismatch as the reason for calibration, not as evidence for a stronger deployment claim.
-\end{center}
+\caption{Structural diagnostic motivating calibration. Local utility and graph-level necessity are not interchangeable: many locally useful steps have low measured structural necessity, while some structurally exposed steps do not receive strong local utility signals. SC-FMA uses this mismatch as the reason for calibration, not as evidence for a stronger deployment claim.}
+\label{fig:ciu-necessity}
+\end{figure}
 
 \section{Evaluation}
 
@@ -189,7 +205,7 @@ KBS ontology-edge pilot & Fixture-level Countries-KG diagnostic & Demonstrates i
 \end{tabular}
 \end{table}
 
-This route-level accounting is part of the methodology. Without it, a single positive table can easily be misread as evidence for a broader system. SC-FMA is intentionally reported as a calibration and audit-prioritization contribution. It is not reported as a universal process-supervision replacement, a production workflow, or a task-success result. The paper therefore keeps the strongest language attached to the synthetic calibration result and the PRM800K step-ranking result, reports the MuSiQue route only as a feasibility demonstration with explicit label--feature homology caveats, and preserves weaker language for KBS deployment pathways.
+The route-level accounting in Table~\ref{tab:evidence-routes} is part of the methodology. Without it, a single positive table can easily be misread as evidence for a broader system. SC-FMA is intentionally reported as a calibration and audit-prioritization contribution. It is not reported as a universal process-supervision replacement, a production workflow, or a task-success result. The paper therefore keeps the strongest language attached to the synthetic calibration result and the PRM800K step-ranking result, reports the MuSiQue route only as a feasibility demonstration with explicit label--feature homology caveats, and preserves weaker language for KBS deployment pathways.
 
 The distinction also affects how negative or downgraded results are interpreted. The PRM800K variant comparison does not invalidate the SCU objective; it shows that the full QP can be too aggressive when the base fidelity signal already aligns well with annotation ordering. The failed task-specific routes do not invalidate the PRM800K audit-prioritization result; they bound it. This conservative reporting style is important for a methodology paper because the contribution is not a single leaderboard number. It is a reproducible way to combine local and structural evidence while preserving the limits of each evidence source.
 

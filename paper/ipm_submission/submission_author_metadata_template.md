@@ -11,7 +11,7 @@ Purpose: record the author and statement metadata inserted into the final Inform
 
 | Order | Full name | Email | Affiliation number(s) | Corresponding author? |
 |---:|---|---|---|---|
-| 1 | Haoran Ma | mahaoran0000@foamail.com | 1 | No |
+| 1 | Haoran Ma | mahaoran0000@foxmail.com | 1 | No |
 | 2 | Ningning Wang | wangningning@bistu.edu.cn | 1, 2 | Yes |
 
 ## Affiliations
