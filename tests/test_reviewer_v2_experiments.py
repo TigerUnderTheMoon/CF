@@ -68,12 +68,17 @@ def test_graph_construction_ablation_fixture_outputs_reports(tmp_path: Path) -> 
     report = load_report(output_dir, "graph_construction_ablation.json")
     assert_common_report_fields(report, output_dir, "mechanism_ablation")
     assert set(report["variants"]) == {
-        "full_tfidf",
+        "tfidf_topical",
         "temporal_only",
         "jaccard_topical",
+        "embedding_topical",
         "shuffled_topical",
     }
     for metrics in report["variants"].values():
+        assert metrics["status"] in {"ok", "blocked"}
+        if metrics["status"] == "blocked":
+            assert metrics["blocked_reason"]
+            continue
         assert {
             "spearman",
             "kendall",
@@ -86,10 +91,96 @@ def test_graph_construction_ablation_fixture_outputs_reports(tmp_path: Path) -> 
             "bridge_node_fraction",
             "influence_depth",
         } <= set(metrics)
+    embedding = report["variants"]["embedding_topical"]
+    assert embedding["status"] == "ok"
+    assert embedding["embedding_model"] == "fixture-hashed-embedding"
+    assert embedding["embedding_dimension"] == 384
+    assert "embedding_topical" in report["graph_constructor_metadata"]
 
     md_path = output_dir / "graph_construction_ablation.md"
     assert md_path.exists()
-    assert "Graph Construction Ablation" in md_path.read_text(encoding="utf-8")
+    markdown = md_path.read_text(encoding="utf-8")
+    assert "Graph Construction Ablation" in markdown
+    assert "validated_kbs_workflow=false" in markdown
+    assert "human_efficiency_claim=false" in markdown
+
+
+def test_graph_construction_ablation_embedding_blocked_is_explicit(
+    tmp_path: Path,
+) -> None:
+    output_dir = tmp_path / "graph_construction_ablation_blocked"
+    result = run_script(
+        "run_graph_construction_ablation.py",
+        output_dir,
+        "--fixture",
+        "--fixture-size",
+        "12",
+        "--embedding-backend",
+        "blocked",
+    )
+    assert result.returncode == 0, result.stderr + result.stdout
+
+    report = load_report(output_dir, "graph_construction_ablation.json")
+    embedding = report["variants"]["embedding_topical"]
+    assert embedding["status"] == "blocked"
+    assert "blocked_reason" in embedding
+    assert "fallback" not in embedding.get("blocked_reason", "").lower()
+
+
+def test_audit_card_auto_validation_fixture_outputs_oracle_ir_metrics(
+    tmp_path: Path,
+) -> None:
+    output_dir = tmp_path / "audit_card_auto_validation"
+    result = run_script(
+        "run_audit_card_auto_validation.py",
+        output_dir,
+        "--fixture",
+        "--fixture-size",
+        "80",
+        "--bootstrap-samples",
+        "100",
+    )
+    assert result.returncode == 0, result.stderr + result.stdout
+
+    report = load_report(output_dir, "audit_card_auto_validation.json")
+    assert_common_report_fields(report, output_dir, "oracle_auto_audit_validation")
+    assert report["human_subjects"] is False
+    assert report["human_efficiency_claim"] is False
+    assert report["validated_kbs_workflow"] is False
+    assert report["experiment"] == "audit_card_auto_validation"
+    assert set(report["targets"]) == {
+        "bottleneck_protection",
+        "redundancy_consolidation",
+        "weak_utility_anchor",
+        "structural_over_correction",
+    }
+    assert set(report["methods"]) == {"w_struct_only", "scfma_decomposition"}
+    for method in report["methods"].values():
+        assert {
+            "mean_recall_at_budget",
+            "mean_ndcg_at_budget",
+            "mean_mrr",
+            "mean_top1_failure_mode_hit",
+            "mean_inspection_cost_proxy",
+            "bootstrap_ci",
+        } <= set(method)
+    assert report["available_fields"]["w_struct_only"] == ["w_struct_scalar"]
+    assert {
+        "fidelity",
+        "necessity",
+        "redundancy",
+        "bottleneck",
+        "recommended_action",
+    } <= set(report["available_fields"]["scfma_decomposition"])
+
+    md_path = output_dir / "audit_card_auto_validation.md"
+    csv_path = output_dir / "audit_card_auto_validation.csv"
+    assert md_path.exists()
+    assert csv_path.exists()
+    markdown = md_path.read_text(encoding="utf-8")
+    assert "Oracle-based Auto Audit-Target Validation" in markdown
+    assert "human_subjects=false" in markdown
+    assert "human_efficiency_claim=false" in markdown
 
 
 def test_scu_component_contribution_fixture_outputs_multiseed_table(tmp_path: Path) -> None:

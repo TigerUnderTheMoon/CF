@@ -32,6 +32,7 @@ from fma.eval.structural_attribution import (  # noqa: E402
 )
 from fma.graph.build_reflection_graph import build_reflection_graphs  # noqa: E402
 from fma.graph.reflection_graph import ReflectionGraph  # noqa: E402
+from fma.graph.similarity import TextSimilarity  # noqa: E402
 from fma.io import load_records  # noqa: E402
 from reviewer_v2_common import (  # noqa: E402
     DEFAULT_OUTPUT_ROOT,
@@ -50,6 +51,7 @@ from reviewer_v2_common import (  # noqa: E402
 DEFAULT_OUTPUT_DIR = DEFAULT_OUTPUT_ROOT / "graph_construction_ablation"
 DEFAULT_TRACE_PATH = PROJECT_ROOT / "data" / "traces" / "synthetic_100x8.json"
 DEFAULT_NECESSITY_PATH = PROJECT_ROOT / "outputs" / "necessity_scores.jsonl"
+DEFAULT_EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 
 
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -61,6 +63,13 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--fixture-size", type=int, default=40)
     parser.add_argument("--similarity-threshold", type=float, default=0.15)
     parser.add_argument("--max-long-range", type=int, default=5)
+    parser.add_argument(
+        "--embedding-backend",
+        choices=["sentence-transformers", "fixture", "blocked"],
+        default=None,
+    )
+    parser.add_argument("--embedding-model", default=DEFAULT_EMBEDDING_MODEL)
+    parser.add_argument("--allow-embedding-download", action="store_true")
     return parser.parse_args(argv)
 
 
@@ -78,38 +87,67 @@ def main(argv: Sequence[str] | None = None) -> None:
         necessity_records = load_records(args.necessity_scores)
         source_artifacts = [str(args.traces), str(args.necessity_scores)]
 
+    embedding_backend = args.embedding_backend or (
+        "fixture" if args.fixture else "sentence-transformers"
+    )
+
+    graph_constructor_metadata: dict[str, Any] = {}
     variants = {
-        "full_tfidf": _build_variant(
+        "tfidf_topical": _ok_variant(
             traces,
             necessity_records,
             method="tfidf",
             threshold=args.similarity_threshold,
             max_long_range=args.max_long_range,
+            metadata=graph_constructor_metadata,
         ),
-        "temporal_only": _build_variant(
+        "temporal_only": _ok_variant(
             traces,
             necessity_records,
             method=None,
             threshold=args.similarity_threshold,
             max_long_range=1,
+            metadata=graph_constructor_metadata,
         ),
-        "jaccard_topical": _build_variant(
+        "jaccard_topical": _ok_variant(
             traces,
             necessity_records,
             method="jaccard",
             threshold=args.similarity_threshold,
             max_long_range=args.max_long_range,
+            metadata=graph_constructor_metadata,
         ),
     }
+    embedding_variant = _embedding_variant(
+        traces,
+        necessity_records,
+        threshold=args.similarity_threshold,
+        max_long_range=args.max_long_range,
+        embedding_backend=embedding_backend,
+        embedding_model=args.embedding_model,
+        allow_embedding_download=args.allow_embedding_download,
+        metadata=graph_constructor_metadata,
+    )
+    variants["embedding_topical"] = embedding_variant
     variants["shuffled_topical"] = _shuffle_topical_edges(
-        variants["full_tfidf"],
+        variants["tfidf_topical"]["graphs"],
         seeds=SEED_LIST,
     )
 
-    variant_metrics = {
-        name: _summarize_graphs(graphs, necessity_records)
-        for name, graphs in variants.items()
-    }
+    variant_metrics = {}
+    for name, variant in variants.items():
+        if isinstance(variant, Mapping) and variant.get("status") == "blocked":
+            variant_metrics[name] = {
+                "status": "blocked",
+                "blocked_reason": str(variant["blocked_reason"]),
+                **dict(variant.get("metadata", {})),
+            }
+            continue
+        graphs = variant["graphs"] if isinstance(variant, Mapping) else variant
+        metrics = _summarize_graphs(graphs, necessity_records)
+        metrics["status"] = "ok"
+        metrics.update(dict(graph_constructor_metadata.get(name, {})))
+        variant_metrics[name] = metrics
     report = {
         **common_metadata(
             output_dir=args.output_dir,
@@ -121,6 +159,13 @@ def main(argv: Sequence[str] | None = None) -> None:
         "n_steps": sum(len(trace.get("reflection_chain", [])) for trace in traces),
         "elapsed_seconds": timer.elapsed(),
         "variants": variant_metrics,
+        "graph_constructor_metadata": graph_constructor_metadata,
+        "boundary_header": {
+            "validated_kbs_workflow": False,
+            "human_subjects": False,
+            "human_efficiency_claim": False,
+            "embedding_model": args.embedding_model,
+        },
         "interpretation_rule": (
             "Ranking metrics answer whether graph construction changes ordering; "
             "structural diagnostics answer how necessity, redundancy, and "
@@ -137,21 +182,100 @@ def main(argv: Sequence[str] | None = None) -> None:
     print(f"Wrote {args.output_dir / 'graph_construction_ablation.md'}")
 
 
-def _build_variant(
+def _ok_variant(
     traces: Sequence[Mapping[str, Any]],
     necessity_records: Sequence[Mapping[str, Any]],
     *,
     method: str | None,
     threshold: float,
     max_long_range: int,
-) -> list[ReflectionGraph]:
-    return build_reflection_graphs(
+    metadata: dict[str, Any],
+) -> dict[str, Any]:
+    graphs = build_reflection_graphs(
         traces,
         necessity_records,
         similarity_method=method,
         similarity_threshold=threshold,
         max_long_range=max_long_range,
     )
+    name = "temporal_only" if method is None else f"{method}_topical"
+    metadata[name] = {"method": method or "temporal"}
+    return {"status": "ok", "graphs": graphs}
+
+
+def _embedding_variant(
+    traces: Sequence[Mapping[str, Any]],
+    necessity_records: Sequence[Mapping[str, Any]],
+    *,
+    threshold: float,
+    max_long_range: int,
+    embedding_backend: str,
+    embedding_model: str,
+    allow_embedding_download: bool,
+    metadata: dict[str, Any],
+) -> dict[str, Any]:
+    try:
+        graphs = build_reflection_graphs(
+            traces,
+            necessity_records,
+            similarity_method="embedding",
+            similarity_threshold=threshold,
+            max_long_range=max_long_range,
+            embedding_backend=embedding_backend,
+            embedding_model=embedding_model,
+            allow_embedding_download=allow_embedding_download,
+        )
+        meta = _embedding_metadata(
+            traces,
+            embedding_backend=embedding_backend,
+            embedding_model=embedding_model,
+            allow_embedding_download=allow_embedding_download,
+        )
+        metadata["embedding_topical"] = meta
+        return {"status": "ok", "graphs": graphs}
+    except Exception as exc:
+        meta = {
+            "method": "embedding",
+            "status": "blocked",
+            "embedding_backend": embedding_backend,
+            "embedding_model": embedding_model,
+            "embedding_dimension": 384 if embedding_backend == "fixture" else None,
+            "embedding_package_version": None,
+            "embedding_cache_path": None,
+            "allow_embedding_download": allow_embedding_download,
+        }
+        metadata["embedding_topical"] = meta
+        return {
+            "status": "blocked",
+            "blocked_reason": (
+                f"embedding_topical unavailable: {type(exc).__name__}: {exc}; "
+                "lexical substitutes were not used"
+            ),
+            "metadata": meta,
+        }
+
+
+def _embedding_metadata(
+    traces: Sequence[Mapping[str, Any]],
+    *,
+    embedding_backend: str,
+    embedding_model: str,
+    allow_embedding_download: bool,
+) -> dict[str, Any]:
+    texts = [
+        str(step.get("text") or step.get("content") or "")
+        for trace in traces
+        for step in trace.get("reflection_chain", [])
+        if isinstance(step, Mapping)
+    ]
+    sim = TextSimilarity(
+        method="embedding",
+        embedding_backend=embedding_backend,
+        embedding_model=embedding_model,
+        allow_embedding_download=allow_embedding_download,
+    )
+    sim.fit_corpus(texts)
+    return sim.metadata()
 
 
 def _shuffle_topical_edges(graphs: Sequence[ReflectionGraph], *, seeds: Sequence[int]) -> list[ReflectionGraph]:
@@ -277,6 +401,11 @@ def _render_markdown(report: Mapping[str, Any]) -> list[str]:
         "|---|---:|---:|---:|---:|---:|---:|",
     ]
     for name, metrics in report["variants"].items():
+        if metrics.get("status") == "blocked":
+            lines.append(
+                f"| `{name}` | blocked | blocked | blocked | blocked | blocked | blocked |"
+            )
+            continue
         lines.append(
             f"| `{name}` | {metrics['spearman']:.4f} | {metrics['kendall']:.4f} | "
             f"{metrics['structural_faithfulness_pearson']:.4f} | "
@@ -285,6 +414,19 @@ def _render_markdown(report: Mapping[str, Any]) -> list[str]:
         )
     lines.extend(
         [
+            "",
+            "## Boundary Header",
+            "",
+            "- validated_kbs_workflow=false",
+            "- human_subjects=false",
+            "- human_efficiency_claim=false",
+            f"- embedding_model={report['boundary_header']['embedding_model']}",
+            "",
+            "## Graph Constructor Metadata",
+            "",
+            "```json",
+            json.dumps(report["graph_constructor_metadata"], indent=2, sort_keys=True),
+            "```",
             "",
             "## Interpretation Boundary",
             "",

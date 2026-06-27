@@ -21,6 +21,9 @@ def build_reflection_graphs(
     similarity_threshold: float = 0.15,
     prune_threshold: float = 0.0,
     max_long_range: int = 5,
+    embedding_backend: str = "sentence-transformers",
+    embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2",
+    allow_embedding_download: bool = False,
 ) -> list[ReflectionGraph]:
     """Build one acyclic reflection graph per trace.
 
@@ -30,7 +33,13 @@ def build_reflection_graphs(
     instead of only label-pattern matching.
     """
     necessity_by_key = _necessity_by_key(necessity_records or [])
-    similarity = _fit_similarity(traces, similarity_method)
+    similarity = _fit_similarity(
+        traces,
+        similarity_method,
+        embedding_backend=embedding_backend,
+        embedding_model=embedding_model,
+        allow_embedding_download=allow_embedding_download,
+    )
     graphs: list[ReflectionGraph] = []
     for index, trace in enumerate(traces):
         graph = build_reflection_graph(
@@ -167,6 +176,10 @@ def node_id_for(trace_id: str, step_index: int) -> str:
 def _fit_similarity(
     traces: Sequence[Mapping[str, Any]],
     method: str | None,
+    *,
+    embedding_backend: str = "sentence-transformers",
+    embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2",
+    allow_embedding_download: bool = False,
 ) -> TextSimilarity | None:
     if method is None:
         return None
@@ -176,7 +189,12 @@ def _fit_similarity(
             text = _step_content(step)
             if text:
                 all_texts.append(text)
-    sim = TextSimilarity(method=method)
+    sim = TextSimilarity(
+        method=method,
+        embedding_backend=embedding_backend,
+        embedding_model=embedding_model,
+        allow_embedding_download=allow_embedding_download,
+    )
     sim.fit_corpus(all_texts)
     return sim
 

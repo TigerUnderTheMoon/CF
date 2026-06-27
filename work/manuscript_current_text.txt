@@ -1,0 +1,1502 @@
+Structurally-Calibrated Functional Attribution for Audit
+Prioritization in Knowledge-Intensive Reasoning
+Haoran Maa , Ningning Wanga,b,∗
+a College of Management Science and Engineering, Beijing Information Science and Technology University, Beijing, 102200, China
+b Institute of Information Systems, ESG Intelligent Application Innovation Research Center, Beijing, 102200, China
+
+ARTICLE INFO
+
+ABSTRACT
+
+Keywords:
+structural calibration
+functional attribution
+process supervision
+convex optimization
+audit prioritization
+knowledge-based systems
+
+This paper presents Structurally-Calibrated Functional Attribution (SC-FMA), a methodology
+for explainable audit prioritization in knowledge-intensive reasoning traces. The goal is transparent audit triage under a bounded review budget: preserve a supplied utility or proxy-fidelity
+signal when it is strong, while decomposing each priority decision into fidelity, graph necessity,
+redundancy, and bottleneck components that a reviewer can inspect. SC-FMA implements
+this idea through a Structurally-Calibrated Utility (SCU) objective, a convex program that
+balances fidelity to the supplied anchor, graph diagnostic alignment, and redundancy/bottleneck
+regularization and yields a unique calibrated weight vector under the stated regularization
+conditions. On a controlled synthetic step-importance benchmark, the QP variant shows the
+intended calibration behavior in a high-structure-conflict setting, increasing mean Spearman
+correlation with proxy step labels from 0.483 for raw CIU to 0.597. On PRM800K processsupervision annotations (4,417 samples and 34,219 labeled steps under a frozen hash split),
+the stored w_struct ranking is the strongest direct ranker (Spearman 0.611), and SC-FMA
+Ridge closely preserves this signal (0.604) while exposing decomposable priority rules for
+audit. An oracle-based automatic audit-target validation treats failure-mode localization as a
+retrieval problem and shows that SC-FMA decomposition retrieves rule-defined bottleneck,
+redundancy, weak-anchor, and structural-overcorrection targets more effectively than a scalaronly w_struct view (mean Recall@25% 0.699 versus 0.235; mean NDCG@25% 0.978 versus
+0.353). A Sentence-BERT graph-construction ablation further confirms that the graph layer is
+replaceable at the interface level. Together, these results support SC-FMA as a signal-preserving,
+decomposable calibration layer for transparent audit triage in knowledge-intensive reasoning.
+
+1. Introduction
+Knowledge-intensive reasoning systems increasingly leave inspectable traces: a rule fires, an entity path is checked,
+a retrieval result is inspected, or a reflective language-agent step critiques a partial answer. These intermediate steps
+are useful for review only when a curator can decide which ones deserve attention under a limited audit budget. A
+flat score can rank steps, but it rarely explains whether a high-priority step is locally reliable, structurally necessary,
+redundant with neighboring evidence, or a bottleneck for downstream reasoning.
+This paper studies that problem as intervention-based functional attribution for reflective cognition dynamics. The
+central question is how a supplied utility or proxy-fidelity signal should be calibrated when observable trace structure
+reveals additional audit roles. In knowledge-based systems (KBS), this question is practical: rule chains, retrievalaugmented workflows, and KG-assisted reasoning often expose intermediate evidence, but the review bottleneck is
+deciding which trace elements to inspect, consolidate, protect, or repair first.
+We propose Structurally-Calibrated Functional Attribution (SC-FMA) as a structural calibration layer for this
+setting. SC-FMA keeps a strong fidelity signal available when it is informative, while adding graph necessity,
+redundancy, and bottleneck diagnostics that make the priority decision inspectable. The Structurally-Calibrated Utility
+(SCU) objective implements this calibration as a convex weighting problem over process steps. The resulting weight
+is not only a rank; it is an audit record that separates the question “which step comes first?” from the question “what
+should a reviewer check about this step?”
+The contributions are: (1) an explainable audit formulation for bounded review of reasoning traces; (2) SC-FMA,
+a compact method for converting fidelity or utility inputs into structurally calibrated verification-step weights; (3)
+∗ Corresponding author.
+
+mahaoran0000@foxmail.com (H. Ma); wangningning@bistu.edu.cn (N. Wang)
+
+ORCID (s):
+
+Ma and Wang: Preprint submitted to Elsevier
+
+Page 1
+
+Structurally-Calibrated Functional Attribution
+
+the SCU objective with formal guarantees and decomposable audit fields; and (4) evidence across controlled synthetic
+calibration, PRM800K step-label ranking, oracle-based audit-target validation, and graph-construction ablation. Across
+these routes, the main methodological value is that SC-FMA preserves useful ranking signal while exposing the
+structural reasons behind the priority order. Section 5 concentrates claim boundaries and future validation directions.
+Figure 1 summarizes the paper-level workflow. Observable traces are converted into audit graphs, SC-FMA applies
+the SCU calibration objective to combine fidelity and structural diagnostics, and the calibrated weights produce both
+a bounded review queue and an Audit Card for each selected step.
+
+Figure 1: Overall SC-FMA audit-prioritization framework. The pipeline follows Trace → Graph Construction → SC-FMA
+(SCU) → Calibration → Audit Queue → Audit Card. Each selected step is reported with fidelity, structural necessity,
+redundancy, bottleneck status, and a recommended review action.
+
+2. Related Work
+2.1. Attribution and Explanation
+Attribution research provides the first foundation for SC-FMA: it asks which parts of an input, computation, or
+structure matter for a decision. Network robustness and graph-explanation work show that importance can be nonlocal, redundant, or bottleneck-like, while input-level attribution and rationale benchmarks assign or evaluate salience
+over features, spans, or tokens [1, 9, 19, 21, 25, 34]. User-centric XAI further emphasizes that an explanation is useful
+only relative to a consumer and decision context [13].
+The limitation for audit triage is that salience alone does not specify the review action. A reviewer needs to
+know whether a step is locally supported, duplicated by nearby evidence, exposed as a downstream dependency, or
+symptomatic of a weak upstream utility signal. Entailment-tree and counterfactual explanation methods already move
+explanation toward intermediate justifications and contrastive evidence [8, 30]; SC-FMA takes the next step needed
+for bounded review by keeping fidelity, necessity, redundancy, and bottleneck roles separate in the audit record.
+
+2.2. Process Supervision and Process Reward Models
+Process supervision provides the second foundation: intermediate steps can be scored directly rather than only
+through final-answer success. PRMs support verifier-guided search and denser supervision, while chain-of-thought,
+self-consistency, tree search, and reflective agents make verification, critique, and revision steps available as scoring
+units [6, 16, 20, 23, 26, 28, 29, 32, 33]. Automated process-labeling and ProcessBench-style evaluations further show
+why step-level signals need realistic distributional checks rather than isolated examples [27, 35].
+These methods supply a natural fidelity source for SC-FMA, but they usually end at a scalar value estimate. A scalar
+can rank steps effectively, yet it cannot explain whether the priority should lead to evidence inspection, redundancy
+consolidation, bottleneck protection, or utility-anchor repair. SC-FMA therefore treats process-supervision outputs as
+inputs to a structural calibration layer rather than as the end of the explanation pipeline.
+
+2.3. Graph-Based and KBS Audit Methods
+Graph-based and KBS methods provide the third foundation: structured intermediate states can be made inspectable. Classical expert systems and cognitive architectures exposed certainty-factor chains, generate-and-test plans,
+Ma and Wang: Preprint submitted to Elsevier
+
+Page 2
+
+Structurally-Calibrated Functional Attribution
+
+problem-space states, or declarative-procedural cycles to review, making auditability a design principle rather than an
+accidental byproduct [2, 4, 14, 17].
+Modern knowledge-enhanced language models, RAG systems, KG-integration pipelines, and ontology-aware
+workflows similarly expose retrieved passages, entity links, triples, relation paths, and constraint checks as potential
+audit objects [5, 7, 10, 11, 15, 22, 31]. The same pressure appears in long-tail KG-augmented question answering
+and engineering-design RAG, where sparse factual support and heterogeneous evidence make exhaustive review
+unrealistic [12, 18, 24]. Across these settings, the problem is not only whether intermediate evidence can be recovered;
+it is how a reviewer should allocate a limited curation budget across that evidence.
+
+2.4. Summary of Research Gap
+Existing work therefore supplies three partial answers: local attribution identifies salient evidence, process
+supervision supplies step-level fidelity, and graph/KBS methods expose structural context. What remains missing is
+a single inspectable priority rule that preserves a useful fidelity signal while decomposing each selected step into
+auditable structural roles. SC-FMA addresses this gap by converting observable traces into graph-aware audit records
+for transparent bounded review.
+
+3. Methodology
+3.1. Formal Problem Definition
+Input. SC-FMA takes an observable reasoning trace 𝑇 = (𝑠1 , … , 𝑠𝑘 ), where each step 𝑠𝑖 is a verification, reflection,
+retrieval, or rule-like operation available for audit. The trace is converted into a graph 𝐺 = (𝑉 , 𝐸) whose nodes
+correspond to steps and whose edges encode temporal adjacency plus optional topical or domain-specific relations.
+The method also receives a utility or fidelity signal 𝑢 over the same steps. This signal may come from local utility
+estimation, a proxy score, or a learned step-ranking model, and SC-FMA treats it as the evidence anchor to be preserved
+when it is informative.
+Output and objective. The output is a calibrated weight vector 𝐰 over trace steps. Sorting by 𝐰 produces an auditprioritized ranking, while the associated fidelity, graph-necessity, redundancy, and bottleneck fields explain why each
+step enters the queue. The objective is therefore to produce a ranked audit record that preserves useful utility signal,
+incorporates observable trace structure, and supports decisions about which steps to inspect, consolidate, protect, or
+repair.
+
+3.2. SCU Objective and Audit Decomposition
+For a trace with 𝑘 reflective or verification steps, let 𝐜̃ ∈ ℝ𝑘 denote the normalized utility or proxy-fidelity input.
+In the PRM800K route, w_struct denotes the frozen 16-feature Ridge regressor used as this fidelity signal. In the
+binary-correctness CIU setting used by the diagnostic pipeline, 𝐜̃ is a trace-level coarse utility anchor: it records how
+a trace-level outcome changes under a documented intervention. Let 𝐧̃ denote normalized structural necessity from
+graph perturbation diagnostics, 𝐑 a redundancy matrix, and 𝐛 a bottleneck indicator.
+SC-FMA computes weights 𝐰 on the probability simplex
+∑
+ = {𝐰 ∈ ℝ𝑘+ ∶
+𝑤𝑖 = 1}
+𝑖
+
+by minimizing the SCU objective:
+̃ 22 + 𝛾 𝐰⊤ 𝐑𝐰 − 𝛿
+𝐿(𝐰) = 𝛼‖𝐰 − 𝐜̃‖22 + 𝛽‖𝐰 − 𝐧‖
+
+∑
+
+𝑏𝑖 log(𝑤𝑖 ).
+
+(1)
+
+𝑖
+
+The four terms encode fidelity to the supplied input, structural alignment, redundancy regularization, and non-zero
+bottleneck regularization. The fidelity anchor consistently provides the dominant optimization signal. The redundancy
+penalty and bottleneck log-barrier mainly act as regularization terms that encourage interpretable and decomposable
+audit reasoning, although their quantitative contribution to ranking metrics is modest under the current evaluation
+setting. Detailed notation, construction rules, algorithms, and proofs are provided in the supplementary material.
+Empirical runtime is reported separately from the asymptotic summaries. In the frozen local artifacts, the
+PRM800K audit-prioritization run over 4,417 traces and 34,219 steps completed in 131.57 s with zero API calls.
+Separately logged graph-construction, SCU component, and failure-taxonomy runs are reported in Appendix B.
+Ma and Wang: Preprint submitted to Elsevier
+
+Page 3
+
+Structurally-Calibrated Functional Attribution
+Table 1
+Asymptotic time complexity for SC-FMA fixed-budget audit. Here 𝑁 is the number of traces, 𝑘 is the number of steps in
+a trace, 𝐿 is text length, 𝑑 is the sparse text-feature dimension, and 𝐼 is the number of QP solver iterations.
+Stage
+
+Input size
+
+Time complexity
+
+Trace feature extraction
+Graph construction
+Redundancy and bottleneck diagnostics
+Ridge calibration
+
+𝑁 traces, 𝑘 steps, text length 𝐿
+𝑘 nodes, sparse TF-IDF features 𝑑
+𝑘 steps, similarity matrix
+𝑘 step feature rows
+
+QP calibration
+Fixed-budget ranking
+
+𝑘 steps, dense constraints
+𝑘 calibrated weights
+
+𝑂(𝑁𝑘𝐿)
+𝑂(𝑘 + 𝑘2 𝑑)
+𝑂(𝑘2 𝑑)
+𝑂(𝑘) after learned coefficients
+𝑂(𝐼𝑘3 ) worst case
+𝑂(𝑘 log 𝑘)
+
+Table 2
+Memory profile for the same pipeline stages. Dense graph quantities are shown for clarity; the implementation uses sparse
+storage where applicable.
+Stage
+
+Memory complexity
+
+Trace feature extraction
+Graph construction
+Redundancy and bottleneck diagnostics
+Ridge calibration
+QP calibration
+Fixed-budget ranking
+
+𝑂(𝑘 + 𝑑) per trace
+𝑂(𝑘2 ) dense; sparse in implementation
+𝑂(𝑘2 )
+𝑂(𝑘)
+𝑂(𝑘2 )
+𝑂(𝑘)
+
+3.3. Trace Representation
+Each trace is represented as an ordered set of verification or reflection steps. The current implementation supports
+spans derived from structured reflection tags and free-text chain-of-thought segmentation, but the manuscript treats the
+segmentation as an observed input rather than as a solved NLP problem. A node 𝑣𝑖 corresponds to one step. Temporal
+edges connect adjacent steps, while topical edges connect steps whose TF-IDF similarity exceeds the configured
+threshold. This temporal-plus-topical graph is the default SCU instantiation for text-only traces: it supplies auditable
+structural decomposition. A supplementary graph-construction ablation also replaces TF-IDF topical edges with
+Sentence-BERT embeddings (sentence-transformers/all-MiniLM-L6-v2, 384 dimensions). The embedding
+variant slightly improves the diagnostic structural-necessity Spearman score over the TF-IDF default (0.0615 versus
+0.0515), while keeping the claim at the graph-interface level. The resulting graph is a directed acyclic approximation
+of an observable reasoning chain and serves as a reproducible audit graph.
+We treat graph construction as an interface. The TF-IDF temporal-topical graph is the default implementation for
+text-only traces, not the limit of the framework. The graph constructor is intentionally modular; richer domain-specific
+graph backends can replace the default implementation without modifying the SCU objective. Semantic embeddings,
+entity links, knowledge graphs, ontologies, rule-dependency DAGs, and data-lineage graphs are examples of such
+backends. The Countries-KG pilot (Section 4.4) and embedding ablation demonstrate this substitutability as diagnostic
+extension paths.
+
+3.4. Structural Necessity, Redundancy, and Bottlenecks
+Structural necessity measures how much graph support is lost when a node is perturbed under a documented
+graph-level operation. The implementation uses PRUNE, CASCADE, and BYPASS diagnostics. PRUNE removes
+direct node support. CASCADE propagates disruption to downstream neighbors. BYPASS asks whether alternative
+paths can substitute for the removed step. The final necessity input 𝐧̃ is the normalized summary of these observable
+graph diagnostics.
+The redundancy matrix 𝐑 captures pairwise similarity between steps. High redundancy means that two steps appear
+to serve overlapping functions in the observed trace. The penalty 𝐰⊤ 𝐑𝐰 discourages assigning high weight to many
+mutually redundant steps at once. In the current evidence package, this term is best interpreted as a regularization and
+Ma and Wang: Preprint submitted to Elsevier
+
+Page 4
+
+Structurally-Calibrated Functional Attribution
+
+decomposition term: it records a possible duplicated-audit allocation pressure, but its direct contribution to ranking
+metrics is modest.
+Bottleneck detection addresses the opposite diagnostic pattern. Some nodes are not redundant, and their downstream exposure can make them useful to inspect even if the supplied fidelity signal is modest. The log-barrier term
+prevents identified bottleneck nodes from being assigned near-zero weight. In KBS terms, this is analogous to keeping
+a single point of failure visible to the reviewer. The term enforces a conservative audit regularizer when observed
+structure marks the node as difficult to replace.
+Figure 2 illustrates the CIU-necessity mismatch. Figure 3 compares the three perturbation modes, and Figure 4
+shows the resilience curves.
+
+Figure 2: Structural diagnostic motivating calibration. Local utility and graph-level necessity are not interchangeable: many
+locally useful steps have low measured structural necessity, while some structurally exposed steps do not receive strong
+local utility signals. SC-FMA uses this mismatch as the reason for calibration.
+
+Figure 3: Structural diagnostic summary by perturbation mode. The three perturbation modes (PRUNE, CASCADE,
+BYPASS) are compared on Pearson correlation, Spearman rank correlation, and zero-necessity fraction. Error bars indicate
+95% bootstrap confidence intervals. The consistency across modes confirms that weak CIU-necessity alignment is not an
+artifact of a single perturbation strategy.
+
+Theorem 3.1 (SCU well-posedness). If 𝛼 + 𝛽 > 0 and the redundancy matrix is positive semidefinite, or if 𝛿 > 0
+for at least one bottleneck node, then the SCU objective in Eq. 1 is convex on the simplex. With positive quadratic
+regularization on the feasible subspace or an active log-barrier term, the minimizer is unique. For non-redundant step
+pairs, the calibrated weights preserve the joint ordering induced by 𝐜̃ and 𝐧̃ under the stated monotonicity condition;
+bottleneck nodes with 𝑏𝑖 = 1 receive strictly positive weight.
+We implement three variants as implementations of the same calibration framework, not as competing claims that
+̃
+a single optimizer is universally best. SC-FMA Ridge uses a closed-form softmax over a linear combination of 𝐜̃ and 𝐧.
+SC-FMA QP solves the full constrained program with redundancy and bottleneck terms. SC-FMA Projection applies
+a fast topology-constrained simplex projection. Ridge is the recommended default when the supplied fidelity signal
+is already strong; QP is reserved for controlled or high-structure-conflict settings where redundancy and bottleneck
+pressure should be allowed to reallocate review budget.
+Ma and Wang: Preprint submitted to Elsevier
+
+Page 5
+
+Structurally-Calibrated Functional Attribution
+
+Ridge is useful when the fidelity signal is already strong and the main goal is to preserve ordering while adding
+audit decomposition. QP is useful when the graph contains meaningful redundancy and bottleneck structure, because
+it can trade off all four terms directly. Projection is computationally simple but can be brittle when the structural signal
+conflicts with the fidelity input. This variant-level behavior is central to the real-data interpretation: the synthetic
+benchmark favors QP because it was designed to test structural conflict, whereas the PRM800K locked split favors the
+base w_struct signal and the Ridge approximation.
+The calibrated weights are intended to be inspectable rather than opaque. For each selected step, the implementation
+can report whether the score was driven mainly by fidelity, graph necessity, redundancy regularization, or bottleneck
+regularization. This decomposition is important for KBS use because different actions follow from different reasons. A
+high-fidelity step may be a strong candidate for positive process supervision. A high-necessity step may be a candidate
+for manual review even when its local utility estimate is modest. A highly redundant group may indicate that several
+checks can be audited together rather than separately. A bottleneck step may deserve conservative retention in the
+review queue because later reasoning depends on it.
+This decomposition also prevents a common interpretation error. SC-FMA does not say that the largest weight is
+the only important step in a trace. The simplex constraint represents a review budget, so increasing one step’s weight
+necessarily decreases another step’s share of attention. The output is therefore best read as a priority allocation under
+a fixed budget. When two steps are redundant, assigning both high weight is usually wasteful; when a step is isolated
+and downstream-exposed, assigning it near-zero weight can hide a fragile part of the trace. The SCU objective encodes
+these two pressures explicitly.
+Finally, the method keeps each evidence source attached to the variant that produced it. QP is reported as
+the strongest synthetic calibration variant because the controlled benchmark contains proxy labels designed to test
+structural calibration. Ridge is reported as the closest SC-FMA approximation on PRM800K because it preserves the
+stored structural ranking signal under the locked split. This variant-specific reporting avoids retrofitting the strongest
+synthetic result onto the real-data route and keeps the audit boundary reproducible from the stored artifacts.
+
+3.5. Why Structure Adds Value
+The structural components are not designed to outperform a strong fidelity baseline in every setting. Their role is to
+preserve the useful ordering supplied by the fidelity signal when that signal is strong, while adding audit information
+that the scalar alone cannot expose: whether a step is locally well supported, structurally exposed, redundant with
+nearby checks, or protected as a bottleneck.
+A fidelity-only scalar answers the ranking question but collapses the rationale for that ranking. A reviewer cannot
+distinguish whether a high-ranked step should be followed as local evidence, inspected as a downstream gatekeeper, or
+consolidated with a redundant group. These distinctions imply different audit actions. SC-FMA therefore changes the
+interpretability of the priority order even when the order itself changes only modestly: the contribution is preservation
+with decomposition.
+
+4. Evaluation
+4.1. Data and Baselines
+The synthetic calibration benchmark contains 200 traces (approximately 1,000 reflective steps, varying slightly by
+seed) generated with five fixed seeds (42, 123, 456, 789, 1024) to report multi-seed variance. It is used for method
+development, calibration, ablation, and error analysis. Controlled proxy step labels combine local correctness, lexical
+diversity, position, and graph-derived necessity. The positive real-data routes use PRM800K process-supervision
+annotations under the frozen v3.6/v3.8 hash split (4,417 samples and 34,219 labeled steps). MuSiQue is used
+as a constructed-label feasibility demonstration with zero API calls, because its labels and scoring features share
+step_type; full metrics are reported in the supplementary material. WebQSP trace-audit artifacts are reported as
+a supplementary diagnostic on executable fixed-schema traces (494 train traces for development and 1,627 test traces
+for the locked diagnostic). GSM8K/HotpotQA task-specific replay and downstream filtering routes are retained as
+failed or incomplete validation attempts.
+Baselines include raw CIU, gradient attribution, attention rollout, Monte Carlo Shapley, token surprisal, step
+entropy, span length, relative position, and random ranking. The primary metric is Spearman rank correlation; Kendall
+𝜏, NDCG@3, NDCG@5, and fixed-budget audit-prioritization metrics are reported where relevant. Hyperparameter
+grids, additional ablations, error modes, and efficiency measurements are moved to the supplementary material.
+Ma and Wang: Preprint submitted to Elsevier
+
+Page 6
+
+Structurally-Calibrated Functional Attribution
+
+Figure 4: Resilience curves under ordered node removal. Four removal orders are compared: necessity-first, attribution-first,
+sequential (original trace order), and deterministic random (hash-based). The 𝑦-axis shows remaining structural necessity
+fraction; the 𝑥-axis is the fraction of nodes removed. AUC values are annotated. The necessity-first curve degrades sharply
+(AUC 0.1488), while attribution-first (AUC 0.4761) is close to random (AUC 0.5098), showing that structural criticality
+requires graph-level diagnostics beyond local CIU.
+
+The synthetic benchmark is designed to test calibration behavior rather than to mimic all properties of natural
+reasoning. CIU values are skewed, necessity is zero-inflated, and redundancy is block structured. These choices reflect
+the diagnostic pattern that motivated SC-FMA: local utility can be dense, while structural necessity is sparse. The
+controlled proxy label is deliberately not identical to any SCU input. It combines correctness, lexical diversity, position,
+and structural information so that a method cannot win by copying one input vector. The supplementary material reports
+cross-correlations between proxy-label components and SCU inputs to document this separation.
+For real-data evidence, PRM800K is treated as a process-annotation distribution. The locked v3.6 split evaluates
+how well step-weighting signals rank annotated steps. The v3.8 frozen PRM route provides in-distribution baseline
+context using prefix-sequence reward probabilities. Because PRM800K can overlap with public PRM training
+distributions, Section 5 handles the scope of PRM-training and best-of-𝑁 extensions.
+All reported comparisons are deterministic under the archived configs. The synthetic benchmark uses five fixed
+seeds (42, 123, 456, 789, 1024) with variance reported as ± standard deviation. PRM800K reports use the frozen hash
+split and the stored locked artifacts. The MuSiQue route is separated because the label and feature construction share
+step_type. The main text reports bootstrap confidence intervals and paired Wilcoxon tests as descriptive evidence
+for ranking differences. Extended Holm-Bonferroni, Friedman/Nemenyi, and effect-size analyses are retained in the
+supplementary material, while Section 5 centralizes route boundaries.
+
+Ma and Wang: Preprint submitted to Elsevier
+
+Page 7
+
+Structurally-Calibrated Functional Attribution
+Table 3
+Evidence-route accounting. Each route has a separate manuscript interpretation.
+Route
+
+Primary artifact
+
+Allowed interpretation
+
+Controlled synthetic benchmark
+PRM800K locked split
+
+200 traces, approximately 1,000
+steps, five fixed seeds
+4,417 samples, 34,219 labeled
+steps
+Supplementary details only
+
+Tests calibration behavior and ablations under proxy labels.
+Supports PRM800K-like step-label ranking
+and audit-prioritization context.
+Feasibility demonstration; zero API calls;
+labels and features share a step-type source.
+Supplementary diagnostic; fixed-schema KG
+traces expose linear separability and metric
+artifacts.
+Provides in-distribution baseline context.
+No positive validation claim; retained only
+for transparency.
+Demonstrates implementation feasibility for
+typed edges.
+
+MuSiQue
+knowledge-audit
+route
+WebQSP trace-audit route
+
+Frozen PRM comparison
+GSM8K/HotpotQA
+replay
+routes
+KBS ontology-edge pilot
+
+494 train traces; 1,627 locked
+test traces
+Prefix-sequence reward scores
+Failed or blocked route artifacts
+Fixture-level Countries-KG diagnostic
+
+4.2. Evidence Routes and Claim Accounting
+The evaluation is organized by evidence route rather than by a single aggregate score. This matters because the same
+method can have different evidential status depending on how the data were produced. The synthetic route is controlled
+and therefore appropriate for testing whether the SCU objective behaves as intended. The PRM800K route is naturally
+annotated and therefore appropriate for real step-label ranking within that annotation distribution. The MuSiQue route
+is constructed from decomposition evidence-chain traces and is appropriate as a feasibility demonstration because its
+audit labels and scoring features share a common step-type source. The WebQSP route is retained as a supplementary
+diagnostic for deterministic reasoning-trace replay: it shows that a fixed six-step trace schema can make replay-derived
+importance largely separable by step role and position, which is useful for detecting evaluation confounds. The frozen
+PRM route supplies baseline context. The GSM8K/HotpotQA routes are listed as failed or incomplete validation
+attempts.
+The route-level accounting in Table 3 is part of the methodology. It keeps each result attached to the evidence route
+that produced it: synthetic calibration supports objective behavior, PRM800K supports step-label ranking and fixedbudget audit context, and diagnostic routes motivate graph-interface and trace-audit extensions. Section 5 concentrates
+the boundary conditions.
+The distinction also affects how negative or downgraded results are interpreted. The PRM800K variant comparison
+shows that the full QP can be too aggressive when the base fidelity signal already aligns well with annotation ordering.
+The contribution is therefore not a single leaderboard number; it is a reproducible way to combine local and structural
+evidence while keeping each route tied to its data-generating conditions.
+
+4.3. Synthetic Step-Importance Ranking
+Table 4 shows the intended calibration behavior on the controlled synthetic benchmark: SC-FMA QP aligns more
+closely with proxy step labels than raw CIU, with a Spearman 𝜌 gap of 0.114. The result supports the methodological
+claim that structural calibration can correct local-utility weights when the benchmark provides controlled proxy step
+labels. The PRM800K and stratified analyses below determine which variant is appropriate for naturally occurring
+process annotations.
+Table 5 refines the earlier component narrative. The fidelity anchor is the essential anchor in this experiment:
+removing it reduces Spearman by 0.2253, far more than any other removal. Graph necessity contributes moderately
+(Delta = −0.0263). By contrast, removing the redundancy penalty or bottleneck log-barrier changes Spearman by
+only about 0.001, so these terms should be described as regularization and decomposition terms rather than as ranking
+drivers under the current evaluation. Note that this component-ablation table reports full_scu Spearman 0.5103,
+which is lower than the SC-FMA QP value of 0.597 in Table 4; the two tables use different synthetic benchmark
+
+Ma and Wang: Preprint submitted to Elsevier
+
+Page 8
+
+Structurally-Calibrated Functional Attribution
+Table 4
+Step importance ranking on the controlled synthetic benchmark (200 traces, approximately 1,000 steps). SC-FMA variants
+report 5-seed mean ± standard deviation (seeds 42, 123, 456, 789, 1024); other methods are from a representative seed
+(42). Simple average is an independent baseline computed as the element-wise mean of normalized CIU and structural
+necessity. Bootstrap confidence intervals and extended ablations are reported in the supplementary material.
+Method
+
+Spearman 𝜌
+
+Kendall 𝜏
+
+NDCG@3
+
+NDCG@5
+
+SC-FMA QP
+SC-FMA Ridge
+MC Shapley (500 perm.)
+Gradient×Input
+Raw CIU
+Simple average (CIU + necessity)
+Attention Rollout
+SC-FMA Projection
+Token Surprisal
+Step Entropy
+Span Length
+Relative Position
+Random
+
+0.597 ± 0.064
+0.541 ± 0.016
+0.524
+0.491
+0.483
+0.478
+0.461
+0.372 ± 0.030
+0.310
+0.287
+−0.006
+−0.005
+−0.010
+
+0.533
+0.447
+0.451
+0.419
+0.412
+0.413
+0.388
+0.278
+0.252
+0.234
+−0.013
+−0.014
+−0.008
+
+0.921
+0.889
+0.895
+0.881
+0.874
+0.889
+0.863
+0.806
+0.791
+0.782
+0.740
+0.740
+0.736
+
+0.958
+0.927
+0.933
+0.924
+0.919
+0.926
+0.912
+0.872
+0.863
+0.857
+0.826
+0.825
+0.825
+
+Table 5
+SCU component contribution on the controlled synthetic benchmark. Values are 5-seed mean ± standard deviation over
+seeds 42, 123, 456, 789, and 1024. Delta is Spearman difference relative to full_scu. The largest drop occurs when the
+fidelity anchor is removed; removing redundancy or bottleneck regularization has near-zero impact on ranking metrics in
+this setting.
+Variant
+full_scu
+no_fidelity
+no_structure
+no_redundancy
+no_bottleneck
+
+Spearman 𝜌 mean±std
+
+Kendall 𝜏 mean±std
+
+Delta vs Full
+
+0.5103 ± 0.0320
+0.2850 ± 0.0153
+0.4841 ± 0.0334
+0.5093 ± 0.0321
+0.5090 ± 0.0304
+
+0.4297 ± 0.0287
+0.2366 ± 0.0138
+0.4053 ± 0.0285
+0.4273 ± 0.0273
+0.4279 ± 0.0274
+
+0.0000
+−0.2253
+−0.0263
+−0.0010
+−0.0013
+
+configurations (the component-ablation run versus the multi-seed ranking run), so their absolute values are not directly
+comparable. The within-table ablation deltas are the meaningful quantity here, not the cross-table absolute level.
+The near-zero redundancy and bottleneck deltas on the original benchmark reflect a property of its labels, not
+of the terms. The proxy label there is a random vector independent of redundancy and bottleneck structure, so the
+structural terms have nothing to align to. To test the regime they are designed for, we run a structural stress-test (Table 6)
+whose labels explicitly encode structural preference: steps participating in any redundant pair are demoted in the label
+(redundancy-awareness), and bottleneck steps are boosted and given a weak local utility (bottleneck-protection). The
+fidelity input is a blend of this adjusted label and the pre-adjustment base label, so it remains the dominant anchor but
+is partially structurally blind, leaving the structural terms corrective work.
+On the stress-test, removing the fidelity anchor still costs the most (−0.1417), confirming it remains the dominant
+anchor. The structural terms now contribute materially: removing the bottleneck log-barrier costs 0.0840, the
+redundancy penalty 0.0492, and graph necessity 0.0378—all far larger than the ≈ 0.001 observed for redundancy
+and bottleneck on the structure-independent benchmark. The appropriate interpretation is that the redundancy and
+bottleneck terms are conditional regularizers: their contribution scales with how much structural preference the
+fidelity input fails to encode. This is precisely the intended KBS audit setting, where a locally plausible step can
+duplicate another check (redundancy) or a rare check can carry a weak local signal while gating downstream inference
+(bottleneck). On benchmarks whose labels are structure-independent they reduce to near-no-op regularizers, which is
+why Table 5 reports Δ ≈ 0.001 for them.
+
+Ma and Wang: Preprint submitted to Elsevier
+
+Page 9
+
+Structurally-Calibrated Functional Attribution
+Table 6
+SCU component contribution on a structural stress-test benchmark (200 traces per seed, five fixed seeds 42, 123, 456,
+789, 1024). Unlike the structure-independent labels of Table 5, these labels reward redundancy-awareness and bottleneckprotection under a stress-test redundancy setting (𝛾 = 0.6). Delta is the Spearman difference relative to full_scu.
+Variant
+full_scu
+no_fidelity
+no_structure
+no_redundancy
+no_bottleneck
+
+Spearman 𝜌 mean±std
+
+Kendall 𝜏 mean±std
+
+Delta vs Full
+
+0.6249 ± 0.0145
+0.4832 ± 0.0357
+0.5871 ± 0.0234
+0.5758 ± 0.0163
+0.5409 ± 0.0145
+
+0.5238 ± 0.0112
+0.3935 ± 0.0319
+0.4870 ± 0.0224
+0.4889 ± 0.0091
+0.4424 ± 0.0114
+
+0.0000
+−0.1417
+−0.0378
+−0.0492
+−0.0840
+
+Table 7
+Graph construction analysis on the diagnostic run. Temporal edges define the primary backbone; topical similarity edges
+are supplementary cues. NDCG@3 and NDCG@5 are computed from the same diagnostic-run source data and scoring
+definition used for the correlation readout.
+Variant
+full_tfidf
+temporal_only
+jaccard_topical
+shuffled_topical
+
+Spearman 𝜌
+
+Kendall 𝜏
+
+NDCG@3
+
+NDCG@5
+
+0.0515
+0.0596
+0.0517
+0.0515
+
+0.0458
+0.0527
+0.0460
+0.0458
+
+0.8655
+0.8688
+0.8657
+0.8655
+
+0.8655
+0.8688
+0.8657
+0.8655
+
+Table 7 shows that topical edges do not add ranking-preservation evidence in the diagnostic run: full_tfidf is
+slightly below temporal_only and matches shuffled_topical on the reported ranking metrics. The appropriate
+interpretation is therefore conservative. Topical edges can change structural diagnostics such as mean necessity, bridgenode fraction, and influence depth, but their observed role is supplementary structural cueing rather than a demonstrated
+ranking driver.
+The pattern across baselines is informative. Gradient and attention methods are close to raw CIU, suggesting that
+token-level salience does not automatically recover structural role. Monte Carlo Shapley has higher correlation than
+raw CIU, but at a much higher computational cost and without explicit redundancy or bottleneck decomposition.
+Information-theoretic baselines have lower correlation, which is expected because local token predictability is not
+the same as verification-step priority. The QP result therefore supports the value of explicitly modeling graph structure
+in the controlled benchmark.
+The component and graph-construction analyses also separate two claims that could otherwise be conflated. The
+SCU objective benefits primarily from fidelity anchoring and secondarily from graph-necessity alignment in this
+benchmark. Redundancy and bottleneck terms mainly make the audit reasoning decomposable and conservative.
+Separately, topical graph edges move structural diagnostics but do not yield a ranking gain over temporal-only
+or shuffled-topical construction. This supports using graph construction as a diagnostic representation, not as an
+independently validated performance driver.
+Error analysis identifies three main residual patterns. First, high-utility but zero-necessity steps can be overweighted because the fidelity term still matters. Second, bottleneck nodes near the detector threshold can be underweighted when the indicator is not activated. Third, dense redundancy blocks can over-equalize weights when many
+steps share similar topical features. These failure modes are useful because they indicate where future work should
+focus: finer-grained utility signals, more robust bottleneck detection, and typed KBS edges that distinguish true
+functional duplication from surface similarity.
+
+4.4. Real-Knowledge-Graph Graph Construction Pilot
+To show that the graph layer is not limited to lexical (TF-IDF) edges, we run a fixture-level pilot on a real
+knowledge graph: the Countries KG [3], which has 30 entities (countries, regions) and 189 triples over the typed
+relations locatedIn and neighborOf. We generate 30 deterministic reasoning traces over KG queries (location
+
+Ma and Wang: Preprint submitted to Elsevier
+
+Page 10
+
+Structurally-Calibrated Functional Attribution
+Table 8
+Countries-KG ontology-aware edge construction pilot (30 traces over a real knowledge graph, 30 entities, 189 triples).
+KG-augmented edges are derived from typed ontology relations.
+Quantity
+
+Value
+
+KG entities / triples
+KG relation types
+Reasoning traces
+Baseline (TF-IDF) edges
+KG candidate edges
+KG-augmented edges
+KG-derived edges added
+Ontology relations detected
+Mean abs structural-necessity delta
+Structural-necessity Spearman (baseline vs KG)
+Bottleneck top-1 overlap
+Matched nodes
+
+30 / 189
+locatedIn, neighborOf
+30
+310
+304
+320
+196
+depends_on_concept (211), same_constraint (85), neighbor_concept (8)
+0.431
+0.0
+1.000
+154
+
+Table 9
+PRM800K real-data evidence and offline audit-prioritization readout. Metrics use the same frozen split of 4,417 samples
+and 34,219 labeled steps.
+Signal
+w_struct
+SC-FMA Ridge
+SC-FMA QP
+Frozen PRM prefix score
+Raw local utility
+Simple average (CIU + necessity)
+Random
+
+Spearman 𝜌
+
+NDCG@25%
+
+Allowed interpretation
+
+0.611
+0.604
+0.442
+0.252
+−0.077
+−0.443
+0.006
+
+0.9506
+0.9460
+0.9439
+0.8465
+0.7221
+0.438
+0.7757
+
+Primary PRM800K step-ranking signal.
+Closest SC-FMA approximation.
+Audit context only on this route.
+In-distribution baseline context only.
+Direct ablation.
+Independent feature-average baseline (no SC-FMA).
+Seeded sanity control.
+
+lookup, neighbor verification, region connectivity) and compare a TF-IDF-only baseline reflection graph against a KGaugmented graph that maps KG ontology relations to functional edge types. The pilot demonstrates implementation
+feasibility for typed graph construction on real KG structure.
+Table 8 shows that typed KG edges change the graph substantially: the pilot considers 304 KG candidate relations,
+adds 196 ontology-derived edges, and yields 320 KG-augmented graph edges versus 310 TF-IDF baseline edges.
+The mean absolute structural-necessity delta is 0.431 with a baseline-vs-KG necessity Spearman of 0.0, meaning KG
+augmentation substantially reorders which steps the method flags as structurally necessary rather than merely adding
+redundant connections. This is the KBS-relevant capability the methodology targets: prioritizing steps via domain
+structure (typed ontology relations) rather than lexical overlap alone, which is exactly the failure mode flagged in the
+error analysis above. Full edge lists and the diagnostic report are in the supplementary material.
+
+4.5. PRM800K Evidence and Audit Readout
+The locked PRM800K result is specific to this evidence route. The stored w_struct ranking is the primary
+positive signal, with Spearman 𝜌 = 0.611 against PRM800K step ratings. Raw local utility is negative on this route
+(𝜌 = −0.077), and the overlap-limited frozen PRM prefix-score baseline is lower (𝜌 = 0.252). SC-FMA Ridge closely
+preserves w_struct (𝜌 = 0.604), while QP (𝜌 = 0.442) and Projection (𝜌 = −0.135) are downgraded.
+The fixed-budget readout in Table 9 shows that, on PRM800K-like process annotations, w_struct and Ridge
+place more high-rated steps inside the review prefix than raw local utility and simple controls. The simple-average
+baseline (unweighted mean of CIU and structural necessity, Spearman 𝜌 = −0.443) fails dramatically on this route,
+underscoring that naive feature averaging without learned weighting cannot recover annotation ordering.
+
+Ma and Wang: Preprint submitted to Elsevier
+
+Page 11
+
+Structurally-Calibrated Functional Attribution
+
+The PRM800K variant pattern is informative. The w_struct signal defined in Section 3.2 reaches Spearman
+𝜌 = 0.611, showing that the fidelity input is already strong on the locked split. QP’s hard structural constraints
+are designed for settings where utility and structure disagree; when fidelity already aligns with annotation ordering,
+those constraints can reallocate weight away from the stronger signal. The post-results audit subsection returns to why
+calibration remains useful beyond direct ranking (Section 6.1).
+For fixed-budget audit, the key question is whether a reviewer sees higher-rated process steps earlier. NDCG@25%,
+top-1 hit, and mass@25% match this review setting more directly than whole-trace rank correlation alone. In a KBS
+maintenance workflow, a curator may inspect only a small number of rule firings, retrieval checks, entity bindings, or
+reflective verification steps from each trace. The value of the queue is therefore practical: decide what to inspect first
+and record the reason for that priority.
+
+4.6. PRM800K Error Case Analysis
+The stratified audit-prioritization results (reported in full in the supplementary material) reveal systematic patterns
+in where SC-FMA variants succeed and where they degrade on PRM800K data. This analysis is diagnostic: it
+characterizes the conditions under which structural calibration helps or hinders step ranking, rather than constructing
+a one-number ranking claim.
+A failure taxonomy further converts these diagnostics into variant selection guidance. The taxonomy is multilabel over 4,417 locked PRM800K traces: weak utility anchor appears in 54.79% of traces, structural over-correction
+in 48.56%, redundancy misclassification in 27.48%, low signal or tie in 18.32%, and bottleneck over-protection in
+8.65%. The high weak-utility-anchor rate reinforces the need to preserve the learned w_struct fidelity signal. The
+structural-over-correction rate explains why full QP should not be treated as the default PRM800K variant. Redundancy
+and bottleneck cases appear often enough to discuss directly, but the component study in Table 5 shows that their
+current quantitative contribution to aggregate ranking metrics is modest. Fixed-template Audit Cards are provided in
+Appendix A.
+Trace length and redundancy density. The strongest predictor of variant behavior is trace length. On short traces
+(7,141 steps across 1,806 samples), w_struct achieves Spearman 𝜌 = 0.759, SC-FMA Ridge preserves it at 0.757,
+and SC-FMA QP remains close at 0.734. On long traces (18,814 steps, 1,416 samples), w_struct drops to 0.447,
+Ridge to 0.430, and QP degrades more sharply to 0.172. This pattern is consistent with the hypothesis that longer
+traces contain more redundancy: step pairs with overlapping topical features create dense blocks in the redundancy
+matrix, and QP’s hard redundancy penalty forces weight reallocations that deviate from the annotation signal when
+redundancy density is high. Ridge’s soft averaging avoids this overcorrection, which explains its greater robustness
+across trace-length strata.
+Label entropy and annotation structure. Stratification by label entropy reveals a complementary pattern. On lowentropy traces (17,288 steps, 1,474 samples), where annotation labels are concentrated and discriminability is limited,
+all methods show compressed metrics but w_struct and Ridge still achieve NDCG@25% above 0.99. On high-entropy
+traces (5,983 steps, 1,304 samples), where labels are more dispersed, QP (𝜌 = 0.642) performs relatively closer to
+w_struct (𝜌 = 0.705) than on other strata, suggesting that QP’s explicit redundancy management becomes more
+useful when annotation structure is richer and step-level discriminability matters more.
+Variant behavior summary. Across all six strata (trace length low/mid/high × label entropy low/mid/high, plus erroruncertainty present/absent), a consistent ordering emerges: w_struct leads, Ridge preserves closely (within 0.01–
+0.02 Spearman 𝜌 across most strata), and QP degrades on high-redundancy or long-trace conditions. The frozen PRM
+prefix score provides moderate in-distribution baseline context (Spearman 0.061–0.425 across strata) and remains
+consistently above raw local utility. The Projection variant is consistently the weakest SC-FMA variant, with negative
+or near-zero Spearman values on most strata. These patterns are variant selection guidance: QP is appropriate for
+controlled settings with explicit redundancy structure, while Ridge is the recommended variant when the fidelity input
+already aligns well with annotation ordering, as it does on PRM800K via the learned w_struct signal.
+Key diagnostic finding. The core takeaway for future SC-FMA use is that QP underperforms on traces with high redundancy density where w_struct already captures annotation ordering through its learned feature representation, and
+the hard redundancy penalty overcorrects. Ridge is robust across strata because it soft-averages structural information
+into the fidelity signal without forcing reallocations. This finding supports the methodological recommendation: use
+Ridge when a strong fidelity baseline exists, reserve QP for settings where utility and structure disagree and redundancy
+Ma and Wang: Preprint submitted to Elsevier
+
+Page 12
+
+Structurally-Calibrated Functional Attribution
+Table 10
+Ridge/QP selection policy derived from the stratified analysis. This is an engineering guideline, not a theoretical guarantee.
+Scenario
+
+Recommendation
+
+Strong-fidelity signal, as in PRM800K-like process annotations
+High structural conflict or weak-fidelity signal
+
+Ridge
+QP, validated on dev first
+
+management is needed, and avoid Projection when the structural signal can conflict with fidelity inputs. This variantlevel diagnostic is part of the contribution because it turns a simple leaderboard into an actionable design guideline.
+Implications for variant selection in KBS-facing contexts. The stratified findings carry a practical recommendation
+for future KBS-facing planning at the methodology level. When intermediate verification traces are relatively short
+and a reasonable fidelity baseline already captures annotation ordering—as in PRM800K under w_struct—Ridge
+is the recommended variant because it soft-averages structural information into the fidelity signal without aggressive
+weight reallocation. When traces are long and redundancy density is high, a pattern anticipated in multi-hop KG
+reasoning or retrieval-augmented pipelines where multiple intermediate retrieval or entity-linking steps can support
+overlapping inference paths, a variant that manages redundancy explicitly (QP) may be worth evaluating under
+controlled conditions. The current PRM800K evidence shows, however, that QP’s hard redundancy penalty can
+overshoot when learned features already encode structural information, producing downgraded ranking quality on
+high-redundancy strata (Spearman 𝜌 = 0.172 on long traces). The Ridge recommendation therefore applies to the most
+common KBS-facing setting: a reasonable fidelity or proxy-utility baseline exists, and the primary value of structural
+calibration is interpretable decomposition and budget-guided audit triage, not aggressive weight redistribution. This
+stratified evidence also reinforces a broader methodological point. In KBS audit settings, the value of structural
+calibration is not uniform across all traces. For traces resembling the short, low-redundancy stratum, the structural
+signal is supplementary because the fidelity baseline already performs well (𝜌 = 0.759). For long, high-redundancy
+traces (𝜌 = 0.447 under w_struct), structural diagnostics add useful context even when the variant choice matters.
+SC-FMA exposes this heterogeneity rather than averaging over it.
+We summarize the stratified findings into a compact variant-selection policy.
+The proposed policy is an empirical engineering guideline rather than an optimal decision rule. The variantselection policy should be calibrated on a development set before use.
+
+5. KBS Implications and Limitations
+5.1. KBS Implications
+SC-FMA is relevant to KBS methodology because it separates four audit questions that are often conflated: whether
+a step is locally useful, structurally necessary, redundant, or a bottleneck. In rule-chain, retrieval-augmented, or KGassisted workflows, high-necessity bottleneck checks naturally map to review priority, while highly redundant checks
+may be consolidation candidates. This mapping is a methodological analogy, not a validated system integration. The
+design principle—intermediate decision points should be inspectable and their weights decomposable—connects SCFMA to a long KBS tradition of auditable reasoning chains [4, 14]. A KBS-facing use of SC-FMA would proceed in
+four stages: trace capture, graph construction (with optional typed KBS edges), structural diagnostics, and calibration,
+as detailed in the KBS audit demonstration (Section 6) and the supplementary material. Every calibrated weight can
+be decomposed into fidelity, necessity, redundancy, and bottleneck components, which is stronger than an unstructured
+heat map but weaker than proving knowledge-base correctness. The method provides a reproducible weighting layer
+for audit prioritization under a fixed review budget; it does not claim that any deployed KBS has been improved.
+
+5.2. Limitations and Claim Boundary
+The current evidence is bounded by several deliberate limitations that define the scope of the methodological
+contribution. The main positive result is not that SC-FMA discovers a better direct ranker than w_struct; it is that
+Ridge preserves a strong learned fidelity signal while exposing an auditable decomposition into fidelity, necessity,
+redundancy, and bottleneck pressure. This distinction matters for KBS-facing use: the framework is intended to help
+reviewers inspect, consolidate, protect, or repair intermediate reasoning steps under a fixed review budget, not to replace
+domain review or infer production correctness from proxy labels.
+Ma and Wang: Preprint submitted to Elsevier
+
+Page 13
+
+Structurally-Calibrated Functional Attribution
+
+Limitation 1 (Synthetic benchmark): The synthetic calibration benchmark is controlled and proxy-labeled (200
+traces, approximately 1,000 steps per seed, with the main five-seed configuration using seeds 42, 123, 456, 789, and
+1024). It supports calibration behavior and ablation analysis under designed conditions but does not establish validity
+across arbitrary reasoning distributions. The proxy labels combine correctness, lexical diversity, position, and structural
+information designed to test calibration rather than to mimic natural annotations.
+Limitation 2 (route-specific data bounds): The PRM800K route supports real step-label ranking and fixed-budget
+audit only within a PRM800K-like annotation distribution. The locked v3.6 hash split (4,417 samples, 34,219 steps)
+provides reproducible real-data context but does not license claims about other task distributions. SC-FMA Ridge is
+reported as preserving the learned signal while adding decomposition fields, not as exceeding the learned w_struct
+baseline. Exclusions for failed replay routes and supplementary diagnostics are retained in the supplementary material
+and evidence-route table rather than repeated here.
+Limitation 3 (Graph construction): Current graph construction uses temporal order and topical similarity (TFIDF cosine) as default edges. Formal ontology semantics, typed rule dependencies, database lineage, or domain-specific
+relation types are not used in the primary evaluation routes. A supplementary graph-construction ablation replaces
+TF-IDF with Sentence-BERT embeddings and records the model, version, dimension, cache path, and runtime status;
+the embedding route slightly improves diagnostic structural alignment but remains an upstream-constructor ablation
+rather than a new ranking claim. The Countries-KG fixture pilot in Section 4.4 demonstrates that typed edges can be
+constructed but remains a diagnostic extension path.
+The current TF-IDF graph is a lightweight default implementation; the SCU objective is compatible with richer
+structures such as semantic embeddings, entity links, ontology edges, rule dependencies, and data lineage without
+changing the calibration framework.
+Limitation 4 (Utility signal granularity): The binary-correctness CIU signal used by the diagnostic pipeline is
+a trace-level coarse utility anchor. It records how a trace-level outcome changes under a documented intervention and
+does not prove that each step has an independent outcome-grounded CIU. The SCU objective treats it as one input
+among several; the resulting weights are local functional attributions, not causal effect estimates.
+The KBS-facing evidence code for the current package is kbs_style_audit_prioritization_evidence_only.
+NOT claimed. The following four claims are explicitly excluded from the current evidence surface:
+• No downstream PRM training: SC-FMA is not validated as a training signal for process reward models,
+reinforcement learning from process feedback, or best-of-𝑁 search. This remains a future validation route
+(𝐹 _𝑃 𝑅𝑀_𝑇 𝑅𝐴𝐼𝑁𝐼𝑁𝐺).
+• No production KBS validation: The current evidence does not include a live knowledge-based system
+with domain experts, gold-standard curation decisions, typed ontology edges, downstream error reduction, or
+maintenance-cost measurement (validated_kbs_workflow=false).
+• No causal identification: The framework does not identify causal effects, does not estimate population-level
+treatment effects, and does not recover counterfactual outcomes under unobserved confounding.
+• No external PRM generalization: The frozen PRM baseline comparison (v3.8) provides in-distribution
+baseline context only, given known PRM800K overlap risk with public PRM training distributions.
+Route-specific exclusions, including GSM8K/HotpotQA replay failures, WebQSP KGQA boundaries, and QP-specific
+caveats, are documented in the supplementary material and appendices.
+
+5.3. Scope and Applicability
+SC-FMA is applicable when the goal is audit prioritization, process diagnosis, or fixed-budget review of observable
+reasoning or verification traces. In these settings, the method provides an actionable audit decomposition: a ranked
+step is accompanied by fidelity, graph necessity, redundancy, and bottleneck fields that indicate what a reviewer should
+inspect.
+SC-FMA is not yet applicable as a PRM-training signal, a causal-inference estimator, a production-system claim,
+or human-performance evidence. Those uses require separate validation with training experiments, causal designs, live
+domain traces, or user studies. The oracle-based validation introduced below uses automatic rule-derived audit targets
+and therefore tests information recovery from the decomposition, not human speed or accuracy. The decomposition is
+Ma and Wang: Preprint submitted to Elsevier
+
+Page 14
+
+Structurally-Calibrated Functional Attribution
+
+intended to support reviewer reasoning and traceable decisions rather than to claim measurable human-performance
+improvement.
+Moving from this methodology paper to a deployment claim would require a different validation design with
+domain-specific traces, typed edges, gold or adjudicated curation targets, domain-expert review, and maintenance-cost
+or error-reduction measurements. Those conditions are intentionally not asserted here. The current contribution is a
+calibration and audit-prioritization methodology with bounded PRM800K evidence, supplementary diagnostic routes,
+and a KBS-facing audit demonstration (Section 6). Future work can replace generic graph construction with typed
+domain edges without changing the core SCU objective. Within the present evidence, the strongest practical guidance
+is variant selection: Ridge is robust when a learned fidelity signal already aligns with annotations, whereas QP should
+be reserved for settings where structural conflict is expected and evaluated directly. The Audit Cards in Appendix A
+make this boundary operational by showing how the four decomposition fields convert a ranking disagreement into a
+concrete reviewer action rather than an unsupported deployment claim.
+
+6. Discussion: Audit Interpretation and Practical Implications
+6.1. Audit Interpretation
+Direct ranking answers “which step comes first?” but not “what should the reviewer check?” A w_struct score
+gives an effective ordering; SC-FMA adds whether the priority comes from local fidelity, graph necessity, redundancy
+pressure, or bottleneck protection. Those components turn the same ranked step into different audit actions: inspect
+local evidence, consolidate a repeated group, protect a dependency, or repair an upstream utility signal.
+The fixed-budget readout below should be interpreted in that light. w_struct remains the strongest direct queue
+under the locked PRM800K hash split, and SC-FMA Ridge closely preserves it. Ridge then attaches the decomposition
+fields needed to interpret the queue under a bounded review budget.
+Table 11: Fixed-budget audit-prioritization comparison on the locked PRM800K hash split (4,417 samples, 34,219
+steps, 25% review budget). All numbers are from frozen artifacts with zero API calls.
+Method
+
+Top-1 Hit
+
+Mass @ 25%
+
+NDCG @ 25%
+
+0.917
+0.905
+0.733
+0.686
+
+0.381
+0.380
+0.307
+0.282
+
+0.951
+0.946
+0.776
+0.722
+
+w_struct
+SC-FMA Ridge
+Random
+Raw local utility
+
+Table 11 shows the preservation side of the result: SC-FMA Ridge tracks the w_struct queue closely
+(NDCG@25% of 0.946 versus 0.951) while retaining the component-level explanation. The comparison against
+random and raw local utility confirms that informed feature-based ranking is stronger than uninformed baselines;
+the negative raw-local-utility route (𝜌 = −0.077 in Section 4) also explains why the audit queue should begin from a
+stronger fidelity signal and then expose structural rationale.
+The second interpretation question is whether the decomposition carries information that a scalar queue hides. We
+evaluate failure-mode localization as an information-retrieval task over traces. The scalar condition receives only the
+w_struct score summary, while the SC-FMA condition receives the Audit Card fields: fidelity, necessity, redundancy,
+bottleneck status, and induced action. Automatic oracle targets are derived from frozen PRM800K labels, ranking
+disagreements, redundancy density, bottleneck flags, and the failure-taxonomy rules in Appendix A.
+Table 12: Oracle-based automatic audit-target validation on the locked PRM800K split. Failure-mode localization is
+evaluated as retrieval under a 25% budget. The SC-FMA condition uses decomposition fields; the scalar condition uses
+only w_struct.
+View
+
+Recall@25%
+
+NDCG@25%
+
+MRR
+
+Top-1 Hit
+
+Cost Proxy
+
+0.235
+0.699
+
+0.353
+0.978
+
+0.354
+1.000
+
+0.000
+1.000
+
+0.0007
+0.0002
+
+w_struct scalar only
+SC-FMA decomposition
+
+Ma and Wang: Preprint submitted to Elsevier
+
+Page 15
+
+Structurally-Calibrated Functional Attribution
+
+Table 12 shows that the decomposition fields retrieve the rule-defined audit targets more effectively than the scalaronly view. Bottleneck protection, redundancy consolidation, weak utility-anchor repair, and structural over-correction
+are explicitly encoded in the SC-FMA fields.
+
+6.2. Practical Implications
+The results illustrate a recurring KBS design tension. Local evidence signals—retrieval confidence scores, entitylinking similarity, rule-certainty factors—are often abundant but poorly aligned with audit needs. A high-confidence
+retrieval may duplicate an earlier check, while a low-confidence entity disambiguation may gate downstream inference.
+SC-FMA makes this tension visible by linking the queue to redundancy and dependency fields rather than to a scalar
+score alone.
+For KBS review, the practical implication is an audit interpretation policy. High-necessity steps become review
+priorities, high-redundancy steps become consolidation candidates, bottleneck steps are surfaced for conservative
+retention, and weak utility-anchor cases indicate that the scoring signal should be inspected before blaming graph
+structure. This gives the reviewer a vocabulary for acting on a queue: follow local evidence, consolidate repeated
+checks, protect dependency-exposed steps, or repair the fidelity signal.
+
+6.3. Audit Card Case
+Table 13: Compact audit-card case study: scalar ranking versus SC-FMA decomposition.
+Failure target
+
+w_struct-only view
+
+SC-FMA audit-card view
+
+Bottleneck protection
+
+A scalar score can rank the step but does
+not identify that the selected step gates
+downstream reasoning.
+
+Redundancy consolidation
+
+Multiple high-scored steps can look independently important.
+
+Weak utility anchor
+
+A high learned score hides whether the
+raw local utility signal failed.
+
+Bottleneck and necessity fields mark the step as
+dependency-exposed, so the action is to protect
+or inspect the downstream chain before dropping it.
+Redundancy density and neighborhood fields
+identify a cluster, so the action is to consolidate
+the checks or sample the cluster rather than
+inspect every duplicate.
+Fidelity and raw-anchor disagreement expose
+an upstream utility-anchor problem, so the action is to repair the signal source rather than
+blame graph structure.
+
+7. Conclusion
+This paper presented SC-FMA, a structurally calibrated method for turning utility or proxy-fidelity inputs
+into auditable verification-step weights. The evidence supports its bounded role: QP captures designed structural
+preferences in the controlled synthetic benchmark, Ridge retains the strong PRM800K w_struct ordering while
+adding decomposition fields, oracle validation recovers rule-defined audit targets beyond a scalar-only view, and the
+graph ablation confirms a replaceable structural interface. Future work will evaluate reviewer efficiency, decision
+quality, and cognitive workload through controlled human-subject studies. SC-FMA provides a reusable structural
+calibration layer for explainable audit prioritization in knowledge-intensive reasoning systems.
+
+Acknowledgments
+The authors thank the College of Management Science and Engineering at Beijing Information Science and
+Technology University for research support.
+
+Funding
+This work was supported by the National Social Science Fund of China Project (24BSH018) and the Beijing Natural
+Science Foundation Project (L252145).
+
+Ma and Wang: Preprint submitted to Elsevier
+
+Page 16
+
+Structurally-Calibrated Functional Attribution
+
+Declaration of Competing Interest
+The authors declared that they have no conflicts of interest to this work.
+
+Declaration of generative AI and AI-assisted technologies in the writing process
+During preparation of this work, the authors used OpenAI Codex for language editing, LaTeX packaging assistance,
+and compliance checks. After using this tool, the authors reviewed and edited the content as needed and take full
+responsibility for the content of the publication.
+
+Data Availability
+PRM800K, MuSiQue, and WebQSP are publicly available from their original sources. Derived locked-split reports,
+audit-prioritization artifacts, trace-audit diagnostics, and reproduction scripts will be deposited in an anonymous
+public repository for review and released with the final article. The synthetic benchmark is reproducible from
+scripts/generate_synthetic_traces.py, the structural stress-test from scripts/run_scu_stress_test.py,
+and the Countries-KG pilot from src/fma/graph/kg_ontology_pilot.py. The oracle auto-validation and embedding graph ablation are reproducible from their scripts and archived under outputs/kbs_audit_card_auto_validation_v1
+and the reviewer-v2 graph-ablation output directory. The MuSiQue KBS-style audit route is reproducible from
+outputs/kbs_real_audit_v1; the MuSiQue and WebQSP routes remain supplementary diagnostics or feasibility
+demonstrations only. Their full commands, local raw-data expectations, output paths, and claim-boundary notes are
+documented in the supplementary reproducibility checklist. Frozen experiment configurations are archived in the
+accompanying repository.
+
+CRediT authorship contribution statement
+Haoran Ma: Conceptualization, Methodology, Software, Formal analysis, Investigation, Data Curation, Writing –
+Original Draft, Visualization. Ningning Wang: Methodology, Validation, Writing – Review & Editing, Supervision,
+Project administration, Funding acquisition.
+
+Ma and Wang: Preprint submitted to Elsevier
+
+Page 17
+
+Structurally-Calibrated Functional Attribution
+
+A. Failure Taxonomy Appendix
+This appendix provides variant selection guidance for PRM800K-like audit prioritization. It is diagnostic support
+only and remains within the real_prm800k_audit_prioritization_only claim boundary.
+Each Audit Card’s Decision Label maps to one of three canonical actions derived from the SCU decomposition and
+unavailable from the fidelity-only scalar: protect a bottleneck, consolidate a redundant cluster, or repair an upstream
+utility anchor.
+Table 14
+Reviewer V2 failure taxonomy distribution on the locked PRM800K split (4,417 traces). Labels are multi-label, so
+percentages need not sum to 100%.
+Label
+
+Count
+
+Percentage
+
+structural_over_correction
+redundancy_misclassification
+bottleneck_over_protection
+weak_utility_anchor
+low_signal_or_tie
+
+2145
+1214
+382
+2420
+809
+
+48.56%
+27.48%
+8.65%
+54.79%
+18.32%
+
+Redundancy misclassification and bottleneck over-protection appear often enough to discuss directly as variant
+selection guidance. The following Audit Cards use a fixed template so that each example links the ranking change to
+a concrete reviewer action. They are explainability evidence for how decomposition turns a flat ranking disagreement
+into an audit task; they are not a substitute for a full user study.
+Table 15
+Audit Card 1: bottleneck-protected structural over-correction.
+Field
+
+Audit card
+
+Trace
+
+prm800k_pool_010077_26cf715105; 7 steps. Representative step: “Now, I wonder if
+there is a geometric interpretation of the problem.”
+Labels
+include
+structural_over_correction
+and
+bottleneck_over_protection. Step 3 has a below-maximum label (0.5) but
+receives the largest QP weight (0.2493).
+w_struct keeps the high-label early vector-setup steps near the top (0.8966–0.9510)
+and gives the final false conclusion almost no weight (0.0027).
+Fidelity: w_struct keeps the high-label setup steps high. Necessity: graph exposure
+marks the reinterpretation as structurally visible. Redundancy: little consolidation is
+needed in this short trace. Bottleneck: QP protects the lower-label step, creating the audit
+disagreement.
+w_struct gives the right ordering but not the reason a lower-label step became
+structurally protected. SC-FMA exposes that the disagreement is bottleneck-driven, not
+generic ranker behavior.
+Inspect the bottleneck-protected lower-label step before accepting the structural floor;
+check whether the geometric reinterpretation is a true downstream dependency or an
+over-protected detour.
+PROTECT_BOTTLENECK
+Diagnostic PRM800K audit card only; it supports variant selection and reviewer triage,
+not task-success validation.
+
+Observed issue
+Direct ranking behavior
+SC-FMA decomposition
+
+Why not w_struct alone?
+Reviewer Decision
+Decision Label
+Claim boundary
+
+Ma and Wang: Preprint submitted to Elsevier
+
+Page 18
+
+Structurally-Calibrated Functional Attribution
+
+Table 16
+Audit Card 2: redundancy over-merging in a long trace.
+Field
+
+Audit card
+
+Trace
+
+prm800k_pool_012035_e6055a1cb2; 30 steps. Representative step: “One way to do
+that is to pick a random value of 𝑥 and find the corresponding value of 𝑦 = 𝑓 (𝑥), then
+swap the coordinates.”
+Labels include structural_over_correction, redundancy_misclassification,
+and bottleneck_over_protection. Redundancy density is high (0.5749), and QP
+collapses several early high-label setup steps to nearly zero.
+w_struct assigns consistently high scores to the graph-sketch, asymptote, intercept,
+and checking steps (roughly 0.91–0.97), while QP reallocates mass away from several
+of these high-label setup steps.
+Fidelity: w_struct keeps many graph-analysis checks high. Necessity: downstream
+exposure concentrates attention on a narrow band. Redundancy: similar graph checks
+are treated as overlapping. Bottleneck: protected steps compete with high-label setup
+steps for review budget.
+Direct ranking shows which steps are high, but it cannot tell whether the trace contains
+redundant audit units or whether several superficially similar graph checks should be
+consolidated. The decomposition makes that audit decision explicit.
+Check redundancy over-merging: decide whether asymptote identification, intercept
+checks, and coordinate-swap verification are separate audit units or can be reviewed as
+one cluster.
+CONSOLIDATE_REDUNDANT_CLUSTER
+Diagnostic PRM800K audit card only; it motivates reviewer workflow design and does
+not validate live KBS traces.
+
+Observed issue
+Direct ranking behavior
+SC-FMA decomposition
+
+Why not w_struct alone?
+Reviewer Decision
+Decision Label
+Claim boundary
+
+Table 17
+Audit Card 3: weak local-utility anchor.
+Field
+
+Audit card
+
+Trace
+
+prm800k_pool_006217_43f4f279ef; 3 steps. Representative step: “I call this altitude
+𝐴𝐹 , where 𝐹 is the midpoint of 𝐵𝐶.”
+Labels are [0.5, 1.0, 0.0]. Raw local utility is inverted: it gives the false parallel-line
+step the largest score (1.2159) and the highest-label midpoint-altitude step a lower score
+(0.7647).
+w_struct, QP, and Ridge rank the midpoint-altitude step highest and the false parallelline step lowest; raw local utility has Spearman 𝜌 = −1.0 on this trace.
+Fidelity: the learned signal corrects the raw utility inversion. Necessity: the altitude
+construction remains the structurally meaningful check. Redundancy: no consolidation
+decision is needed in the three-step trace. Bottleneck: no bottleneck flag is needed, so
+the reviewer should repair the utility anchor rather than the structure detector.
+w_struct fixes the local ordering, but the decomposition identifies the failure mode as a
+weak utility anchor rather than redundancy or bottleneck pressure. That distinction tells
+the reviewer which upstream signal needs repair.
+Inspect why the local utility anchor rewarded the false parallel-line step; use the
+structured decomposition for triage and avoid treating raw utility as an independent audit
+target.
+REPAIR_UPSTREAM_UTILITY
+Diagnostic PRM800K audit card only; it supports signal-quality auditing, not external
+reasoning-task generalization.
+
+Observed issue
+Direct ranking behavior
+SC-FMA decomposition
+
+Why not w_struct alone?
+Reviewer Decision
+Decision Label
+Claim boundary
+
+Ma and Wang: Preprint submitted to Elsevier
+
+Page 19
+
+Structurally-Calibrated Functional Attribution
+
+B. Runtime and Reproducibility
+Runtime and reproducibility metadata are summarized in Table 18. The records below are wall-clock measurements
+from the reproducibility summary; API calls remain zero and frozen artifacts are read-only inputs.
+Table 18
+Runtime and reproducibility summary for the experiments. Wall time is measured in seconds; API calls are zero for
+all runs.
+Route
+
+Samples
+
+Steps
+
+Seeds
+
+Elapsed (s)
+
+200
+800
+4,417
+
+1,008
+2,400
+34,219
+
+5
+5
+N/A
+
+30.7961
+3.4197
+88.6221
+
+SCU Component Contribution
+Graph Construction Ablation
+Failure Taxonomy
+
+Ma and Wang: Preprint submitted to Elsevier
+
+Hardware
+
+API Calls
+
+CPU (12 cores)
+CPU (12 cores)
+CPU (12 cores)
+
+zero
+zero
+zero
+
+Page 20
+
+Structurally-Calibrated Functional Attribution
+
+References
+[1] Albert, R., Jeong, H., Barabasi, A.L., 2000. Error and attack tolerance of complex networks. Nature 406, 378–382. doi:10.1038/35019019.
+[2] Anderson, J.R., Bothell, D., Byrne, M.D., Douglass, S., Lebiere, C., Qin, Y., 2004. An integrated theory of the mind. Psychological Review
+111, 1036–1060. doi:10.1037/0033-295X.111.4.1036.
+[3] Bordes, A., Usunier, N., Garcia-Duran, A., Weston, J., Yakhnenko, O., 2013. Translating embeddings for modeling multi-relational data, in:
+Advances in Neural Information Processing Systems (NeurIPS). URL: https://papers.nips.cc/paper/2013/hash/1cecc7a77928c
+a8133fa24680a88d2f9-Abstract.html.
+[4] Buchanan, B.G., Shortliffe, E.H., 1984. Rule-Based Expert Systems: The MYCIN Experiments of the Stanford Heuristic Programming Project.
+Addison-Wesley.
+[5] Chen, B., Li, H., Zhao, D., Pan, C., 2025. A lightweight embedding method for knowledge graph quality evaluation. Knowledge-Based
+Systems 326, 114013. URL: https://doi.org/10.1016/j.knosys.2025.114013, doi:10.1016/j.knosys.2025.114013.
+[6] Cobbe, K., Kosaraju, V., Bavarian, M., Chen, M., Jun, H., Kaiser, L., Plappert, M., Tworek, J., Hilton, J., Nakano, R., Hesse, C., Schulman,
+J., 2021. Training verifiers to solve math word problems. arXiv preprint arXiv:2110.14168 URL: https://arxiv.org/abs/2110.14168,
+doi:10.48550/arXiv.2110.14168.
+[7] Dai, X., Hu, Y., Wu, T., Sheng, Y., Ji, Q., Qi, G., 2025. Large language models can better understand knowledge graphs than we thought.
+Knowledge-Based Systems 312, 113060. URL: https://doi.org/10.1016/j.knosys.2025.113060, doi:10.1016/j.knosys.2025.
+113060.
+[8] Dalvi, B., Jansen, P., Tafjord, O., Xie, Z., Smith, H., Pipatanangkura, L., Clark, P., 2021. Explaining answers with entailment trees, in:
+Advances in Neural Information Processing Systems, pp. 22358–22369. URL: https://arxiv.org/abs/2104.08661.
+[9] DeYoung, J., Jain, S., Rajani, N.F., Lehman, E., Xiong, C., Socher, R., Wallace, B.C., 2020. ERASER: A benchmark to evaluate rationalized
+NLP models, in: Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics, pp. 4443–4458. URL:
+https://aclanthology.org/2020.acl-main.408/, doi:10.18653/v1/2020.acl-main.408.
+[10] Gao, Y., Xiong, Y., Gao, X., Jia, K., Pan, J., Bi, Y., Dai, Y., Sun, J., Wang, M., Wang, H., 2024. Retrieval-augmented generation for large
+language models: A survey. arXiv preprint arXiv:2312.10997 URL: https://arxiv.org/abs/2312.10997, doi:10.48550/arXiv.231
+2.10997.
+[11] Hu, L., Liu, Z., Zhao, Z., Hou, L., Nie, L., Li, J., 2024. A survey of knowledge enhanced pre-trained language models. IEEE Transactions on
+Knowledge and Data Engineering 36, 1413–1430. doi:10.1109/TKDE.2023.3310002.
+[12] Huang, W., Zhou, G., Lapata, M., Vougiouklis, P., Montella, S., Pan, J.Z., 2025. Prompting large language models with knowledge graphs for
+question answering involving long-tail facts. Knowledge-Based Systems 324, 113648. URL: https://doi.org/10.1016/j.knosys.2
+025.113648, doi:10.1016/j.knosys.2025.113648.
+[13] Kaplan, S., Uusitalo, H., Lensu, L., 2024. A unified and practical user-centric framework for explainable artificial intelligence. KnowledgeBased Systems 283, 111107. URL: https://doi.org/10.1016/j.knosys.2023.111107, doi:10.1016/j.knosys.2023.111107.
+[14] Laird, J.E., 2012. The Soar Cognitive Architecture. MIT Press. doi:10.7551/mitpress/7688.001.0001.
+[15] Lewis, P., Perez, E., Piktus, A., Petroni, F., Karpukhin, V., Goyal, N., Küttler, H., Lewis, M., Yih, W.t., Rocktäschel, T., Riedel, S., Kiela,
+D., 2020. Retrieval-augmented generation for knowledge-intensive NLP tasks, in: Advances in Neural Information Processing Systems, pp.
+9459–9474. URL: https://arxiv.org/abs/2005.11401.
+[16] Lightman, H., Kosaraju, V., Burda, Y., Edwards, H., Baker, B., Lee, T., Leike, J., Schulman, J., Sutskever, I., Cobbe, K., 2023. Let’s verify
+step by step. arXiv preprint arXiv:2305.20050 URL: https://arxiv.org/abs/2305.20050, doi:10.48550/arXiv.2305.20050.
+[17] Lindsay, R.K., Buchanan, B.G., Feigenbaum, E.A., Lederberg, J., 1980. Applications of Artificial Intelligence for Organic Chemistry: The
+DENDRAL Project. McGraw-Hill.
+[18] Liu, W., Ren, Z., Chen, L., 2025. Knowledge reasoning based on graph neural networks with multi-layer top-P message passing and
+sparse negative sampling. Knowledge-Based Systems 311, 113063. URL: https://doi.org/10.1016/j.knosys.2025.113063,
+doi:10.1016/j.knosys.2025.113063.
+[19] Lundberg, S.M., Lee, S.I., 2017. A unified approach to interpreting model predictions, in: Advances in Neural Information Processing Systems,
+pp. 1–11. URL: https://papers.nips.cc/paper/7062-a-unified-approach-to-interpreting-model-predictions.
+[20] Madaan, A., Tandon, N., Gupta, P., Hallinan, S., Gao, L., Wiegreffe, S., Alon, U., Dziri, N., Prabhumoye, S., Yang, Y., Gupta, S., Majumder,
+B.P., Hermann, K., Welleck, S., Yazdanbakhsh, A., Clark, P., 2023. Self-Refine: Iterative refinement with self-feedback, in: Advances in
+Neural Information Processing Systems. URL: https://arxiv.org/abs/2303.17651.
+[21] Newman, M., 2010. Networks: An Introduction. Oxford University Press. doi:10.1093/acprof:oso/9780199206650.001.0001.
+[22] Pan, S., Luo, L., Wang, Y., Chen, C., Wang, J., Wu, X., 2024. Unifying large language models and knowledge graphs: A roadmap. IEEE
+Transactions on Knowledge and Data Engineering 36, 3580–3599. doi:10.1109/TKDE.2024.3352100.
+[23] Shinn, N., Cassano, F., Berman, E., Gopinath, A., Narasimhan, K., Yao, S., 2023. Reflexion: Language agents with verbal reinforcement
+learning, in: Advances in Neural Information Processing Systems. URL: https://arxiv.org/abs/2305.10601.
+[24] Siddharth, L., Luo, J., 2024. Retrieval augmented generation using engineering design knowledge. Knowledge-Based Systems 303, 112410.
+URL: https://doi.org/10.1016/j.knosys.2024.112410, doi:10.1016/j.knosys.2024.112410.
+[25] Sundararajan, M., Taly, A., Yan, Q., 2017. Axiomatic attribution for deep networks, in: Proceedings of the 34th International Conference on
+Machine Learning, PMLR. pp. 3319–3328. URL: https://proceedings.mlr.press/v70/sundararajan17a.html.
+[26] Uesato, J., Kushman, N., Kumar, R., Song, F., Siegel, N., Wang, L., Creswell, A., Irving, G., Higgins, I., 2022. Solving math word
+problems with process- and outcome-based feedback. arXiv preprint arXiv:2211.14275 URL: https://arxiv.org/abs/2211.14275,
+doi:10.48550/arXiv.2211.14275.
+[27] Wang, P., Li, L., Shao, Z., Xu, R., Dai, D., Li, Y., Chen, D., Wu, Y., Sui, Z., 2024. Math-shepherd: Verify and reinforce LLMs step-by-step
+without human annotations, in: Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long
+Papers), Association for Computational Linguistics, Bangkok, Thailand. pp. 9426–9439. URL: https://aclanthology.org/2024.ac
+
+Ma and Wang: Preprint submitted to Elsevier
+
+Page 21
+
+Structurally-Calibrated Functional Attribution
+l-long.510/, doi:10.18653/v1/2024.acl-long.510.
+[28] Wang, X., Wei, J., Schuurmans, D., Le, Q., Chi, E., Narang, S., Chowdhery, A., Zhou, D., 2023. Self-consistency improves chain of
+thought reasoning in language models, in: Proceedings of the 11th International Conference on Learning Representations. URL: https:
+//arxiv.org/abs/2203.11171.
+[29] Wei, J., Wang, X., Schuurmans, D., Bosma, M., Ichter, B., Xia, F., Chi, E., Le, Q., Zhou, D., 2022. Chain-of-thought prompting elicits
+reasoning in large language models. Advances in Neural Information Processing Systems 35, 24824–24837. URL: https://arxiv.org/
+abs/2201.11903.
+[30] Wijekoon, A., Wiratunga, N., 2023. A user-centred evaluation of DisCERN: Discovering counterfactuals for code vulnerability detection
+and correction. Knowledge-Based Systems 278, 110830. URL: h t t p s : / / d o i . o r g / 1 0 . 1 0 1 6 / j . k n o s y s . 2 0 2 3 . 1 1 0 8 30,
+doi:10.1016/j.knosys.2023.110830.
+[31] Yang, W., Some, L., Bain, M., Kang, B., 2025. A comprehensive survey on integrating large language models with knowledge-based methods.
+Knowledge-Based Systems 318, 113503. URL: https://doi.org/10.1016/j.knosys.2025.113503, doi:10.1016/j.knosys.2025.
+113503.
+[32] Yao, S., Yu, D., Zhao, J., Shafran, I., Griffiths, T.L., Cao, Y., Narasimhan, K., 2023a. Tree of thoughts: Deliberate problem solving with large
+language models, in: Advances in Neural Information Processing Systems. URL: https://arxiv.org/abs/2305.10601.
+[33] Yao, S., Zhao, J., Yu, D., Du, N., Shafran, I., Narasimhan, K., Cao, Y., 2023b. ReAct: Synergizing reasoning and acting in language models,
+in: Proceedings of the 11th International Conference on Learning Representations. URL: https://arxiv.org/abs/2210.03629.
+[34] Ying, R., Bourgeois, D., You, J., Zitnik, M., Leskovec, J., 2019. GNNExplainer: Generating explanations for graph neural networks, in:
+Advances in Neural Information Processing Systems, pp. 1–12. URL: https://papers.nips.cc/paper/9123-gnnexplainer-gener
+ating-explanations-for-graph-neural-networks.
+[35] Zheng, C., Zhang, P., Ding, Z., Zhang, Y., Zhuang, F., Zhou, J., 2024. ProcessBench: A benchmark for identifying errors in mathematical
+reasoning of language models. arXiv preprint arXiv:2412.06559 URL: https://arxiv.org/abs/2412.06559.
+
+Ma and Wang: Preprint submitted to Elsevier
+
+Page 22
+
+

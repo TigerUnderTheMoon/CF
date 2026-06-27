@@ -9,8 +9,9 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from scipy import stats
+from pathlib import Path
 
-FIGURES_DIR = r"D:\CF\paper\kbs_submission\figures"
+FIGURES_DIR = Path(__file__).resolve().parents[1] / "paper" / "kbs_submission" / "final_source" / "figures"
 
 BLUE = "#0072B2"
 ORANGE = "#E69F00"
@@ -44,6 +45,76 @@ def _auc(y, x=None):
     if x is None:
         x = np.linspace(0, 1, len(y))
     return float(np.trapezoid(y, x))
+
+
+# ---------------------------------------------------------------------------
+# Overall Framework (fig_overall_framework.png)
+# ---------------------------------------------------------------------------
+def fig_overall_framework():
+    stages = [
+        "Trace",
+        "Graph\nConstruction",
+        "SC-FMA\n(SCU)",
+        "Calibration",
+        "Audit\nQueue",
+        "Audit\nCard",
+    ]
+
+    fig, ax = plt.subplots(figsize=(TWO_COL, 2.0))
+    ax.set_axis_off()
+
+    title_font = FONTSIZE - 2
+    box_w = 0.128
+    box_h = 0.42
+    y = 0.5 - box_h / 2
+    xs = np.linspace(0.035, 0.84, len(stages))
+    colors = ["#E8F1FA", "#E9F6EF", "#FFF4D8", "#F3EAF7", "#FCE9E3", "#ECECEC"]
+    edge_colors = [BLUE, GREEN, ORANGE, PURPLE, RED, GRAY]
+
+    for idx, (title, x0) in enumerate(zip(stages, xs)):
+        rect = plt.Rectangle(
+            (x0, y),
+            box_w,
+            box_h,
+            facecolor=colors[idx],
+            edgecolor=edge_colors[idx],
+            linewidth=1.0,
+            transform=ax.transAxes,
+        )
+        ax.add_patch(rect)
+        ax.text(
+            x0 + box_w / 2,
+            y + box_h * 0.5,
+            title,
+            ha="center",
+            va="center",
+            fontsize=title_font,
+            weight="bold",
+            transform=ax.transAxes,
+        )
+
+    for left, right in zip(xs[:-1], xs[1:]):
+        ax.annotate(
+            "",
+            xy=(right - 0.006, 0.5),
+            xytext=(left + box_w + 0.006, 0.5),
+            xycoords=ax.transAxes,
+            arrowprops=dict(arrowstyle="->", linewidth=1.0, color="#444444"),
+        )
+
+    ax.text(
+        0.5,
+        0.08,
+        "Output: fixed-budget priority allocation with fidelity, necessity, redundancy, and bottleneck fields",
+        ha="center",
+        va="center",
+        fontsize=FONTSIZE - 2,
+        transform=ax.transAxes,
+    )
+
+    fig.savefig(FIGURES_DIR / "fig_overall_framework.png")
+    plt.close(fig)
+    print("  fig_overall_framework.png saved")
 
 
 # ---------------------------------------------------------------------------
@@ -353,11 +424,13 @@ def fig_resilience():
     ax.plot(x, y_rand, color=GRAY, linewidth=1.2, linestyle="-.",
             label="Deterministic random (AUC = 0.5098)")
 
-    ax.set_xlabel("Fraction of nodes removed")
-    ax.set_ylabel("Remaining necessity fraction")
+    small_font = FONTSIZE * 0.88
+    ax.set_xlabel("Fraction of nodes removed", fontsize=small_font)
+    ax.set_ylabel("Remaining necessity fraction", fontsize=small_font)
+    ax.tick_params(axis="both", labelsize=FONTSIZE - 2)
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1.05)
-    ax.legend(loc="upper right", fontsize=FONTSIZE - 2)
+    ax.legend(loc="upper right", fontsize=FONTSIZE - 3)
 
     plt.tight_layout()
     fig.savefig(f"{FIGURES_DIR}/fig_resilience.png")
@@ -371,13 +444,15 @@ def fig_resilience():
 def main():
     setup_style()
     print("Generating SC-FMA paper figures...")
+    FIGURES_DIR.mkdir(parents=True, exist_ok=True)
+    fig_overall_framework()
     fig_ciu_necessity()
     fig_sensitivity()
     fig_scaling()
     fig_mode_comparison()
     fig_redundancy_comp()
     fig_resilience()
-    print("All 6 figures generated.")
+    print("All 7 figures generated.")
 
 
 if __name__ == "__main__":
