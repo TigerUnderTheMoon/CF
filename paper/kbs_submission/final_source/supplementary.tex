@@ -86,17 +86,17 @@ w_i^* &\ge \varepsilon, \quad \forall i \\
 \sum_{i=1}^k w_i^* &= 1.
 \end{align}
 
-The partial derivative is $\partial L / \partial w_i = 2\alpha(w_i - \tilde{c}_i) + 2\beta(w_i - \tilde{n}_i) + 2\gamma(\mathbf{R}\mathbf{w})_i - \delta b_i / w_i$. The multiplier $\lambda^* \in \mathbb{R}$ (unrestricted) captures the equality constraint; $\mu_i^* \ge 0$ enforce the floor constraints. By complementary slackness, $\mu_i^* > 0$ only when $w_i^* = \varepsilon$. The complete derivation and case-by-case analysis of boundary solutions are provided in Section A.1 below.
+The partial derivative is $\partial L / \partial w_i = 2\alpha(w_i - \tilde{c}_i) + 2\beta(w_i - \tilde{n}_i) + 2\gamma(\mathbf{R}\mathbf{w})_i - \delta b_i / w_i$. The multiplier $\lambda^* \in \mathbb{R}$ (unrestricted) captures the equality constraint; $\mu_i^* \ge 0$ enforce the floor constraints. By complementary slackness, $\mu_i^* > 0$ only when $w_i^* = \varepsilon$.
 
 \subsection{Derivation of the Variance Reduction Bound}
 \label{app:variance-derivation}
 
-The full algebraic derivation is provided below. The key steps are: (i) the two-term objective $L_2(\mathbf{w}) = \alpha\|\mathbf{w} - \tilde{\mathbf{c}}\|_2^2 + \beta\|\mathbf{w} - \tilde{\mathbf{n}}\|_2^2$ has unconstrained minimizer $\hat{\mathbf{w}} = (\alpha\tilde{\mathbf{c}} + \beta\tilde{\mathbf{n}})/(\alpha+\beta)$; (ii) variance decomposes as $\operatorname{Var}(\hat{\mathbf{w}}) = (\alpha/(\alpha+\beta))^2\operatorname{Var}(\tilde{\mathbf{c}}) + (\beta/(\alpha+\beta))^2\operatorname{Var}(\tilde{\mathbf{n}}) + 2\alpha\beta/(\alpha+\beta)^2\operatorname{Cov}(\tilde{\mathbf{c}}, \tilde{\mathbf{n}})$; (iii) since $\operatorname{Cov}(\tilde{\mathbf{c}}, \tilde{\mathbf{n}}) \approx 0.05$--$0.09$ and $\operatorname{Var}(\tilde{\mathbf{n}}) \ll \operatorname{Var}(\tilde{\mathbf{c}})$, the dominant shrinkage factor is $\alpha/(\alpha+\beta)$; (iv) projection onto the simplex $\mathcal{W}$ is non-expansive in variance~\citep{wang2013projection}, yielding the stated bound.
+The full algebraic derivation is provided below. The key steps are: (i) the two-term objective $L_2(\mathbf{w}) = \alpha\|\mathbf{w} - \tilde{\mathbf{c}}\|_2^2 + \beta\|\mathbf{w} - \tilde{\mathbf{n}}\|_2^2$ has unconstrained minimizer $\hat{\mathbf{w}} = (\alpha\tilde{\mathbf{c}} + \beta\tilde{\mathbf{n}})/(\alpha+\beta)$; (ii) variance decomposes as $\operatorname{Var}(\hat{\mathbf{w}}) = (\alpha/(\alpha+\beta))^2\operatorname{Var}(\tilde{\mathbf{c}}) + (\beta/(\alpha+\beta))^2\operatorname{Var}(\tilde{\mathbf{n}}) + 2\alpha\beta/(\alpha+\beta)^2\operatorname{Cov}(\tilde{\mathbf{c}}, \tilde{\mathbf{n}})$; (iii) since $\operatorname{Cov}(\tilde{\mathbf{c}}, \tilde{\mathbf{n}}) \approx 0.05$--$0.09$ and $\operatorname{Var}(\tilde{\mathbf{n}}) \ll \operatorname{Var}(\tilde{\mathbf{c}})$, the dominant shrinkage factor is $\alpha/(\alpha+\beta)$; (iv) projection onto the simplex $\mathcal{W}$ is non-expansive in variance~\cite{wang2013projection}, yielding the stated bound.
 
 \subsection{Tightness Construction for Bottleneck Lower Bound}
 \label{app:bottleneck-tightness}
 
-The explicit tightness construction for the bottleneck lower-bound theorem is provided in Section A.3 below.
+The explicit tightness construction for the bottleneck lower-bound theorem is provided below.
 
 Substituting $w_2 = 1 - w_1$:
 \begin{equation}
@@ -283,6 +283,28 @@ $\varepsilon$ & $\{10^{-6},10^{-5},10^{-4},10^{-3}\}$ & $10^{-4}$ & Numerical fl
 
 The sensitivity grid shows that the structural stress-test behavior is not caused by a single isolated $(\gamma,\delta)$ setting. Removing bottleneck pressure ($\delta=0$) consistently lowers Spearman relative to the default, while moderate-to-strong redundancy and bottleneck weights remain competitive or stronger on this synthetic regime. This supports the narrow statement that QP is useful when labels encode high structural conflict. It does not make QP the default real-data variant: on the locked PRM800K route, \texttt{w\_struct} remains the primary learned fidelity signal and Ridge remains the recommended preservation-with-decomposition approximation.
 
+\begin{table}[ht]
+\caption{QP $\alpha/\beta$ sensitivity on the structural stress-test generator with $\gamma=0.2$ and $\delta=0.1$ fixed. Values are five-seed means over 200 traces per seed. $\Delta\rho$ is relative to the diagnostic default $(\alpha=1.0,\beta=0.5)$.}
+\label{tab:supp-alpha-beta-sensitivity}
+\centering
+\small
+\begin{tabular}{lccc}
+\toprule
+\textbf{$\alpha$} & \textbf{$\beta=0.0$} & \textbf{$\beta=0.5$} & \textbf{$\beta=1.0$} \\
+\midrule
+0.5 & 0.6393 (+0.0462) & 0.5714 ($-$0.0217) & 0.5097 ($-$0.0834) \\
+1.0 & 0.5605 ($-$0.0326) & 0.5931 (+0.0000) & 0.5585 ($-$0.0345) \\
+2.0 & 0.4868 ($-$0.1063) & 0.5346 ($-$0.0585) & 0.5572 ($-$0.0359) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:supp-alpha-beta-sensitivity} makes the fidelity and structure weights explicit rather than fixing them silently. The Spearman range across the grid is 0.4868--0.6393, and the default setting is 0.5931. The competitive $\beta=0.0$ rows are consistent with the revised framing: structural terms do not always act as ordinary ranking drivers, and in some designed settings they mainly provide regularization and decomposition fields. The change across $\alpha$ exceeds $\pm 0.05$ in this grid; this is reported as fidelity-anchor weight affecting calibration strength, as expected from the SCU objective, rather than as evidence of route-general stability.
+
+\subsubsection{SCU component contribution on a structural stress-test benchmark}
+
+The main manuscript reports the structural stress-test table because it explains when redundancy and bottleneck terms become active. The supplementary role is reproducibility: the same stress-test route is generated by \texttt{scripts/run\_scu\_stress\_test.py} and the hyperparameter-sensitivity grids above, with archived outputs under \texttt{outputs/reviewer\_v2\_experiments}. The stress-test remains a controlled diagnostic route, not external validation.
+
 \subsection{Efficiency and Scaling}
 \label{app:efficiency-scaling}
 
@@ -314,7 +336,7 @@ The full scaling figure remains available in the source figure bundle. The main 
 \subsection{PRM800K Variant Details and Audit Readout}
 \label{app:prm800k-variant-details}
 
-\noindent\textbf{Note:} The core PRM800K audit-prioritization readout has been moved to the main manuscript, Section~6 (KBS Audit Demonstration). Tables~\ref{tab:supp-scfma-variants} and~\ref{tab:supp-audit-prioritization} provide extended variant comparisons and additional baselines that supplement the main-text results.
+\noindent\textbf{Note:} The core PRM800K audit-prioritization readout has been moved to the main manuscript, Section~6.4 (Audit Interpretation). Tables~\ref{tab:supp-scfma-variants} and~\ref{tab:supp-audit-prioritization} provide extended variant comparisons and additional baselines that supplement the main-text results.
 
 \begin{table}[ht]
 \caption{SC-FMA calibration variant comparison on the PRM800K locked split. All variants use \texttt{w\_struct} predictions as the fidelity input.}
@@ -422,10 +444,10 @@ Span length & $-$0.3216 & 0.0035 & 0.2168 & 0.3800 & 0.1571 \\
 
 The support decision is reported for completeness but is not interpreted as positive evidence. Because the audit labels and scoring features share a common step-type source, the task is close to trivial: a hand-coded step-type priority rule (answer synthesis $>$ bridge binding $>$ evidence check $>$ retrieval/question decomposition $>$ distractor rejection) attains NDCG@25\% of 1.0000, Top-1 hit of 1.0000, and Mass@25\% of 0.3939 across all 1,415 locked traces, identical to the \texttt{w\_struct}, SC-FMA Ridge, and SC-FMA QP rows. The $\Delta$NDCG@25\% of 0.1193 over graph centrality (0.8807), with bootstrap 95\% CI [0.1187, 0.1199], therefore reflects the gap between methods that use the step-type priority and controls that do not, not a calibration advantage; the narrow interval is itself a consequence of the label structure (only three distinct label vectors across the 1,415 locked traces). The field-level leakage audit is clean---locked labels are not read during scoring, forbidden fields are excluded, and label permutation reduces the mean diagnostic delta from 0.1347 to 0.0078---but field-level checks cannot detect construction-level homology. The route is therefore a feasibility demonstration only; it is not live KBS validation and does not provide independent audit-prioritization evidence.
 
-\subsection{KBS Integration Notes and KG Fixture Pilot}
+\subsection{Real-Knowledge-Graph Graph Construction Pilot}
 \label{app:kbs-integration-kg}
 
-\noindent\textbf{Note:} The KBS methodological analogy, including the detailed mapping of high-necessity, high-redundancy, and bottleneck steps to KBS review concepts, is discussed in the main manuscript's KBS methodological analogy subsection. The core KBS implications and limitations are discussed in the main manuscript, Section~5. The fixture-level KG pilot content below extends the main-text discussion with implementation details that are not covered in the main manuscript.
+\noindent\textbf{Note:} The KBS methodological analogy, including the detailed mapping of high-necessity, high-redundancy, and bottleneck steps to KBS review concepts, is discussed in the main manuscript's KBS methodological analogy subsection. The core KBS implications and limitations are discussed in the main manuscript, Section~6 (Discussion). The fixture-level KG pilot content below extends the main-text discussion with implementation details that are not covered in the main manuscript.
 
 The fixture-level KG pilot uses the Countries knowledge graph with country and region entities and \texttt{locatedIn}/\texttt{neighborOf} triples. It compares TF-IDF topical edges with KG-augmented edges for synthetic query traces. The pilot demonstrates implementation feasibility for ontology-aware edge construction, but it is not production KBS validation and is not used to strengthen the main empirical claim.
 
@@ -469,6 +491,7 @@ The following checklist documents the measures taken to ensure full reproducibil
 \item \textbf{Statistical tests.} Wilcoxon signed-rank tests are two-sided unless noted; Holm--Bonferroni correction for multiple comparisons; bootstrap confidence intervals use 10{,}000 resamples with BCa correction. Effect sizes reported as $r = Z/\sqrt{N}$.
 \item \textbf{MuSiQue audit route.} The MuSiQue route is reproduced with \texttt{python scripts/run\_knowledge\_audit\_eval.py --hf-dataset dgslibisey/MuSiQue --source-format musique --hf-split train --max-records 2000 --shuffle-seed 42 --bootstrap-samples 1000 --bootstrap-seed 42}. It writes \texttt{outputs/kbs\_real\_audit\_v1/knowledge\_audit\_report.json}, \texttt{knowledge\_audit\_summary.md}, \texttt{knowledge\_audit\_traces.jsonl}, and \texttt{dataset\_manifest.json}; the run uses zero API calls. Because the audit labels and scoring features are both deterministic functions of step type, this route is a feasibility demonstration only and is not used as positive audit-prioritization evidence.
 \item \textbf{Oracle auto audit-target validation.} The zero-human validation is reproduced with \texttt{scripts/run\_audit\_card\_auto\_validation.py}. Outputs are archived under \texttt{outputs/kbs\_audit\_card\_auto\_validation\_v1}: \texttt{audit\_card\_auto\_validation.json}, \texttt{.csv}, and \texttt{.md}. The report header records \texttt{human\_subjects=false}, \texttt{human\_efficiency\_claim=false}, \texttt{validated\_kbs\_workflow=false}, and \texttt{evidence\_level=oracle\_auto\_audit\_validation}. The oracle targets are rule-derived from PRM800K labels, ranking disagreement, redundancy density, bottleneck flags, and the failure-taxonomy rules; they are not human adjudications.
+\item \textbf{QP hyperparameter sensitivity.} The QP sensitivity diagnostics are reproduced with \texttt{scripts/run\_scu\_hyperparameter\_sensitivity.py}. Outputs are archived as \texttt{outputs/reviewer\_v2\_experiments/scu\_hyperparameter\_sensitivity/scu\_hyperparameter\_sensitivity.json}, \texttt{outputs/reviewer\_v2\_experiments/scu\_hyperparameter\_sensitivity/scu\_hyperparameter\_sensitivity.md}, \texttt{outputs/reviewer\_v2\_experiments/scu\_hyperparameter\_sensitivity/alpha\_beta\_grid.csv}, and \texttt{outputs/reviewer\_v2\_experiments/scu\_hyperparameter\_sensitivity/gamma\_delta\_grid.csv}. The alpha/beta grid fixes $\gamma=0.2$ and $\delta=0.1$ and sweeps $\alpha \in \{0.5,1.0,2.0\}$ by $\beta \in \{0.0,0.5,1.0\}$; it is a supplementary QP diagnostic only, not positive external validation.
 \item \textbf{Embedding graph-construction ablation.} The graph-construction ablation is reproduced with \texttt{scripts/run\_graph\_construction\_ablation.py}. Outputs are archived under \texttt{outputs/reviewer\_v2\_experiments/graph\_construction\_ablation}. The embedding route uses \texttt{sentence-transformers/all-MiniLM-L6-v2} through \texttt{sentence-transformers} version 3.4.1, with 384-dimensional vectors. The JSON report records the HuggingFace cache path, download/cache status, runtime status, and all graph-constructor metadata. The ablation is graph-interface evidence only; it is not a production graph-ranking or live KBS claim.
 \item \textbf{WebQSP trace-audit diagnostic.} Development uses \texttt{D:\textbackslash CF\textbackslash data\textbackslash raw\textbackslash webqsp\textbackslash WebQSP.train.json}; the locked diagnostic uses \texttt{D:\textbackslash CF\textbackslash data\textbackslash raw\textbackslash webqsp\textbackslash WebQSP.test.json}. The route is reproduced with \texttt{scripts/run\_webqsp\_trace\_audit.py}, \texttt{scripts/validate\_webqsp\_trace\_audit.py}, and \texttt{scripts/analyze\_webqsp\_separability.py}. It writes \texttt{samples.jsonl}, \texttt{reasoning\_traces.jsonl}, \texttt{replay\_results.jsonl}, \texttt{importance\_targets.jsonl}, ranking outputs, data-audit reports, and separability diagnostics under \texttt{outputs/webqsp\_trace\_audit\_v1\_train} and \texttt{outputs/webqsp\_trace\_audit\_v1\_test}. It is a supplementary diagnostic only.
 \item \textbf{Output artifacts.} All raw results (CIU vectors, necessity scores, redundancy matrices, calibrated weights, ranking metrics) are saved as JSONL or JSON artifacts in the \texttt{outputs/} directory. The complete set of artifacts accompanies the submission as supplementary material. The MuSiQue route is archived under \texttt{outputs/kbs\_real\_audit\_v1} and is reported as a constructed-label feasibility demonstration (\texttt{kbs\_style\_audit\_prioritization\_evidence\_only}); the WebQSP route is archived under \texttt{outputs/webqsp\_trace\_audit\_v1\_test} and is reported as a fixed-schema separability diagnostic.
@@ -477,7 +500,7 @@ The following checklist documents the measures taken to ensure full reproducibil
 \subsection{SLSQP Convergence Diagnostics}
 \label{app:slsqp-diagnostics}
 
-SLSQP convergence statistics across $N = 1{,}027$ steps (200 traces): mean iterations to convergence $5.3 \pm 2.1$ (std), median 5, maximum 12. The worst-case trace ($k=8$, dense redundancy) required 12 iterations and 14.7\,ms. Warm-start from Ridge initialization reduces iterations by approximately 40\% compared to uniform initialization. Under default hyperparameters ($\alpha=1.0$, $\beta=0.5$, $\gamma=0.2$, $\delta=0.1$, $\varepsilon=10^{-4}$), the Hessian condition number $\kappa(\mathbf{H}) \le 3.2$, guaranteeing numerically stable optimization. Detailed convergence statistics by trace size and cold-start comparisons are reported in Section A.6 below.
+SLSQP convergence statistics across $N = 1{,}027$ steps (200 traces): mean iterations to convergence $5.3 \pm 2.1$ (std), median 5, maximum 12. The worst-case trace ($k=8$, dense redundancy) required 12 iterations and 14.7\,ms. Warm-start from Ridge initialization reduces iterations by approximately 40\% compared to uniform initialization. Under default hyperparameters ($\alpha=1.0$, $\beta=0.5$, $\gamma=0.2$, $\delta=0.1$, $\varepsilon=10^{-4}$), the Hessian condition number $\kappa(\mathbf{H}) \le 3.2$, guaranteeing numerically stable optimization.
 
 \subsection{Graph Construction Parameter Sensitivity}
 \label{app:graph-sensitivity}
