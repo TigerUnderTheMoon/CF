@@ -12,26 +12,26 @@ TITLE = (
 DATA_AVAILABILITY = (
     "PRM800K, MuSiQue, and WebQSP are publicly available from their original sources. "
     "Derived locked-split reports, audit-prioritization artifacts, trace-audit diagnostics, "
-    "and reproduction scripts will be deposited in an anonymous public repository for review "
-    "and released with the final article."
+    "experiment configurations, and reproduction scripts will be deposited in an anonymous "
+    "public repository for review and released with the final article."
 )
 
 DATA_AVAILABILITY_PDF = (
     "PRM800K, MuSiQue, and WebQSP are publicly available from their original sources."
 )
 
-MUSIQUE_DATA_AVAILABILITY_SOURCE = (
-    r"The MuSiQue KBS-style audit route is reproducible from "
-    r"\texttt{outputs/kbs\_real\_audit\_v1}"
+REPRODUCIBILITY_CHECKLIST_SOURCE = (
+    "Full commands, local raw-data expectations, output paths, and claim-boundary notes "
+    "are documented in the supplementary reproducibility checklist."
 )
 
-MUSIQUE_DATA_AVAILABILITY_PDF = "reproducible from outputs/kbs_real_audit_v1"
-
 MUSIQUE_BOUNDARY = "kbs_style_audit_prioritization_evidence_only"
+KBS_AUDIT_BOUNDARY = (
+    "The current KBS-facing evidence is limited to audit prioritization "
+    "and does not validate a deployed KBS workflow."
+)
 STRESS_TEST_SOURCE_SNIPPET = "SCU component contribution on a structural stress-test benchmark"
-STRESS_TEST_PDF_SNIPPET = "structural stress-test benchmark"
 KG_PILOT_SOURCE_SNIPPET = r"\subsection{Real-Knowledge-Graph Graph Construction Pilot}"
-KG_PILOT_PDF_SNIPPET = "Real-Knowledge-Graph Graph Construction Pilot"
 
 
 def _write_docx(path: Path, text: str | None = None) -> None:
@@ -85,10 +85,8 @@ def _write_source_zip(
             "The authors declared that they have no conflicts of interest to this work.",
             r"\section*{Data Availability}",
             DATA_AVAILABILITY,
-            MUSIQUE_DATA_AVAILABILITY_SOURCE,
-            MUSIQUE_BOUNDARY,
-            STRESS_TEST_SOURCE_SNIPPET,
-            KG_PILOT_SOURCE_SNIPPET,
+            REPRODUCIBILITY_CHECKLIST_SOURCE,
+            KBS_AUDIT_BOUNDARY,
             r"\section*{CRediT authorship contribution statement}",
             "Haoran Ma: Conceptualization. Ningning Wang: Supervision.",
             r"\includegraphics{figures/fig_sensitivity.png}",
@@ -100,6 +98,8 @@ def _write_source_zip(
             "Haoran Ma and Ningning Wang",
             r"\subsection{MuSiQue KBS-style Knowledge-Audit Details}",
             MUSIQUE_BOUNDARY,
+            STRESS_TEST_SOURCE_SNIPPET,
+            KG_PILOT_SOURCE_SNIPPET,
             r"\includegraphics{figures/fig_scaling.png}",
         ]
     )
@@ -133,7 +133,8 @@ def _write_final_package(package_dir: Path) -> None:
         package_dir / "supplementary.docx",
         (
             f"Supplementary Material\n{TITLE}\nHaoran Ma\nNingning Wang\n"
-            f"MuSiQue KBS-style Knowledge-Audit Details\n{MUSIQUE_BOUNDARY}"
+            f"MuSiQue KBS-style Knowledge-Audit Details\n{MUSIQUE_BOUNDARY}\n"
+            f"{STRESS_TEST_SOURCE_SNIPPET}\n{KG_PILOT_SOURCE_SNIPPET}"
         ),
     )
     _write_source_zip(package_dir / "latex_source.zip")
@@ -152,10 +153,7 @@ def _pdf_text_by_name() -> dict[str, str]:
             "wangningning@bistu.edu.cn",
             "National Social Science Fund of China Project (24BSH018)",
             DATA_AVAILABILITY_PDF,
-            MUSIQUE_DATA_AVAILABILITY_PDF,
-            MUSIQUE_BOUNDARY,
-            STRESS_TEST_PDF_SNIPPET,
-            KG_PILOT_PDF_SNIPPET,
+            KBS_AUDIT_BOUNDARY,
         ]
     )
     return {
@@ -214,6 +212,41 @@ def test_kbs_verifier_blocks_author_placeholders_in_source_zip(tmp_path: Path) -
 
     assert not report.ok
     assert any("author metadata placeholders remain" in error for error in report.errors)
+
+
+def test_kbs_verifier_blocks_manuscript_repair_regressions(tmp_path: Path) -> None:
+    from scripts.verify_kbs_submission_package import check_package
+
+    package_dir = tmp_path / "final_package"
+    _write_final_package(package_dir)
+    _write_source_zip(
+        package_dir / "latex_source.zip",
+        manuscript_tex="\n".join(
+            [
+                TITLE,
+                "OpenAI Codex",
+                "ORCID (s):",
+                "validated_kbs_workflow=false",
+                "F_PRM_TRAINING",
+                "NOT claimed",
+                "Fixed-budget audit-prioritization comparison on the locked PRM800K hash split",
+                "tab:audit-demo-results",
+                "[NAME OF TOOL / SERVICE TO BE CONFIRMED BY AUTHORS]",
+            ]
+        ),
+    )
+
+    report = check_package(package_dir)
+
+    assert not report.ok
+    assert any("obsolete generative-AI tool statement remains" in error for error in report.errors)
+    assert any("empty ORCID field remains visible" in error for error in report.errors)
+    assert any("visible code-style KBS boundary variable remains" in error for error in report.errors)
+    assert any("visible code-style PRM-training boundary variable remains" in error for error in report.errors)
+    assert any("defensive all-caps claim heading remains" in error for error in report.errors)
+    assert any("duplicate fixed-budget audit table remains" in error for error in report.errors)
+    assert any("duplicate fixed-budget audit table remains" in error for error in report.errors)
+    assert any("unresolved generative-AI tool placeholder remains" in error for error in report.errors)
 
 
 def test_kbs_verifier_checks_source_zip_manifest(tmp_path: Path) -> None:
@@ -349,6 +382,37 @@ def test_kbs_verifier_reads_pdfinfo_with_utf8_replacement(tmp_path: Path, monkey
 
     assert report.ok, report.errors
     assert calls
+
+
+def test_kbs_verifier_falls_back_when_pdfinfo_shim_fails(tmp_path: Path, monkeypatch) -> None:
+    from scripts import verify_kbs_submission_package
+    from scripts.verify_kbs_submission_package import check_package
+
+    package_dir = tmp_path / "final_package"
+    _write_final_package(package_dir)
+
+    class FailedPdfInfo:
+        returncode = 1
+        stdout = ""
+        stderr = "The system cannot find the path specified."
+
+    class GoodPdfInfo:
+        returncode = 0
+        stdout = "Pages: 35\n"
+        stderr = ""
+
+    def fake_candidates():
+        return ["pdfinfo", r"D:\DevelopTools\texlive\2026\bin\windows\pdfinfo.exe"]
+
+    def fake_run(args, **_kwargs):
+        return FailedPdfInfo() if args[0] == "pdfinfo" else GoodPdfInfo()
+
+    monkeypatch.setattr(verify_kbs_submission_package, "_pdfinfo_candidates", fake_candidates)
+    monkeypatch.setattr(verify_kbs_submission_package.subprocess, "run", fake_run)
+
+    report = check_package(package_dir, expected_manuscript_pages=35)
+
+    assert report.ok, report.errors
 
 
 def test_kbs_verifier_blocks_legacy_split_pdfs(tmp_path: Path) -> None:

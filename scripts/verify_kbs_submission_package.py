@@ -18,28 +18,27 @@ CURRENT_TITLE = (
 DATA_AVAILABILITY = (
     "PRM800K, MuSiQue, and WebQSP are publicly available from their original sources. "
     "Derived locked-split reports, audit-prioritization artifacts, trace-audit diagnostics, "
-    "and reproduction scripts will be deposited in an anonymous public repository for review "
-    "and released with the final article."
+    "experiment configurations, and reproduction scripts will be deposited in an anonymous "
+    "public repository for review and released with the final article."
 )
 
 DATA_AVAILABILITY_PDF = (
     "PRM800K, MuSiQue, and WebQSP are publicly available from their original sources."
 )
 
-MUSIQUE_DATA_AVAILABILITY_SOURCE = (
-    r"The MuSiQue KBS-style audit route is reproducible from "
-    r"\texttt{outputs/kbs\_real\_audit\_v1}"
+REPRODUCIBILITY_CHECKLIST_SOURCE = (
+    "Full commands, local raw-data expectations, output paths, and claim-boundary notes "
+    "are documented in the supplementary reproducibility checklist."
 )
 
-MUSIQUE_DATA_AVAILABILITY_PDF = (
-    "reproducible from outputs/kbs_real_audit_v1"
+KBS_AUDIT_BOUNDARY = (
+    "The current KBS-facing evidence is limited to audit prioritization "
+    "and does not validate a deployed KBS workflow."
 )
-
 MUSIQUE_BOUNDARY = "kbs_style_audit_prioritization_evidence_only"
 STRESS_TEST_SOURCE_SNIPPET = "SCU component contribution on a structural stress-test benchmark"
-STRESS_TEST_PDF_SNIPPET = "structural stress-test benchmark"
 KG_PILOT_SOURCE_SNIPPET = r"\subsection{Real-Knowledge-Graph Graph Construction Pilot}"
-KG_PILOT_PDF_SNIPPET = "Real-Knowledge-Graph Graph Construction Pilot"
+KG_PILOT_TEXT_SNIPPET = "Real-Knowledge-Graph Graph Construction Pilot"
 
 REQUIRED_FILES = (
     "Highlights.docx",
@@ -100,6 +99,18 @@ FORBIDDEN_SNIPPETS = {
     "true causal effect": "forbidden causal-effect wording remains",
     "average treatment effect": "forbidden ATE wording remains",
     "globally identifiable causal": "forbidden global-causal-identification wording remains",
+    "OpenAI Codex": "obsolete generative-AI tool statement remains",
+    "[NAME OF TOOL / SERVICE TO BE CONFIRMED BY AUTHORS]": (
+        "unresolved generative-AI tool placeholder remains"
+    ),
+    "ORCID (s):": "empty ORCID field remains visible",
+    "validated_kbs_workflow=false": "visible code-style KBS boundary variable remains",
+    "F_PRM_TRAINING": "visible code-style PRM-training boundary variable remains",
+    "NOT claimed": "defensive all-caps claim heading remains",
+    "Fixed-budget audit-prioritization comparison on the locked PRM800K hash split": (
+        "duplicate fixed-budget audit table remains"
+    ),
+    "tab:audit-demo-results": "duplicate fixed-budget audit table remains",
 }
 
 REQUIRED_MANUSCRIPT_SNIPPETS = (
@@ -114,11 +125,15 @@ REQUIRED_MANUSCRIPT_SNIPPETS = (
     "The authors declared that they have no conflicts of interest to this work.",
     r"\section*{Data Availability}",
     DATA_AVAILABILITY,
-    MUSIQUE_DATA_AVAILABILITY_SOURCE,
-    MUSIQUE_BOUNDARY,
+    REPRODUCIBILITY_CHECKLIST_SOURCE,
+    KBS_AUDIT_BOUNDARY,
+    r"\section*{CRediT authorship contribution statement}",
+)
+
+REQUIRED_SUPPLEMENTARY_SNIPPETS = (
+    CURRENT_TITLE,
     STRESS_TEST_SOURCE_SNIPPET,
     KG_PILOT_SOURCE_SNIPPET,
-    r"\section*{CRediT authorship contribution statement}",
 )
 
 REQUIRED_DOCX_TEXT_SNIPPETS = {
@@ -135,6 +150,8 @@ REQUIRED_DOCX_TEXT_SNIPPETS = {
         "Ningning Wang",
         "MuSiQue KBS-style Knowledge-Audit Details",
         MUSIQUE_BOUNDARY,
+        STRESS_TEST_SOURCE_SNIPPET,
+        KG_PILOT_TEXT_SNIPPET,
     ),
 }
 
@@ -148,15 +165,16 @@ REQUIRED_PDF_TEXT_SNIPPETS = {
         "Ningning Wang",
         "National Social Science Fund of China Project (24BSH018)",
         DATA_AVAILABILITY_PDF,
-        MUSIQUE_DATA_AVAILABILITY_PDF,
-        MUSIQUE_BOUNDARY,
-        STRESS_TEST_PDF_SNIPPET,
-        KG_PILOT_PDF_SNIPPET,
+        KBS_AUDIT_BOUNDARY,
     ),
 }
 
 FORBIDDEN_PDF_SNIPPETS = {
-    "manuscript.pdf": ("Highlights",),
+    "manuscript.pdf": (
+        "Highlights",
+        "kbs_style_audit_prioritization_evidence_only",
+        "real_prm800k_audit_prioritization_only",
+    ),
 }
 
 FORBIDDEN_DOCX_MARKERS = (
@@ -319,8 +337,9 @@ def _check_source_zip(package_dir: Path, errors: list[str]) -> dict[str, str]:
     for snippet in REQUIRED_MANUSCRIPT_SNIPPETS:
         if snippet not in manuscript:
             errors.append(f"manuscript.tex missing required snippet: {snippet}")
-    if CURRENT_TITLE not in supplementary:
-        errors.append("supplementary.tex missing current title")
+    for snippet in REQUIRED_SUPPLEMENTARY_SNIPPETS:
+        if snippet not in supplementary:
+            errors.append(f"supplementary.tex missing required snippet: {snippet}")
 
     _check_includegraphics_paths_in_zip(names, manuscript, "manuscript.tex", errors)
     _check_includegraphics_paths_in_zip(names, supplementary, "supplementary.tex", errors)
@@ -433,10 +452,43 @@ def _check_pdf_text(
 
 def _extract_pdf_page_count(package_dir: Path, filename: str, errors: list[str]) -> int | None:
     pdf_path = package_dir / filename
+    candidates = _pdfinfo_candidates()
+    failures: list[str] = []
+    for candidate in candidates:
+        try:
+            result = subprocess.run(
+                [candidate, str(pdf_path)],
+                cwd=package_dir,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                capture_output=True,
+                check=False,
+            )
+        except FileNotFoundError:
+            failures.append(f"{candidate}: not found")
+            continue
+
+        if result.returncode != 0:
+            detail = (result.stderr or result.stdout).strip()
+            failures.append(f"{candidate}: {detail}")
+            continue
+
+        match = re.search(r"^Pages:\s*(\d+)\s*$", result.stdout or "", flags=re.MULTILINE)
+        if match is None:
+            failures.append(f"{candidate}: no Pages field")
+            continue
+        return int(match.group(1))
+
+    errors.append(f"pdfinfo failed for {filename}: {'; '.join(failures)}")
+    return None
+
+
+def _pdfinfo_candidates() -> list[str]:
+    candidates = ["pdfinfo"]
     try:
         result = subprocess.run(
-            ["pdfinfo", str(pdf_path)],
-            cwd=package_dir,
+            ["where.exe", "pdfinfo.exe"],
             text=True,
             encoding="utf-8",
             errors="replace",
@@ -444,19 +496,13 @@ def _extract_pdf_page_count(package_dir: Path, filename: str, errors: list[str])
             check=False,
         )
     except FileNotFoundError:
-        errors.append("pdfinfo is required for rendered PDF page-count verification")
-        return None
-
-    if result.returncode != 0:
-        detail = (result.stderr or result.stdout).strip()
-        errors.append(f"pdfinfo failed for {filename}: {detail}")
-        return None
-
-    match = re.search(r"^Pages:\s*(\d+)\s*$", result.stdout or "", flags=re.MULTILINE)
-    if match is None:
-        errors.append(f"pdfinfo output for {filename} did not include a Pages field")
-        return None
-    return int(match.group(1))
+        return candidates
+    if result.returncode == 0:
+        for line in result.stdout.splitlines():
+            candidate = line.strip()
+            if candidate and candidate not in candidates:
+                candidates.append(candidate)
+    return candidates
 
 
 def _check_pdf_page_count(

@@ -1,11 +1,12 @@
-"""Gamma/delta sensitivity for the SCU structural-stress benchmark.
+"""SCU hyperparameter sensitivity for the structural-stress benchmark.
 
-This script sweeps the QP-only redundancy penalty (gamma) and bottleneck
-log-barrier (delta) on the existing structural stress-test generator. It is a
-supplementary robustness diagnostic: it checks whether the selected QP
-diagnostic default is stable across nearby hyperparameters. It is not positive
-external validation and does not change the Ridge recommendation for
-strong-fidelity real-data settings.
+This script sweeps the QP-only redundancy penalty (gamma), bottleneck
+log-barrier (delta), fidelity weight (alpha), and structure-necessity weight
+(beta) on the existing structural stress-test generator. It is a supplementary
+robustness diagnostic: it checks whether the selected QP diagnostic default is
+stable across nearby hyperparameters. It is not positive external validation
+and does not change the Ridge recommendation for strong-fidelity real-data
+settings.
 """
 
 from __future__ import annotations
@@ -47,8 +48,12 @@ from run_scu_stress_test import (  # noqa: E402
 
 
 DEFAULT_OUTPUT_DIR = DEFAULT_OUTPUT_ROOT / "scu_hyperparameter_sensitivity"
+ALPHA_VALUES = [0.5, 1.0, 2.0]
+BETA_VALUES = [0.0, 0.5, 1.0]
 GAMMA_VALUES = [0.0, 0.1, 0.2, 0.5, 0.8]
 DELTA_VALUES = [0.0, 0.05, 0.1, 0.2, 0.4]
+DEFAULT_ALPHA = 1.0
+DEFAULT_BETA = 0.5
 DEFAULT_GAMMA = 0.2
 DEFAULT_DELTA = 0.1
 
@@ -83,10 +88,35 @@ def main(argv: Sequence[str] | None = None) -> None:
     for gamma in GAMMA_VALUES:
         for delta in DELTA_VALUES:
             seed_rows = [
-                run_config(samples, gamma=gamma, delta=delta)
+                run_config(
+                    samples,
+                    alpha=DEFAULT_ALPHA,
+                    beta=DEFAULT_BETA,
+                    gamma=gamma,
+                    delta=delta,
+                )
                 for samples in samples_by_seed.values()
             ]
-            grid.append(summarize_grid_cell(gamma, delta, seed_rows))
+            grid.append(
+                summarize_grid_cell({"gamma": gamma, "delta": delta}, seed_rows)
+            )
+
+    alpha_beta_grid: list[dict[str, Any]] = []
+    for alpha in ALPHA_VALUES:
+        for beta in BETA_VALUES:
+            seed_rows = [
+                run_config(
+                    samples,
+                    alpha=alpha,
+                    beta=beta,
+                    gamma=DEFAULT_GAMMA,
+                    delta=DEFAULT_DELTA,
+                )
+                for samples in samples_by_seed.values()
+            ]
+            alpha_beta_grid.append(
+                summarize_grid_cell({"alpha": alpha, "beta": beta}, seed_rows)
+            )
 
     default_row = next(
         row
@@ -98,6 +128,16 @@ def main(argv: Sequence[str] | None = None) -> None:
         row["delta_spearman_vs_default"] = float(
             row["spearman_mean"] - default_spearman
         )
+    alpha_beta_default_row = next(
+        row
+        for row in alpha_beta_grid
+        if row["alpha"] == DEFAULT_ALPHA and row["beta"] == DEFAULT_BETA
+    )
+    alpha_beta_default_spearman = float(alpha_beta_default_row["spearman_mean"])
+    for row in alpha_beta_grid:
+        row["delta_spearman_vs_default"] = float(
+            row["spearman_mean"] - alpha_beta_default_spearman
+        )
 
     report = {
         **common_metadata(
@@ -106,13 +146,20 @@ def main(argv: Sequence[str] | None = None) -> None:
             source_artifacts=["synthetic_structural_stress_test_fixture"],
         ),
         "experiment": "scu_hyperparameter_sensitivity",
-        "title": "SCU Gamma/Delta Hyperparameter Sensitivity",
+        "title": "SCU Hyperparameter Sensitivity",
         "samples_per_seed": args.samples_per_seed,
         "elapsed_seconds": timer.elapsed(),
+        "alpha_values": ALPHA_VALUES,
+        "beta_values": BETA_VALUES,
         "gamma_values": GAMMA_VALUES,
         "delta_values": DELTA_VALUES,
-        "fixed_params": {"alpha": 1.0, "beta": 0.5},
+        "fixed_params": {
+            "gamma_delta_grid": {"alpha": DEFAULT_ALPHA, "beta": DEFAULT_BETA},
+            "alpha_beta_grid": {"gamma": DEFAULT_GAMMA, "delta": DEFAULT_DELTA},
+        },
         "recommended_default": {
+            "alpha": DEFAULT_ALPHA,
+            "beta": DEFAULT_BETA,
             "gamma": DEFAULT_GAMMA,
             "delta": DEFAULT_DELTA,
             "selection_role": "synthetic structural-stress default for QP diagnostics",
@@ -123,11 +170,20 @@ def main(argv: Sequence[str] | None = None) -> None:
             "fidelity_blend": args.fidelity_blend,
         },
         "grid": grid,
+        "alpha_beta_grid": alpha_beta_grid,
         "interpretation": (
             "The gamma/delta grid is a supplementary QP sensitivity diagnostic. "
             "It checks that the structural-stress result is not a single-point "
             "hyperparameter artifact. It is not positive external validation and "
             "does not make QP the default real-data variant."
+        ),
+        "alpha_beta_interpretation": (
+            "If beta=0.0 results are similar to beta>0, this is consistent with "
+            "the revised finding that structural terms mainly serve as "
+            "regularizers and decomposition aids rather than ranking drivers. "
+            "If Spearman varies by more than +/-0.05 across alpha, the "
+            "fidelity-anchor weight affects calibration strength as theoretically "
+            "expected."
         ),
     }
 
@@ -137,13 +193,20 @@ def main(argv: Sequence[str] | None = None) -> None:
         render_markdown(report),
     )
     write_csv(args.output_dir / "gamma_delta_grid.csv", grid)
+    write_csv(args.output_dir / "alpha_beta_grid.csv", alpha_beta_grid)
     print(f"Wrote {args.output_dir / 'scu_hyperparameter_sensitivity.json'}")
     print(f"Wrote {args.output_dir / 'scu_hyperparameter_sensitivity.md'}")
     print(f"Wrote {args.output_dir / 'gamma_delta_grid.csv'}")
+    print(f"Wrote {args.output_dir / 'alpha_beta_grid.csv'}")
 
 
 def run_config(
-    samples: Sequence[Mapping[str, Any]], *, gamma: float, delta: float
+    samples: Sequence[Mapping[str, Any]],
+    *,
+    alpha: float,
+    beta: float,
+    gamma: float,
+    delta: float,
 ) -> dict[str, float]:
     spearman_values: list[float] = []
     kendall_values: list[float] = []
@@ -160,8 +223,8 @@ def run_config(
                 for index in sample["bottlenecks"]
             ],
             sample_id=str(sample["sample_id"]),
-            alpha=1.0,
-            beta=0.5,
+            alpha=alpha,
+            beta=beta,
             gamma=gamma,
             delta=delta,
         )
@@ -183,14 +246,13 @@ def run_config(
 
 
 def summarize_grid_cell(
-    gamma: float, delta: float, seed_rows: Sequence[Mapping[str, float]]
+    params: Mapping[str, float], seed_rows: Sequence[Mapping[str, float]]
 ) -> dict[str, Any]:
     spearman_values = [float(row["spearman"]) for row in seed_rows]
     kendall_values = [float(row["kendall"]) for row in seed_rows]
     convergence_values = [float(row["convergence_rate"]) for row in seed_rows]
     return {
-        "gamma": gamma,
-        "delta": delta,
+        **params,
         "spearman_mean": mean(spearman_values),
         "spearman_std": std(spearman_values),
         "kendall_mean": mean(kendall_values),
@@ -224,6 +286,23 @@ def render_markdown(report: Mapping[str, Any]) -> list[str]:
             f"{row['delta_spearman_vs_default']:+.4f} |"
         )
 
+    lines.extend(
+        [
+            "",
+            "## Alpha/Beta Grid",
+            "",
+            "| alpha | beta | Spearman mean | Spearman std | Kendall mean | Convergence | Delta vs default |",
+            "|---:|---:|---:|---:|---:|---:|---:|",
+        ]
+    )
+    for row in report["alpha_beta_grid"]:
+        lines.append(
+            f"| {row['alpha']:.2f} | {row['beta']:.2f} | "
+            f"{row['spearman_mean']:.4f} | {row['spearman_std']:.4f} | "
+            f"{row['kendall_mean']:.4f} | {row['convergence_rate']:.3f} | "
+            f"{row['delta_spearman_vs_default']:+.4f} |"
+        )
+
     default = report["recommended_default"]
     lines.extend(
         [
@@ -231,12 +310,15 @@ def render_markdown(report: Mapping[str, Any]) -> list[str]:
             "## Interpretation Boundary",
             "",
             "The selected diagnostic default "
-            f"($\\gamma={default['gamma']}$, $\\delta={default['delta']}$) "
+            f"($\\alpha={default['alpha']}$, $\\beta={default['beta']}$, "
+            f"$\\gamma={default['gamma']}$, $\\delta={default['delta']}$) "
             "is used for synthetic structural-stress QP diagnostics. The grid "
             "shows whether the stress-test behavior is robust to nearby "
             "redundancy and bottleneck weights. The real-data recommendation "
             "remains Ridge when a strong learned fidelity signal is available; "
             "QP is reserved for high-structure-conflict settings.",
+            "",
+            report["alpha_beta_interpretation"],
         ]
     )
     return lines
@@ -244,9 +326,10 @@ def render_markdown(report: Mapping[str, Any]) -> list[str]:
 
 def write_csv(path: Path, rows: Sequence[Mapping[str, Any]]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    fieldnames = [
-        "gamma",
-        "delta",
+    param_fields = [
+        field for field in ("alpha", "beta", "gamma", "delta") if field in rows[0]
+    ]
+    fieldnames = param_fields + [
         "spearman_mean",
         "spearman_std",
         "kendall_mean",

@@ -241,12 +241,17 @@ def test_scu_hyperparameter_sensitivity_fixture_outputs_gamma_delta_grid(
     assert_common_report_fields(report, output_dir, "mechanism_ablation")
     assert report["gamma_values"] == [0.0, 0.1, 0.2, 0.5, 0.8]
     assert report["delta_values"] == [0.0, 0.05, 0.1, 0.2, 0.4]
+    assert report["alpha_values"] == [0.5, 1.0, 2.0]
+    assert report["beta_values"] == [0.0, 0.5, 1.0]
     assert report["recommended_default"] == {
+        "alpha": 1.0,
+        "beta": 0.5,
         "gamma": 0.2,
         "delta": 0.1,
         "selection_role": "synthetic structural-stress default for QP diagnostics",
     }
     assert len(report["grid"]) == 25
+    assert len(report["alpha_beta_grid"]) == 9
     for row in report["grid"]:
         assert {
             "gamma",
@@ -258,15 +263,41 @@ def test_scu_hyperparameter_sensitivity_fixture_outputs_gamma_delta_grid(
             "convergence_rate",
             "delta_spearman_vs_default",
         } <= set(row)
+    for row in report["alpha_beta_grid"]:
+        assert {
+            "alpha",
+            "beta",
+            "spearman_mean",
+            "spearman_std",
+            "kendall_mean",
+            "kendall_std",
+            "convergence_rate",
+            "delta_spearman_vs_default",
+        } <= set(row)
+    assert any(
+        row["alpha"] == 1.0 and row["beta"] == 0.5
+        for row in report["alpha_beta_grid"]
+    )
+    assert any(row["beta"] == 0.0 for row in report["alpha_beta_grid"])
+    assert "structural terms mainly serve as regularizers" in report[
+        "alpha_beta_interpretation"
+    ]
+    assert "fidelity-anchor weight" in report["alpha_beta_interpretation"]
 
     csv_path = output_dir / "gamma_delta_grid.csv"
     assert csv_path.exists()
     assert "gamma,delta,spearman_mean" in csv_path.read_text(encoding="utf-8")
+    alpha_beta_csv_path = output_dir / "alpha_beta_grid.csv"
+    assert alpha_beta_csv_path.exists()
+    assert "alpha,beta,spearman_mean" in alpha_beta_csv_path.read_text(
+        encoding="utf-8"
+    )
 
     md_path = output_dir / "scu_hyperparameter_sensitivity.md"
     assert md_path.exists()
     markdown = md_path.read_text(encoding="utf-8").lower()
     assert "hyperparameter sensitivity" in markdown
+    assert "alpha/beta grid" in markdown
     assert "not positive external validation" in markdown
 
 

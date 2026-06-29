@@ -25,6 +25,10 @@ FORBIDDEN_PATTERNS = (
     "external generalization",
     "PRM training improvement",
     "deployed KBS validation",
+    "16-feature",
+    "oracle validation",
+    "independent oracle",
+    "audit correctness",
     "all interventions are structure-preserving",
     "per-step counterfactual outcome differences",
 )
@@ -48,12 +52,16 @@ NEGATION_MARKERS = (
 
 ACTIVE_EXTENSIONS = {".md", ".tex", ".yml", ".yaml"}
 ACTIVE_ROOT_FILES = {"README.md", "AGENTS.md", "dvc.yaml", "dvc.lock"}
+EXCLUDED_ROOT_FILE_PATTERNS = (
+    re.compile(r"paper_review_.*\.md$"),
+)
 EXCLUDED_PREFIXES = (
     ".git/",
     ".omo/",
     ".pytest_cache/",
     "docs/legacy/",
     "docs/superpowers/",
+    "paper/kbs_submission/editorial_repair_artifacts/",
 )
 SUPERSEDED_PAPER_MARKDOWN = {
     "paper/introduction.md",
@@ -101,6 +109,8 @@ def iter_active_files(root: Path) -> Iterable[Path]:
             continue
         rel = path.relative_to(root).as_posix()
         if rel in SUPERSEDED_PAPER_MARKDOWN:
+            continue
+        if "/" not in rel and any(pattern.fullmatch(rel) for pattern in EXCLUDED_ROOT_FILE_PATTERNS):
             continue
         if any(rel.startswith(prefix) for prefix in EXCLUDED_PREFIXES):
             continue
