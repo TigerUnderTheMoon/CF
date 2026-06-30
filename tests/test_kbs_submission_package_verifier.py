@@ -25,6 +25,11 @@ REPRODUCIBILITY_CHECKLIST_SOURCE = (
     "are documented in the supplementary reproducibility checklist."
 )
 
+AI_DISCLOSURE = (
+    "During the preparation of this work, the authors used OpenAI GPT-5 "
+    "to improve language clarity and assist with LaTeX formatting checks."
+)
+
 MUSIQUE_BOUNDARY = "kbs_style_audit_prioritization_evidence_only"
 KBS_AUDIT_BOUNDARY = (
     "The current KBS-facing evidence is limited to audit prioritization "
@@ -82,7 +87,8 @@ def _write_source_zip(
             "National Social Science Fund of China Project (24BSH018)",
             "Beijing Natural Science Foundation Project (L252145)",
             r"\section*{Declaration of Competing Interest}",
-            "The authors declared that they have no conflicts of interest to this work.",
+            "The authors declare that they have no conflicts of interest related to this work.",
+            AI_DISCLOSURE,
             r"\section*{Data Availability}",
             DATA_AVAILABILITY,
             REPRODUCIBILITY_CHECKLIST_SOURCE,
@@ -153,6 +159,7 @@ def _pdf_text_by_name() -> dict[str, str]:
             "wangningning@bistu.edu.cn",
             "National Social Science Fund of China Project (24BSH018)",
             DATA_AVAILABILITY_PDF,
+            AI_DISCLOSURE,
             KBS_AUDIT_BOUNDARY,
         ]
     )

@@ -12,6 +12,8 @@ from scipy import stats
 from pathlib import Path
 
 FIGURES_DIR = Path(__file__).resolve().parents[1] / "paper" / "kbs_submission" / "final_source" / "figures"
+FIGURE1_VECTOR = FIGURES_DIR / "fig_overall_framework.pdf"
+FIGURE1_PREVIEW = FIGURES_DIR / "fig_overall_framework.png"
 
 BLUE = "#0072B2"
 ORANGE = "#E69F00"
@@ -28,7 +30,8 @@ FONTSIZE = 9
 def setup_style():
     plt.rcParams.update({
         "font.size": FONTSIZE,
-        "font.family": "sans-serif",
+        "font.family": "serif",
+        "font.serif": ["Times New Roman", "Times", "STIXGeneral", "DejaVu Serif"],
         "axes.labelsize": FONTSIZE,
         "axes.titlesize": FONTSIZE,
         "xtick.labelsize": FONTSIZE - 1,
@@ -38,6 +41,8 @@ def setup_style():
         "savefig.dpi": 300,
         "savefig.bbox": "tight",
         "savefig.pad_inches": 0.05,
+        "pdf.fonttype": 42,
+        "ps.fonttype": 42,
     })
 
 
@@ -51,69 +56,266 @@ def _auc(y, x=None):
 # Overall Framework (fig_overall_framework.png)
 # ---------------------------------------------------------------------------
 def fig_overall_framework():
-    stages = [
-        "Trace",
-        "Graph\nConstruction",
-        "SC-FMA\n(SCU)",
-        "Calibration",
-        "Audit\nQueue",
-        "Audit\nCard",
-    ]
-
-    fig, ax = plt.subplots(figsize=(TWO_COL, 2.0))
+    setup_style()
+    fig, ax = plt.subplots(figsize=(TWO_COL, 2.05))
     ax.set_axis_off()
 
-    title_font = FONTSIZE - 2
-    box_w = 0.128
-    box_h = 0.42
-    y = 0.5 - box_h / 2
-    xs = np.linspace(0.035, 0.84, len(stages))
-    colors = ["#E8F1FA", "#E9F6EF", "#FFF4D8", "#F3EAF7", "#FCE9E3", "#ECECEC"]
-    edge_colors = [BLUE, GREEN, ORANGE, PURPLE, RED, GRAY]
+    text_color = "#111111"
+    muted = "0.35"
+    line_gray = "0.45"
+    border = "0.35"
+    light_gray = "0.94"
+    header_gray = "0.90"
+    accent_gray = "0.18"
 
-    for idx, (title, x0) in enumerate(zip(stages, xs)):
-        rect = plt.Rectangle(
-            (x0, y),
-            box_w,
-            box_h,
-            facecolor=colors[idx],
-            edgecolor=edge_colors[idx],
+    def stage_box(x, y, w, h, stage_no, title, subtitle):
+        header_h = 0.17
+        ax.add_patch(plt.Rectangle(
+            (x, y),
+            w,
+            h,
+            facecolor="1.0",
+            edgecolor=border,
             linewidth=1.0,
             transform=ax.transAxes,
-        )
-        ax.add_patch(rect)
+        ))
+        ax.add_patch(plt.Rectangle(
+            (x + 0.002, y + h - header_h),
+            w - 0.004,
+            header_h,
+            facecolor=header_gray,
+            edgecolor=header_gray,
+            linewidth=0.0,
+            transform=ax.transAxes,
+        ))
+        ax.add_patch(plt.Circle(
+            (x + 0.024, y + h - header_h / 2),
+            0.017,
+            facecolor=accent_gray,
+            edgecolor=accent_gray,
+            linewidth=0.7,
+            transform=ax.transAxes,
+            zorder=3,
+        ))
         ax.text(
-            x0 + box_w / 2,
-            y + box_h * 0.5,
-            title,
+            x + 0.024,
+            y + h - header_h / 2,
+            str(stage_no),
             ha="center",
             va="center",
-            fontsize=title_font,
+            fontsize=7,
             weight="bold",
+            color="white",
+            transform=ax.transAxes,
+            zorder=4,
+        )
+        ax.text(
+            x + 0.047,
+            y + h - header_h / 2,
+            title,
+            ha="left",
+            va="center",
+            fontsize=9,
+            weight="bold",
+            color=text_color,
+            linespacing=0.95,
+            transform=ax.transAxes,
+        )
+        ax.text(
+            x + 0.014,
+            y + h - header_h - 0.045,
+            subtitle,
+            ha="left",
+            va="top",
+            fontsize=7,
+            color=muted,
+            linespacing=1.02,
             transform=ax.transAxes,
         )
 
-    for left, right in zip(xs[:-1], xs[1:]):
+    trace_steps = [
+        ("S1", "Evidence retrieval"),
+        ("S2", "Relation check"),
+        ("S3", "Constraint verification"),
+    ]
+    stage_y = 0.08
+    stage_h = 0.84
+    trace_x = 0.04
+    trace_w = 0.20
+    stage_box(
+        trace_x,
+        stage_y,
+        trace_w,
+        stage_h,
+        1,
+        "Observable\ntrace",
+        "Step evidence and\nintermediate checks.",
+    )
+    for idx, (sid, label) in enumerate(trace_steps):
+        y0 = 0.515 - idx * 0.125
+        ax.add_patch(plt.Rectangle(
+            (trace_x + 0.018, y0 - 0.025),
+            trace_w - 0.036,
+            0.058,
+            facecolor=light_gray,
+            edgecolor="0.72",
+            linewidth=0.7,
+            transform=ax.transAxes,
+        ))
+        ax.text(trace_x + 0.027, y0, sid, ha="left", va="center",
+                fontsize=9, weight="bold", color=text_color,
+                transform=ax.transAxes)
+        ax.text(trace_x + 0.06, y0, label, ha="left", va="center",
+                fontsize=7, color=text_color, transform=ax.transAxes)
+    ax.text(trace_x, 0.965, r"reasoning trace $T$", ha="left", va="center",
+            fontsize=7, color=muted, transform=ax.transAxes)
+
+    graph_x = 0.305
+    graph_w = 0.185
+    stage_box(
+        graph_x,
+        stage_y,
+        graph_w,
+        stage_h,
+        2,
+        "Audit graph",
+        "Trace edges reveal\nstructural roles.",
+    )
+    node_pos = {
+        "S1": (graph_x + 0.042, 0.435),
+        "S2": (graph_x + 0.106, 0.57),
+        "S3": (graph_x + 0.138, 0.36),
+        "S4": (graph_x + 0.076, 0.235),
+    }
+    edges = [
+        ("S1", "S2", "0.35", "-", 1.0),
+        ("S2", "S3", "0.35", "-", 1.0),
+        ("S3", "S4", "0.35", "-", 1.0),
+        ("S1", "S4", "0.50", "--", 1.0),
+    ]
+    for src, dst, color, ls, lw in edges:
+        x1, y1 = node_pos[src]
+        x2, y2 = node_pos[dst]
         ax.annotate(
             "",
-            xy=(right - 0.006, 0.5),
-            xytext=(left + box_w + 0.006, 0.5),
+            xy=(x2, y2),
+            xytext=(x1, y1),
             xycoords=ax.transAxes,
-            arrowprops=dict(arrowstyle="->", linewidth=1.0, color="#444444"),
+            arrowprops=dict(arrowstyle="->", linewidth=lw, color=color, linestyle=ls),
         )
+    for sid, (x0, y0) in node_pos.items():
+        face = "0.88" if sid == "S3" else "white"
+        ax.add_patch(plt.Circle((x0, y0), 0.025, facecolor=face, edgecolor="0.25",
+                                linewidth=1.0, transform=ax.transAxes, zorder=3))
+        ax.text(x0, y0, sid, ha="center", va="center",
+                fontsize=8, weight="bold", color=text_color,
+                transform=ax.transAxes, zorder=4)
+    ax.text(graph_x + 0.018, 0.155, "dashed = redundant",
+            ha="left", va="center", fontsize=7, color=muted,
+            transform=ax.transAxes)
 
-    ax.text(
-        0.5,
-        0.08,
-        "Output: fixed-budget priority allocation with fidelity, necessity, redundancy, and bottleneck fields",
-        ha="center",
-        va="center",
-        fontsize=FONTSIZE - 2,
-        transform=ax.transAxes,
+    scu_x = 0.545
+    scu_w = 0.19
+    stage_box(
+        scu_x,
+        stage_y,
+        scu_w,
+        stage_h,
+        3,
+        "SCU\ncalibration",
+        "Regularized fusion of\nfidelity and diagnostics.",
     )
+    metric_rows = [
+        ("fidelity", "0.61"),
+        ("necessity", "0.74"),
+        ("redundancy", "0.18"),
+    ]
+    table_x = scu_x + 0.025
+    label_w = 0.090
+    value_w = 0.060
+    row_h = 0.058
+    for idx, (label, value) in enumerate(metric_rows):
+        y0 = 0.515 - idx * 0.12
+        ax.add_patch(plt.Rectangle(
+            (table_x, y0 - row_h / 2),
+            label_w + value_w,
+            row_h,
+            facecolor=light_gray,
+            edgecolor="0.72",
+            linewidth=0.7,
+            transform=ax.transAxes,
+        ))
+        ax.plot(
+            [table_x + label_w, table_x + label_w],
+            [y0 - row_h / 2, y0 + row_h / 2],
+            color="0.72",
+            linewidth=0.6,
+            transform=ax.transAxes,
+        )
+        ax.text(table_x + 0.008, y0, label, ha="left", va="center",
+                fontsize=7, color=text_color, transform=ax.transAxes)
+        ax.text(table_x + label_w + value_w - 0.008, y0, value,
+                ha="right", va="center", fontsize=7, color=text_color,
+                transform=ax.transAxes)
+    ax.text(scu_x + 0.025, 0.17, "weight 0.68",
+            ha="left", va="center", fontsize=7, weight="bold",
+            color=text_color, transform=ax.transAxes)
 
-    fig.savefig(FIGURES_DIR / "fig_overall_framework.png")
+    output_x = 0.78
+    output_w = 0.18
+    stage_box(
+        output_x,
+        stage_y,
+        output_w,
+        stage_h,
+        4,
+        "Audit queue\n+ card",
+        "Budgeted selected steps\nwith review fields.",
+    )
+    output_rows = [
+        ("priority", "S3"),
+        ("role", "bottleneck"),
+        ("action", "inspect"),
+    ]
+    for idx, (label, value) in enumerate(output_rows):
+        y0 = 0.50 - idx * 0.125
+        ax.text(output_x + 0.024, y0, label, ha="left", va="center",
+            fontsize=7, color=muted, transform=ax.transAxes)
+        ax.text(output_x + output_w - 0.025, y0, value, ha="right", va="center",
+                fontsize=7, weight="semibold", color=text_color,
+                transform=ax.transAxes)
+        ax.plot(
+            [output_x + 0.02, output_x + output_w - 0.02],
+            [y0 - 0.055, y0 - 0.055],
+            color="0.80",
+            linewidth=0.6,
+            transform=ax.transAxes,
+        )
+    ax.text(output_x + output_w / 2, 0.17, "fixed budget",
+            ha="center", va="center", fontsize=7, color=muted,
+            transform=ax.transAxes)
+    ax.text(output_x + output_w, 0.965, r"top-$k$ review set", ha="right",
+            va="center", fontsize=7, color=muted, transform=ax.transAxes)
+
+    arrow_notes = [
+        (trace_x, trace_w, graph_x, "structural decomposition"),
+        (graph_x, graph_w, scu_x, "diagnostics"),
+        (scu_x, scu_w, output_x, "ranking"),
+    ]
+    for left, left_w, right, note in arrow_notes:
+        ax.annotate(
+            "",
+            xy=(right - 0.014, 0.48),
+            xytext=(left + left_w + 0.014, 0.48),
+            xycoords=ax.transAxes,
+            arrowprops=dict(arrowstyle="->", linewidth=1.5, color=line_gray),
+        )
+        _ = note
+
+    fig.savefig(FIGURE1_VECTOR)
+    fig.savefig(FIGURE1_PREVIEW, dpi=600)
     plt.close(fig)
+    print("  fig_overall_framework.pdf saved")
     print("  fig_overall_framework.png saved")
 
 

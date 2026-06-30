@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(kpsewhich unsrtnat.bst)",
+      "Bash(echo \"=== exit: $? ===\")",
+      "Bash(pdftotext -layout manuscript.pdf -)",
+      "Bash(python3)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(echo \"scanner exit: $?\")",
+      "Bash(awk '/\\\\\\\\bibitem/{c++} c>=1&&c<=2{print} c>2{exit}' manuscript.bbl)",
+      "Bash(cd paper/kbs_submission/final_package && unzip -l latex_source.zip 2>&1 | head -40 && echo \"=== figures in final_source ===\" && ls final_source/figures/ 2>/dev/null; ls ../final_source/figures/)",
+      "Read(//d/final_source/**)",
+      "Bash(latexmk -C manuscript.tex >/dev/null 2>&1; latexmk -pdf -interaction=nonstopmode -halt-on-error manuscript.tex >/tmp/build.log 2>&1; echo \"EXIT=$?\"; grep -iE \"error|undefined|overfull\" /tmp/build.log | head; echo \"=== pages \\(pdfinfo\\) ===\"; pdfinfo manuscript.pdf 2>/dev/null | grep -i pages)",
+      "Bash(rm -f ../final_package/latex_source.zip)",
+      "Bash(zip ../final_package/latex_source.zip manuscript.tex supplementary.tex references.bib cas-sc.cls cas-common.sty cas-model2-names.bst figures/*.png)",
+      "Bash(pdfinfo paper/kbs_submission/final_package/manuscript.pdf)",
+      "Bash(python3 -)",
+      "Bash(echo \"2nd pass EXIT=$?\")",
+      "Bash(echo \"BSCAN_EXIT=$?\")",
+      "Bash(zcat -q ../final_package/latex_source.zip)",
+      "Bash(unzip -p ../final_package/latex_source.zip supplementary.tex)",
+      "Bash(echo \"BEXIT=$?\")",
+      "Bash(git ls-tree *)",
+      "Bash(unzip -p paper/kbs_submission/final_package/latex_source.zip manuscript.tex)",
+      "Bash(pdftoppm -png -r 300 \"d:/CF/paper/kbs_submission/final_source/figures/fig_overall_framework.pdf\" fwhi)",
+      "Bash(cygpath -w /tmp/fwhi-1.png)",
+      "Bash(pdftoppm -png -r 300 \"d:/CF/paper/kbs_submission/final_source/figures/fig_overall_framework.pdf\" fwk)",
+      "Bash(cygpath -w /tmp/fwk-1.png)",
+      "Read(//c/Users/27162/AppData/Local/Temp/**)"
+    ],
+    "additionalDirectories": [
+      "\\tmp"
+    ]
+  }
+}

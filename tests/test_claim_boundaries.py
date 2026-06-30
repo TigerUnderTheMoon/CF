@@ -76,8 +76,8 @@ def test_kbs_source_contains_ciu_granularity_and_adapter_contract():
         encoding="utf-8"
     )
 
-    assert "trace-level coarse utility anchor" in manuscript
-    assert "does not prove that each step has an independent outcome-grounded CIU" in manuscript
+    assert "coarse trace-level utility anchor" in manuscript
+    assert "local functional attributions rather than causal effect estimates" in manuscript
     assert "does not validate a deployed KBS workflow" in manuscript
     assert "fixture-level typed-edge construction only; no deployed workflow validation" in manuscript
     assert "per-step counterfactual outcome differences" not in manuscript
