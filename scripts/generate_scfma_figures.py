@@ -347,7 +347,7 @@ def fig_ciu_necessity():
         nec_final = nec_adj / (np.linalg.norm(nec_adj) + 1e-12)
         mode_y.append(nec_final)
 
-    fig, axes = plt.subplots(1, 4, figsize=(TWO_COL, 1.8))
+    fig, axes = plt.subplots(1, 4, figsize=(TWO_COL, 1.65))
 
     for i in range(3):
         ax = axes[i]
@@ -357,7 +357,7 @@ def fig_ciu_necessity():
         ax.scatter(x, y, s=3, alpha=0.2, color=color, edgecolors="none", rasterized=True)
         lim = max(np.max(np.abs(x)), 0.06) * 1.05
         ax.plot([0, lim], [0, lim], "k--", linewidth=0.5, alpha=0.4)
-        ax.set_xlabel(r"$\tilde{c}_i$")
+        ax.set_xlabel("")
         ax.set_ylabel(r"$\tilde{n}_i^{\mathrm{" + modes[i] + "}}$")
         ax.set_title(f"({chr(97+i)}) {modes[i]}", fontsize=FONTSIZE)
         ax.text(0.05, 0.92, f"$r = {target_r[i]:.4f}$\n$\\rho = {target_rho[i]:.4f}$",
@@ -368,14 +368,16 @@ def fig_ciu_necessity():
     all_nec = np.concatenate(mode_y)
     all_ciu = np.tile(ciu, 3)
     ax.hexbin(all_ciu, all_nec, gridsize=25, cmap="Blues", mincnt=1)
-    ax.set_xlabel(r"$\tilde{c}_i$")
+    ax.set_xlabel("")
     ax.set_ylabel(r"$\tilde{n}_i$ (pooled)")
     ax.set_title("(d) Pooled density", fontsize=FONTSIZE)
-    ax.text(0.05, 0.92, "67.79\\% zeros\n49.54\\% posCIU{,}0nec",
+    ax.text(0.05, 0.92, "67.79\\% zeros\n49.54\\% positive CIU,\nzero necessity",
             transform=ax.transAxes, fontsize=FONTSIZE - 2, va="top",
             bbox=dict(boxstyle="round,pad=0.2", facecolor="white", alpha=0.7))
 
-    plt.tight_layout()
+    fig.text(0.5, 0.055, r"Normalized local utility input $\tilde{c}_i$",
+             ha="center", va="center", fontsize=FONTSIZE)
+    plt.tight_layout(rect=(0, 0.12, 1, 1))
     fig.savefig(f"{FIGURES_DIR}/fig_ciu_necessity.png")
     plt.close(fig)
     print("  fig_ciu_necessity.png saved")

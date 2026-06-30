@@ -42,8 +42,8 @@ KBS_AUDIT_BOUNDARY = (
 )
 MUSIQUE_BOUNDARY = "kbs_style_audit_prioritization_evidence_only"
 STRESS_TEST_SOURCE_SNIPPET = "SCU component contribution on a structural stress-test benchmark"
-KG_PILOT_SOURCE_SNIPPET = r"\subsection{Real-Knowledge-Graph Graph Construction Pilot}"
-KG_PILOT_TEXT_SNIPPET = "Real-Knowledge-Graph Graph Construction Pilot"
+KG_STAGE_SOURCE_SNIPPET = r"\subsection{Countries-KG Typed-Edge Stage}"
+KG_STAGE_TEXT_SNIPPET = "Countries-KG typed-edge stage"
 
 REQUIRED_FILES = (
     "Highlights.docx",
@@ -139,7 +139,7 @@ REQUIRED_MANUSCRIPT_SNIPPETS = (
 REQUIRED_SUPPLEMENTARY_SNIPPETS = (
     CURRENT_TITLE,
     STRESS_TEST_SOURCE_SNIPPET,
-    KG_PILOT_SOURCE_SNIPPET,
+    KG_STAGE_SOURCE_SNIPPET,
 )
 
 REQUIRED_DOCX_TEXT_SNIPPETS = {
@@ -157,7 +157,7 @@ REQUIRED_DOCX_TEXT_SNIPPETS = {
         "MuSiQue KBS-style Knowledge-Audit Details",
         MUSIQUE_BOUNDARY,
         STRESS_TEST_SOURCE_SNIPPET,
-        KG_PILOT_TEXT_SNIPPET,
+        KG_STAGE_TEXT_SNIPPET,
     ),
 }
 

@@ -22,8 +22,9 @@ def test_kbs_submission_source_declares_current_latex_contract() -> None:
 
     assert TITLE in manuscript
     assert f"Supplementary Material for {TITLE}" in supplementary
-    assert "moderate, preliminary real-data support" in manuscript
-    assert "validated_kbs_workflow=false" in manuscript
+    assert "Evidence Ladder" in manuscript
+    assert "The current KBS-facing evidence is limited to audit prioritization" in manuscript
+    assert "does not validate a deployed KBS workflow" in manuscript
     assert "10.1016/j.knosys.2025.113503" in references
     assert "10.1016/j.knosys.2025.113648" in references
     assert "10.1016/j.knosys.2024.112410" in references

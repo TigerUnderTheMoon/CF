@@ -36,7 +36,7 @@ KBS_AUDIT_BOUNDARY = (
     "and does not validate a deployed KBS workflow."
 )
 STRESS_TEST_SOURCE_SNIPPET = "SCU component contribution on a structural stress-test benchmark"
-KG_PILOT_SOURCE_SNIPPET = r"\subsection{Real-Knowledge-Graph Graph Construction Pilot}"
+KG_STAGE_SOURCE_SNIPPET = r"\subsection{Countries-KG Typed-Edge Stage}"
 
 
 def _write_docx(path: Path, text: str | None = None) -> None:
@@ -105,7 +105,7 @@ def _write_source_zip(
             r"\subsection{MuSiQue KBS-style Knowledge-Audit Details}",
             MUSIQUE_BOUNDARY,
             STRESS_TEST_SOURCE_SNIPPET,
-            KG_PILOT_SOURCE_SNIPPET,
+            KG_STAGE_SOURCE_SNIPPET,
             r"\includegraphics{figures/fig_scaling.png}",
         ]
     )
@@ -140,7 +140,7 @@ def _write_final_package(package_dir: Path) -> None:
         (
             f"Supplementary Material\n{TITLE}\nHaoran Ma\nNingning Wang\n"
             f"MuSiQue KBS-style Knowledge-Audit Details\n{MUSIQUE_BOUNDARY}\n"
-            f"{STRESS_TEST_SOURCE_SNIPPET}\n{KG_PILOT_SOURCE_SNIPPET}"
+            f"{STRESS_TEST_SOURCE_SNIPPET}\nCountries-KG typed-edge stage"
         ),
     )
     _write_source_zip(package_dir / "latex_source.zip")

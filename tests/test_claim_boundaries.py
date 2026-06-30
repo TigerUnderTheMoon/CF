@@ -93,10 +93,11 @@ def test_kbs_source_preserves_main_text_diagnostic_context():
     )
 
     stress_caption = "SCU component contribution on a structural stress-test benchmark"
-    kg_pilot_section = r"\subsection{Real-Knowledge-Graph Graph Construction Pilot}"
+    kg_stage_section = r"\subsection{Countries-KG Typed-Edge Stage}"
 
     assert stress_caption in manuscript
-    assert kg_pilot_section in manuscript
+    assert kg_stage_section in manuscript
+    assert "Evidence Ladder" in manuscript
 
 
 def test_kbs_source_explicitly_bounds_hyperparameter_and_graph_ablation_claims():

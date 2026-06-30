@@ -26,7 +26,8 @@
       "Bash(cygpath -w /tmp/fwhi-1.png)",
       "Bash(pdftoppm -png -r 300 \"d:/CF/paper/kbs_submission/final_source/figures/fig_overall_framework.pdf\" fwk)",
       "Bash(cygpath -w /tmp/fwk-1.png)",
-      "Read(//c/Users/27162/AppData/Local/Temp/**)"
+      "Read(//c/Users/27162/AppData/Local/Temp/**)",
+      "Bash(echo \"=== all \\\\\\\\cite keys used in manuscript+supp ===\")"
     ],
     "additionalDirectories": [
       "\\tmp"

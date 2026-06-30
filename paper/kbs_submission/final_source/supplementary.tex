@@ -50,11 +50,11 @@
             country={China}}
 
 \begin{abstract}
-This supplementary material contains extended proofs, additional controlled-benchmark results, implementation details, and reproducibility notes separated from the main manuscript. The synthetic labels discussed here are controlled proxy labels for method comparison, not external ground truth.
+This supplementary material contains extended proofs, additional controlled-stage results, implementation details, and reproducibility notes separated from the main manuscript. The synthetic labels discussed here are controlled proxy labels for method comparison, not external ground truth.
 \end{abstract}
 
 \begin{keywords}
-supplementary material \sep structural calibration \sep reproducibility \sep knowledge graph pilot
+supplementary material \sep structural calibration \sep reproducibility \sep knowledge graph diagnostic
 \end{keywords}
 
 \maketitle
@@ -128,7 +128,7 @@ L(w_1, w_2) = 1.0[(w_1-0.6)^2 + (w_2-0.4)^2] + 0.5[(w_1-0.5)^2 + (w_2-0.5)^2] + 
 
 Solving numerically yields $w_1^* \approx 0.47$, $w_2^* \approx 0.53$, i.e., $w_2^* > w_1^*$ despite $\tilde{c}_1 > \tilde{c}_2$. The redundancy penalty equalizes the weights because steps 1 and 2 are highly similar ($R_{12} = 0.9$), and this equalization outweighs the fidelity term. This is the \emph{designed behavior}: structural calibration deliberately overrides local utility ordering when steps are substitutable, preventing the dilution of supervision across redundant operations.
 
-Quantitative analysis across the full benchmark: among step pairs with $R_{ij} > 0.7$, monotonicity violations occur in $31.2\%$ of pairs, consistent with the deliberate equalization mechanism.
+Quantitative analysis across the full controlled stage: among step pairs with $R_{ij} > 0.7$, monotonicity violations occur in $31.2\%$ of pairs, consistent with the deliberate equalization mechanism.
 
 \section{Additional Experimental Results and Figures}
 \label{app:additional-figures}
@@ -138,7 +138,7 @@ This appendix provides extended experimental results, supplementary figures, and
 \subsection{Full Ranking Metrics per Trace Size}
 \label{app:per-size}
 
-Table~\ref{tab:per-size} breaks down the controlled synthetic ranking metrics by trace size ($k = 3$ to $8$) for the three SC-FMA variants and raw CIU. Within this controlled proxy-label benchmark, SC-FMA QP is strongest at all $k$, with the largest gains at $k \ge 6$ where redundancy effects are most pronounced.
+Table~\ref{tab:per-size} breaks down the controlled synthetic ranking metrics by trace size ($k = 3$ to $8$) for the three SC-FMA variants and raw CIU. Within this controlled proxy-label stage, SC-FMA QP is strongest at all $k$, with the largest gains at $k \ge 6$ where redundancy effects are most pronounced.
 
 \begin{table}[ht]
 \caption{Step importance ranking metrics stratified by trace size $k$. Mean Spearman $\rho$ over traces of each size. Standard errors in parentheses (bootstrap, 10k resamples).}
@@ -225,10 +225,10 @@ SC-FMA is positioned between process supervision and graph-aware audit analysis.
 \subsection{Hyperparameters and Ablations}
 \label{app:hyperparameters-ablation}
 
-Table~\ref{tab:supp-hyperparameters} lists the hyperparameter search grid and the selected values used for the controlled synthetic benchmark, and Table~\ref{tab:supp-ablation} reports the corresponding component-contribution diagnostic.
+Table~\ref{tab:supp-hyperparameters} lists the hyperparameter search grid and the selected values used for the controlled synthetic stage, and Table~\ref{tab:supp-ablation} reports the corresponding component-contribution diagnostic.
 
 \begin{table}[ht]
-\caption{Hyperparameter search grid and selected values used for the controlled synthetic benchmark.}
+\caption{Hyperparameter search grid and selected values used for the controlled synthetic stage.}
 \label{tab:supp-hyperparameters}
 \centering
 \small
@@ -281,7 +281,7 @@ $\varepsilon$ & $\{10^{-6},10^{-5},10^{-4},10^{-3}\}$ & $10^{-4}$ & Numerical fl
 \end{tabular}
 \end{table}
 
-The sensitivity grid shows that the structural stress-test behavior is not caused by a single isolated $(\gamma,\delta)$ setting. Removing bottleneck pressure ($\delta=0$) consistently lowers Spearman relative to the default, while moderate-to-strong redundancy and bottleneck weights remain competitive or stronger on this synthetic regime. This supports the narrow statement that QP is useful when labels encode high structural conflict. It does not make QP the default real-data variant: on the locked PRM800K route, \texttt{w\_struct} remains the primary learned fidelity signal and Ridge remains the recommended preservation-with-decomposition approximation.
+The sensitivity grid shows that the structural stress-test behavior is not caused by a single isolated $(\gamma,\delta)$ setting. Removing bottleneck pressure ($\delta=0$) consistently lowers Spearman relative to the default, while moderate-to-strong redundancy and bottleneck weights remain competitive or stronger on this synthetic regime. This supports the narrow statement that QP is useful when labels encode high structural conflict. It does not make QP the default real-data variant: on the PRM800K locked stage, \texttt{w\_struct} remains the primary learned fidelity signal and Ridge remains the recommended preservation-with-decomposition approximation.
 
 \begin{table}[ht]
 \caption{QP $\alpha/\beta$ sensitivity on the structural stress-test generator with $\gamma=0.2$ and $\delta=0.1$ fixed. Values are five-seed means over 200 traces per seed. $\Delta\rho$ is relative to the diagnostic default $(\alpha=1.0,\beta=0.5)$.}
@@ -299,11 +299,11 @@ The sensitivity grid shows that the structural stress-test behavior is not cause
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:supp-alpha-beta-sensitivity} makes the fidelity and structure weights explicit rather than fixing them silently. The Spearman range across the grid is 0.4868--0.6393, and the default setting is 0.5931. The competitive $\beta=0.0$ rows are consistent with the revised framing: structural terms do not always act as ordinary ranking drivers, and in some designed settings they mainly provide regularization and decomposition fields. The change across $\alpha$ exceeds $\pm 0.05$ in this grid; this is reported as fidelity-anchor weight affecting calibration strength, as expected from the SCU objective, rather than as evidence of route-general stability.
+Table~\ref{tab:supp-alpha-beta-sensitivity} makes the fidelity and structure weights explicit rather than fixing them silently. The Spearman range across the grid is 0.4868--0.6393, and the default setting is 0.5931. The competitive $\beta=0.0$ rows are consistent with the revised framing: structural terms do not always act as ordinary ranking drivers, and in some designed settings they mainly provide regularization and decomposition fields. The change across $\alpha$ exceeds $\pm 0.05$ in this grid; this is reported as fidelity-anchor weight affecting calibration strength, as expected from the SCU objective, rather than as evidence of stage-general stability.
 
 \subsubsection{SCU component contribution on a structural stress-test benchmark}
 
-The main manuscript reports the structural stress-test table because it explains when redundancy and bottleneck terms become active. The supplementary role is reproducibility: the same stress-test route is generated by \texttt{scripts/run\_scu\_stress\_test.py} and the hyperparameter-sensitivity grids above, with archived outputs under \texttt{outputs/reviewer\_v2\_experiments}. The stress-test remains a controlled diagnostic route, not external validation.
+The main manuscript reports the structural stress-test table because it explains when redundancy and bottleneck terms become active. The supplementary role is reproducibility: the same stress-test diagnostic is generated by \texttt{scripts/run\_scu\_stress\_test.py} and the hyperparameter-sensitivity grids above, with archived outputs under \texttt{outputs/reviewer\_v2\_experiments}. The stress-test remains a controlled diagnostic stage, not external validation.
 
 \subsection{Efficiency and Scaling}
 \label{app:efficiency-scaling}
@@ -311,7 +311,7 @@ The main manuscript reports the structural stress-test table because it explains
 Table~\ref{tab:supp-efficiency} reports the per-trace computational cost moved from the main manuscript.
 
 \begin{table}[ht]
-\caption{Computational efficiency moved from the main manuscript. Times are per-trace mean over the synthetic test set.}
+\caption{Computational efficiency moved from the main manuscript. Times are per-trace mean over the synthetic test set for the methods actually computed in the archived pipeline. Token-level attribution baselines (gradient, attention rollout, Shapley, surprisal, entropy) are excluded because the archived synthetic pipeline stores per-step CIU/necessity/redundancy rather than token-level activations; their wall-clock is therefore not defined under this workflow.}
 \label{tab:supp-efficiency}
 \centering
 \small
@@ -323,15 +323,11 @@ SC-FMA QP & $6.8 \pm 2.9$ & 2.81 \\
 SC-FMA Ridge & $0.4 \pm 0.1$ & 0.97 \\
 SC-FMA Projection & $0.2 \pm 0.05$ & 0.98 \\
 Raw CIU & $0.8 \pm 0.2$ & 0.95 \\
-MC Shapley (500 permutations) & $3{,}420 \pm 890$ & 1.03 \\
-Gradient$\times$Input & $12.4 \pm 3.1$ & 1.12 \\
-Attention Rollout & $8.1 \pm 1.7$ & 1.15 \\
-Token Surprisal & $45.2 \pm 8.3$ & 1.08 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The full scaling figure remains available in the source figure bundle. The main manuscript reports only the page-budget-critical conclusion: Ridge is the lightweight real-data approximation, while QP is used for the controlled synthetic benchmark.
+The full scaling figure remains available in the source figure bundle. The main manuscript reports only the page-budget-critical conclusion: Ridge is the lightweight real-data approximation, while QP is used for the controlled synthetic stage.
 
 \subsection{PRM800K Variant Details and Audit Readout}
 \label{app:prm800k-variant-details}
@@ -379,17 +375,17 @@ Relative position & --- & --- & 0.3204 \\
 \end{tabular}
 \end{table}
 
-These tables retain the route-specific downgrade: the strongest real-data result is \texttt{w\_struct}; Ridge is a close approximation; QP and Projection are not reported as real-data winners.
+These tables retain the stage-specific downgrade: the strongest real-data result is \texttt{w\_struct}; Ridge is a close approximation; QP and Projection are not reported as real-data winners.
 
 \subsection{WebQSP Fixed-Schema Trace-Audit Diagnostic}
 \label{app:webqsp-trace-audit}
 
-The WebQSP route is included only as a supplementary reasoning-trace audit diagnostic. It does not evaluate KGQA accuracy, semantic parsing, entity-linking quality, or question-answering model performance. The route converts logical-form-derived WebQSP records into deterministic six-step executable traces: entity linking, relation traversal, candidate generation, candidate verification, ambiguity resolution, and answer verification. Rule replay then masks one reasoning step at a time and computes a replay-derived importance target. The knowledge graph is treated as a knowledge source for trace construction; the evaluation unit is the reasoning step in the trace.
+The WebQSP diagnostic is included only as a supplementary reasoning-trace audit diagnostic. It does not evaluate KGQA accuracy, semantic parsing, entity-linking quality, or question-answering model performance. The diagnostic converts logical-form-derived WebQSP records into deterministic six-step executable traces: entity linking, relation traversal, candidate generation, candidate verification, ambiguity resolution, and answer verification. Rule replay then masks one reasoning step at a time and computes a replay-derived importance target. The knowledge graph is treated as a knowledge source for trace construction; the evaluation unit is the reasoning step in the trace.
 
 Development used the train split and final diagnostic reporting used the test split. The train run produced 494 traces and 2,964 steps. The locked test run produced 1,627 traces and 9,762 steps. The data audit passed on both splits: missing-entity, disconnected-subgraph, duplicate-trace, answer-leakage, invalid-trace, and replay-failure counts were all zero. Replay failure rate is reported descriptively and is not used as a hard pass/fail threshold.
 
 \begin{table}[ht]
-\caption{WebQSP fixed-schema separability diagnostic on the locked test split. The route is diagnostic only and is not interpreted as KGQA evidence.}
+\caption{WebQSP fixed-schema separability diagnostic on the locked test split. The run is diagnostic only and is not interpreted as KGQA evidence.}
 \label{tab:supp-webqsp-diagnostic}
 \centering
 \small
@@ -409,12 +405,12 @@ Graph degree & $-$0.726 & 0.111 & 0.493 \\
 
 The diagnostic exposes a structural property of the fixed trace schema. Entity linking, relation traversal, and answer verification are indispensable under the replay rules and receive importance 1.0. Candidate generation, candidate verification, and ambiguity resolution are recoverable and receive continuous values that vary with candidate-set size (test-split mean 0.226, minimum 0.00034, maximum 0.333). Thus step type perfectly separates indispensable from recoverable steps, but it does not perfectly predict the continuous recoverable-step value.
 
-This route also exposes a metric artifact. Each trace has six steps; under a 25\% review budget, the implementation keeps two steps. Because the first two fixed-schema steps are indispensable, relative position, raw rule delta, and SC-FMA Ridge all attain NDCG@25\% of 1.000. Pairwise accuracy is more discriminative: raw rule delta and SC-FMA Ridge both reach 1.000, relative position reaches 0.667, and graph degree drops to 0.111. The safe interpretation is therefore narrow: fixed-schema KG traces can make replay-derived importance largely separable by step role and position, making complex policy optimization redundant under this schema. This is a transferability and evaluation-confound diagnostic, not evidence that SC-FMA improves KGQA, semantic parsing, or live KBS maintenance.
+This diagnostic also exposes a metric artifact. Each trace has six steps; under a 25\% review budget, the implementation keeps two steps. Because the first two fixed-schema steps are indispensable, relative position, raw rule delta, and SC-FMA Ridge all attain NDCG@25\% of 1.000. Pairwise accuracy is more discriminative: raw rule delta and SC-FMA Ridge both reach 1.000, relative position reaches 0.667, and graph degree drops to 0.111. The safe interpretation is therefore narrow: fixed-schema KG traces can make replay-derived importance largely separable by step role and position, making complex policy optimization redundant under this schema. This is a transferability and evaluation-confound diagnostic, not evidence that SC-FMA improves KGQA, semantic parsing, or live KBS maintenance.
 
 \subsection{MuSiQue KBS-style Knowledge-Audit Details}
 \label{app:musique-kbs-audit}
 
-The MuSiQue route is an offline, deterministic KBS-style audit-prioritization experiment. It constructs trace records from MuSiQue decomposition evidence chains with retrieval, entity-binding, evidence-check, distractor-rejection, and answer-synthesis steps. The label source is \texttt{musique\_decomposition\_constructed\_audit\_labels}; these labels are assigned deterministically by step type (e.g., answer synthesis 2.0, bridge binding 1.7, distractor rejection 0.0) and are not production-scene human curation labels. The scoring features are likewise deterministic functions of step type: \texttt{raw\_local\_utility} is a per-type constant, and \texttt{evidence\_role}/\texttt{bridge\_role} are one-hot subsets of step type. The labels and the \texttt{w\_struct} features therefore share a common source (\texttt{step\_type}), so the route tests whether a learned linear combination of step-type-derived features reproduces a step-type-derived label vector, not whether step-type-derived features recover an independently grounded audit priority. The route is therefore reported only as a feasibility demonstration (\texttt{kbs\_style\_audit\_prioritization\_evidence\_only}) and provides no independent audit-prioritization evidence.
+The MuSiQue diagnostic is an offline, deterministic KBS-style audit-prioritization experiment. It constructs trace records from MuSiQue decomposition evidence chains with retrieval, entity-binding, evidence-check, distractor-rejection, and answer-synthesis steps. The label source is \texttt{musique\_decomposition\_constructed\_audit\_labels}; these labels are assigned deterministically by step type (e.g., answer synthesis 2.0, bridge binding 1.7, distractor rejection 0.0) and are not production-scene human curation labels. The scoring features are likewise deterministic functions of step type: \texttt{raw\_local\_utility} is a per-type constant, and \texttt{evidence\_role}/\texttt{bridge\_role} are one-hot subsets of step type. The labels and the \texttt{w\_struct} features therefore share a common source (\texttt{step\_type}), so the diagnostic tests whether a learned linear combination of step-type-derived features reproduces a step-type-derived label vector, not whether step-type-derived features recover an independently grounded audit priority. The diagnostic is therefore reported only as a feasibility demonstration (\texttt{kbs\_style\_audit\_prioritization\_evidence\_only}) and provides no independent audit-prioritization evidence.
 
 The split is locked by hash: 585 samples are used for dev training or calibration, and 1,415 samples with 12,715 steps are reserved for final reporting. No API calls are used. The leakage audit reports that locked labels are not used for scoring, forbidden fields are excluded from scoring, and label permutation reduces the mean diagnostic delta from 0.1347 to 0.0078. Table~\ref{tab:supp-musique-kbs-audit} reports the full feasibility-demonstration metrics on this locked split.
 
@@ -442,14 +438,14 @@ Span length & $-$0.3216 & 0.0035 & 0.2168 & 0.3800 & 0.1571 \\
 \end{tabular}
 \end{table}
 
-The support decision is reported for completeness but is not interpreted as positive evidence. Because the audit labels and scoring features share a common step-type source, the task is close to trivial: a hand-coded step-type priority rule (answer synthesis $>$ bridge binding $>$ evidence check $>$ retrieval/question decomposition $>$ distractor rejection) attains NDCG@25\% of 1.0000, Top-1 hit of 1.0000, and Mass@25\% of 0.3939 across all 1,415 locked traces, identical to the \texttt{w\_struct}, SC-FMA Ridge, and SC-FMA QP rows. The $\Delta$NDCG@25\% of 0.1193 over graph centrality (0.8807), with bootstrap 95\% CI [0.1187, 0.1199], therefore reflects the gap between methods that use the step-type priority and controls that do not, not a calibration advantage; the narrow interval is itself a consequence of the label structure (only three distinct label vectors across the 1,415 locked traces). The field-level leakage audit is clean---locked labels are not read during scoring, forbidden fields are excluded, and label permutation reduces the mean diagnostic delta from 0.1347 to 0.0078---but field-level checks cannot detect construction-level homology. The route is therefore a feasibility demonstration only; it is not live KBS validation and does not provide independent audit-prioritization evidence.
+The support decision is reported for completeness but is not interpreted as positive evidence. Because the audit labels and scoring features share a common step-type source, the task is close to trivial: a hand-coded step-type priority rule (answer synthesis $>$ bridge binding $>$ evidence check $>$ retrieval/question decomposition $>$ distractor rejection) attains NDCG@25\% of 1.0000, Top-1 hit of 1.0000, and Mass@25\% of 0.3939 across all 1,415 locked traces, identical to the \texttt{w\_struct}, SC-FMA Ridge, and SC-FMA QP rows. The $\Delta$NDCG@25\% of 0.1193 over graph centrality (0.8807), with bootstrap 95\% CI [0.1187, 0.1199], therefore reflects the gap between methods that use the step-type priority and controls that do not, not a calibration advantage; the narrow interval is itself a consequence of the label structure (only three distinct label vectors across the 1,415 locked traces). The field-level leakage audit is clean---locked labels are not read during scoring, forbidden fields are excluded, and label permutation reduces the mean diagnostic delta from 0.1347 to 0.0078---but field-level checks cannot detect construction-level homology. The diagnostic is therefore a feasibility demonstration only; it is not live KBS validation and does not provide independent audit-prioritization evidence.
 
-\subsection{Real-Knowledge-Graph Graph Construction Pilot}
+\subsection{Countries-KG Typed-Edge Stage}
 \label{app:kbs-integration-kg}
 
-\noindent\textbf{Note:} The KBS methodological analogy, including the detailed mapping of high-necessity, high-redundancy, and bottleneck steps to KBS review concepts, is discussed in the main manuscript's KBS methodological analogy subsection. The core KBS implications and limitations are discussed in the main manuscript, Section~6 (Discussion). The fixture-level KG pilot content below extends the main-text discussion with implementation details that are not covered in the main manuscript.
+\noindent\textbf{Note:} The KBS methodological analogy, including the detailed mapping of high-necessity, high-redundancy, and bottleneck steps to KBS review concepts, is discussed in the main manuscript's KBS methodological analogy subsection. The core KBS implications and limitations are discussed in the main manuscript, Section~6 (Discussion). The fixture-level Countries-KG typed-edge content below extends the main-text discussion with implementation details that are not covered in the main manuscript.
 
-The fixture-level KG pilot uses the Countries knowledge graph with country and region entities and \texttt{locatedIn}/\texttt{neighborOf} triples. It compares TF-IDF topical edges with KG-augmented edges for synthetic query traces. The pilot demonstrates implementation feasibility for ontology-aware edge construction, but it is not production KBS validation and is not used to strengthen the main empirical claim.
+The fixture-level Countries-KG typed-edge stage uses the Countries knowledge graph with country and region entities and \texttt{locatedIn}/\texttt{neighborOf} triples. It compares TF-IDF topical edges with KG-augmented edges for synthetic query traces. The stage demonstrates implementation feasibility for ontology-aware edge construction, but it is not production KBS validation and is not used to strengthen the main empirical claim.
 
 \subsection{Supplementary Diagnostic Figures}
 \label{app:supp-figures}
@@ -486,15 +482,15 @@ The following checklist documents the measures taken to ensure full reproducibil
 \item \textbf{Random seeds.} All experiments use deterministic seeds: seed $= 42$ for synthetic data generation and baseline random methods; seed $= 123$ for Shapley permutation sampling; seed $= 456$ for held-out split assignment. NumPy, PyTorch, and Python random states are all seeded.
 \item \textbf{Synthetic data.} Traces are generated via the controlled probabilistic model described in the Synthetic Data Generation section of the main manuscript. The generation script (\texttt{scripts/generate\_synthetic\_traces.py}) is deterministic given the seed. Generated traces are archived as JSON artifacts.
 \item \textbf{Hyperparameter tuning.} Grid search on the validation set (40 traces) with the ranges reported in the hyperparameter tuning table of the main manuscript. No test-set information is used during tuning. The optimal configuration is frozen before test-set evaluation.
-\item \textbf{Baseline methods.} All baselines use publicly available implementations: Captum for Gradient$\times$Input and Integrated Gradients; transformers library for attention extraction; custom NumPy implementation for MC Shapley with $M = 500$ permutations and convergence tolerance $10^{-3}$.
+\item \textbf{Baseline methods.} The baselines reported in the archived synthetic pipeline are raw CIU, the simple-average of CIU and structural necessity, span length, relative position, and random; these are deterministic NumPy implementations. Token-level attribution baselines (gradient$\times$input, attention rollout, Monte Carlo Shapley, token surprisal, step entropy) are \emph{not} computed here, because the archived synthetic pipeline stores per-step CIU, necessity, and redundancy rather than token-level activations, gradients, or attention weights; under this workflow those methods would collapse to raw CIU rather than provide distinct rankings. Reference implementations for these families do exist in the codebase (\texttt{src/fma/baselines/}), but they require a live model forward pass and token-level artifacts that the controlled synthetic pipeline does not collect, so their numbers are not reported. A live-model token-level baseline comparison is left to future work.
 \item \textbf{SLSQP solver.} SciPy's \texttt{scipy.optimize.minimize} with method \texttt{SLSQP}, tolerance \texttt{ftol = 1e-8}, maximum iterations $= 100$. Warm-start from Ridge solution.
 \item \textbf{Statistical tests.} Wilcoxon signed-rank tests are two-sided unless noted; Holm--Bonferroni correction for multiple comparisons; bootstrap confidence intervals use 10{,}000 resamples with BCa correction. Effect sizes reported as $r = Z/\sqrt{N}$.
-\item \textbf{MuSiQue audit route.} The MuSiQue route is reproduced with \texttt{python scripts/run\_knowledge\_audit\_eval.py --hf-dataset dgslibisey/MuSiQue --source-format musique --hf-split train --max-records 2000 --shuffle-seed 42 --bootstrap-samples 1000 --bootstrap-seed 42}. It writes \texttt{outputs/kbs\_real\_audit\_v1/knowledge\_audit\_report.json}, \texttt{knowledge\_audit\_summary.md}, \texttt{knowledge\_audit\_traces.jsonl}, and \texttt{dataset\_manifest.json}; the run uses zero API calls. Because the audit labels and scoring features are both deterministic functions of step type, this route is a feasibility demonstration only and is not used as positive audit-prioritization evidence.
+\item \textbf{MuSiQue audit diagnostic.} The MuSiQue diagnostic is reproduced with \texttt{python scripts/run\_knowledge\_audit\_eval.py --hf-dataset dgslibisey/MuSiQue --source-format musique --hf-split train --max-records 2000 --shuffle-seed 42 --bootstrap-samples 1000 --bootstrap-seed 42}. It writes \texttt{outputs/kbs\_real\_audit\_v1/knowledge\_audit\_report.json}, \texttt{knowledge\_audit\_summary.md}, \texttt{knowledge\_audit\_traces.jsonl}, and \texttt{dataset\_manifest.json}; the run uses zero API calls. Because the audit labels and scoring features are both deterministic functions of step type, this diagnostic is a feasibility demonstration only and is not used as positive audit-prioritization evidence.
 \item \textbf{Oracle auto audit-target validation.} The zero-human validation is reproduced with \texttt{scripts/run\_audit\_card\_auto\_validation.py}. Outputs are archived under \texttt{outputs/kbs\_audit\_card\_auto\_validation\_v1}: \texttt{audit\_card\_auto\_validation.json}, \texttt{.csv}, and \texttt{.md}. The report header records \texttt{human\_subjects=false}, \texttt{human\_efficiency\_claim=false}, \texttt{validated\_kbs\_workflow=false}, and \texttt{evidence\_level=oracle\_auto\_audit\_validation}. The oracle targets are rule-derived from PRM800K labels, ranking disagreement, redundancy density, bottleneck flags, and the failure-taxonomy rules; they are not human adjudications.
 \item \textbf{QP hyperparameter sensitivity.} The QP sensitivity diagnostics are reproduced with \texttt{scripts/run\_scu\_hyperparameter\_sensitivity.py}. Outputs are archived as \texttt{outputs/reviewer\_v2\_experiments/scu\_hyperparameter\_sensitivity/scu\_hyperparameter\_sensitivity.json}, \texttt{outputs/reviewer\_v2\_experiments/scu\_hyperparameter\_sensitivity/scu\_hyperparameter\_sensitivity.md}, \texttt{outputs/reviewer\_v2\_experiments/scu\_hyperparameter\_sensitivity/alpha\_beta\_grid.csv}, and \texttt{outputs/reviewer\_v2\_experiments/scu\_hyperparameter\_sensitivity/gamma\_delta\_grid.csv}. The alpha/beta grid fixes $\gamma=0.2$ and $\delta=0.1$ and sweeps $\alpha \in \{0.5,1.0,2.0\}$ by $\beta \in \{0.0,0.5,1.0\}$; it is a supplementary QP diagnostic only, not positive external validation.
-\item \textbf{Embedding graph-construction ablation.} The graph-construction ablation is reproduced with \texttt{scripts/run\_graph\_construction\_ablation.py}. Outputs are archived under \texttt{outputs/reviewer\_v2\_experiments/graph\_construction\_ablation}. The embedding route uses \texttt{sentence-transformers/all-MiniLM-L6-v2} through \texttt{sentence-transformers} version 3.4.1, with 384-dimensional vectors. The JSON report records the HuggingFace cache path, download/cache status, runtime status, and all graph-constructor metadata. The ablation is graph-interface evidence only; it is not a production graph-ranking or live KBS claim.
-\item \textbf{WebQSP trace-audit diagnostic.} Development uses \texttt{D:\textbackslash CF\textbackslash data\textbackslash raw\textbackslash webqsp\textbackslash WebQSP.train.json}; the locked diagnostic uses \texttt{D:\textbackslash CF\textbackslash data\textbackslash raw\textbackslash webqsp\textbackslash WebQSP.test.json}. The route is reproduced with \texttt{scripts/run\_webqsp\_trace\_audit.py}, \texttt{scripts/validate\_webqsp\_trace\_audit.py}, and \texttt{scripts/analyze\_webqsp\_separability.py}. It writes \texttt{samples.jsonl}, \texttt{reasoning\_traces.jsonl}, \texttt{replay\_results.jsonl}, \texttt{importance\_targets.jsonl}, ranking outputs, data-audit reports, and separability diagnostics under \texttt{outputs/webqsp\_trace\_audit\_v1\_train} and \texttt{outputs/webqsp\_trace\_audit\_v1\_test}. It is a supplementary diagnostic only.
-\item \textbf{Output artifacts.} All raw results (CIU vectors, necessity scores, redundancy matrices, calibrated weights, ranking metrics) are saved as JSONL or JSON artifacts in the \texttt{outputs/} directory. The complete set of artifacts accompanies the submission as supplementary material. The MuSiQue route is archived under \texttt{outputs/kbs\_real\_audit\_v1} and is reported as a constructed-label feasibility demonstration (\texttt{kbs\_style\_audit\_prioritization\_evidence\_only}); the WebQSP route is archived under \texttt{outputs/webqsp\_trace\_audit\_v1\_test} and is reported as a fixed-schema separability diagnostic.
+\item \textbf{Embedding graph-construction ablation.} The graph-construction ablation is reproduced with \texttt{scripts/run\_graph\_construction\_ablation.py}. Outputs are archived under \texttt{outputs/reviewer\_v2\_experiments/graph\_construction\_ablation}. The embedding diagnostic uses \texttt{sentence-transformers/all-MiniLM-L6-v2} through \texttt{sentence-transformers} version 3.4.1, with 384-dimensional vectors. The JSON report records the HuggingFace cache path, download/cache status, runtime status, and all graph-constructor metadata. The ablation is graph-interface evidence only; it is not a production graph-ranking or live KBS claim.
+\item \textbf{WebQSP trace-audit diagnostic.} Development uses \texttt{D:\textbackslash CF\textbackslash data\textbackslash raw\textbackslash webqsp\textbackslash WebQSP.train.json}; the locked diagnostic uses \texttt{D:\textbackslash CF\textbackslash data\textbackslash raw\textbackslash webqsp\textbackslash WebQSP.test.json}. The diagnostic is reproduced with \texttt{scripts/run\_webqsp\_trace\_audit.py}, \texttt{scripts/validate\_webqsp\_trace\_audit.py}, and \texttt{scripts/analyze\_webqsp\_separability.py}. It writes \texttt{samples.jsonl}, \texttt{reasoning\_traces.jsonl}, \texttt{replay\_results.jsonl}, \texttt{importance\_targets.jsonl}, ranking outputs, data-audit reports, and separability diagnostics under \texttt{outputs/webqsp\_trace\_audit\_v1\_train} and \texttt{outputs/webqsp\_trace\_audit\_v1\_test}. It is a supplementary diagnostic only.
+\item \textbf{Output artifacts.} All raw results (CIU vectors, necessity scores, redundancy matrices, calibrated weights, ranking metrics) are saved as JSONL or JSON artifacts in the \texttt{outputs/} directory. The complete set of artifacts accompanies the submission as supplementary material. The MuSiQue diagnostic is archived under \texttt{outputs/kbs\_real\_audit\_v1} and is reported as a constructed-label feasibility demonstration (\texttt{kbs\_style\_audit\_prioritization\_evidence\_only}); the WebQSP diagnostic is archived under \texttt{outputs/webqsp\_trace\_audit\_v1\_test} and is reported as a fixed-schema separability diagnostic.
 \end{enumerate}
 
 \subsection{SLSQP Convergence Diagnostics}
@@ -507,12 +503,12 @@ SLSQP convergence statistics across $N = 1{,}027$ steps (200 traces): mean itera
 
 The keyword-heuristic graph construction introduces two free parameters: $\tau_{\text{tfidf}} = 0.35$ and $w_{\text{topical}} = 0.75$. Sensitivity analysis ($\pm 20\%$ perturbation) shows $|\Delta\rho| < 0.01$ for all configurations, indicating that SC-FMA's calibration quality is robust to moderate misspecification of the graph parameters. Full sensitivity tables and per-trace-size breakdowns are archived in the structured data file \texttt{outputs/phase6\_sensitivity.json}.
 
-The reviewer-facing graph-construction ablation compares temporal-only, TF-IDF topical, Jaccard topical, Sentence-BERT embedding topical, and shuffled-topical variants under the same diagnostic protocol. On the archived 800-trace fixture run, embedding topical edges produce Spearman 0.0615 for structural-necessity alignment, compared with 0.0515 for the TF-IDF topical default and 0.0596 for temporal-only. The embedding route records \texttt{sentence-transformers/all-MiniLM-L6-v2}, 384 dimensions, package version 3.4.1, and the local HuggingFace cache file. These values support the manuscript's graph-interface claim: TF-IDF is a lightweight default constructor, and the SCU objective can accept semantic embeddings without changing the calibration layer.
+The reviewer-facing graph-construction ablation compares temporal-only, TF-IDF topical, Jaccard topical, Sentence-BERT embedding topical, and shuffled-topical variants under the same diagnostic protocol. On the archived 800-trace fixture run, embedding topical edges produce Spearman 0.0615 for structural-necessity alignment, compared with 0.0515 for the TF-IDF topical default and 0.0596 for temporal-only. The embedding diagnostic records \texttt{sentence-transformers/all-MiniLM-L6-v2}, 384 dimensions, package version 3.4.1, and the local HuggingFace cache file. These values support the manuscript's graph-interface claim: TF-IDF is a lightweight default constructor, and the SCU objective can accept semantic embeddings without changing the calibration layer.
 
 \subsection{Controlled Proxy-Label Independence Analysis}
 \label{app:oracle-independence}
 
-We verify that the controlled proxy-label definition used in the synthetic benchmark does not share input features with the SCU objective. The correlation between each proxy-label component and each SCU input is summarized in Table~\ref{tab:oracle-independence}.
+We verify that the controlled proxy-label definition used in the controlled synthetic stage does not share input features with the SCU objective. The correlation between each proxy-label component and each SCU input is summarized in Table~\ref{tab:oracle-independence}.
 
 \begin{table}[ht]
 \caption{Cross-correlation between controlled proxy-label components and SCU inputs across 1{,}027 steps. All correlations are below $|\rho| < 0.15$, confirming low input overlap.}
