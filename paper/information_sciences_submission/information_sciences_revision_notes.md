@@ -1,0 +1,34 @@
+# Information Sciences Revision Notes
+
+## 1. Revised Abstract
+
+Information and knowledge systems increasingly expose reasoning traces, process annotations, retrieval checks, graph nodes, entity bindings, and verification records as intermediate knowledge artifacts. These artifacts can support audit and curation, but they are often stored as heterogeneous signals rather than records that preserve dependency, uncertainty, and maintenance context under fixed review budgets. Existing process-annotation, scalar attribution, and graph-salience methods provide useful local signals but not a reusable representation for deciding what an artifact is, why it matters structurally, and how it should be audited. We introduce Structurally-Calibrated Functional Attribution (SC-FMA), a knowledge artifact representation framework for fixed-budget audit-record construction. SC-FMA represents artifacts as dependency-aware audit graphs and uses the Structurally-Calibrated Utility (SCU) objective to construct records that preserve annotation or utility fidelity while exposing structural dependency, redundancy, bottleneck, audit-reason, and maintenance-action fields. Spearman, NDCG, and retrieval readouts are used as representation-fidelity and audit-coverage diagnostics. On a locked process-annotation distribution derived from PRM800K with 4,417 samples and 34,219 labeled artifacts, SC-FMA Ridge preserves annotation-order fidelity inside the audit record (Spearman $\rho=0.604$ versus $0.611$ for \wstruct{}) while exposing decomposed structural and maintenance fields. A Countries-KG diagnostic graph shows that ontology-derived edges change structural-dependency representation, and rule-derived audit-target retrieval improves budget-constrained coverage from 0.235 to 0.699 over a scalar-only view, with circularity bounded by target type. SC-FMA provides an information-structuring layer for auditable knowledge maintenance and curation.
+
+## 2. Rewritten Introduction Opening
+
+Knowledge-intensive information systems increasingly expose intermediate artifacts during reasoning, retrieval, annotation, validation, and update. These artifacts include reasoning traces, graph nodes, entity bindings, verification records, rule-like operations, retrieval checks, and process annotations. Once exposed, they are no longer only transient computational by-products: they become knowledge artifacts that must be represented, organized, maintained, curated, and reused. The practical challenge is that these artifacts are heterogeneous, uncertain, and often more numerous than the audit capacity available to curators, while maintenance decisions must still be made under fixed review budgets.
+
+Existing methods address only parts of this information-structuring problem. Process-annotation methods attach scalar quality signals to intermediate artifacts, but they do not convert those annotations into structured maintenance records. Local utility-signal methods estimate artifact influence, but they do not distinguish whether an artifact should be inspected because it provides local evidence, supports a dependency, duplicates existing support, or exposes a downstream bottleneck. Graph-based salience methods can identify structurally prominent nodes, but they do not integrate annotation signals, dependency structure, and curation actions into a reusable audit representation. Consequently, these methods can yield audit priorities, but they cannot specify what the artifact is, why it matters in the knowledge structure, and what maintenance action a fixed-budget audit should take.
+
+This paper introduces Structurally-Calibrated Functional Attribution (SC-FMA) as a knowledge representation transformation layer for this setting. SC-FMA transforms observable intermediate knowledge artifacts into structured audit records by representing their dependencies, calibrating supplied annotation or utility signals, and attaching explicit audit reasons and maintenance actions. Audit-priority allocation is therefore a downstream use of the representation, not the identity of the method. The central contribution is to treat audit under limited review capacity as an information representation problem: SC-FMA converts raw traces, graph relations, and process annotations into dependency-aware records that can be inspected, queried, curated, and reused.
+
+## 3. Rewritten Experiments Section Opening
+
+This section instantiates fixed-budget knowledge audit as a knowledge-engineering and information-representation task. The experiments analyze representation behavior, information preservation, and audit fidelity rather than model-comparison performance; correlation, NDCG, and retrieval metrics are used only as diagnostic indicators for the resulting records. The validation suite examines three representation questions: whether audit records preserve useful annotation signals from a process-annotation dataset, whether graph construction changes structural-dependency representations, and whether decomposed records improve audit-target retrieval under budget constraints. Each stage follows the workflow in Figure~\ref{fig:overall-framework}: represent intermediate knowledge artifacts, construct an audit graph, calibrate an annotation or utility signal, and return an audit record. We begin by defining the fixed-budget audit task, then study process-annotation representation behavior, graph-based representation sensitivity, audit-record construction, controlled calibration, and failure modes of the representation layer.
+
+## 4. Rewritten Conclusion Final Paragraph
+
+For Information Sciences, the significance of SC-FMA lies in making intermediate knowledge artifacts representable, auditable, and maintainable rather than merely sortable. By converting reasoning traces, graph nodes, and process annotations into audit records with explicit fidelity, structural dependency, redundancy, bottleneck, audit-reason, and maintenance-action fields, the method connects knowledge representation to system-level tasks of organization, curation, reuse, and governance. Within the observable-artifact and fixed-budget audit setting validated here, SC-FMA contributes an information-structuring layer for auditable knowledge processing under resource constraints.
+
+## 5. Global Term Conversion Table
+
+| Original reading path | Information Sciences reading path |
+|---|---|
+| ranking | representation priority / audit priority |
+| step | knowledge artifact |
+| benchmark | dataset / annotation distribution |
+| model performance | representation fidelity |
+| graph feature | knowledge dependency structure |
+| PRM800K | process-annotation dataset / knowledge artifact annotation distribution |
+| TF-IDF graph | lightweight lexical dependency constructor |
+| Countries-KG | knowledge representation diagnostic graph |
