@@ -1,0 +1,170 @@
+{
+  "input": "D:\\CF\\paper\\kbs_submission\\final_package\\supplementary.docx",
+  "fonts_by_char_count": {
+    "Arial": 11687
+  },
+  "direct_run_formatting_runs": 226,
+  "direct_paragraph_formatting_paragraphs": 201,
+  "heading_like_paragraphs_not_heading_style": [
+    {
+      "para_index": 6,
+      "text": "MuSiQue KBS-style Knowledge-Audit Details",
+      "style": "KBS Note"
+    },
+    {
+      "para_index": 12,
+      "text": "Table S1. Supplementary evidence map",
+      "style": "KBS Caption"
+    },
+    {
+      "para_index": 16,
+      "text": "Table S2. Rule-derived audit-category traceability diagnostic",
+      "style": "KBS Caption"
+    },
+    {
+      "para_index": 21,
+      "text": "Table S3. Graph construction and embedding ablation",
+      "style": "KBS Caption"
+    },
+    {
+      "para_index": 26,
+      "text": "Table S4. Alpha/beta QP sensitivity grid",
+      "style": "KBS Caption"
+    },
+    {
+      "para_index": 34,
+      "text": "Table S5. PRM800K variant comparison",
+      "style": "KBS Caption"
+    },
+    {
+      "para_index": 38,
+      "text": "Table S6. WebQSP fixed-schema trace-audit diagnostic",
+      "style": "KBS Caption"
+    },
+    {
+      "para_index": 43,
+      "text": "Table S7. MuSiQue KBS-style knowledge-audit feasibility demonstration",
+      "style": "KBS Caption"
+    },
+    {
+      "para_index": 63,
+      "text": "Diagnostic",
+      "style": "Normal"
+    },
+    {
+      "para_index": 64,
+      "text": "Artifact",
+      "style": "Normal"
+    },
+    {
+      "para_index": 65,
+      "text": "Status",
+      "style": "Normal"
+    },
+    {
+      "para_index": 66,
+      "text": "Allowed interpretation",
+      "style": "Normal"
+    },
+    {
+      "para_index": 95,
+      "text": "View",
+      "style": "Normal"
+    },
+    {
+      "para_index": 96,
+      "text": "Recall@25%",
+      "style": "Normal"
+    },
+    {
+      "para_index": 97,
+      "text": "NDCG@25%",
+      "style": "Normal"
+    },
+    {
+      "para_index": 98,
+      "text": "MRR",
+      "style": "Normal"
+    },
+    {
+      "para_index": 99,
+      "text": "Top-1 hit",
+      "style": "Normal"
+    },
+    {
+      "para_index": 100,
+      "text": "Cost proxy",
+      "style": "Normal"
+    },
+    {
+      "para_index": 113,
+      "text": "Constructor",
+      "style": "Normal"
+    },
+    {
+      "para_index": 114,
+      "text": "Spearman rho",
+      "style": "Normal"
+    }
+  ],
+  "examples": {
+    "direct_paragraph_formatting": [
+      {
+        "para_index": 1,
+        "text": "Supplementary Material for Structurally-Calibrated Functional Attribution for Audit Prioritization in Knowledge-Intensiv",
+        "style": "KBS Title"
+      },
+      {
+        "para_index": 2,
+        "text": "Haoran Ma; Ningning Wang",
+        "style": "KBS Authors"
+      },
+      {
+        "para_index": 3,
+        "text": "Abstract. This supplementary material records extended proof notes, method details, stage-specific diagnostics, rule-der",
+        "style": "KBS Abstract"
+      },
+      {
+        "para_index": 4,
+        "text": "Keywords. supplementary material; structural calibration; audit prioritization; rule-derived traceability diagnostic; gr",
+        "style": "KBS Keywords"
+      },
+      {
+        "para_index": 6,
+        "text": "MuSiQue KBS-style Knowledge-Audit Details",
+        "style": "KBS Note"
+      }
+    ],
+    "direct_run_formatting": [
+      {
+        "para_index": 1,
+        "run_text": "Supplementary Material for Structurally-Calibrated Functional Attribution for Au",
+        "style": "KBS Title"
+      },
+      {
+        "para_index": 2,
+        "run_text": "Haoran Ma; Ningning Wang",
+        "style": "KBS Authors"
+      },
+      {
+        "para_index": 3,
+        "run_text": "Abstract. ",
+        "style": "KBS Abstract"
+      },
+      {
+        "para_index": 3,
+        "run_text": "This supplementary material records extended proof notes, method details, stage-",
+        "style": "KBS Abstract"
+      },
+      {
+        "para_index": 4,
+        "run_text": "Keywords. ",
+        "style": "KBS Keywords"
+      }
+    ]
+  },
+  "notes": [
+    "Direct formatting is not always wrong, but it often causes inconsistent output when templates change.",
+    "Heading-like paragraphs not using Heading styles can break TOC and accessibility."
+  ]
+}
