@@ -1,0 +1,114 @@
+% !TEX root = ../manuscript.tex
+\appendix
+
+\section{Failure Taxonomy Appendix}
+\label{app:failure-taxonomy}
+
+This appendix supports variant selection for audit-record construction on the process-annotation distribution.
+
+Audit Cards are interpretive templates for organizing audit fields. Each card's label maps to one of three canonical interpretations derived from the SCU decomposition: bottleneck visibility, redundant-cluster interpretation, or weak utility-anchor repair. The cards use separate representative traces from Figure~\ref{fig:overall-framework}'s schematic artifact labels.
+
+\par\medskip
+\refstepcounter{table}\label{tab:failure-taxonomy}
+\noindent\textbf{Table~\thetable}\par
+\noindent Rule-based failure taxonomy distribution on the locked PRM800K split (4,417 traces). Labels are multi-label, so percentages need not sum to 100\%.
+\begin{center}
+\small
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{lrr}
+\toprule
+\textbf{Label} & \textbf{Count} & \textbf{Percentage} \\
+\midrule
+\texttt{structural\_over\_correction} & 2145 & 48.56\% \\
+\texttt{redundancy\_misclassification} & 1214 & 27.48\% \\
+\texttt{bottleneck\_over\_protection} & 382 & 8.65\% \\
+\texttt{weak\_utility\_anchor} & 2420 & 54.79\% \\
+\texttt{low\_signal\_or\_tie} & 809 & 18.32\% \\
+\bottomrule
+\end{tabular}
+\end{center}
+\medskip
+
+Redundancy misclassification and bottleneck over-protection appear often enough to inform variant selection. The following fixed-template Audit Cards link audit-record field changes to possible review interpretations.
+
+\par\medskip
+\refstepcounter{table}\label{tab:audit-card-geometric}
+\noindent\textbf{Table~\thetable}\par
+\noindent Audit Card 1: bottleneck-protected structural over-correction.
+\begin{center}
+\small
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{p{0.25\linewidth}p{0.67\linewidth}}
+\toprule
+\textbf{Field} & \textbf{Audit Card} \\
+\midrule
+Trace & \texttt{prm800k\_pool\_010077\_26cf715105}; 7 steps. Representative step: ``Now, I wonder if there is a geometric interpretation of the problem.'' \\
+Observed issue & Labels include \texttt{structural\_over\_correction} and \texttt{bottleneck\_over\_protection}. Step 3 has a below-maximum label (0.5) but receives the largest QP priority-field value (0.2493). \\
+Audit-priority field behavior & \wstruct{} keeps the high-label early vector-setup steps near the top (0.8966--0.9510) and gives the final false conclusion near-zero priority-field mass (0.0027). \\
+SC-FMA decomposition & Fidelity: \wstruct{} keeps the high-label setup steps high. Necessity: graph exposure marks the reinterpretation as structurally visible. Redundancy: little consolidation is needed in this short trace. Bottleneck: QP protects the lower-label step, creating the audit disagreement. \\
+Added audit value & \wstruct{} gives the expected annotation order. SC-FMA adds the reason a lower-label step became structurally protected: the disagreement is bottleneck-driven. \\
+Audit Interpretation & Inspect the bottleneck-protected lower-label step before accepting the structural floor; check whether the geometric reinterpretation is a true downstream dependency or an over-protected detour. \\
+Interpretation Label & \texttt{PROTECT\_BOTTLENECK} \\
+Scope note & Process-annotation Audit Card for variant-selection interpretation. \\
+\bottomrule
+\end{tabular}
+\end{center}
+\medskip
+
+\clearpage
+\par\medskip
+\refstepcounter{table}\label{tab:audit-card-redundancy}
+\noindent\textbf{Table~\thetable}\par
+\noindent Audit Card 2: redundancy over-merging in a long trace.
+\begin{center}
+\small
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{p{0.25\linewidth}p{0.67\linewidth}}
+\toprule
+\textbf{Field} & \textbf{Audit Card} \\
+\midrule
+Trace & \texttt{prm800k\_pool\_012035\_e6055a1cb2}; 30 steps. Representative step: ``One way to do that is to pick a random value of $x$ and find the corresponding value of $y=f(x)$, then swap the coordinates.'' \\
+Observed issue & Labels include \texttt{structural\_over\_correction}, \texttt{redundancy\_misclassification}, and \texttt{bottleneck\_over\_protection}. Redundancy density is high (0.5749), and QP collapses several early high-label setup steps to nearly zero. \\
+Audit-priority field behavior & \wstruct{} assigns consistently high signal values to the graph-sketch, asymptote, intercept, and checking steps (roughly 0.91--0.97), while QP reallocates mass away from several of these high-label setup steps. \\
+SC-FMA decomposition & Fidelity: \wstruct{} keeps many graph-analysis checks high. Necessity: downstream exposure concentrates attention on a narrow band. Redundancy: similar graph checks are treated as overlapping. Bottleneck: protected steps compete with high-label setup steps for review budget. \\
+Added audit value & The scalar field shows which steps are high. SC-FMA adds cluster-level interpretation by marking redundant audit units and similar graph checks. \\
+Audit Interpretation & Check redundancy over-merging: assess whether asymptote identification, intercept checks, and coordinate-swap verification are separate audit units or can be interpreted as one cluster. \\
+Interpretation Label & \texttt{CONSOLIDATE\_REDUNDANT\_CLUSTER} \\
+Scope note & Process-annotation Audit Card illustrating a possible review template. \\
+\bottomrule
+\end{tabular}
+\end{center}
+\medskip
+
+\par\medskip
+\refstepcounter{table}\label{tab:audit-card-utility}
+\noindent\textbf{Table~\thetable}\par
+\noindent Audit Card 3: weak local-utility anchor.
+\begin{center}
+\small
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{p{0.25\linewidth}p{0.67\linewidth}}
+\toprule
+\textbf{Field} & \textbf{Audit Card} \\
+\midrule
+Trace & \texttt{prm800k\_pool\_006217\_43f4f279ef}; 3 steps. Representative step: ``I call this altitude $\overline{AF}$, where $F$ is the midpoint of $BC$.'' \\
+Observed issue & Labels are [0.5, 1.0, 0.0]. Raw local utility is inverted: it gives the false parallel-line step the largest signal value (1.2159) and the highest-label midpoint-altitude step a lower value (0.7647). \\
+Audit-priority field behavior & \wstruct{}, QP, and Ridge allocate the midpoint-altitude step for early audit and the false parallel-line step for late audit; raw local utility has Spearman $\rho=-1.0$ on this trace. \\
+SC-FMA decomposition & Fidelity: the supplied fidelity field corrects the raw utility inversion. Necessity: the altitude construction remains the structurally meaningful check. Redundancy: the three-step trace has no consolidation signal. Bottleneck: no bottleneck flag is active, so the audit interpretation is to repair the utility anchor. \\
+Added audit value & \wstruct{} fixes the local allocation pattern. SC-FMA identifies the failure mode as a weak utility anchor, which points review toward the upstream field. \\
+Audit Interpretation & Inspect why the local utility anchor rewarded the false parallel-line step; use the structured decomposition for triage and avoid treating raw utility as an independent audit target. \\
+Interpretation Label & \texttt{REPAIR\_UPSTREAM\_UTILITY} \\
+Scope note & Process-annotation Audit Card for signal-quality interpretation. \\
+\bottomrule
+\end{tabular}
+\end{center}
+\medskip
+
+\section{Runtime and Reproducibility}
+\label{app:runtime-reproducibility}
+
+Runtime and reproducibility metadata are summarized in Supplementary Table C.7. The main source records the 131.57\,s process-annotation construction time as an archived wall-clock trace; per-trace costs for the SC-FMA variants are reported in Supplementary Table C.7.
+
+
+\clearpage
+\bibliographystyle{unsrtnat}

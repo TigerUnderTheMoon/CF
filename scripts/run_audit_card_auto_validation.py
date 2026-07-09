@@ -46,6 +46,7 @@ TARGET_TO_TAXONOMY = {
     "weak_utility_anchor": "weak_utility_anchor",
     "structural_over_correction": "structural_over_correction",
 }
+METHODS = ("w_struct_only", "raw_field_bundle", "scfma_decomposition")
 
 
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -80,7 +81,7 @@ def main(argv: Sequence[str] | None = None) -> None:
             bootstrap_samples=args.bootstrap_samples,
             bootstrap_seed=args.bootstrap_seed,
         )
-        for method in ("w_struct_only", "scfma_decomposition")
+        for method in METHODS
     }
     report = {
         **common_metadata(
@@ -111,6 +112,13 @@ def main(argv: Sequence[str] | None = None) -> None:
         "elapsed_seconds": timer.elapsed(),
         "available_fields": {
             "w_struct_only": ["w_struct_scalar"],
+            "raw_field_bundle": [
+                "fidelity",
+                "raw_local_utility",
+                "structural_necessity",
+                "redundancy_density",
+                "bottleneck_indicator",
+            ],
             "scfma_decomposition": [
                 "fidelity",
                 "necessity",
@@ -165,6 +173,12 @@ def _trace_record(trace: taxonomy.TraceFailure) -> dict[str, Any]:
     redundancy_signal = float(trace.redundancy_density) * (1.0 + qp_drop)
     bottleneck_signal = _bottleneck_oracle_signal(trace, qp, necessity)
     weak_anchor_signal = max(0.0, -float(trace.rho_raw)) + max(0.0, float(trace.rho_w_struct))
+    raw_bottleneck_signal = float(len(bottlenecks)) + bottleneck_strength
+    raw_structural_disagreement = (
+        float(np.max(np.abs(necessity - w_struct)))
+        if necessity.size and w_struct.size and necessity.shape == w_struct.shape
+        else 0.0
+    )
     return {
         "sample_id": trace.sample_id,
         "n_steps": trace.n_steps,
@@ -176,6 +190,12 @@ def _trace_record(trace: taxonomy.TraceFailure) -> dict[str, Any]:
                 "redundancy_consolidation": scalar_salience,
                 "weak_utility_anchor": scalar_salience,
                 "structural_over_correction": scalar_salience,
+            },
+            "raw_field_bundle": {
+                "bottleneck_protection": raw_bottleneck_signal,
+                "redundancy_consolidation": float(trace.redundancy_density),
+                "weak_utility_anchor": weak_anchor_signal + 0.01 * anchor_gap,
+                "structural_over_correction": raw_structural_disagreement,
             },
             "scfma_decomposition": {
                 "bottleneck_protection": bottleneck_signal + bottleneck_strength,
@@ -231,7 +251,7 @@ def _evaluate_target(
         dtype=float,
     )
     metrics = {}
-    for method in ("w_struct_only", "scfma_decomposition"):
+    for method in METHODS:
         scores = np.asarray([row["scores"][method][target] for row in rows], dtype=float)
         metrics[method] = _ir_metrics(scores, labels, budget=budget)
     return {

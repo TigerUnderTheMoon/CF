@@ -1,0 +1,54 @@
+% !TEX root = ../manuscript.tex
+\section{Related Work}
+\label{sec:related-work}
+
+\subsection{Attribution and Explanation}
+
+Attribution methods ask which parts of an input, computation, or structure matter for a decision. Integrated Gradients~\cite{sundararajan2017axiomatic}, SHAP~\cite{lundberg2017unified}, and LIME~\cite{ribeiro2016lime} return feature-level or local explanation signals, while ERASER evaluates extractive rationales~\cite{deyoung2020eraser}.
+
+Structure-aware attribution adds graph context. Network studies show that importance can be non-local, redundant, or concentrated around bottleneck nodes~\cite{albert2000error,newman2010networks}; GNNExplainer selects compact explanatory subgraphs~\cite{ying2019gnnexplainer}. Human-centered XAI further shows that explanations must fit review tasks and organizational routines~\cite{miller2019explanation,arrieta2020explainable,amershi2019guidelines,kaplan2024xai}.
+
+These lines motivate the audit-triage setting. Salience identifies important evidence; audit triage additionally needs role labels for local support, duplicated evidence, downstream dependencies, and weak upstream signals. Entailment-tree and counterfactual methods add intermediate or contrastive evidence~\cite{dalvi2021entailmenttrees,wijekoon2023counterfactual}; SC-FMA keeps the audit roles separate.
+
+\subsection{Process Supervision and Process Reward Models}
+
+Process supervision assigns annotation fields to intermediate artifacts as well as final answers. PRM800K showed that per-artifact human labels can support verifier-guided best-of-$N$ search relative to outcome reward models~\cite{lightman2023verify}; GSM8K made this verifier setting concrete~\cite{cobbe2021training}. Process-based feedback also reduced reasoning errors when outcome success appeared saturated~\cite{uesato2022solving}. These studies provide the artifact-resolved fidelity field that SC-FMA calibrates.
+
+A parallel line makes verification, critique, and revision available as process units. Chain-of-thought and self-consistency expose sampled reasoning paths~\cite{wei2022cot,wang2022selfconsistency}. Tree of Thoughts and ReAct add search or action structure~\cite{yao2023tot,yao2022react}, while Reflexion and Self-Refine turn revision steps into supervision targets~\cite{shinn2023reflexion,madaan2023selfrefine}.
+
+Recent process-verification resources also show that step-level signals need distributional checks. Math-Shepherd studies automatic step verification without human annotations~\cite{wang2024mathshepherd}, and ProcessBench evaluates process-error identification across models~\cite{zheng2024processbench}. These resources help assess scalar step signals, which SC-FMA uses as inputs to structural calibration.
+
+\subsection{Graph-Based Knowledge Engineering and Audit Methods}
+
+Graph-based knowledge engineering shows how structured intermediate states can be made inspectable. Knowledge-engineering methods have long treated representation, inference, and maintenance-oriented review as coupled design problems~\cite{studer1998knowledge}. Early expert systems such as MYCIN and DENDRAL demonstrated the value of structured knowledge representation~\cite{buchanan1984mycin,lindsay1980dendral}. Cognitive architectures such as Soar and ACT-R also made internal states and operator applications available for step-level review~\cite{laird2012soar,anderson2004actr}. In information systems, related work on knowledge management and algorithmic accountability emphasizes that AI artifacts must be represented in ways that support transparency, traceability, and organizational oversight~\cite{dwivedi2021artificial,raji2020closing}.
+
+Modern knowledge-intensive pipelines connect language models with structured knowledge. Knowledge graphs provide a representation substrate for entities, relations, constraints, and quality signals~\cite{hogan2021knowledge}. RAG and GraphRAG expose passages, entity graphs, and community summaries as evidence~\cite{lewis2020rag,gao2023ragsurvey,edge2024graphrag}. KG-RAG, knowledge-enhanced language models, and LLM-KG integration expose entity links, triples, and relation paths as reviewable artifacts~\cite{sanmartin2024kgrag,hu2024knowledgeenhanced,pan2024unifying}. Recent surveys and KG-quality studies show why graph-quality signals become part of the audit surface~\cite{yang2025kbllmsurvey,chen2025kgquality,dai2025llmkg}. Similar pressure appears in long-tail KG-augmented QA and engineering-design RAG, where sparse support and heterogeneous evidence make exhaustive review unrealistic~\cite{huang2025prompting,siddharth2024retrieval,liu2025knowledgereasoning}.
+
+Across these settings, the challenge is no longer simply recovering intermediate evidence. Modern pipelines already expose passages, entity links, relation paths, and verification records. The harder question is how to allocate limited curation budget and preserve records for refinement, update, and reuse~\cite{paulheim2017knowledge,higgins2008dcc}. SC-FMA converts exposed artifacts into graph-aware audit records for that purpose.
+
+\subsection{Summary of Research Gap}
+
+Existing work supplies three ingredients: local attribution identifies salient evidence, process supervision supplies step-level fidelity fields, and graph-based knowledge engineering exposes structural context. SC-FMA combines them into a representation layer that turns exposed knowledge artifacts into inspectable records for fixed-budget knowledge audit.
+
+\subsection{Comparison with Alternative Representations}
+
+The experimental comparisons below use internal scalar views and reproducible ablations aligned with the audit-record object. IG, SHAP, LIME, GNNExplainer, frozen PRM scorers, and related methods define neighboring objectives whose native outputs include feature attributions, local explanations, explanatory subgraphs, and scalar reward fields. SC-FMA targets a decomposed audit record with fidelity, structural dependency, redundancy, bottleneck, audit-reason, and interpretation fields.
+
+\begin{table}[ht]
+\caption{Output objects of neighboring explanation methods and SC-FMA. The table positions each method family by its native representation.}
+\label{tab:alternative-representation-comparison}
+\centering
+\small
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{Z{0.26\linewidth}Z{0.30\linewidth}Z{0.32\linewidth}}
+\toprule
+\textbf{Method family} & \textbf{Native output object} & \textbf{Relation to audit-record construction} \\
+\midrule
+IG, SHAP, LIME & Feature-level or local attribution scores & Provides salience signal. \\
+GNNExplainer-style graph explanation & Compact explanatory subgraph & Provides structural subset. \\
+Frozen PRM or process scorer & Scalar step or prefix signal & Provides fidelity field. \\
+SC-FMA & Decomposed audit record & Constructs fidelity, dependency, redundancy, bottleneck, reason, and interpretation fields. \\
+\bottomrule
+\end{tabular}
+\end{table}
+

@@ -1,5 +1,5 @@
 %% Information Sciences / Elsevier CAS supplementary package.
-%% SC-FMA: Structurally-Calibrated Functional Attribution for Knowledge Curation
+%% SC-FMA supplementary material for Knowledge Curation
 \documentclass[a4paper,fleqn]{cas-sc}
 
 \usepackage[numbers,sort&compress]{natbib}
@@ -29,7 +29,7 @@
 \shorttitle{Supplementary Material}
 \shortauthors{Ma and Wang}
 
-\title[mode=title]{Supplementary Material for Structurally-Calibrated Functional Attribution for Audit Prioritization in Knowledge-Intensive Reasoning}
+\title[mode=title]{Supplementary Material for Structurally-Calibrated Functional Metacognitive Attribution for Audit Prioritization in Knowledge-Intensive Reasoning}
 
 \author[1]{Haoran Ma}
 \ead{mahaoran0000@foxmail.com}
@@ -58,6 +58,9 @@ supplementary material \sep structural calibration \sep reproducibility \sep kno
 \end{keywords}
 
 \maketitle
+
+\section*{Phase/Stage Naming Convention}
+The main manuscript uses \emph{stage} for evidence categories: process-annotation preservation, Countries-KG graph-backend feasibility, rule-derived audit-record retrieval, controlled calibration, and supplementary diagnostics. Some archived output paths retain older internal \emph{phase} labels from the executable pipeline, such as \path{phase6_sensitivity.json} for graph-construction sensitivity. These phase labels are reproducibility identifiers only; they do not define additional validation claims. Unless explicitly cited by the main manuscript, supplementary tables and figures are reported as supporting diagnostics.
 
 \appendix
 \makeatletter
@@ -126,19 +129,19 @@ With $\alpha = 1.0$, $\beta = 0.5$, $\gamma = 0.2$, $\delta = 0$:
 L(w_1, w_2) = 1.0[(w_1-0.6)^2 + (w_2-0.4)^2] + 0.5[(w_1-0.5)^2 + (w_2-0.5)^2] + 0.2(w_1^2 + 2\cdot0.9\cdot w_1w_2 + w_2^2).
 \end{equation}
 
-Solving numerically yields $w_1^* \approx 0.47$, $w_2^* \approx 0.53$, i.e., $w_2^* > w_1^*$ despite $\tilde{c}_1 > \tilde{c}_2$. The redundancy penalty equalizes the allocation values because steps 1 and 2 are highly similar ($R_{12} = 0.9$), and this equalization outweighs the fidelity term. This is the \emph{designed behavior}: structural calibration deliberately adjusts the local utility allocation when steps are substitutable, preventing the dilution of supervision across redundant operations.
+Solving numerically yields $w_1^* \approx 0.47$, $w_2^* \approx 0.53$, i.e., $w_2^* > w_1^*$ despite $\tilde{c}_1 > \tilde{c}_2$. The redundancy penalty equalizes the priority-field values because steps 1 and 2 are highly similar ($R_{12} = 0.9$), and this equalization outweighs the fidelity term. This is the \emph{designed behavior}: structural calibration deliberately adjusts the local utility field assignment when steps are substitutable, preventing the dilution of supervision across redundant operations.
 
 Quantitative analysis across the full controlled stage: among step pairs with $R_{ij} > 0.7$, monotonicity violations occur in $31.2\%$ of pairs, consistent with the deliberate equalization mechanism.
 
-\section{Additional Validation Results and Figures}
+\section{Additional Diagnostic Results and Figures}
 \label{app:additional-figures}
 
-This appendix provides extended validation results, supplementary figures, and detailed stratum analysis that support the main-text findings.
+This appendix provides extended diagnostic results, supplementary figures, and detailed stratum analysis that support the main-text findings.
 
 \subsection{Full Annotation-Order Consistency Readouts per Trace Size}
 \label{app:per-size}
 
-Table~\ref{tab:per-size} breaks down the controlled synthetic annotation-order consistency readouts by trace size ($k = 3$ to $8$) for the three SC-FMA variants and raw local utility. Within this controlled proxy-label stage, SC-FMA QP is strongest at all $k$, with the largest gains at $k \ge 6$ where redundancy effects are most pronounced.
+Table~\ref{tab:per-size} breaks down the controlled synthetic annotation-order consistency readouts by trace size ($k = 3$ to $8$) for the three SC-FMA variants and raw local utility. Within this controlled proxy-label stage only, SC-FMA QP is strongest at all $k$, with the largest designed-stage gains at $k \ge 6$ where redundancy effects are most pronounced. This table is not evidence of PRM800K ranking improvement or external audit usefulness.
 
 \begin{table}[ht]
 \caption{Step-level annotation-order consistency stratified by trace size $k$. Mean Spearman $\rho$ over traces of each size. Standard errors in parentheses (bootstrap, 10k resamples).}
@@ -159,12 +162,12 @@ $\Delta$(QP $-$ local utility) & +0.111 & +0.116 & +0.125 & +0.140 & +0.148 \\
 \end{tabular}
 \end{table}
 
-The improvement $\Delta$(QP $-$ local utility) increases monotonically with $k$ (from $+0.111$ at $k=3$ to $+0.148$ at $k \ge 7$), consistent with the structural calibration mechanism: larger traces contain more redundancy relationships ($\binom{k}{2}$ grows quadratically), and the redundancy penalty term becomes increasingly informative.
+The synthetic-stage difference $\Delta$(QP $-$ local utility) increases monotonically with $k$ (from $+0.111$ at $k=3$ to $+0.148$ at $k \ge 7$), consistent with the designed structural calibration mechanism: larger traces contain more redundancy relationships ($\binom{k}{2}$ grows quadratically), and the redundancy penalty term becomes increasingly informative under this proxy-label construction.
 
 \section{Main-Text Material Moved to Supplementary}
 \label{app:moved-main-material}
 
-This appendix records material that was removed from the compressed manuscript to keep the upload manuscript within the project-specific 12--25 page gate. The move is editorial only: it does not change the evidence boundary, hyperparameters, annotation-order consistency readouts, or allowed claims.
+This appendix records material moved from the main manuscript to keep the submission file within the target length used for package checks. The move is editorial only: it does not change the evidence boundary, hyperparameters, annotation-order consistency readouts, or allowed claims.
 
 \subsection{Notation and Positioning}
 \label{app:notation-positioning}
@@ -181,7 +184,7 @@ Table~\ref{tab:supp-notation} provides the compact notation reference used throu
 \textbf{Symbol} & \textbf{Meaning} \\
 \midrule
 $k$ & Number of reflective or verification steps in a trace. \\
-$\mathbf{w}$ & Calibrated audit-allocation vector on the probability simplex. \\
+$\mathbf{w}$ & Calibrated audit-priority field vector on the probability simplex. \\
 $\tilde{\mathbf{c}}$ & Normalized utility or proxy-fidelity input. \\
 $\tilde{\mathbf{n}}$ & Normalized graph-level structural necessity. \\
 $\mathbf{R}$ & Pairwise redundancy matrix. \\
@@ -214,7 +217,7 @@ SC-FMA is positioned between step-level annotation signals and graph-aware audit
 \label{alg:supp-scfma-qp}
 \begin{algorithmic}[1]
 \Require $\tilde{\mathbf{c}}$, $\tilde{\mathbf{n}}$, $\mathbf{R}$, $\mathbf{b}$, hyperparameters $\alpha,\beta,\gamma,\delta$
-\Ensure Audit-allocation field $\mathbf{w}^*$
+\Ensure Audit-priority field $\mathbf{w}^*$
 \State Define the simplex $\mathcal{W}=\{\mathbf{w}\ge 0,\sum_i w_i=1\}$.
 \State Minimize $L(\mathbf{w})=\alpha\|\mathbf{w}-\tilde{\mathbf{c}}\|_2^2+\beta\|\mathbf{w}-\tilde{\mathbf{n}}\|_2^2+\gamma\mathbf{w}^\top\mathbf{R}\mathbf{w}-\delta\sum_i b_i\log(w_i)$ over $\mathcal{W}$.
 \State Use the Ridge solution as a warm start when available.
@@ -240,7 +243,7 @@ $\alpha$ & $\{0.1,0.5,1.0,2.0\}$ & 1.0 & Fidelity to supplied utility anchor. \\
 $\beta$ & $\{0.0,0.25,0.5,1.0\}$ & 0.5 & Structural necessity alignment. \\
 $\gamma$ & $\{0.0,0.1,0.2,0.5,0.8\}$ & 0.2 & Redundancy penalty. \\
 $\delta$ & $\{0.0,0.05,0.1,0.2,0.4\}$ & 0.1 & Bottleneck log-barrier. \\
-$\varepsilon$ & $\{10^{-6},10^{-5},10^{-4},10^{-3}\}$ & $10^{-4}$ & Numerical floor for allocation values. \\
+$\varepsilon$ & $\{10^{-6},10^{-5},10^{-4},10^{-3}\}$ & $10^{-4}$ & Numerical floor for priority-field values. \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -264,7 +267,7 @@ $\varepsilon$ & $\{10^{-6},10^{-5},10^{-4},10^{-3}\}$ & $10^{-4}$ & Numerical fl
 \end{table}
 
 \begin{table}[ht]
-\caption{QP hyperparameter sensitivity on the structural stress-test generator. Values are five-seed means over 200 traces per seed. $\Delta\rho$ is relative to the diagnostic default $(\gamma=0.2,\delta=0.1)$. This grid is a supplementary QP robustness diagnostic only; it is not positive external validation and does not change the process-annotation Ridge recommendation.}
+\caption{QP hyperparameter sensitivity on the structural stress-test generator. Values are five-seed means over 200 traces per seed. $\Delta\rho$ is relative to the diagnostic default $(\gamma=0.2,\delta=0.1)$.}
 \label{tab:supp-gamma-delta-sensitivity}
 \centering
 \small
@@ -281,7 +284,7 @@ $\varepsilon$ & $\{10^{-6},10^{-5},10^{-4},10^{-3}\}$ & $10^{-4}$ & Numerical fl
 \end{tabular}
 \end{table}
 
-The sensitivity grid shows that the structural stress-test behavior is not caused by a single isolated $(\gamma,\delta)$ setting. Removing bottleneck pressure ($\delta=0$) consistently lowers Spearman relative to the default, while moderate-to-strong redundancy and bottleneck coefficients remain competitive or stronger on this synthetic regime. This supports the narrow statement that QP is useful when labels encode high structural conflict. It does not make QP the default real-data variant: on the locked process-annotation stage, \texttt{w\_struct} remains the primary learned fidelity signal and Ridge remains the recommended preservation-with-decomposition approximation.
+The sensitivity grid shows that the structural stress-test behavior is not caused by a single isolated $(\gamma,\delta)$ setting. Removing bottleneck pressure ($\delta=0$) consistently lowers Spearman relative to the default, while moderate-to-strong redundancy and bottleneck coefficients remain competitive or stronger on this synthetic regime. This supports the narrow statement that QP is useful when labels encode high structural conflict. It does not make QP the default real-data variant: on the locked process-annotation stage, \texttt{w\_struct} remains the primary learned fidelity signal and Ridge remains the recommended fidelity-tracking decomposition approximation.
 
 \begin{table}[ht]
 \caption{QP $\alpha/\beta$ sensitivity on the structural stress-test generator with $\gamma=0.2$ and $\delta=0.1$ fixed. Values are five-seed means over 200 traces per seed. $\Delta\rho$ is relative to the diagnostic default $(\alpha=1.0,\beta=0.5)$.}
@@ -308,10 +311,10 @@ The main manuscript reports the structural stress-test table because it explains
 \subsection{Efficiency and Scaling}
 \label{app:efficiency-scaling}
 
-Table~\ref{tab:supp-efficiency} reports the per-trace computational cost moved from the main manuscript.
+Table~\ref{tab:supp-efficiency} reports the per-trace computational cost moved from the main manuscript. The scaling exponent $p$ is an empirical wall-clock scaling fit, not a correlation coefficient. No direct runtime comparison to frozen PRM inference, GNNExplainer, SHAP, Integrated Gradients, LIME, or token-gradient attribution is reported because those baselines require live model, graph-model, or feature-perturbation forward passes that are outside the archived representation pipeline. The manuscript therefore claims comparison against internal scalar views and reproducible ablations only.
 
 \begin{table}[ht]
-\caption{Computational efficiency moved from the main manuscript. Times are per-trace mean over the synthetic test set for the methods actually computed in the archived pipeline. Token-level attribution families (gradient, attention rollout, Shapley, surprisal, entropy) are excluded because the archived synthetic pipeline stores per-step local utility/necessity/redundancy rather than token-level activations; their wall-clock is therefore not defined under this workflow.}
+\caption{Computational efficiency for the methods computed in the archived pipeline. Times are per-trace means over the synthetic test set. Token-level attribution families (gradient, attention rollout, Shapley, surprisal, entropy) are excluded because the archived synthetic pipeline stores per-step local utility/necessity/redundancy rather than token-level activations; their wall-clock is therefore not defined under this workflow.}
 \label{tab:supp-efficiency}
 \centering
 \small
@@ -329,10 +332,12 @@ Raw local utility & $0.8 \pm 0.2$ & 0.95 \\
 
 The full scaling figure remains available in the source figure bundle. The main manuscript reports only the page-budget-critical conclusion: Ridge is the lightweight real-data approximation, while QP is used for the controlled synthetic stage.
 
+The process-annotation audit-record construction run over 4,417 traces and 34,219 labeled artifacts completed in 131.57\,s on a 12-core CPU. This value is reported as a reproducibility trace, not as a comparative efficiency claim, because no frozen PRM inference, GNNExplainer, or token-gradient baseline was run under the same environment.
+
 \subsection{Process-Annotation Variant Details and Audit Readout}
 \label{app:prm800k-variant-details}
 
-\noindent\textbf{Note:} The core process-annotation audit-prioritization readout has been moved to the main manuscript, Section~6.4 (Audit Interpretation). Tables~\ref{tab:supp-scfma-variants} and~\ref{tab:supp-audit-prioritization} provide extended variant readouts and additional reference views that supplement the main-text results.
+\noindent\textbf{Note:} The core process-annotation audit-record coverage readout is reported in the main manuscript's process-annotation representation behavior study. Tables~\ref{tab:supp-scfma-variants} and~\ref{tab:supp-audit-prioritization} provide extended variant readouts and additional reference views that supplement the main-text results.
 
 \begin{table}[ht]
 \caption{SC-FMA calibration variant readout on the locked process-annotation split. All variants use \texttt{w\_struct} predictions as the fidelity input.}
@@ -355,7 +360,7 @@ Random & 0.006 & $[-0.008,0.020]$ & $-$0.606 \\
 \end{table}
 
 \begin{table}[ht]
-\caption{Offline process-annotation audit-prioritization readout under a fixed review budget.}
+\caption{Offline process-annotation audit-record coverage readout under a fixed review budget. N/C marks fields not computed in the locked archived artifact.}
 \label{tab:supp-audit-prioritization}
 \centering
 \small
@@ -366,11 +371,11 @@ Random & 0.006 & $[-0.008,0.020]$ & $-$0.606 \\
 \texttt{w\_struct} & \textbf{0.9169} & \textbf{0.3809} & \textbf{0.9506} \\
 SC-FMA Ridge & 0.9054 & 0.3796 & 0.9460 \\
 SC-FMA QP & 0.9033 & 0.3790 & 0.9439 \\
-Frozen PRM prefix signal & --- & --- & 0.8465 \\
-Random & --- & --- & 0.7757 \\
-Span length & --- & --- & 0.7526 \\
-Raw local utility & --- & --- & 0.7221 \\
-Relative position & --- & --- & 0.3204 \\
+Frozen PRM prefix signal & N/C & N/C & 0.8465 \\
+Random & N/C & N/C & 0.7757 \\
+Span length & N/C & N/C & 0.7526 \\
+Raw local utility & N/C & N/C & 0.7221 \\
+Relative position & N/C & N/C & 0.3204 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -380,12 +385,12 @@ These tables retain the stage-specific downgrade: the strongest real-data result
 \subsection{WebQSP Fixed-Schema Trace-Audit Diagnostic}
 \label{app:webqsp-trace-audit}
 
-The WebQSP diagnostic is included only as a supplementary reasoning-trace audit diagnostic. It does not evaluate KGQA representation alignment, semantic parsing, entity-linking quality, or question-answering system behavior. The diagnostic converts logical-form-derived WebQSP records into deterministic six-step executable traces: entity linking, relation traversal, candidate generation, candidate verification, ambiguity resolution, and answer verification. Rule replay then masks one reasoning step at a time and computes a replay-derived audit-target field. The knowledge graph is treated as a knowledge source for trace construction; the validation unit is the reasoning step in the trace.
+The WebQSP diagnostic is included only as a supplementary trace-audit diagnostic. It does not evaluate KGQA representation alignment, semantic parsing, entity-linking quality, or question-answering system behavior. The diagnostic converts logical-form-derived WebQSP records into deterministic six-step executable traces: entity linking, relation traversal, candidate generation, candidate verification, ambiguity resolution, and answer verification. Rule replay then masks one reasoning step at a time and computes a replay-derived audit-target field. The knowledge graph is treated as a knowledge source for trace construction; the diagnostic unit is the trace step.
 
 Development used the train split and final diagnostic reporting used the test split. The train run produced 494 traces and 2,964 steps. The locked test run produced 1,627 traces and 9,762 steps. The data audit passed on both splits: missing-entity, disconnected-subgraph, duplicate-trace, answer-leakage, invalid-trace, and replay-failure counts were all zero. Replay failure rate is reported descriptively and is not used as a hard pass/fail threshold.
 
 \begin{table}[ht]
-\caption{WebQSP fixed-schema separability diagnostic on the locked test split. The run is diagnostic only and is not interpreted as KGQA evidence.}
+\caption{WebQSP fixed-schema separability diagnostic on the locked test split.}
 \label{tab:supp-webqsp-diagnostic}
 \centering
 \small
@@ -405,12 +410,12 @@ Graph degree & $-$0.726 & 0.111 & 0.493 \\
 
 The diagnostic exposes a structural property of the fixed trace schema. Entity linking, relation traversal, and answer verification are indispensable under the replay rules and receive audit-target value 1.0. Candidate generation, candidate verification, and ambiguity resolution are recoverable and receive continuous audit-target values that vary with candidate-set size (test-split mean 0.226, minimum 0.00034, maximum 0.333). Thus step type perfectly separates indispensable from recoverable steps, but it does not perfectly predict the continuous recoverable-step audit value.
 
-This diagnostic also exposes a metric artifact. Each trace has six steps; under a 25\% review budget, the implementation keeps two steps. Because the first two fixed-schema steps are indispensable, relative position, raw rule delta, and SC-FMA Ridge all attain Record NDCG@25\% of 1.000. Pairwise alignment is more discriminative: raw rule delta and SC-FMA Ridge both reach 1.000, relative position reaches 0.667, and graph degree drops to 0.111. The safe interpretation is therefore narrow: fixed-schema KG traces can make replay-derived audit targets largely separable by step role and position, making complex policy optimization redundant under this schema. This is a transferability and validation-confound diagnostic, not evidence that SC-FMA improves KGQA, semantic parsing, or live knowledge-base maintenance.
+This diagnostic also exposes a metric artifact. Each trace has six steps; under a 25\% review budget, the implementation keeps two steps. Because the first two fixed-schema steps are indispensable, relative position, raw rule delta, and SC-FMA Ridge all attain Record NDCG@25\% of 1.000. Pairwise alignment is more discriminative: raw rule delta and SC-FMA Ridge both reach 1.000, relative position reaches 0.667, and graph degree drops to 0.111. The safe interpretation is therefore narrow: fixed-schema KG traces can make replay-derived audit targets largely separable by step role and position, making complex policy optimization redundant under this schema. This is a transferability and validation-confound diagnostic, not evidence that SC-FMA improves KGQA, semantic parsing, or live maintenance-oriented knowledge-base review.
 
 \subsection{MuSiQue Constructed-Label Knowledge-Audit Details}
 \label{app:musique-knowledge-audit}
 
-The MuSiQue diagnostic is an offline, deterministic knowledge-audit feasibility validation. It constructs trace records from MuSiQue decomposition evidence chains with retrieval, entity-binding, evidence-check, distractor-rejection, and answer-synthesis steps. The label source is \texttt{musique\_decomposition\_constructed\_audit\_labels}; these labels are assigned deterministically by step type (e.g., answer synthesis 2.0, bridge binding 1.7, distractor rejection 0.0) and are not production-scene human curation labels. The representation features are likewise deterministic functions of step type: \texttt{raw\_local\_utility} is a per-type constant, and \texttt{evidence\_role}/\texttt{bridge\_role} are one-hot subsets of step type. The labels and the \texttt{w\_struct} features therefore share a common source (\texttt{step\_type}), so the diagnostic tests whether a learned linear combination of step-type-derived features reproduces a step-type-derived label vector, not whether step-type-derived features recover an independently grounded audit priority. The diagnostic is therefore reported only as a feasibility demonstration and provides no independent audit-record representation evidence.
+The MuSiQue diagnostic is an offline, deterministic knowledge-audit feasibility demonstration. It constructs trace records from MuSiQue decomposition evidence chains with retrieval, entity-binding, evidence-check, distractor-rejection, and answer-synthesis steps. The label source is \texttt{musique\_decomposition\_constructed\_audit\_labels}; these labels are assigned deterministically by step type (e.g., answer synthesis 2.0, bridge binding 1.7, distractor rejection 0.0) and are not production-scene human curation labels. The representation features are likewise deterministic functions of step type: \texttt{raw\_local\_utility} is a per-type constant, and \texttt{evidence\_role}/\texttt{bridge\_role} are one-hot subsets of step type. The labels and the \texttt{w\_struct} features therefore share a common source (\texttt{step\_type}), so the diagnostic tests whether a learned linear combination of step-type-derived features reproduces a step-type-derived label vector, not whether step-type-derived features recover an independently grounded audit priority. The diagnostic is therefore reported only as a feasibility demonstration and provides no independent audit-record representation evidence.
 
 The split is locked by hash: 585 samples are used for dev training or calibration, and 1,415 samples with 12,715 steps are reserved for final reporting. No API calls are used. The leakage audit reports that locked labels are not used for calibration, forbidden fields are excluded from calibration, and label permutation reduces the mean diagnostic delta from 0.1347 to 0.0078. Table~\ref{tab:supp-musique-knowledge-audit} reports the full feasibility-demonstration metrics on this locked split.
 
@@ -440,12 +445,12 @@ Span length & $-$0.3216 & 0.0035 & 0.2168 & 0.3800 & 0.1571 \\
 
 The support decision is reported for completeness but is not interpreted as positive evidence. Because the audit labels and representation features share a common step-type source, the task is close to trivial: a hand-coded step-type priority rule (answer synthesis $>$ bridge binding $>$ evidence check $>$ retrieval/question decomposition $>$ distractor rejection) attains Record NDCG@25\% of 1.0000, Top-1 hit of 1.0000, and Mass@25\% of 0.3939 across all 1,415 locked traces, identical to the \texttt{w\_struct}, SC-FMA Ridge, and SC-FMA QP rows. The $\Delta$Record NDCG@25\% of 0.1193 over graph centrality (0.8807), with bootstrap 95\% CI [0.1187, 0.1199], therefore reflects the gap between methods that use the step-type priority and controls that do not, not a calibration advantage; the narrow interval is itself a consequence of the label structure (only three distinct label vectors across the 1,415 locked traces). The field-level leakage audit is clean---locked labels are not read during calibration, forbidden fields are excluded, and label permutation reduces the mean diagnostic delta from 0.1347 to 0.0078---but field-level checks cannot detect construction-level homology. The diagnostic is therefore a feasibility demonstration only; it is not live knowledge-base validation and does not provide independent audit-record representation evidence.
 
-\subsection{Countries-KG Typed-Edge Stage}
+\subsection{Countries-KG Typed-Edge Backend Feasibility Stage}
 \label{app:kg-representation-stage}
 
 \noindent\textbf{Note:} The knowledge-engineering methodological analogy, including the detailed mapping of high-necessity, high-redundancy, and bottleneck artifacts to curation concepts, is discussed in the main manuscript. The fixture-level Countries-KG typed-edge content below extends the main-text discussion with implementation details that are not covered in the main manuscript.
 
-The fixture-level Countries-KG typed-edge stage uses the Countries knowledge graph with country and region entities and \texttt{locatedIn}/\texttt{neighborOf} triples. It reports lightweight lexical-dependency edges alongside KG-augmented edges for synthetic query traces. The stage demonstrates implementation feasibility for ontology-aware edge construction, but it is not production knowledge-base validation and is not used to strengthen the main empirical claim.
+The fixture-level Countries-KG typed-edge stage uses the Countries knowledge graph with country and region entities and \texttt{locatedIn}/\texttt{neighborOf} triples. It reports lightweight lexical-dependency edges alongside KG-augmented edges for synthetic query traces. The stage demonstrates backend feasibility for ontology-aware edge construction, but it is not production knowledge-base validation and is not used to strengthen the main empirical claim.
 
 \subsection{Supplementary Diagnostic Figures}
 \label{app:supp-figures}
@@ -455,7 +460,7 @@ Figure~\ref{fig:redundancy-comp} provides the supplementary structural diagnosti
 \begin{figure}[pos=ht]
 \centering
 \includegraphics[width=\linewidth]{figures/fig_redundancy_comp.png}
-\caption{Redundancy density and compensation analysis. Panel (a): per-trace redundancy density distribution (mean $0.3530$). Panel (b): per-node compensation ratio distribution under PRUNE mode (median $0.000$, mean $0.0084$). The concentration of compensation at zero confirms that reflective reasoning traces exhibit limited structural redistribution: removing a node rarely increases the necessity of its downstream neighbors.}
+\caption{Redundancy density and compensation analysis. Panel (a): per-trace redundancy density distribution (mean $0.3530$). Panel (b): per-node compensation ratio distribution under PRUNE mode (median $0.000$, mean $0.0084$). The concentration of compensation at zero indicates that the audited trace artifacts exhibit limited structural redistribution: removing a node rarely increases the necessity of its downstream neighbors.}
 \label{fig:redundancy-comp}
 \end{figure}
 
@@ -482,28 +487,28 @@ The following checklist documents the measures taken to ensure full reproducibil
 \item \textbf{Random seeds.} All validation runs use deterministic seeds: seed $= 42$ for synthetic data generation and random reference methods; seed $= 123$ for Shapley permutation sampling; seed $= 456$ for held-out split assignment. NumPy, PyTorch, and Python random states are all seeded.
 \item \textbf{Synthetic data.} Traces are generated via the controlled probabilistic model described in the Synthetic Data Generation section of the main manuscript. The generation script (\texttt{scripts/generate\_synthetic\_traces.py}) is deterministic given the seed. Generated traces are archived as JSON artifacts.
 \item \textbf{Hyperparameter tuning.} Grid search on the validation set (40 traces) with the ranges reported in the hyperparameter tuning table of the main manuscript. No test-set information is used during tuning. The optimal configuration is frozen before test-set validation.
-\item \textbf{Reference methods.} The reference views reported in the archived synthetic pipeline are raw local utility, the simple-average of local utility and structural necessity, span length, relative position, and random; these are deterministic NumPy implementations. Token-level attribution families (gradient$\times$input, attention rollout, Monte Carlo Shapley, token surprisal, step entropy) are \emph{not} computed here, because the archived synthetic pipeline stores per-step local utility, necessity, and redundancy rather than token-level activations, gradients, or attention tensors; under this workflow those methods would collapse to raw local utility rather than provide distinct allocation readouts. Reference implementations for these families do exist in the codebase (\texttt{src/fma/baselines/}), but they require a live model forward pass and token-level artifacts that the controlled synthetic pipeline does not collect, so their numbers are not reported. A live-model token-level reference diagnostic is left to future work.
+\item \textbf{Reference methods.} The reference views reported in the archived synthetic pipeline are raw local utility, the simple-average of local utility and structural necessity, span length, relative position, and random; these are deterministic NumPy implementations. Token-level attribution families (gradient$\times$input, attention rollout, Monte Carlo Shapley, token surprisal, step entropy) are \emph{not} computed here, because the archived synthetic pipeline stores per-step local utility, necessity, and redundancy rather than token-level activations, gradients, or attention tensors; under this workflow those methods would collapse to raw local utility rather than provide distinct priority-field readouts. Reference implementations for these families do exist in the codebase (\texttt{src/fma/baselines/}), but they require a live model forward pass and token-level artifacts that the controlled synthetic pipeline does not collect, so their numbers are not reported. A live-model token-level reference diagnostic is left to future work.
 \item \textbf{SLSQP solver.} SciPy's \texttt{scipy.optimize.minimize} with method \texttt{SLSQP}, tolerance \texttt{ftol = 1e-8}, maximum iterations $= 100$. Warm-start from Ridge solution.
 \item \textbf{Statistical tests.} Wilcoxon paired tests are two-sided unless noted; Holm--Bonferroni correction is applied across multiple readouts; bootstrap confidence intervals use 10{,}000 resamples with BCa correction. Effect sizes reported as $r = Z/\sqrt{N}$.
 \item \textbf{MuSiQue audit diagnostic.} The MuSiQue diagnostic is reproduced with \texttt{python scripts/run\_knowledge\_audit\_eval.py --hf-dataset dgslibisey/MuSiQue --source-format musique --hf-split train --max-records 2000 --shuffle-seed 42 --bootstrap-samples 1000 --bootstrap-seed 42}. It writes a knowledge-audit report, summary, trace JSONL file, and dataset manifest; the run uses zero API calls. Because the audit labels and representation features are both deterministic functions of step type, this diagnostic is a feasibility demonstration only and is not used as positive audit-record representation evidence.
-\item \textbf{Oracle auto audit-target validation.} The zero-human validation is reproduced with \texttt{scripts/run\_audit\_card\_auto\_validation.py}. The archived outputs include JSON, CSV, and Markdown reports. The report header records no human-subjects claim, no human-efficiency claim, no workflow-validation claim, and an oracle auto audit-validation evidence level. The oracle targets are rule-derived from process-annotation labels, audit-priority field disagreement, redundancy density, bottleneck flags, and the failure-taxonomy rules; they are not human adjudications.
+\item \textbf{Oracle auto audit-target validation.} The zero-human validation is reproduced with \texttt{scripts/run\_audit\_card\_auto\_validation.py}. The archived outputs include JSON, CSV, and Markdown reports. The report header records no human-subjects claim, no human-efficiency claim, no workflow-validation claim, and an oracle auto audit-validation evidence level. The oracle targets are rule-derived from process-annotation labels, audit-priority field disagreement, redundancy density, bottleneck flags, and the failure-taxonomy rules; they are not human adjudications. The current report compares three views: \texttt{w\_struct\_only}, \texttt{raw\_field\_bundle}, and \texttt{scfma\_decomposition}, so the raw-field control is part of the archived diagnostic rather than a post-hoc prose-only comparison.
 \item \textbf{QP hyperparameter sensitivity.} The QP sensitivity diagnostics are reproduced with \texttt{scripts/run\_scu\_hyperparameter\_sensitivity.py}. The archived structured outputs include \texttt{scu\_hyperparameter\_sensitivity.json}, \texttt{scu\_hyperparameter\_sensitivity.md}, \texttt{alpha\_beta\_grid.csv}, and \texttt{gamma\_delta\_grid.csv}. The alpha/beta grid fixes $\gamma=0.2$ and $\delta=0.1$ and sweeps $\alpha \in \{0.5,1.0,2.0\}$ by $\beta \in \{0.0,0.5,1.0\}$; it is a supplementary QP diagnostic only, not positive external validation.
 \item \textbf{Embedding graph-construction ablation.} The graph-construction ablation is reproduced with \texttt{scripts/run\_graph\_construction\_ablation.py}. The archived structured outputs include the graph-construction ablation JSON and table files in the reproduction package. The embedding diagnostic uses \texttt{sentence-transformers/all-MiniLM-L6-v2} through \texttt{sentence-transformers} version 3.4.1, with 384-dimensional vectors. The JSON report records the HuggingFace cache path, download/cache status, runtime status, and all graph-constructor metadata. The ablation is graph-interface evidence only; it is not a production graph-prioritization or live knowledge-base claim.
-\item \textbf{WebQSP trace-audit diagnostic.} Development uses \texttt{D:\textbackslash CF\textbackslash data\textbackslash raw\textbackslash webqsp\textbackslash WebQSP.train.json}; the locked diagnostic uses \texttt{D:\textbackslash CF\textbackslash data\textbackslash raw\textbackslash webqsp\textbackslash WebQSP.test.json}. The diagnostic is reproduced with \texttt{scripts/run\_webqsp\_trace\_audit.py}, \texttt{scripts/validate\_webqsp\_trace\_audit.py}, and \texttt{scripts/analyze\_webqsp\_separability.py}. It writes \texttt{samples.jsonl}, \texttt{reasoning\_traces.jsonl}, \texttt{replay\_results.jsonl}, \texttt{importance\_targets.jsonl}, audit-record outputs, data-audit reports, and separability diagnostics under \texttt{outputs/webqsp\_trace\_audit\_v1\_train} and \texttt{outputs/webqsp\_trace\_audit\_v1\_test}. It is a supplementary diagnostic only.
-\item \textbf{Output artifacts.} All raw results (local-utility vectors, necessity values, redundancy matrices, audit-allocation fields, annotation-order consistency readouts) are saved as JSONL or JSON artifacts in the \texttt{outputs/} directory. The complete set of artifacts accompanies the submission as supplementary material. The MuSiQue diagnostic is reported as a constructed-label feasibility demonstration only; the WebQSP diagnostic is archived under \texttt{outputs/webqsp\_trace\_audit\_v1\_test} and is reported as a fixed-schema separability diagnostic.
+\item \textbf{WebQSP trace-audit diagnostic.} Development uses \texttt{data/raw/webqsp/WebQSP.train.json}; the locked diagnostic uses \texttt{data/raw/webqsp/WebQSP.test.json}. The diagnostic is reproduced with \texttt{scripts/run\_webqsp\_trace\_audit.py}, \texttt{scripts/validate\_webqsp\_trace\_audit.py}, and \texttt{scripts/analyze\_webqsp\_separability.py}. It writes \texttt{samples.jsonl}, \texttt{reasoning\_traces.jsonl}, \texttt{replay\_results.jsonl}, \texttt{importance\_targets.jsonl}, audit-record outputs, data-audit reports, and separability diagnostics under \texttt{outputs/webqsp\_trace\_audit\_v1\_train} and \texttt{outputs/webqsp\_trace\_audit\_v1\_test}. Some JSON manifests may retain machine-local cache paths for provenance, but reproducibility is specified through repository-relative inputs and scripts.
+\item \textbf{Output artifacts.} All raw results (local-utility vectors, necessity values, redundancy matrices, audit-priority fields, annotation-order consistency readouts) are saved as JSONL or JSON artifacts in the \texttt{outputs/} directory. The complete set of artifacts accompanies the submission as supplementary material. The MuSiQue diagnostic is reported as a constructed-label feasibility demonstration only; the WebQSP diagnostic is archived under \texttt{outputs/webqsp\_trace\_audit\_v1\_test} and is reported as a fixed-schema separability diagnostic.
 \end{enumerate}
 
 \subsection{SLSQP Convergence Diagnostics}
 \label{app:slsqp-diagnostics}
 
-SLSQP convergence statistics across $N = 1{,}027$ steps (200 traces): mean iterations to convergence $5.3 \pm 2.1$ (std), median 5, maximum 12. The worst-case trace ($k=8$, dense redundancy) required 12 iterations and 14.7\,ms. Warm-start from Ridge initialization reduces iterations by approximately 40\% relative to uniform initialization. Under default hyperparameters ($\alpha=1.0$, $\beta=0.5$, $\gamma=0.2$, $\delta=0.1$, $\varepsilon=10^{-4}$), the Hessian condition number $\kappa(\mathbf{H}) \le 3.2$, guaranteeing numerically stable optimization.
+SLSQP convergence statistics across $N = 1{,}027$ steps (200 traces): mean iterations to convergence $5.3 \pm 2.1$ (std), median 5, maximum 12. The worst-case trace ($k=8$, dense redundancy) required 12 iterations and 14.7\,ms. Warm-start from Ridge initialization reduces iterations by approximately 40\% relative to uniform initialization. Under default hyperparameters ($\alpha=1.0$, $\beta=0.5$, $\gamma=0.2$, $\delta=0.1$, $\varepsilon=10^{-4}$), the quadratic Hessian $\mathbf{H}_{q}=2((\alpha+\beta)\mathbf{I}+\gamma\mathbf{R}_{s})$ has condition number $\kappa(\mathbf{H}_{q}) \le 3.2$ on the simplex tangent subspace, supporting numerically stable optimization in the archived run.
 
 \subsection{Graph Construction Parameter Sensitivity}
 \label{app:graph-sensitivity}
 
-The keyword-heuristic graph construction introduces two free parameters: $\tau_{\text{tfidf}} = 0.35$ and $w_{\text{topical}} = 0.75$. Sensitivity analysis ($\pm 20\%$ perturbation) shows $|\Delta\rho| < 0.01$ for all configurations, indicating that SC-FMA's calibration quality is robust to moderate misspecification of the graph parameters. Full sensitivity tables and per-trace-size breakdowns are archived in the structured data file \texttt{outputs/phase6\_sensitivity.json}.
+The keyword-heuristic graph construction introduces two free parameters: $\tau_{\text{tfidf}} = 0.35$ and $w_{\text{topical}} = 0.75$. Sensitivity analysis ($\pm 20\%$ perturbation) shows $|\Delta\rho| < 0.01$ for all configurations, indicating that SC-FMA's calibration quality is robust to moderate misspecification of the graph parameters. Full sensitivity tables and per-trace-size breakdowns are archived in the structured data file \path{outputs/phase6_sensitivity.json}, where \texttt{phase6} is the internal pipeline label for graph-construction diagnostics.
 
-The reviewer-facing graph-construction ablation reports temporal-only, TF-IDF topical, Jaccard topical, Sentence-BERT embedding topical, and shuffled-topical variants under the same diagnostic protocol. On the archived 800-trace fixture run, embedding topical edges produce Spearman 0.0615 for structural-necessity alignment, with 0.0515 for the TF-IDF topical default and 0.0596 for temporal-only. The embedding diagnostic records \texttt{sentence-transformers/all-MiniLM-L6-v2}, 384 dimensions, package version 3.4.1, and the local HuggingFace cache file. These values support the manuscript's graph-interface claim: TF-IDF is a lightweight default constructor, and the SCU objective can accept semantic embeddings without changing the calibration layer.
+The reviewer-facing graph-construction ablation reports temporal-only, TF-IDF topical, Jaccard topical, Sentence-BERT embedding topical, and shuffled-topical variants under the same diagnostic protocol. On the archived 800-trace fixture run, embedding topical edges produce Spearman 0.0615 for structural-necessity alignment, with 0.0515 for the TF-IDF topical default and 0.0596 for temporal-only. The shuffled-topical readout matches the TF-IDF topical value to the reported precision, so the archived diagnostic does not support treating TF-IDF topical edges as a measurable annotation-order driver. The embedding diagnostic records \texttt{sentence-transformers/all-MiniLM-L6-v2}, 384 dimensions, and package version 3.4.1. These values support only the manuscript's graph-interface claim: TF-IDF is a lightweight default constructor, and the SCU objective can accept semantic embeddings without changing the calibration layer.
 
 \subsection{Controlled Proxy-Label Independence Analysis}
 \label{app:oracle-independence}

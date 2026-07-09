@@ -1,0 +1,70 @@
+% !TEX root = ../manuscript.tex
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{Graph-Aware Calibration in the Knowledge Lifecycle}
+\label{sec:knowledge-lifecycle}
+
+Knowledge-intensive systems expose artifacts during construction, retrieval, validation, update, and reuse. These artifacts vary in structural role and interpretive implication. Earlier knowledge-engineering and curation work emphasized inspectable intermediate states and maintenance-oriented review~\cite{buchanan1984mycin,laird2012soar,studer1998knowledge,higgins2008dcc}. Recent KG prompting, engineering-design RAG, KG-quality, and algorithm-auditing studies show why inspection remains difficult when structured knowledge is noisy, incomplete, redundant, or stale~\cite{dai2025llmkg,siddharth2024retrieval,chen2025kgquality,dwivedi2021artificial,raji2020closing}.
+
+For knowledge curation, the useful object is the record that travels with an artifact after scoring. It states why the artifact was selected, which neighboring artifacts it depends on, and whether the selected evidence is duplicated or dependency-exposed.
+
+The empirical evidence makes this interpretation concrete, but also narrows it. Ridge remains close to the supplied PRM800K fidelity field, while the enrichment and retrieval readouts show that similar priority values can require different maintenance actions. The graph-construction ablation and the negative structural-necessity correlation temper the role of the default TF-IDF topology: in the current evidence package, it behaves as a replaceable and fragile graph interface, not as a dependency model independently aligned with mathematical reasoning.
+
+The contribution is a reusable audit-record schema for knowledge-representation workflows. It gives curators a stable representation object for inspecting, comparing, and reusing process artifacts under a fixed review budget.
+
+\subsection{Audit Records for Maintenance-Oriented Analysis}
+\label{sec:audit-interpretation}
+
+During maintenance, the audit record links a selected artifact to a practical reading: verify the fidelity field, inspect a dependency chain, consolidate duplicate evidence, or protect a bottleneck.
+
+The process-annotation stratification shows how these readings appear in archived traces. Weak utility-anchor cases indicate when the fidelity field should be repaired; structural over-correction cases mark excessive graph regularization; redundancy cases identify clusters; and bottleneck cases identify dependency-exposed objects.
+
+Budget-constrained audit coverage, first-selected target, and Mass@25\% match this fixed-budget setting more directly than whole-trace correlation alone. Local evidence signals such as retrieval confidence, entity-linking similarity, and rule-certainty factors can duplicate earlier checks or miss dependency-exposed objects; SC-FMA records those distinctions.
+
+The variant evidence suggests a practical policy. When fidelity is strong, Ridge keeps the record close to the supplied field; when fidelity and structure diverge, QP-style checks are worth running during development.
+
+\subsection{Variant-Selection Guidance}
+
+Table~\ref{tab:variant-policy} converts the stratified diagnosis into observed development patterns, not a prospectively validated selector. The thresholds are calibrated to the present development evidence. The $\rho \ge 0.50$ and $\rho < 0.30$ cut points come from the development-set pattern in which Ridge stays within about 0.02 Spearman of a strong fidelity field, while QP becomes worth checking when structural-term ablations or sensitivity grids change development Spearman by about 0.03 or more. The supporting QP grids are reported in the supplementary hyperparameter tables. Ridge is the conservative default when ground-truth audit labels are unavailable because it tracks a strong fidelity field while exposing interpretation fields. QP is appropriate when development checks or domain knowledge indicate that scalar fidelity is structurally blind, but the PRM800K long-trace stratum shows that QP can be brittle when dense redundancy competes with the fidelity field. Projection is retained as a fast check.
+
+Ridge is the development choice when a fidelity field already aligns with annotations, as in the locked process-annotation stage. QP should be evaluated when utility and structure are expected to disagree and redundancy management is central. Projection is computationally simple but brittle when structural fields conflict with the fidelity field. A ground-truth-free selector based on fidelity-structure divergence, rank instability, and ensemble agreement is left to future work.
+
+\begin{table}[ht]
+\caption{Observed Ridge/QP development patterns derived from the stratified analysis. Thresholds are post-hoc development-set heuristics from the present evidence package, not a prospectively validated selection rule.}
+\label{tab:variant-policy}
+\centering
+\small
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{Z{0.32\linewidth}Z{0.42\linewidth}Z{0.16\linewidth}}
+\toprule
+\textbf{Setting} & \textbf{Development check} & \textbf{Recommendation} \\
+\midrule
+Well-aligned fidelity field, as in process-annotation distributions & Fidelity-field annotation-order consistency is high on development data (roughly $\rho \ge 0.50$ here), and Ridge remains within about 0.02 Spearman of that field. & Ridge \\
+Weak or structurally blind fidelity field & Fidelity consistency is low (roughly $\rho < 0.30$), simple feature averaging fails, or stress-test/component ablations show structural-term removals changing development Spearman by at least 0.03. & Evaluate QP first \\
+Unclear structure or runtime-critical setting & Structural checks are immature, or iterative QP calibration exceeds the available runtime budget. & Ridge; Projection as fast fallback \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Scope and Limitations}
+\label{sec:scope-limitations}
+
+\medskip
+\noindent The current evidence supports audit-record construction and representation-level knowledge-engineering claims. Deployment-oriented knowledge-base maintenance and human audit-use protocols remain future validation settings.
+% Scope note for tests: audit-record representation evidence only; no deployed workflow validation.
+
+\medskip
+\noindent\textbf{Data and signal boundaries.} The synthetic calibration stage is controlled and proxy-labeled, while the locked process-annotation stage supports annotation-order consistency and fixed-budget audit within a PRM800K-derived annotation distribution. SC-FMA Ridge is reported as fidelity-tracking decomposition relative to \wstruct{}, not as an improvement over \wstruct{} on this route. The strongest baseline is a supervised Ridge fidelity field with engineered lexical, positional, numeric, and cue features; the current evidence package does not include a same-supervision structure-only Ridge baseline, so the structural terms should not be interpreted as having lost a fair supervised baseline comparison. Mathematical step annotations are used as process-annotation artifacts. The binary-correctness local utility signal is a coarse trace-level utility anchor, and the resulting audit-priority field values are local representation signals. Causal effect estimates would require a separate identification design.
+
+\textbf{Graph-construction boundary.} The fallback lexical graph uses temporal order and TF-IDF topical similarity. The Sentence-BERT ablation and Countries-KG typed-edge stage show backend substitutability under bounded test conditions. TF-IDF topical edges did not improve annotation-order tracking over temporal-only edges in the archived ablation, and structural necessity is anti-correlated with PRM800K labels under the current construction. The Countries-KG result is a methodological analogy and graph-interface check based on 30 traces, not production knowledge-graph validation; its 0.0 reference-vs-KG consistency also shows backend sensitivity. Stronger topology construction and domain-specific dependency graphs remain open directions.
+
+\textbf{Audit-retrieval boundary.} The audit-target retrieval evidence is rule-derived. The weak utility-anchor subset is the main lowest-direct-overlap retrieval evidence, while the aggregate result summarizes target families with definitional overlap. The target-family dependencies are detailed in Section~\ref{sec:why-calibration}. The target-family rules support reproducibility; automatic retrieval checks establish record visibility, while human audit usefulness requires expert adjudication.
+
+\textbf{Operational boundary.} QP is the most complete SCU variant but degrades sharply on long PRM800K traces. This limits the current full-objective implementation in the very settings where audit support may be most valuable. Human-in-the-loop comparison between scalar views, raw-field bundles, and SC-FMA audit records is required before making claims about reviewer speed, curator accuracy, actionability, or maintenance usefulness.
+
+\medskip
+\noindent\textbf{Scope exclusions.} Downstream PRM training, production knowledge-base deployment, causal identification, and external PRM generalization are outside the current evidence boundary.
+
+\noindent Within these bounds, SC-FMA points to a knowledge-lifecycle use case in which audit records support update-oriented analysis, redundancy interpretation, reuse of vetted artifacts, and structured inspection of exposed evidence.
+
