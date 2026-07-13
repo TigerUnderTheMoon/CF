@@ -1,0 +1,12 @@
+pages=25
+warning_count=10
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+Overfull \hbox (5.58089pt too wide) in paragraph at lines 62--62
+Overfull \hbox (117.0831pt too wide) detected at line 65
+Package hyperref Warning: Ignoring empty anchor on input line 65.
+Package hyperref Warning: Ignoring empty anchor on input line 65.
+Overfull \hbox (3.7524pt too wide) in paragraph at lines 113--114
+Overfull \hbox (1.1102pt too wide) in paragraph at lines 522--532
+Underfull \hbox (badness 10000) in paragraph at lines 838--839
+Underfull \hbox (badness 2689) in paragraph at lines 838--839
+Overfull \hbox (0.80562pt too wide) in paragraph at lines 863--864

@@ -1,0 +1,137 @@
+{
+  "package_dir": "D:\\CF\\paper\\information_sciences_submission\\final_package",
+  "source_dir": "D:\\CF\\paper\\information_sciences_submission\\final_source",
+  "files": [
+    "Highlights.docx",
+    "cover_letter.docx",
+    "declaration_of_competing_interests.docx",
+    "latex_source.zip",
+    "manuscript.pdf",
+    "supplementary.pdf"
+  ],
+  "missing_files": [],
+  "extra_files": [],
+  "pdfs": {
+    "source_manuscript.pdf": {
+      "exists": true,
+      "pages": 25,
+      "size": 863896,
+      "sha256": "ddc4af40f4d8271b50a3e40f5209d57313710d266949b19994d35cb70a46710d"
+    },
+    "package_manuscript.pdf": {
+      "exists": true,
+      "pages": 25,
+      "size": 863896,
+      "sha256": "ddc4af40f4d8271b50a3e40f5209d57313710d266949b19994d35cb70a46710d"
+    },
+    "supplementary.pdf": {
+      "exists": true,
+      "pages": 10,
+      "size": 462685,
+      "sha256": "26e792569a23065d0c6ed9a2e7633bb99f876c45366f7d3b97006cdd20140740"
+    },
+    "source_package_match": true,
+    "source_package_manuscript_match": true
+  },
+  "latex_source_zip": {
+    "entries": 27,
+    "names": [
+      "cas-common.sty",
+      "cas-model2-names.bst",
+      "cas-sc.cls",
+      "figures/compensation_distribution.png",
+      "figures/fig_local_utility_necessity.png",
+      "figures/fig_mode_comparison.png",
+      "figures/fig_overall_framework.drawio",
+      "figures/fig_overall_framework.pdf",
+      "figures/fig_overall_framework.svg",
+      "figures/fig_overall_framework.vsdx",
+      "figures/fig_redundancy_comp.png",
+      "figures/fig_representation_variant_behavior.png",
+      "figures/fig_resilience.png",
+      "figures/fig_scaling.png",
+      "figures/fig_sensitivity.png",
+      "figures/filtering_accuracy_comparison.png",
+      "figures/position_stratified.png",
+      "figures/prm_comparison.png",
+      "figures/redundancy_density_histogram.png",
+      "figures/resilience_curves.png",
+      "figures/structural_diagnostics_attribution_vs_necessity.png",
+      "figures/structural_diagnostics_mode_comparison.png",
+      "figures/Supplementary_Figure_S1_governance_diagnostic_upset.png",
+      "figures/task_comparison.png",
+      "manuscript.tex",
+      "references.bib",
+      "supplementary.tex"
+    ],
+    "missing_required": [],
+    "build_artifacts": [],
+    "sha256": "45a6b81cfbd9668b90984b1d6dd6f917b870a6ba703da2bbdb18d21897ff7152",
+    "size": 2240487,
+    "exists": true,
+    "has_required_source": {
+      "manuscript.tex": true,
+      "supplementary.tex": true,
+      "references.bib": true
+    }
+  },
+  "cross_references": {
+    "n_refs": 38,
+    "n_labels": 91,
+    "missing_labels": []
+  },
+  "docx": {
+    "cover_letter": {
+      "exists": true,
+      "size": 38400,
+      "valid_zip": true,
+      "has_core_docx_parts": true,
+      "entries": 17
+    },
+    "Highlights": {
+      "exists": true,
+      "size": 36926,
+      "valid_zip": true,
+      "has_core_docx_parts": true,
+      "entries": 17
+    },
+    "COI": {
+      "exists": true,
+      "size": 36947,
+      "valid_zip": true,
+      "has_core_docx_parts": true,
+      "entries": 17
+    }
+  },
+  "anchors": {
+    "coi_title_exact": true,
+    "cover_title_exact": true,
+    "representation_enrichment_section": true,
+    "diagnostic_separation_table": true,
+    "structural_boundary_sentence": true,
+    "audit_card_boundary_sentence": true,
+    "literal_supp_refs": true,
+    "no_xr_externaldocument": true,
+    "information_sciences_cover": true,
+    "representation_framing_highlights": true
+  },
+  "abstract_words": 231,
+  "risk_term_counts": {
+    "improve": 8,
+    "enhance": 2,
+    "effective": 1,
+    "practical": 2,
+    "deployment": 4,
+    "actionable": 0,
+    "governance": 0,
+    "causal": 2,
+    "human-evaluated": 0,
+    "human audit": 4
+  },
+  "snippets": {
+    "coi_text": "Declaration of competing interest\nManuscript title: Structurally-Calibrated Functional Metacognitive Attribution for Audit Prioritization in Knowledge-Intensive Reasoning\nAuthors: Haoran Ma; Ningning Wang\nThe authors declare that they have no known competing financial interests or personal relationships that could have appeared to influence the work reported in this paper.\nHaoran Ma\nNingning Wang",
+    "highlights_text": "Highlights\nStructured audit records organize exposed reasoning and knowledge artifacts.\nGraph fields show dependency, redundancy, bottlenecks, and audit reasons.\nLocked process annotations test fidelity tracking under audit budgets.\nA country knowledge graph shows relation-aware dependency shifts.\nRaw-field controls separate field effects from SCU calibration.",
+    "cover_title_line": "We are pleased to submit our manuscript, \"Structurally-Calibrated Functional Metacognitive Attribution for Audit Prioritization in Knowledge-Intensive Reasoning\", for consideration as a regular article in Information Sciences."
+  },
+  "pass": true
+}

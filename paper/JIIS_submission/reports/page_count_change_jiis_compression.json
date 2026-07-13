@@ -1,0 +1,21 @@
+{
+  "generated_at": "2026-07-11T15:41:51.295572+00:00",
+  "revision_type": "restorative_revision_after_compression",
+  "original_manuscript_pages_before_compression": 35,
+  "compressed_manuscript_pages_before_restoration": 15,
+  "restored_manuscript_pages_after_revision": 22,
+  "supplementary_pages_current": 12,
+  "target_manuscript_page_range": "22-25",
+  "target_met": true,
+  "formula_policy": "unchanged",
+  "experiment_policy": "no_new_experiments",
+  "numeric_policy": "preserve_existing_results",
+  "source_pdf_sizes": {
+    "manuscript.pdf": 366792,
+    "supplementary.pdf": 444503
+  },
+  "package_pdf_sizes": {
+    "manuscript.pdf": 366792,
+    "supplementary.pdf": 444503
+  }
+}

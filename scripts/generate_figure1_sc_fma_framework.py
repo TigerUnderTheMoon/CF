@@ -1,9 +1,9 @@
 """Generate a journal-style Fig. 1 workflow for the DKE submission.
 
 Outputs:
-  - paper/dke_submission/final_source/figures/fig_overall_framework.drawio
-  - paper/dke_submission/final_source/figures/fig_overall_framework.svg
-  - paper/dke_submission/final_source/figures/fig_overall_framework.pdf
+  - paper/information_sciences_submission/final_source/figures/fig_overall_framework.drawio
+  - paper/information_sciences_submission/final_source/figures/fig_overall_framework.svg
+  - paper/information_sciences_submission/final_source/figures/fig_overall_framework.pdf
 
 The design is deliberately sparse: native draw.io shapes, editable SVG text,
 thin rules, no decorative icons, no gradients, no shadows, and no external
@@ -20,7 +20,7 @@ import cairosvg
 
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT_DIR = ROOT / "paper" / "dke_submission" / "final_source" / "figures"
+OUT_DIR = ROOT / "paper" / "information_sciences_submission" / "final_source" / "figures"
 DRAWIO_PATH = OUT_DIR / "fig_overall_framework.drawio"
 SVG_PATH = OUT_DIR / "fig_overall_framework.svg"
 PDF_PATH = OUT_DIR / "fig_overall_framework.pdf"
@@ -139,13 +139,13 @@ def add_cells(d: Drawio) -> None:
 
     d.vertex("input_header", "Knowledge artifacts", text_style(16, BLUE, bold=True), 80, 76, 230, 22)
     d.vertex("scfma_header", "SC-FMA: representation layer", text_style(17, BLUE, bold=True), 410, 76, 545, 22)
-    d.vertex("out_header", "Knowledge maintenance", text_style(16, BLUE, bold=True), 1055, 76, 260, 22)
+    d.vertex("out_header", "Maintenance-oriented analysis", text_style(16, BLUE, bold=True), 1055, 76, 260, 22)
 
     # Input block, text-only.
     d.vertex("input_box", "", line_rect_style(MID, 1.0), 85, 126, 225, 226)
     d.vertex("input_a", "<b>knowledge artifacts</b><br>retrieval, entity, rule", text_style(14), 110, 160, 175, 46)
     d.vertex("input_line", "", rect_style(LIGHT, LIGHT, 0.1, radius=0), 118, 230, 160, 1)
-    d.vertex("input_b", "<b>knowledge representation</b><br>A = (a<sub>1</sub>, ..., a<sub>n</sub>)", text_style(14), 105, 252, 185, 64)
+    d.vertex("input_b", "<b>knowledge representation</b><br>A = (a<sub>j</sub>)<sub>j=1</sub><sup>k</sup>", text_style(14), 105, 252, 185, 64)
     d.vertex("input_note", "Observable artifacts only.", text_style(11, MUTED), 105, 326, 185, 20)
 
     d.edge("input_to_graph", 310, 238, 390, 238, color=BLUE, width=1.9)
@@ -155,10 +155,10 @@ def add_cells(d: Drawio) -> None:
     d.vertex("graph_panel", "", line_rect_style(MID, 1.0), 390, 126, 260, 226)
     d.vertex("graph_label", "Dependency graph", text_style(14, INK, bold=True), 416, 145, 210, 20)
     nodes = {
-        "s1": (432, 244, "a<sub>1</sub>", False, False),
-        "s2": (508, 203, "a<sub>2</sub>", False, False),
-        "s4": (508, 289, "a<sub>4</sub>", True, False),
-        "s3": (585, 246, "a<sub>3</sub>", False, True),
+        "s1": (432, 244, "a<sub>j</sub>", False, False),
+        "s2": (508, 203, "a<sub>j</sub>", False, False),
+        "s4": (508, 289, "a<sub>j</sub>", True, False),
+        "s3": (585, 246, "a<sub>j</sub>", False, True),
     }
     for src, dst, dashed in [
         ("s1", "s2", False),
@@ -208,7 +208,7 @@ def add_cells(d: Drawio) -> None:
     # Decomposition strip across the SC-FMA layer.
     d.vertex("strip_title", "knowledge audit record fields", text_style(13, BLUE, bold=True), 490, 383, 395, 18)
     d.vertex("strip_frame", "", line_rect_style("#A9B1BA", 0.9), 390, 408, 589, 44)
-    for i, label in enumerate(["annotation fidelity", "structural role", "redundancy", "bottleneck", "maintenance action"]):
+    for i, label in enumerate(["fidelity field", "structural role", "redundancy", "bottleneck", "interpretation field"]):
         x = 402 + i * 115
         if i > 0:
             d.vertex(f"strip_sep_{i}", "", rect_style(LIGHT, LIGHT, 0.1, radius=0), x - 12, 416, 1, 28)
@@ -221,12 +221,12 @@ def add_cells(d: Drawio) -> None:
     d.vertex("q_h_artifact", "artifact", text_style(9, MUTED, bold=True), 1090, 200, 42, 14)
     d.vertex("q_h_role", "role", text_style(9, MUTED, bold=True), 1135, 200, 40, 14)
     d.vertex("q_h_reason", "audit reason", text_style(9, MUTED, bold=True), 1175, 200, 68, 14)
-    d.vertex("q_h_action", "action", text_style(9, MUTED, bold=True), 1244, 200, 42, 14)
+    d.vertex("q_h_action", "interpret.", text_style(9, MUTED, bold=True), 1244, 200, 42, 14)
     d.vertex("q_h_rule", "", rect_style(LIGHT, LIGHT, 0.1, radius=0), 1088, 218, 194, 1)
     rows = [
-        ("a<sub>3</sub>", "gate", "bottleneck", "retain"),
-        ("a<sub>2</sub>", "link", "dependency", "verify"),
-        ("a<sub>5</sub>", "cluster", "redundant", "merge"),
+        ("a<sub>j</sub>", "gate", "bottleneck", "inspect"),
+        ("a<sub>j</sub>", "link", "dependency", "review"),
+        ("a<sub>j</sub>", "cluster", "redundant", "compare"),
     ]
     for i, (artifact, role, reason, action) in enumerate(rows):
         y = 239 + i * 28
@@ -234,11 +234,11 @@ def add_cells(d: Drawio) -> None:
         d.vertex(f"q_role_{i}", role, text_style(10, INK), 1138, y, 34, 14)
         d.vertex(f"q_reason_{i}", reason, text_style(10, INK), 1174, y, 72, 14)
         d.vertex(f"q_action_{i}", action, text_style(10, INK), 1250, y, 36, 14)
-    d.vertex("q_note", "record = artifact + role + maintenance action", text_style(11, MUTED), 1078, 330, 214, 18)
+    d.vertex("q_note", "record = artifact + role + audit interpretation", text_style(11, MUTED), 1078, 330, 214, 18)
 
     # Bottom interpretation, intentionally understated.
     d.vertex("bottom_left", "Knowledge Artifacts", text_style(12, MUTED), 104, 468, 180, 18)
-    d.vertex("bottom_right", "Knowledge Maintenance", text_style(12, MUTED), 1035, 468, 290, 18)
+    d.vertex("bottom_right", "Maintenance-Oriented Analysis", text_style(12, MUTED), 1035, 468, 290, 18)
     d.edge("bottom_arrow", 292, 477, 1028, 477, color="#9BA4AD", width=1.1)
 
 
@@ -325,11 +325,11 @@ def generate_svg() -> str:
         '<line x1="1015" y1="86" x2="1015" y2="451" stroke="#D8DDE3" stroke-width="1"/>',
         svg_text(195, 88, "Knowledge artifacts", size=16, color=BLUE, weight=700),
         svg_text(682.5, 88, "SC-FMA: representation layer", size=17, color=BLUE, weight=700),
-        svg_text(1185, 88, "Knowledge maintenance", size=16, color=BLUE, weight=700),
+        svg_text(1185, 88, "Maintenance-oriented analysis", size=16, color=BLUE, weight=700),
         svg_rect(85, 126, 225, 226, "none", MID, 1.0, 3),
         svg_multiline(197.5, 171, ["knowledge artifacts", "retrieval, entity, rule"], size=14, weight=700, line_gap=22),
         '<line x1="118" y1="230" x2="278" y2="230" stroke="#D8DDE3" stroke-width="1"/>',
-        svg_multiline(197.5, 269, ["knowledge representation", "A = (a1, ..., an)"], size=14, weight=700, line_gap=22),
+        svg_multiline(197.5, 269, ["knowledge representation", "A = (a_j)_{j=1}^k"], size=14, weight=700, line_gap=22),
         svg_text(197.5, 336, "Observable artifacts only.", size=11, color=MUTED),
         svg_line(310, 238, 390, 238, color=BLUE, sw=1.9),
         svg_text(353, 219, "representation", size=11, color=MUTED, italic=True),
@@ -350,10 +350,10 @@ def generate_svg() -> str:
         p.append(svg_line(x1, y1, x2, y2, sw=1.35, dashed=dashed))
     p.extend(
         [
-            svg_circle(432, 244, 17, "a1"),
-            svg_circle(508, 203, 17, "a2"),
-            svg_circle(508, 289, 17, "a4", dashed=True),
-            svg_circle(585, 246, 17, "a3", stroke=BLUE, sw=2.1),
+            svg_circle(432, 244, 17, "a_j"),
+            svg_circle(508, 203, 17, "a_j"),
+            svg_circle(508, 289, 17, "a_j", dashed=True),
+            svg_circle(585, 246, 17, "a_j", stroke=BLUE, sw=2.1),
             svg_text(520, 329, "artifact dependencies", size=11, color=MUTED),
             svg_line(650, 238, 724, 238, color=BLUE, sw=1.9),
             svg_multiline(687, 215, ["annotation signal", "+ structure"], size=11, color=MUTED, line_gap=13),
@@ -374,7 +374,7 @@ def generate_svg() -> str:
         ]
     )
 
-    for i, label in enumerate(["annotation fidelity", "structural role", "redundancy", "bottleneck", "maintenance action"]):
+    for i, label in enumerate(["fidelity field", "structural role", "redundancy", "bottleneck", "interpretation field"]):
         x = 402 + i * 115
         if i > 0:
             p.append(f'<line x1="{x - 12:g}" y1="416" x2="{x - 12:g}" y2="444" stroke="#D8DDE3" stroke-width="1"/>')
@@ -388,24 +388,24 @@ def generate_svg() -> str:
             svg_text(1111, 204, "artifact", size=9, color=MUTED, weight=700),
             svg_text(1155, 204, "role", size=9, color=MUTED, weight=700),
             svg_text(1209, 204, "audit reason", size=9, color=MUTED, weight=700),
-            svg_text(1267, 204, "action", size=9, color=MUTED, weight=700),
+            svg_text(1267, 204, "interpret.", size=9, color=MUTED, weight=700),
             '<line x1="1088" y1="218" x2="1282" y2="218" stroke="#D8DDE3" stroke-width="1"/>',
-            svg_text(1111, 243, "a3", size=10),
+            svg_text(1111, 243, "a_j", size=10),
             svg_text(1155, 243, "gate", size=10),
             svg_text(1209, 243, "bottleneck", size=10),
-            svg_text(1267, 243, "retain", size=10),
-            svg_text(1111, 271, "a2", size=10),
+            svg_text(1267, 243, "inspect", size=10),
+            svg_text(1111, 271, "a_j", size=10),
             svg_text(1155, 271, "link", size=10),
             svg_text(1209, 271, "dependency", size=10),
-            svg_text(1267, 271, "verify", size=10),
-            svg_text(1111, 299, "a5", size=10),
+            svg_text(1267, 271, "review", size=10),
+            svg_text(1111, 299, "a_j", size=10),
             svg_text(1155, 299, "cluster", size=10),
             svg_text(1209, 299, "redundant", size=10),
-            svg_text(1267, 299, "merge", size=10),
-            svg_text(1185, 339, "record = artifact + role + maintenance action", size=11, color=MUTED),
+            svg_text(1267, 299, "compare", size=10),
+            svg_text(1185, 339, "record = artifact + role + audit interpretation", size=11, color=MUTED),
             svg_text(194, 475, "Knowledge Artifacts", size=12, color=MUTED),
             svg_line(292, 477, 1028, 477, color="#9BA4AD", sw=1.1),
-            svg_text(1180, 475, "Knowledge Maintenance", size=12, color=MUTED),
+            svg_text(1180, 475, "Maintenance-Oriented Analysis", size=12, color=MUTED),
         ]
     )
     p.append("</svg>")

@@ -7,14 +7,17 @@ Repository-level submission status remains bounded to audit-record representatio
 - [x] Author metadata is filled in manuscript, supplementary source, and cover letter.
 - [x] Funding statement is present.
 - [x] Declaration of Competing Interest is present with the user-supplied wording.
-- [x] Data Availability is present and distinguishes public datasets from derived artifacts to be deposited in an anonymous public repository for review and released with the final article.
+- [x] Data Availability is present and distinguishes public datasets from derived artifacts prepared for an anonymous review repository.
 - [x] Declaration of generative AI and AI-assisted technologies is present.
 - [x] CRediT authorship contribution statement uses named authors.
 - [x] Manuscript PDF compiled from `final_source/manuscript.tex` after the Information Sciences transfer revision, including the information/knowledge-representation abstract, Introduction, experiment order, Figure 1 workflow, and Scope and Limitations section.
 - [x] Supplementary material was compiled as `supplementary.pdf` from `final_source/supplementary.tex`; authoritative equations, algorithms, tables, figures, and captions remain in `final_source/supplementary.tex` and `latex_source.zip`.
 - [x] Highlights content was converted to `Highlights.docx`.
-- [x] Manuscript page count is content-faithful to the cleanly compiled source after the Information Sciences transfer revision and remains within the project-specific 12--25 page quality gate.
+- [x] Manuscript page count is content-faithful to the cleanly compiled source after the Information Sciences evidence update and remains within the configured 20--30 page package-validation range.
 - [x] Supplementary data map includes the process-annotation audit-record coverage report and summary as context-only artifacts.
+- [x] Same-supervision structure-only, direct graph-necessity, and windowed QP diagnostics are mapped to their scripts and archived outputs.
+- [x] The windowed QP sweep is labeled post hoc locked-split failure analysis rather than independent validation.
+- [x] The package explicitly states that no human-rater experiment is included and that human audit usefulness remains future validation.
 - [x] Supplementary diagnostic map includes WebQSP trace-audit outputs as fixed-schema separability and metric-artifact evidence only, with no KGQA task-success claim.
 - [x] Information Sciences knowledge-audit material is positioned as graph-aware audit records for fixed-budget curation, not as deployment validation.
 - [x] Audit-record construction is promoted consistently across Abstract, Introduction/contributions, process-annotation interpretation, audit cards, and Conclusion.

@@ -156,6 +156,8 @@ def run_prm800k() -> dict[str, Any]:
 
     all_spearman: list[float] = []
     all_ndcg25: list[float] = []
+    raw_spearman: list[float] = []
+    necessity_spearman: list[float] = []
     total_steps = 0
 
     print(f"Computing simple_average on {len(locked_samples)} locked samples...")
@@ -174,6 +176,14 @@ def run_prm800k() -> dict[str, Any]:
         rho_val = float(rho) if not np.isnan(rho) else 0.0
         all_spearman.append(rho_val)
 
+        raw_rho, _ = stats.spearmanr(np.array(ciu, dtype=float), gt_arr)
+        raw_spearman.append(float(raw_rho) if not np.isnan(raw_rho) else 0.0)
+
+        necessity_rho, _ = stats.spearmanr(np.array(necessity, dtype=float), gt_arr)
+        necessity_spearman.append(
+            float(necessity_rho) if not np.isnan(necessity_rho) else 0.0
+        )
+
         ndcg_val = ndcg_at_budget(weights, labels, keep_fraction=0.25)
         all_ndcg25.append(ndcg_val)
 
@@ -186,6 +196,10 @@ def run_prm800k() -> dict[str, Any]:
         "n_steps": total_steps,
         "mean_spearman_rho": float(np.mean(all_spearman)),
         "std_spearman_rho": float(np.std(all_spearman, ddof=1)),
+        "component_mean_spearman_rho": {
+            "raw_local_utility": float(np.mean(raw_spearman)),
+            "structural_necessity": float(np.mean(necessity_spearman)),
+        },
         "mean_ndcg_at_25": float(np.mean(all_ndcg25)),
         "std_ndcg_at_25": float(np.std(all_ndcg25, ddof=1)),
     }

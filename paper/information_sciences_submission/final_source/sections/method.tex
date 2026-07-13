@@ -72,7 +72,7 @@ A supplementary graph-construction ablation replaces TF-IDF topical edges with S
 
 These differences are too small to treat topical edges as a representation-field driver. We therefore read the graph layer as an interchangeable \emph{construction interface}. In this setting, the TF-IDF topology adds little annotation-order preservation value over the temporal chain and functions mainly as a fallback lexical cue; if the structural field is used for ranking rather than audit-record construction, this weak and sometimes negative alignment is a material limitation.
 
-The graph constructor is modular. Semantic embeddings, entity links, knowledge graphs, ontologies, rule-dependency DAGs, and data-lineage graphs can replace the default without modifying SCU. The Countries-KG study (Section~\ref{sec:kg-pilot}) and the embedding ablation illustrate this interface.
+The graph constructor is modular. Semantic embeddings, entity links, knowledge graphs, ontologies, rule-dependency DAGs, and data-lineage graphs can replace the default without modifying SCU. The Countries-KG study (Section~\ref{sec:kg-pilot}) and the embedding ablation illustrate this interface. We additionally implement a mathematical variable-dependency DAG that links a step to earlier steps introducing symbols that it references. This domain-motivated backend provides a direct graph-necessity control against the TF-IDF topology and a reverse-position baseline.
 
 \subsection{Structural Necessity, Redundancy, and Bottlenecks}
 
@@ -124,10 +124,16 @@ Figure~\ref{fig:resilience} gives the corresponding graph-level stress view. The
 
 The structural components do not improve the strongest PRM800K annotation-order field in the current evidence package. Their role is narrower: when a fidelity field is strong, they expose local support, structural exposure, redundancy, and bottleneck interpretations as audit-record fields. The PRM800K route is therefore read as a strong-fidelity setting where Ridge is the conservative reportable view. The full QP objective is evaluated as the mechanism-bearing structural-allocation view, and its support comes from structural stress tests and boundary cases rather than from improved PRM800K annotation-order consistency.
 
+\subsection{Windowed Calibration for Long Traces}
+
+The unwindowed QP couples all artifact weights through the global redundancy term. For a trace longer than a chosen window size $k_w$, the windowed variant partitions the sequence into contiguous blocks, merges a very short trailing block into its predecessor, and solves the same SCU QP on each block-diagonal redundancy submatrix. The local simplex solutions are stitched into one global simplex vector by allocating inter-window mass in proportion to the non-negative fidelity mass in each block. Bottleneck floors are then enforced on the global vector. When $k\leq k_w$, the method reduces exactly to the unwindowed QP apart from its method label.
+
+The current window-size analysis was conducted after the long-trace failure was observed on the locked PRM800K split. It is therefore reported as a post hoc failure diagnostic rather than as an independently selected or externally validated hyperparameter result.
+
 \subsection{Hyperparameter Selection Protocol}
 \label{sec:hyperparameter-selection}
 
-The SCU weights $\alpha$, $\beta$, $\gamma$, and $\delta$ were selected before test-set reporting and then held fixed within each configuration. Development evidence from controlled synthetic calibration and development-split checks set the trade-off between fidelity preservation, structural alignment, redundancy regularization, and bottleneck visibility. Locked PRM800K, audit-target retrieval, and Countries-KG test information were not used to choose these weights.
+The SCU weights $\alpha$, $\beta$, $\gamma$, and $\delta$ were selected before test-set reporting and then held fixed within each configuration. Development evidence from controlled synthetic calibration and development-split checks set the trade-off between fidelity preservation, structural alignment, redundancy regularization, and bottleneck visibility. Locked PRM800K, audit-target retrieval, and Countries-KG test information were not used to choose these weights. The later window-size sweep is excluded from this frozen selection claim and is reported only as exploratory locked-split failure analysis.
 
 The parameters are representation controls. $\alpha$ controls fidelity preservation, $\beta$ graph-necessity alignment, $\gamma$ redundancy regularization, and $\delta$ bottleneck visibility. Reported variants keep these choices fixed to expose representation behavior.
 

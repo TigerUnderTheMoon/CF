@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import argparse
 import re
@@ -11,13 +11,22 @@ from xml.etree import ElementTree
 
 
 CURRENT_TITLE = (
-    "Structurally-Calibrated Functional Attribution for Audit Prioritization "
+    "Structurally-Calibrated Functional Metacognitive Attribution for Audit Prioritization "
     "in Knowledge-Intensive Reasoning"
 )
 
 REQUIRED_FILES = (
     "Highlights.docx",
     "cover_letter.docx",
+    "manuscript.pdf",
+    "supplementary.pdf",
+    "latex_source.zip",
+)
+
+INFORMATION_SCIENCES_REQUIRED_FILES = (
+    "Highlights.docx",
+    "cover_letter.docx",
+    "declaration_of_competing_interests.docx",
     "manuscript.pdf",
     "supplementary.pdf",
     "latex_source.zip",
@@ -97,6 +106,91 @@ class VerificationReport:
         return not self.errors
 
 
+@dataclass(frozen=True)
+class PackageProfile:
+    name: str
+    required_files: tuple[str, ...]
+    manuscript_snippets: tuple[str, ...]
+    supplementary_header: str
+    cover_snippets: tuple[str, ...]
+    highlights_snippets: tuple[str, ...]
+
+
+DKE_PROFILE = PackageProfile(
+    name="DKE",
+    required_files=REQUIRED_FILES,
+    manuscript_snippets=(
+        "Data & Knowledge Engineering / Elsevier CAS manuscript package",
+        "knowledge engineering",
+        "knowledge representation",
+        "knowledge maintenance",
+        "knowledge graphs",
+        "PRM800K Representation Behavior Study",
+        "Scope and Limitations",
+    ),
+    supplementary_header="Data & Knowledge Engineering / Elsevier CAS supplementary package",
+    cover_snippets=(
+        "Data & Knowledge Engineering",
+        CURRENT_TITLE,
+        "knowledge representation and transformation layer",
+        "structured audit records",
+        "fixed-budget knowledge audit",
+        "knowledge lifecycle",
+        "knowledge maintenance",
+        "knowledge curation",
+        "graph-aware",
+    ),
+    highlights_snippets=(
+        "Highlights",
+        CURRENT_TITLE,
+        "structured audit records",
+        "Graph-aware representation fields",
+        "fixed-budget knowledge maintenance, curation, and reuse",
+    ),
+)
+
+INFORMATION_SCIENCES_PROFILE = PackageProfile(
+    name="Information Sciences",
+    required_files=INFORMATION_SCIENCES_REQUIRED_FILES,
+    manuscript_snippets=(
+        "Information Sciences / Elsevier CAS manuscript package",
+        "knowledge engineering",
+        "knowledge representation",
+        "maintenance-oriented knowledge analysis",
+        "knowledge graphs",
+        "Representation Fidelity Tracking on Process Annotations",
+        "Scope and Limitations",
+        "w_struct_feature_list_begin",
+        "weak utility-anchor",
+    ),
+    supplementary_header="Information Sciences / Elsevier CAS supplementary package",
+    cover_snippets=(
+        "Information Sciences",
+        CURRENT_TITLE,
+        "knowledge representation and transformation layer",
+        "structured audit records",
+        "fixed-budget audit-oriented analysis",
+        "knowledge lifecycle",
+        "knowledge curation",
+        "graph-aware",
+    ),
+    highlights_snippets=(
+        "Highlights",
+        "Structured audit records organize",
+        "Graph fields show depend",
+        "Locked process",
+        "country knowledge graph",
+        "Raw-field controls",
+    ),
+)
+
+
+def _select_profile(package_dir: Path) -> PackageProfile:
+    if "information_sciences_submission" in package_dir.as_posix().lower():
+        return INFORMATION_SCIENCES_PROFILE
+    return DKE_PROFILE
+
+
 def _normalize_for_match(text: str) -> str:
     return re.sub(r"\s+", " ", text.replace("-\n", "")).strip()
 
@@ -138,8 +232,8 @@ def _read_docx_text(path: Path, errors: list[str]) -> str:
     return "\n".join(paragraphs)
 
 
-def _check_required_files(package_dir: Path, errors: list[str]) -> None:
-    for rel_path in REQUIRED_FILES:
+def _check_required_files(package_dir: Path, profile: PackageProfile, errors: list[str]) -> None:
+    for rel_path in profile.required_files:
         path = package_dir / rel_path
         if not path.exists():
             errors.append(f"missing required package file: {rel_path}")
@@ -147,17 +241,17 @@ def _check_required_files(package_dir: Path, errors: list[str]) -> None:
             errors.append(f"required package file is empty: {rel_path}")
 
 
-def _check_top_level_boundary(package_dir: Path, errors: list[str]) -> None:
-    allowed = set(REQUIRED_FILES)
+def _check_top_level_boundary(package_dir: Path, profile: PackageProfile, errors: list[str]) -> None:
+    allowed = set(profile.required_files)
     for path in sorted(p for p in package_dir.iterdir() if p.is_file()):
         if path.name not in allowed:
             errors.append(f"unexpected file in final upload boundary: {path.name}")
 
 
-def _check_auxiliary_artifacts(package_dir: Path, errors: list[str]) -> None:
+def _check_auxiliary_artifacts(package_dir: Path, profile: PackageProfile, errors: list[str]) -> None:
     for pattern in AUXILIARY_GLOBS:
         for path in sorted(package_dir.rglob(pattern)):
-            if path.name not in REQUIRED_FILES:
+            if path.name not in profile.required_files:
                 errors.append(f"local build artifact should not be in upload boundary: {path.name}")
 
 
@@ -188,7 +282,7 @@ def _read_source_zip(path: Path, errors: list[str]) -> tuple[set[str], dict[str,
         return set(), {}
 
 
-def _check_source_zip(package_dir: Path, errors: list[str]) -> dict[str, str]:
+def _check_source_zip(package_dir: Path, profile: PackageProfile, errors: list[str]) -> dict[str, str]:
     names, text_by_name = _read_source_zip(package_dir / "latex_source.zip", errors)
     if not names:
         return {}
@@ -205,19 +299,11 @@ def _check_source_zip(package_dir: Path, errors: list[str]) -> dict[str, str]:
     supplementary = text_by_name.get("supplementary.tex", "")
     if CURRENT_TITLE not in manuscript:
         errors.append("manuscript.tex missing current title")
-    for snippet in (
-        "Data & Knowledge Engineering / Elsevier CAS manuscript package",
-        "knowledge engineering",
-        "knowledge representation",
-        "knowledge maintenance",
-        "knowledge graphs",
-        "PRM800K Representation Behavior Study",
-        "Scope and Limitations",
-    ):
+    for snippet in profile.manuscript_snippets:
         if snippet not in manuscript:
-            errors.append(f"manuscript.tex missing DKE transfer snippet: {snippet}")
-    if "Data & Knowledge Engineering / Elsevier CAS supplementary package" not in supplementary:
-        errors.append("supplementary.tex missing DKE supplementary package header")
+            errors.append(f"manuscript.tex missing {profile.name} transfer snippet: {snippet}")
+    if profile.supplementary_header not in supplementary:
+        errors.append(f"supplementary.tex missing {profile.name} supplementary package header")
     _check_includegraphics_paths_in_zip(names, manuscript, "manuscript.tex", errors)
     _check_includegraphics_paths_in_zip(names, supplementary, "supplementary.tex", errors)
     return text_by_name
@@ -238,33 +324,17 @@ def _check_includegraphics_paths_in_zip(
             errors.append(f"{source_name} includes missing artwork in latex_source.zip: {raw_path}")
 
 
-def _check_docx_text(package_dir: Path, errors: list[str]) -> dict[str, str]:
+def _check_docx_text(package_dir: Path, profile: PackageProfile, errors: list[str]) -> dict[str, str]:
     cover = _read_docx_text(package_dir / "cover_letter.docx", errors)
     highlights = _read_docx_text(package_dir / "Highlights.docx", errors)
     text_by_name = {
         "cover_letter.docx": cover,
         "Highlights.docx": highlights,
     }
-    for snippet in (
-        "Data & Knowledge Engineering",
-        CURRENT_TITLE,
-        "knowledge representation and transformation layer",
-        "structured audit records",
-        "fixed-budget knowledge audit",
-        "knowledge lifecycle",
-        "knowledge maintenance",
-        "knowledge curation",
-        "graph-aware",
-    ):
+    for snippet in profile.cover_snippets:
         if snippet not in cover:
             errors.append(f"cover_letter.docx missing required text: {snippet}")
-    for snippet in (
-        "Highlights",
-        CURRENT_TITLE,
-        "structured audit records",
-        "Graph-aware representation fields",
-        "fixed-budget knowledge maintenance, curation, and reuse",
-    ):
+    for snippet in profile.highlights_snippets:
         if snippet not in highlights:
             errors.append(f"Highlights.docx missing required text: {snippet}")
     return text_by_name
@@ -377,15 +447,16 @@ def check_package(
     errors: list[str] = []
     warnings: list[str] = []
     package_dir = package_dir.resolve()
+    profile = _select_profile(package_dir)
     if not package_dir.exists():
         return VerificationReport(errors=[f"missing package directory: {package_dir}"], warnings=[])
 
-    _check_required_files(package_dir, errors)
-    _check_top_level_boundary(package_dir, errors)
-    _check_auxiliary_artifacts(package_dir, errors)
+    _check_required_files(package_dir, profile, errors)
+    _check_top_level_boundary(package_dir, profile, errors)
+    _check_auxiliary_artifacts(package_dir, profile, errors)
     _check_pdf_headers(package_dir, errors)
-    docx_text = _check_docx_text(package_dir, errors)
-    source_text = _check_source_zip(package_dir, errors)
+    docx_text = _check_docx_text(package_dir, profile, errors)
+    source_text = _check_source_zip(package_dir, profile, errors)
     all_text = dict(source_text)
     all_text.update(docx_text)
     _check_forbidden_text(all_text, errors)
@@ -426,7 +497,8 @@ def main(argv: list[str] | None = None) -> int:
     for error in report.errors:
         print(f"error: {error}", file=sys.stderr)
     if report.ok:
-        print("DKE final submission package check passed")
+        profile = _select_profile(args.package_dir.resolve())
+        print(f"{profile.name} final submission package check passed")
         return 0
     return 1
 

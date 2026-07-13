@@ -5,43 +5,63 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PAPER = ROOT / "paper"
-KBS = PAPER / "kbs_submission"
-FINAL_SOURCE = KBS / "final_source"
-FINAL_PACKAGE = KBS / "final_package"
+JIIS = PAPER / "JIIS_submission"
+FINAL_SOURCE = JIIS / "source"
+FINAL_PACKAGE = JIIS / "submission_package"
 
 TITLE = (
-    "Structurally-Calibrated Functional Attribution for Audit Prioritization "
-    "in Knowledge-Intensive Reasoning"
+    "Structural Labels for Stratified Audit Budget Allocation in "
+    "Knowledge-Graph Dependency Flows"
 )
 
 
-def test_kbs_submission_source_declares_current_latex_contract() -> None:
+def test_jiis_submission_source_declares_current_latex_contract() -> None:
     manuscript = (FINAL_SOURCE / "manuscript.tex").read_text(encoding="utf-8")
     supplementary = (FINAL_SOURCE / "supplementary.tex").read_text(encoding="utf-8")
     references = (FINAL_SOURCE / "references.bib").read_text(encoding="utf-8")
 
     assert TITLE in manuscript
-    assert f"Supplementary Material for {TITLE}" in supplementary
-    assert "Evidence Ladder" in manuscript
-    assert "The current KBS-facing evidence is limited to audit prioritization" in manuscript
-    assert "does not validate a deployed KBS workflow" in manuscript
+    assert TITLE in supplementary
+    assert r"\documentclass[pdflatex,sn-mathphys-num]{sn-jnl}" in manuscript
+    assert r"\input{" not in manuscript
+    assert "Impact Coverage@K" in manuscript
+    assert "Life-Saving First" in manuscript
+    assert "The semantic main experiment is deliberately bounded to Countries-KG" in manuscript
+    assert "necessary future step" in manuscript
     assert "10.1016/j.knosys.2025.113503" in references
     assert "10.1016/j.knosys.2025.113648" in references
     assert "10.1016/j.knosys.2024.112410" in references
 
 
-def test_kbs_final_upload_boundary_contains_exact_required_files() -> None:
-    expected = {
-        "cover_letter.docx",
-        "Highlights.docx",
-        "latex_source.zip",
+def test_jiis_final_upload_boundary_contains_required_files() -> None:
+    required = {
         "manuscript.pdf",
-        "supplementary.docx",
+        "supplementary.pdf",
+        "manuscript.tex",
+        "supplementary.tex",
+        "references.bib",
+        "sn-jnl.cls",
+        "sn-mathphys-num.bst",
     }
+    forbidden_suffixes = (
+        ".aux",
+        ".bbl",
+        ".blg",
+        ".fdb_latexmk",
+        ".fls",
+        ".log",
+        ".out",
+        ".synctex.gz",
+    )
 
     observed = {path.name for path in FINAL_PACKAGE.iterdir() if path.is_file()}
 
-    assert observed == expected
+    assert required <= observed
+    assert not [
+        path.name
+        for path in FINAL_PACKAGE.iterdir()
+        if path.is_file() and any(path.name.endswith(suffix) for suffix in forbidden_suffixes)
+    ]
     assert (FINAL_PACKAGE / "manuscript.pdf").read_bytes().startswith(b"%PDF-")
 
 

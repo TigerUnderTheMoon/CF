@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 TITLE = (
-    "Structurally-Calibrated Functional Attribution for Audit Prioritization "
+    "Structurally-Calibrated Functional Metacognitive Attribution for Audit Prioritization "
     "in Knowledge-Intensive Reasoning"
 )
 
@@ -93,6 +93,64 @@ def _write_final_package(package_dir: Path) -> None:
     _write_source_zip(package_dir / "latex_source.zip")
 
 
+def _write_information_sciences_package(package_dir: Path) -> None:
+    package_dir.mkdir(parents=True, exist_ok=True)
+    _write_docx(
+        package_dir / "cover_letter.docx",
+        "\n".join(
+            [
+                "Cover Letter",
+                "Information Sciences",
+                TITLE,
+                "knowledge representation and transformation layer",
+                "structured audit records",
+                "fixed-budget audit-oriented analysis",
+                "knowledge lifecycle",
+                "knowledge curation",
+                "graph-aware",
+            ]
+        ),
+    )
+    _write_docx(
+        package_dir / "Highlights.docx",
+        "\n".join(
+            [
+                "Highlights",
+                "Structured audit records organize exposed reasoning and knowledge artifacts.",
+                "Graph fields show dependency, redundancy, bottlenecks, and audit reasons.",
+                "Locked process annotations test fidelity tracking under audit budgets.",
+                "A country knowledge graph shows how typed relations shift dependencies.",
+                "Raw-field controls separate field effects from SCU calibration.",
+            ]
+        ),
+    )
+    _write_docx(package_dir / "declaration_of_competing_interests.docx", "Declaration of competing interests")
+    _write_pdf(package_dir / "supplementary.pdf")
+    _write_pdf(package_dir / "manuscript.pdf")
+    with zipfile.ZipFile(package_dir / "latex_source.zip", "w") as zf:
+        zf.writestr(
+            "manuscript.tex",
+            "\n".join(
+                [
+                    rf"\title[mode=title]{{{TITLE}}}",
+                    "Information Sciences / Elsevier CAS manuscript package.",
+                    "knowledge engineering \\sep knowledge representation \\sep maintenance-oriented knowledge analysis \\sep knowledge graphs",
+                    "Representation Fidelity Tracking on Process Annotations",
+                    "Scope and Limitations",
+                    "% w_struct_feature_list_begin",
+                    "weak utility-anchor",
+                    r"\includegraphics{figures/fig_sensitivity.png}",
+                ]
+            ),
+        )
+        zf.writestr("supplementary.tex", "Information Sciences / Elsevier CAS supplementary package.")
+        zf.writestr("references.bib", "@article{x,title={x},journal={Knowledge-Based Systems}}\n")
+        zf.writestr("cas-sc.cls", "class fixture\n")
+        zf.writestr("cas-common.sty", "style fixture\n")
+        zf.writestr("cas-model2-names.bst", "bst fixture\n")
+        zf.writestr("figures/fig_sensitivity.png", b"png")
+
+
 def test_dke_verifier_accepts_dke_transfer_boundary(tmp_path: Path) -> None:
     from scripts.verify_dke_submission_package import check_package
 
@@ -106,6 +164,24 @@ def test_dke_verifier_accepts_dke_transfer_boundary(tmp_path: Path) -> None:
         min_manuscript_pages=12,
         max_manuscript_pages=25,
         pdf_page_count_by_name={"manuscript.pdf": 21},
+    )
+
+    assert report.ok, report.errors
+
+
+def test_verifier_accepts_information_sciences_transfer_boundary(tmp_path: Path) -> None:
+    from scripts.verify_dke_submission_package import check_package
+
+    package_dir = tmp_path / "information_sciences_submission" / "final_package"
+    _write_information_sciences_package(package_dir)
+
+    report = check_package(
+        package_dir,
+        require_pdf_text=True,
+        pdf_text_by_name={"manuscript.pdf": TITLE},
+        min_manuscript_pages=12,
+        max_manuscript_pages=25,
+        pdf_page_count_by_name={"manuscript.pdf": 23},
     )
 
     assert report.ok, report.errors

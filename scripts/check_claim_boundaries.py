@@ -57,6 +57,7 @@ EXCLUDED_ROOT_FILE_PATTERNS = (
 )
 EXCLUDED_PREFIXES = (
     ".git/",
+    ".claude/worktrees/",
     ".omo/",
     ".pytest_cache/",
     "docs/legacy/",

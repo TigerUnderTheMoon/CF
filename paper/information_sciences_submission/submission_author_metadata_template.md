@@ -4,7 +4,7 @@ Purpose: record the author and statement metadata inserted into the final Inform
 
 ## Manuscript
 
-- Title: Structurally-Calibrated Functional Attribution for Audit Prioritization in Knowledge-Intensive Reasoning
+- Title: Structurally-Calibrated Functional Metacognitive Attribution for Audit Prioritization in Knowledge-Intensive Reasoning
 - Article type: Regular Article
 
 ## Authors

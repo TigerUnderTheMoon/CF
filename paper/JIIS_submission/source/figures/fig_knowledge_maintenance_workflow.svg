@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="560" viewBox="0 0 1800 560">
+  <defs>
+    <marker id="arrow-gray" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L9,4 L0,8 Z" fill="#333333"/>
+    </marker>
+    <style>
+      .title { font-family: Arial, Helvetica, sans-serif; font-size: 14pt; font-weight: 700; fill: #333333; }
+      .block-title { font-family: Arial, Helvetica, sans-serif; font-size: 11pt; font-weight: 700; fill: #333333; }
+      .block-title-blue { font-family: Arial, Helvetica, sans-serif; font-size: 11pt; font-weight: 700; fill: #4F81BD; }
+      .subtitle { font-family: Arial, Helvetica, sans-serif; font-size: 9pt; font-weight: 400; fill: #333333; }
+      .caption { font-family: Arial, Helvetica, sans-serif; font-size: 9pt; font-weight: 400; fill: #333333; }
+      .box { fill: #FFFFFF; stroke: #333333; stroke-width: 1; }
+      .box-blue { fill: #FFFFFF; stroke: #4F81BD; stroke-width: 1.3; }
+      .arrow { fill: none; stroke: #333333; stroke-width: 1.2; marker-end: url(#arrow-gray); }
+    </style>
+  </defs>
+
+  <rect width="1800" height="560" fill="#FFFFFF"/>
+
+  <text x="900" y="46" text-anchor="middle" class="title">Audit-Record-Assisted Knowledge Maintenance Workflow</text>
+
+  <!-- Main workflow blocks -->
+  <g id="block-kb-update">
+    <rect x="55" y="105" width="165" height="150" rx="7" class="box"/>
+    <text x="137.5" y="132" text-anchor="middle" class="block-title">Knowledge</text>
+    <text x="137.5" y="151" text-anchor="middle" class="block-title">Base Update</text>
+    <text x="137.5" y="181" text-anchor="middle" class="subtitle">Entity update</text>
+    <text x="137.5" y="199" text-anchor="middle" class="subtitle">Relation revision</text>
+    <text x="137.5" y="217" text-anchor="middle" class="subtitle">Document replacement</text>
+  </g>
+
+  <g id="block-affected-artifacts">
+    <rect x="246" y="105" width="165" height="150" rx="7" class="box"/>
+    <text x="328.5" y="132" text-anchor="middle" class="block-title">Affected Knowledge</text>
+    <text x="328.5" y="151" text-anchor="middle" class="block-title">Artifacts</text>
+    <text x="328.5" y="181" text-anchor="middle" class="subtitle">Affected entities</text>
+    <text x="328.5" y="199" text-anchor="middle" class="subtitle">Affected passages</text>
+    <text x="328.5" y="217" text-anchor="middle" class="subtitle">Affected rules</text>
+  </g>
+
+  <g id="block-dependency-analysis">
+    <rect x="437" y="105" width="165" height="150" rx="7" class="box-blue"/>
+    <text x="519.5" y="131" text-anchor="middle" class="block-title">Dependency</text>
+    <text x="519.5" y="150" text-anchor="middle" class="block-title">Analysis</text>
+    <text x="519.5" y="169" text-anchor="middle" class="block-title-blue">(SC-FMA)</text>
+    <text x="519.5" y="193" text-anchor="middle" class="subtitle">Dependency graph</text>
+    <text x="519.5" y="209" text-anchor="middle" class="subtitle">Redundancy</text>
+    <text x="519.5" y="225" text-anchor="middle" class="subtitle">Bottleneck</text>
+    <text x="519.5" y="241" text-anchor="middle" class="subtitle">Structural context</text>
+  </g>
+
+  <g id="block-audit-record-generation">
+    <rect x="628" y="105" width="165" height="150" rx="7" class="box-blue"/>
+    <text x="710.5" y="132" text-anchor="middle" class="block-title-blue">Audit Record</text>
+    <text x="710.5" y="151" text-anchor="middle" class="block-title-blue">Generation</text>
+    <text x="710.5" y="181" text-anchor="middle" class="subtitle">Artifact ID</text>
+    <text x="710.5" y="198" text-anchor="middle" class="subtitle">Dependency</text>
+    <text x="710.5" y="215" text-anchor="middle" class="subtitle">Fidelity</text>
+    <text x="710.5" y="232" text-anchor="middle" class="subtitle">Reason</text>
+    <text x="710.5" y="249" text-anchor="middle" class="subtitle">Interpretation</text>
+  </g>
+
+  <g id="block-manual-review">
+    <rect x="819" y="105" width="165" height="150" rx="7" class="box"/>
+    <text x="901.5" y="132" text-anchor="middle" class="block-title">Priority-based</text>
+    <text x="901.5" y="151" text-anchor="middle" class="block-title">Manual Review</text>
+    <text x="901.5" y="181" text-anchor="middle" class="subtitle">Review</text>
+    <text x="901.5" y="199" text-anchor="middle" class="subtitle">Verification</text>
+    <text x="901.5" y="217" text-anchor="middle" class="subtitle">Correction</text>
+  </g>
+
+  <g id="block-kb-revision">
+    <rect x="1010" y="105" width="165" height="150" rx="7" class="box"/>
+    <text x="1092.5" y="132" text-anchor="middle" class="block-title">Knowledge</text>
+    <text x="1092.5" y="151" text-anchor="middle" class="block-title">Base Revision</text>
+    <text x="1092.5" y="181" text-anchor="middle" class="subtitle">Update</text>
+    <text x="1092.5" y="199" text-anchor="middle" class="subtitle">Merge</text>
+    <text x="1092.5" y="217" text-anchor="middle" class="subtitle">Delete</text>
+    <text x="1092.5" y="235" text-anchor="middle" class="subtitle">Repair</text>
+  </g>
+
+  <g id="block-persistent-records">
+    <rect x="1201" y="105" width="165" height="150" rx="7" class="box-blue"/>
+    <text x="1283.5" y="132" text-anchor="middle" class="block-title-blue">Persistent</text>
+    <text x="1283.5" y="151" text-anchor="middle" class="block-title-blue">Audit Records</text>
+    <text x="1283.5" y="181" text-anchor="middle" class="subtitle">Stored records</text>
+    <text x="1283.5" y="198" text-anchor="middle" class="subtitle">Traceability</text>
+    <text x="1283.5" y="215" text-anchor="middle" class="subtitle">Governance</text>
+    <text x="1283.5" y="232" text-anchor="middle" class="subtitle">Reuse</text>
+  </g>
+
+  <!-- Main workflow arrows -->
+  <line x1="220" y1="180" x2="246" y2="180" class="arrow"/>
+  <line x1="411" y1="180" x2="437" y2="180" class="arrow"/>
+  <line x1="602" y1="180" x2="628" y2="180" class="arrow"/>
+  <line x1="793" y1="180" x2="819" y2="180" class="arrow"/>
+  <line x1="984" y1="180" x2="1010" y2="180" class="arrow"/>
+  <line x1="1175" y1="180" x2="1201" y2="180" class="arrow"/>
+
+  <!-- Secondary lifecycle loop -->
+  <g id="governance-loop">
+    <rect x="1138" y="335" width="170" height="64" rx="7" class="box"/>
+    <text x="1223" y="360" text-anchor="middle" class="block-title">Knowledge</text>
+    <text x="1223" y="379" text-anchor="middle" class="block-title">Governance</text>
+
+    <rect x="620" y="335" width="170" height="64" rx="7" class="box"/>
+    <text x="705" y="360" text-anchor="middle" class="block-title">Future</text>
+    <text x="705" y="379" text-anchor="middle" class="block-title">Maintenance</text>
+
+    <path d="M1283.5,255 C1283.5,286 1246,296 1223,335" class="arrow"/>
+    <path d="M1138,367 C1000,420 868,420 790,367" class="arrow"/>
+    <path d="M620,367 C360,435 142,330 137.5,255" class="arrow"/>
+    <text x="900" y="450" text-anchor="middle" class="subtitle">Secondary lifecycle loop: records persist as governance evidence for later maintenance events</text>
+  </g>
+
+  <!-- Right-side callout -->
+  <g id="callout">
+    <rect x="1445" y="105" width="295" height="254" rx="7" class="box"/>
+    <text x="1592.5" y="138" text-anchor="middle" class="block-title">Information Systems Value</text>
+    <line x1="1472" y1="158" x2="1713" y2="158" stroke="#333333" stroke-width="1"/>
+    <text x="1482" y="194" class="subtitle">- Reusable audit records</text>
+    <text x="1482" y="222" class="subtitle">- Persistent knowledge assets</text>
+    <text x="1482" y="250" class="subtitle">- Traceable maintenance</text>
+    <text x="1482" y="278" class="subtitle">- Knowledge governance</text>
+    <text x="1482" y="306" class="subtitle">- Lifecycle support</text>
+  </g>
+
+  <text x="900" y="510" text-anchor="middle" class="caption">
+    SC-FMA transforms observable knowledge artifacts into persistent audit records that support knowledge maintenance,
+  </text>
+  <text x="900" y="528" text-anchor="middle" class="caption">
+    governance, and future reuse across the information-system lifecycle.
+  </text>
+</svg>

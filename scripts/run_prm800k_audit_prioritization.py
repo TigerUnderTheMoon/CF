@@ -50,10 +50,13 @@ DEFAULT_FROZEN_PRM_SCORES = (
     / "locked_prm_scores.jsonl"
 )
 
+DEFAULT_WINDOW_SIZE = 4
+
 METHOD_ORDER = [
     "w_struct",
     "scfma_ridge",
     "scfma_qp",
+    "scfma_qp_windowed",
     "scfma_projection",
     "raw_local_utility",
     "relative_position",
@@ -66,6 +69,7 @@ DISPLAY_NAMES = {
     "w_struct": "w_struct",
     "scfma_ridge": "SC-FMA Ridge",
     "scfma_qp": "SC-FMA QP",
+    "scfma_qp_windowed": "SC-FMA QP (windowed)",
     "scfma_projection": "SC-FMA Projection",
     "raw_local_utility": "raw_local_utility",
     "relative_position": "relative_position",
@@ -263,6 +267,30 @@ def compute_scfma_scores(
         )
     except Exception:
         scores["scfma_qp"] = w_struct_pred
+
+    try:
+        windowed_result = variants.scfma_calibrate_windowed(
+            w_struct_pred,
+            necessity,
+            redundancy,
+            bottleneck_constraints=[
+                variants.BottleneckConstraint(idx, 0.01) for idx in sorted(bottleneck)
+            ],
+            sample_id=sample.sample_id,
+            window_size=DEFAULT_WINDOW_SIZE,
+            stitch="mass",
+            alpha=1.0,
+            beta=0.5,
+            gamma=0.2,
+            delta=0.1,
+        )
+        scores["scfma_qp_windowed"] = (
+            np.asarray(windowed_result.weights[0].weights, dtype=float)
+            if windowed_result.weights and windowed_result.converged
+            else w_struct_pred
+        )
+    except Exception:
+        scores["scfma_qp_windowed"] = w_struct_pred
 
     try:
         ridge_result = variants.scfma_calibrate_ridge(

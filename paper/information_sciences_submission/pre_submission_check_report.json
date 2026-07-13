@@ -1,0 +1,111 @@
+{
+  "package_dir": "D:\\CF\\paper\\information_sciences_submission\\final_package",
+  "source_dir": "D:\\CF\\paper\\information_sciences_submission\\final_source",
+  "required_package_files_missing": [],
+  "extra_package_files": [],
+  "package_files": {
+    "Highlights.docx": {
+      "size": 36926,
+      "mtime": 1783520946.344409
+    },
+    "cover_letter.docx": {
+      "size": 38400,
+      "mtime": 1783520946.2722123
+    },
+    "declaration_of_competing_interests.docx": {
+      "size": 36947,
+      "mtime": 1783432306.0475698
+    },
+    "latex_source.zip": {
+      "size": 2240487,
+      "mtime": 1783529993.8455298
+    },
+    "manuscript.pdf": {
+      "size": 863896,
+      "mtime": 1783529896.3259199
+    },
+    "supplementary.pdf": {
+      "size": 462685,
+      "mtime": 1783529919.4431117
+    }
+  },
+  "pdfs": {
+    "source_manuscript.pdf": {
+      "exists": true,
+      "pages": 25,
+      "size": 863896,
+      "sha256": "ddc4af40f4d8271b50a3e40f5209d57313710d266949b19994d35cb70a46710d"
+    },
+    "package_manuscript.pdf": {
+      "exists": true,
+      "pages": 25,
+      "size": 863896,
+      "sha256": "ddc4af40f4d8271b50a3e40f5209d57313710d266949b19994d35cb70a46710d"
+    },
+    "supplementary.pdf": {
+      "exists": true,
+      "pages": 10,
+      "size": 462685,
+      "sha256": "26e792569a23065d0c6ed9a2e7633bb99f876c45366f7d3b97006cdd20140740"
+    },
+    "source_package_manuscript_match": true
+  },
+  "docx_files": {
+    "Highlights.docx": {
+      "exists": true,
+      "size": 36926,
+      "valid_zip": true,
+      "has_core_docx_parts": true,
+      "entries": 17
+    },
+    "cover_letter.docx": {
+      "exists": true,
+      "size": 38400,
+      "valid_zip": true,
+      "has_core_docx_parts": true,
+      "entries": 17
+    },
+    "declaration_of_competing_interests.docx": {
+      "exists": true,
+      "size": 36947,
+      "valid_zip": true,
+      "has_core_docx_parts": true,
+      "entries": 17
+    }
+  },
+  "latex_source_zip": {
+    "exists": true,
+    "size": 2240487,
+    "sha256": "45a6b81cfbd9668b90984b1d6dd6f917b870a6ba703da2bbdb18d21897ff7152",
+    "entries": 27,
+    "has_required_source": {
+      "manuscript.tex": true,
+      "supplementary.tex": true,
+      "references.bib": true
+    },
+    "build_artifacts": []
+  },
+  "anchors": {
+    "representation_enrichment_section": true,
+    "representation_table": true,
+    "diagnostic_separation_table": true,
+    "structural_boundary_sentence": true,
+    "audit_card_boundary": true,
+    "amssymb_for_checkmarks": true,
+    "compact_table_header": true
+  },
+  "abstract_words": 231,
+  "risk_term_counts": {
+    "improve": 8,
+    "enhance": 2,
+    "effective": 1,
+    "practical": 2,
+    "deployment": 4,
+    "actionable": 0,
+    "governance": 0,
+    "causal": 2,
+    "human-evaluated": 0,
+    "human audit": 4
+  },
+  "pass": true
+}

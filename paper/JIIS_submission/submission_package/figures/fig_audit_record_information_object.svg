@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="7.5in" height="4.16667in" viewBox="0 0 1800 1000">
+<defs>
+<marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L9,4 L0,8 Z" fill="#4A4A4A"/></marker>
+</defs>
+<rect width="1800" height="1000" fill="#FFFFFF"/>
+<text x="900" y="58" text-anchor="middle" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:46.6667px;fill:#222222;font-weight:700;font-style:normal;">Example of an SC-FMA Audit Record as a Persistent Information Object</text>
+<text x="250" y="118" text-anchor="middle" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:36.6667px;fill:#222222;font-weight:700;font-style:normal;"><tspan x="250" dy="0">Observable Knowledge</tspan><tspan x="250" dy="42.1667">Artifact</tspan></text>
+<rect x="85" y="190" width="330" height="430" rx="14" fill="#FFFFFF" stroke="#777777" stroke-width="1.4"/>
+<text x="117" y="225" text-anchor="start" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:27.3333px;fill:#222222;font-weight:700;font-style:normal;">Artifact ID</text>
+<text x="117" y="259" text-anchor="start" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:27.3333px;fill:#222222;font-weight:400;font-style:normal;">A102</text>
+<line x1="109" y1="278" x2="391" y2="278" stroke="#CFCFCF" stroke-width="1"/>
+<text x="117" y="300" text-anchor="start" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:27.3333px;fill:#222222;font-weight:700;font-style:normal;">Type</text>
+<text x="117" y="334" text-anchor="start" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:27.3333px;fill:#222222;font-weight:400;font-style:normal;">Retrieved Evidence</text>
+<line x1="109" y1="353" x2="391" y2="353" stroke="#CFCFCF" stroke-width="1"/>
+<text x="117" y="375" text-anchor="start" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:27.3333px;fill:#222222;font-weight:700;font-style:normal;">Source</text>
+<text x="117" y="409" text-anchor="start" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:27.3333px;fill:#222222;font-weight:400;font-style:normal;">Knowledge Base</text>
+<line x1="109" y1="428" x2="391" y2="428" stroke="#CFCFCF" stroke-width="1"/>
+<text x="117" y="450" text-anchor="start" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:27.3333px;fill:#222222;font-weight:700;font-style:normal;">Content</text>
+<text x="117" y="478" text-anchor="start" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:27.3333px;fill:#222222;font-weight:400;font-style:normal;"><tspan x="117" dy="0">Entity E17 supports</tspan><tspan x="117" dy="30.6133">Relation R5.</tspan></text>
+<line x1="109" y1="523" x2="391" y2="523" stroke="#CFCFCF" stroke-width="1"/>
+<text x="117" y="545" text-anchor="start" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:27.3333px;fill:#222222;font-weight:700;font-style:normal;">Status</text>
+<text x="117" y="579" text-anchor="start" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:27.3333px;fill:#222222;font-weight:400;font-style:normal;">Observed</text>
+<text x="250" y="670" text-anchor="middle" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:26.6667px;fill:#666666;font-weight:400;font-style:italic;">Observable system artifact</text>
+<text x="897.5" y="130" text-anchor="middle" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:36.6667px;fill:#4F81BD;font-weight:700;font-style:normal;">SC-FMA Audit Record</text>
+<rect x="480" y="175" width="835" height="530" rx="14" fill="#FFFFFF" stroke="#4A4A4A" stroke-width="1.6"/>
+<rect x="520" y="220" width="755" height="410" rx="4" fill="#FFFFFF" stroke="#777777" stroke-width="1.1"/>
+<line x1="825" y1="220" x2="825" y2="630" stroke="#CFCFCF" stroke-width="1.1"/>
+<text x="544" y="240.5" text-anchor="start" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:27.3333px;fill:#222222;font-weight:700;font-style:normal;">Artifact ID</text>
+<text x="849" y="240.5" text-anchor="start" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:27.3333px;fill:#222222;font-weight:400;font-style:normal;">A102</text>
+<line x1="520" y1="261" x2="1275" y2="261" stroke="#CFCFCF" stroke-width="1"/>
+<text x="544" y="281.5" text-anchor="start" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:27.3333px;fill:#222222;font-weight:700;font-style:normal;">Fidelity</text>
+<text x="849" y="281.5" text-anchor="start" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:27.3333px;fill:#222222;font-weight:400;font-style:normal;">High</text>
+<line x1="520" y1="302" x2="1275" y2="302" stroke="#CFCFCF" stroke-width="1"/>
+<text x="544" y="322.5" text-anchor="start" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:27.3333px;fill:#222222;font-weight:700;font-style:normal;">Dependency</text>
+<text x="849" y="322.5" text-anchor="start" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:27.3333px;fill:#222222;font-weight:400;font-style:normal;">Depends on Entity E17</text>
+<line x1="520" y1="343" x2="1275" y2="343" stroke="#CFCFCF" stroke-width="1"/>
+<text x="544" y="363.5" text-anchor="start" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:27.3333px;fill:#222222;font-weight:700;font-style:normal;">Redundancy</text>
+<text x="849" y="363.5" text-anchor="start" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:27.3333px;fill:#222222;font-weight:400;font-style:normal;">Low</text>
+<line x1="520" y1="384" x2="1275" y2="384" stroke="#CFCFCF" stroke-width="1"/>
+<text x="544" y="404.5" text-anchor="start" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:27.3333px;fill:#222222;font-weight:700;font-style:normal;">Bottleneck</text>
+<text x="849" y="404.5" text-anchor="start" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:27.3333px;fill:#222222;font-weight:400;font-style:normal;">Yes</text>
+<line x1="520" y1="425" x2="1275" y2="425" stroke="#CFCFCF" stroke-width="1"/>
+<text x="544" y="445.5" text-anchor="start" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:27.3333px;fill:#222222;font-weight:700;font-style:normal;">Audit Reason</text>
+<text x="849" y="445.5" text-anchor="start" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:27.3333px;fill:#222222;font-weight:400;font-style:normal;">Critical supporting evidence</text>
+<line x1="520" y1="466" x2="1275" y2="466" stroke="#CFCFCF" stroke-width="1"/>
+<text x="544" y="486.5" text-anchor="start" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:27.3333px;fill:#222222;font-weight:700;font-style:normal;">Recommended Action</text>
+<text x="849" y="486.5" text-anchor="start" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:27.3333px;fill:#222222;font-weight:400;font-style:normal;">Verify linked entity before update</text>
+<line x1="520" y1="507" x2="1275" y2="507" stroke="#CFCFCF" stroke-width="1"/>
+<text x="544" y="527.5" text-anchor="start" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:27.3333px;fill:#222222;font-weight:700;font-style:normal;">Interpretation</text>
+<text x="849" y="527.5" text-anchor="start" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:27.3333px;fill:#222222;font-weight:400;font-style:normal;">Maintain during knowledge revision</text>
+<line x1="520" y1="548" x2="1275" y2="548" stroke="#CFCFCF" stroke-width="1"/>
+<text x="544" y="568.5" text-anchor="start" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:27.3333px;fill:#222222;font-weight:700;font-style:normal;">Timestamp</text>
+<text x="849" y="568.5" text-anchor="start" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:27.3333px;fill:#222222;font-weight:400;font-style:normal;">2026-07-12</text>
+<line x1="520" y1="589" x2="1275" y2="589" stroke="#CFCFCF" stroke-width="1"/>
+<text x="544" y="609.5" text-anchor="start" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:27.3333px;fill:#222222;font-weight:700;font-style:normal;">Record Version</text>
+<text x="849" y="609.5" text-anchor="start" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:27.3333px;fill:#222222;font-weight:400;font-style:normal;">v1.0</text>
+<rect x="732.5" y="647" width="330" height="38" rx="13" fill="#4F81BD" stroke="#4F81BD" stroke-width="1.2"/>
+<text x="897.5" y="666" text-anchor="middle" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:27.3333px;fill:#FFFFFF;font-weight:700;font-style:normal;">Persistent Audit Record</text>
+<text x="1560" y="130" text-anchor="middle" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:36.6667px;fill:#222222;font-weight:700;font-style:normal;">Maintenance Operations</text>
+<rect x="1390" y="215" width="340" height="58" rx="13" fill="#FFFFFF" stroke="#777777" stroke-width="1.4"/>
+<text x="1560" y="244" text-anchor="middle" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:27.3333px;fill:#222222;font-weight:700;font-style:normal;">Query Records</text>
+<line x1="1560" y1="285" x2="1560" y2="312" stroke="#4A4A4A" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="1390" y="325" width="340" height="58" rx="13" fill="#FFFFFF" stroke="#777777" stroke-width="1.4"/>
+<text x="1560" y="354" text-anchor="middle" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:27.3333px;fill:#222222;font-weight:700;font-style:normal;">Dependency Inspection</text>
+<line x1="1560" y1="395" x2="1560" y2="422" stroke="#4A4A4A" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="1390" y="435" width="340" height="58" rx="13" fill="#FFFFFF" stroke="#777777" stroke-width="1.4"/>
+<text x="1560" y="464" text-anchor="middle" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:27.3333px;fill:#222222;font-weight:700;font-style:normal;">Knowledge Update</text>
+<line x1="1560" y1="505" x2="1560" y2="532" stroke="#4A4A4A" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="1390" y="545" width="340" height="58" rx="13" fill="#FFFFFF" stroke="#777777" stroke-width="1.4"/>
+<text x="1560" y="574" text-anchor="middle" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:27.3333px;fill:#222222;font-weight:700;font-style:normal;">Governance Log</text>
+<path d="M 1390 574 L 1342 574 L 1342 666 L 1155 666" fill="none" stroke="#4A4A4A" stroke-width="1.4" marker-end="url(#arrow)"/>
+<line x1="150" y1="810" x2="1650" y2="810" stroke="#4A4A4A" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="900" y="762" text-anchor="middle" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:36.6667px;fill:#222222;font-weight:700;font-style:normal;">Knowledge Lifecycle</text>
+<line x1="285" y1="800" x2="285" y2="820" stroke="#4A4A4A" stroke-width="1.1"/>
+<text x="285" y="864" text-anchor="middle" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:27.3333px;fill:#222222;font-weight:700;font-style:normal;">Construction</text>
+<line x1="690" y1="800" x2="690" y2="820" stroke="#4A4A4A" stroke-width="1.1"/>
+<text x="690" y="864" text-anchor="middle" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:27.3333px;fill:#222222;font-weight:700;font-style:normal;">Maintenance</text>
+<line x1="1095" y1="800" x2="1095" y2="820" stroke="#4A4A4A" stroke-width="1.1"/>
+<text x="1095" y="864" text-anchor="middle" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:27.3333px;fill:#222222;font-weight:700;font-style:normal;">Governance</text>
+<line x1="1500" y1="800" x2="1500" y2="820" stroke="#4A4A4A" stroke-width="1.1"/>
+<text x="1500" y="864" text-anchor="middle" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:27.3333px;fill:#222222;font-weight:700;font-style:normal;">Reuse</text>
+<text x="900" y="925" text-anchor="middle" dominant-baseline="middle" style="font-family:Arial, Helvetica, sans-serif;font-size:28.3333px;fill:#222222;font-weight:400;font-style:normal;"><tspan x="900" dy="0">An SC-FMA audit record preserves artifact identity, dependency context, structural roles, and maintenance rationale,</tspan><tspan x="900" dy="35.4167">enabling persistent querying, governance, and knowledge lifecycle management beyond a single ranking decision.</tspan></text>
+</svg>

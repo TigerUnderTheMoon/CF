@@ -1,0 +1,19 @@
+{
+  "workspace": "D:\\CF\\paper\\JIIS_submission",
+  "abstract_words": 186,
+  "keyword_count": 6,
+  "manuscript_pages": 22,
+  "package_files": [
+    "figures",
+    "manuscript.pdf",
+    "manuscript.tex",
+    "references.bib",
+    "sn-basic.bst",
+    "sn-jnl.cls",
+    "sn-mathphys-num.bst",
+    "sn-nature.bst",
+    "supplementary.pdf",
+    "supplementary.tex"
+  ],
+  "errors": []
+}

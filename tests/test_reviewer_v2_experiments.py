@@ -154,7 +154,11 @@ def test_audit_card_auto_validation_fixture_outputs_oracle_ir_metrics(
         "weak_utility_anchor",
         "structural_over_correction",
     }
-    assert set(report["methods"]) == {"w_struct_only", "scfma_decomposition"}
+    assert set(report["methods"]) == {
+        "w_struct_only",
+        "raw_field_bundle",
+        "scfma_decomposition",
+    }
     for method in report["methods"].values():
         assert {
             "mean_recall_at_budget",
@@ -165,6 +169,7 @@ def test_audit_card_auto_validation_fixture_outputs_oracle_ir_metrics(
             "bootstrap_ci",
         } <= set(method)
     assert report["available_fields"]["w_struct_only"] == ["w_struct_scalar"]
+    assert "raw_field_bundle" in report["available_fields"]
     assert {
         "fidelity",
         "necessity",

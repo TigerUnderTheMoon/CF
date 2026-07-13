@@ -46,6 +46,7 @@ from fma.calibration import (
     CalibrationResult,
     scfma_calibrate,
     scfma_calibrate_ridge,
+    scfma_calibrate_windowed,
 )
 from fma.calibration.projection import project_weights
 

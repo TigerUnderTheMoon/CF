@@ -1,0 +1,152 @@
+{
+  "scope_note": "Local heuristic only. It does not query Turnitin/iThenticate/Crossref/Elsevier databases and cannot produce an official similarity or AI-detector percentage.",
+  "files": {
+    "manuscript_tex": "D:\\CF\\paper\\information_sciences_submission\\final_source\\manuscript.tex",
+    "package_manuscript_pdf": "D:\\CF\\paper\\information_sciences_submission\\final_package\\manuscript.pdf",
+    "supplementary_pdf": "D:\\CF\\paper\\information_sciences_submission\\final_package\\supplementary.pdf"
+  },
+  "text_stats": {
+    "body_word_count_est": 5566,
+    "body_sentence_count_est": 334,
+    "mean_sentence_words": 16.6,
+    "sentence_word_stdev": 8.13,
+    "sentences_over_40_words": 3,
+    "sentences_over_50_words": 2,
+    "type_token_ratio": 0.2659,
+    "long_word_rate": 0.0976
+  },
+  "local_similarity": {
+    "estimated_similarity_risk_band": "low",
+    "estimated_similarity_range": "5-10% excluding references/formula/table boilerplate",
+    "repeat_5gram_rate": 0.0067,
+    "repeat_8gram_rate": 0.0018,
+    "near_duplicate_paragraph_pairs_ge_0_18": [],
+    "common_repeated_8grams_first30": [
+      {
+        "ngram": "countries-kg backend feasibility study rule-derived audit-target retrieval and",
+        "count": 2
+      },
+      {
+        "ngram": "backend feasibility study rule-derived audit-target retrieval and controlled",
+        "count": 2
+      },
+      {
+        "ngram": "feasibility study rule-derived audit-target retrieval and controlled synthetic",
+        "count": 2
+      },
+      {
+        "ngram": "study rule-derived audit-target retrieval and controlled synthetic calibration",
+        "count": 2
+      },
+      {
+        "ngram": "provides an information-structuring layer for audit-oriented knowledge representation",
+        "count": 2
+      },
+      {
+        "ngram": "an information-structuring layer for audit-oriented knowledge representation structured",
+        "count": 2
+      },
+      {
+        "ngram": "information-structuring layer for audit-oriented knowledge representation structured inspection",
+        "count": 2
+      },
+      {
+        "ngram": "layer for audit-oriented knowledge representation structured inspection and",
+        "count": 2
+      },
+      {
+        "ngram": "for audit-oriented knowledge representation structured inspection and maintenance-oriented",
+        "count": 2
+      },
+      {
+        "ngram": "audit-oriented knowledge representation structured inspection and maintenance-oriented analysis",
+        "count": 2
+      }
+    ],
+    "cross_material_overlap": {
+      "main_body__supplementary": {
+        "jaccard_8gram": 0.0018,
+        "jaccard_5gram": 0.0042
+      },
+      "cover_letter__main_body": {
+        "jaccard_8gram": 0.0096,
+        "jaccard_5gram": 0.014
+      },
+      "cover_letter__supplementary": {
+        "jaccard_8gram": 0.0008,
+        "jaccard_5gram": 0.0016
+      },
+      "cover_letter__highlights": {
+        "jaccard_8gram": 0.0,
+        "jaccard_5gram": 0.0
+      },
+      "highlights__main_body": {
+        "jaccard_8gram": 0.0,
+        "jaccard_5gram": 0.0
+      },
+      "highlights__supplementary": {
+        "jaccard_8gram": 0.0,
+        "jaccard_5gram": 0.0
+      },
+      "coi__main_body": {
+        "jaccard_8gram": 0.0,
+        "jaccard_5gram": 0.0005
+      },
+      "coi__supplementary": {
+        "jaccard_8gram": 0.0009,
+        "jaccard_5gram": 0.0018
+      },
+      "coi__cover_letter": {
+        "jaccard_8gram": 0.0064,
+        "jaccard_5gram": 0.0192
+      },
+      "coi__highlights": {
+        "jaccard_8gram": 0.0,
+        "jaccard_5gram": 0.0
+      }
+    }
+  },
+  "ai_style": {
+    "estimated_ai_detector_risk_band": "low-to-moderate",
+    "estimated_ai_detector_range": "20-35%",
+    "heuristic_score_0_100": 20.7,
+    "disclosure_present": true,
+    "boilerplate_hits": {
+      "as an ai language model": false,
+      "cannot assist": false,
+      "it is worth noting that": false,
+      "thereby enabling": false
+    },
+    "phrase_hits": {
+      "we introduce": 1,
+      "the remainder of this paper": 1,
+      "effective": 1,
+      "supports": 9,
+      "framework": 3,
+      "layer": 8,
+      "knowledge-intensive": 5,
+      "fixed-budget": 13,
+      "diagnostic": 48,
+      "representation": 53,
+      "audit record": 15,
+      "structured": 20
+    },
+    "hedge_or_boundary_hits": {
+      "may": 2,
+      "can": 23,
+      "should": 11,
+      "suggests": 1,
+      "indicate": 3,
+      "rather than": 15,
+      "not intended": 1,
+      "does not": 5,
+      "limited to": 1,
+      "boundary": 3,
+      "scope": 4
+    }
+  },
+  "interpretation": {
+    "similarity": "Most local overlap is expected to come from repeated technical terms, method names, scope-boundary language, captions, and submission-material reuse. External literature overlap is not measured.",
+    "ai": "The manuscript contains an AI-use disclosure and polished framework-style prose, which may raise detector scores. Technical specificity, bounded claims, and artifact-specific numbers reduce generic AI-writing risk."
+  }
+}

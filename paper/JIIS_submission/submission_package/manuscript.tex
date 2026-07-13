@@ -1,0 +1,370 @@
+﻿% !TEX root = ./manuscript.tex
+% JIIS / Springer Nature sn-article manuscript package.
+% Full migration from the Information Sciences source; not a compressed rewrite.
+\documentclass[pdflatex,sn-mathphys-num]{sn-jnl}
+
+\usepackage{graphicx}
+\geometry{a4paper,top=25mm,bottom=25mm,left=25mm,right=25mm,headsep=8mm,footskip=12mm}
+\usepackage{multirow}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{amsthm}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xurl}
+\usepackage{algorithm}
+\usepackage{algorithmicx}
+\usepackage{algpseudocode}
+\usepackage{makecell}
+\usepackage{placeins}
+\usepackage{float}
+\usepackage{textcomp}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newcolumntype{Z}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcommand{\boundarywstruct}{\ensuremath{w_{\mathrm{struct}}}}
+
+\raggedbottom
+\begin{document}
+
+\title[Structural Labels]{Structural Labels for Stratified Audit Budget Allocation in Knowledge-Graph Dependency Flows}
+
+\author*[1]{\fnm{Haoran} \sur{Ma}}\email{mahaoran0000@foxmail.com}
+\author[1,2]{\fnm{Ningning} \sur{Wang}}\email{wangningning@bistu.edu.cn}
+
+\affil*[1]{\orgdiv{College of Management Science and Engineering}, \orgname{Beijing Information Science and Technology University}, \orgaddress{\city{Beijing}, \postcode{102200}, \country{China}}}
+\affil[2]{\orgdiv{Institute of Information Systems, ESG Intelligent Application Innovation Research Center}, \orgname{Beijing Information Science and Technology University}, \orgaddress{\city{Beijing}, \postcode{102200}, \country{China}}}
+
+\abstract{Knowledge-graph and retrieval-augmented information systems expose dependency flows, entity bindings, and verification records that must be audited under fixed budgets. Prior score-centered formulations make this task look like another ranking problem, but a scalar score does not tell curators which artifacts are bottlenecks, which evidence is redundant, or how downstream records are affected. We recast the framework as a systematization of fixed-budget audit allocation around structural labels rather than score improvement. The first contribution is a structural label extractor, not a scorer, that converts graph topology into audit-ready boolean flags for bottleneck and redundancy. The second contribution is a Life-Saving First stratified budget allocation policy guided by these labels and evaluated with Impact Coverage@K over reachable descendants in KG dependency flows. On the Countries-KG proof-of-concept fixture, the extractor recovers controlled bottleneck and redundancy labels while undirected semantic and graph-centrality baselines expose different failure modes. In the cached-label audit case, the stratified policy covers transitive downstream impact under the same budget and is compared against Flat Top-K, degree centrality, random stratified labels, and other controls. The evidence is deliberately bounded: it is a clean semantic fixture and seeded scalability test, not production knowledge-base validation, human usefulness evidence, arbitrary-noise robustness, or causal identification.}
+
+\keywords{knowledge graphs, structural labels, audit budget allocation, impact coverage, information systems, dependency flows}
+
+\maketitle
+
+
+\section{Introduction}
+\label{sec:introduction}
+
+Knowledge-intensive information systems increasingly expose intermediate records rather than only final answers. A knowledge-graph workflow may expose entity nodes, relation paths, retrieval passages, verification steps, and dependency links. These artifacts are useful for maintenance only when a curator can decide what to inspect under a fixed budget. The difficulty is not simply that some artifacts receive low scalar scores. A curator also needs to know whether an artifact is a bottleneck for later records, whether another artifact provides redundant coverage, and which downstream nodes would be affected if the selected artifact is audited.
+
+This paper therefore moves the contribution away from a scoring race. It systematizes the fixed-budget audit allocation problem into structural label extraction and label-guided budget allocation. We propose a \emph{structural label extractor}, not a scorer, that turns directed graph topology into audit-ready boolean fields: \texttt{bottleneck} and \texttt{redundancy}. These fields are not reward-model predictions and are not claimed to improve task reasoning. They are reusable labels for audit records in dependency-flow settings.
+
+The second contribution is a \emph{stratified budget allocation} policy, Life-Saving First. The policy first allocates budget to Critical Bottleneck nodes, then to Unique Evidence nodes, then to Redundancy Group Samples, and finally to Fallback nodes. Raw risk score is used exclusively as a tie-breaker within the same stratification layer, not as the primary allocation driver. Flat Top-K uses the shared \detokenize{raw_risk_score} as the sole ranking criterion, where the KG setting defines it as trace-local min--max normalized downstream impact count.
+
+The evaluation follows this reframing. Table~\ref{tab:kg-label-validation} reports Countries-KG as a proof-of-concept and implementation check, with Countries-KG used as a clean semantic fixture containing 30 entities and 189 triples. Table~\ref{tab:impact-coverage} reports Impact Coverage@K rather than a top-$k$ recall framing. Impact Coverage counts all reachable descendants (transitive closure) from selected nodes, not only direct successors. This reflects the maintenance reality that a root bottleneck can affect a long downstream chain, and auditors need visibility into the entire affected subgraph.
+
+Figure~\ref{fig:overall-framework} gives the high-level knowledge-engineering workflow. Structural label extraction sits between raw dependency-flow artifacts and fixed-budget audit allocation: it represents artifacts as directed dependency graphs, converts topology into reusable labels, and allocates inspection budget by structural strata.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_knowledge_maintenance_workflow.pdf}
+\caption{Knowledge engineering workflow for structural labels and stratified audit budget allocation. Raw knowledge artifacts are organized as directed dependency flows; the structural label extractor emits bottleneck and redundancy flags; the Life-Saving First policy allocates fixed audit budget by structural strata; and Impact Coverage@K reports how much transitive downstream impact remains visible under the budget.}
+\label{fig:overall-framework}
+\end{figure}
+
+\section{Related Work}
+\label{sec:related-work}
+
+\subsection{Attribution and Explanation}
+
+Attribution methods ask which parts of an input, computation, or structure matter for a decision. Integrated Gradients~\cite{sundararajan2017axiomatic}, SHAP~\cite{lundberg2017unified}, and LIME~\cite{ribeiro2016lime} return feature-level or local explanation signals, while ERASER evaluates extractive rationales~\cite{deyoung2020eraser}.
+
+Structure-aware attribution adds graph context. Network studies show that importance can be non-local, redundant, or concentrated around bottleneck nodes~\cite{albert2000error,newman2010networks}; GNNExplainer selects compact explanatory subgraphs~\cite{ying2019gnnexplainer}. Human-centered XAI further shows that explanations must fit review tasks and organizational routines~\cite{miller2019explanation,arrieta2020explainable,amershi2019guidelines,kaplan2024xai}.
+
+These lines motivate the audit-triage setting. Salience identifies important evidence; audit triage additionally needs role labels for local support, duplicated evidence, downstream dependencies, and weak upstream signals. Entailment-tree and counterfactual methods add intermediate or contrastive evidence~\cite{dalvi2021entailmenttrees,wijekoon2023counterfactual}; the present framework keeps the audit roles separate.
+
+\subsection{Process Supervision and Process Reward Models}
+
+Process supervision assigns annotation fields to intermediate artifacts as well as final answers. PRM800K showed that per-artifact human labels can support verifier-guided best-of-$N$ search relative to outcome reward models~\cite{lightman2023verify}; GSM8K made this verifier setting concrete~\cite{cobbe2021training}. Process-based feedback also reduced reasoning errors when outcome success appeared saturated~\cite{uesato2022solving}. These studies provide the artifact-resolved fidelity field that the present framework uses as input.
+
+A parallel line makes verification, critique, and revision available as process units. Chain-of-thought and self-consistency expose sampled reasoning paths~\cite{wei2022cot,wang2022selfconsistency}. Tree of Thoughts and ReAct add search or action structure~\cite{yao2023tot,yao2022react}, while Reflexion and Self-Refine turn revision steps into supervision targets~\cite{shinn2023reflexion,madaan2023selfrefine}.
+
+Recent process-verification resources also show that step-level signals need distributional checks. Math-Shepherd studies automatic step verification without human annotations~\cite{wang2024mathshepherd}, and ProcessBench evaluates process-error identification across models~\cite{zheng2024processbench}. These resources help assess scalar step signals, which SC-FMA uses as inputs to structural calibration.
+
+\subsection{Graph-Based Knowledge Engineering and Audit Methods}
+
+Graph-based knowledge engineering shows how structured intermediate states can be made inspectable. Knowledge-engineering methods have long treated representation, inference, and maintenance-oriented review as coupled design problems~\cite{studer1998knowledge}. Early expert systems such as MYCIN and DENDRAL demonstrated the value of structured knowledge representation~\cite{buchanan1984mycin,lindsay1980dendral}. Cognitive architectures such as Soar and ACT-R also made internal states and operator applications available for step-level review~\cite{laird2012soar,anderson2004actr}. In information systems, related work on knowledge management and algorithmic accountability emphasizes that AI artifacts must be represented in ways that support transparency, traceability, and organizational oversight~\cite{dwivedi2021artificial,raji2020closing}.
+
+Modern knowledge-intensive pipelines connect language models with structured knowledge. Knowledge graphs provide a representation substrate for entities, relations, constraints, and quality signals~\cite{hogan2021knowledge}. RAG and GraphRAG expose passages, entity graphs, and community summaries as evidence~\cite{lewis2020rag,gao2023ragsurvey,edge2024graphrag}. KG-RAG, knowledge-enhanced language models, and LLM-KG integration expose entity links, triples, and relation paths as reviewable artifacts~\cite{sanmartin2024kgrag,hu2024knowledgeenhanced,pan2024unifying}. Recent surveys and KG-quality studies show why graph-quality signals become part of the audit surface~\cite{yang2025kbllmsurvey,chen2025kgquality,dai2025llmkg}. Similar pressure appears in long-tail KG-augmented QA and engineering-design RAG, where sparse support and heterogeneous evidence make exhaustive review unrealistic~\cite{huang2025prompting,siddharth2024retrieval,liu2025knowledgereasoning}.
+
+Across these settings, the challenge is no longer simply recovering intermediate evidence. Modern pipelines already expose passages, entity links, relation paths, and verification records. The harder question is how to allocate limited curation budget and preserve records for refinement, update, and reuse~\cite{paulheim2017knowledge,higgins2008dcc}. SC-FMA converts exposed artifacts into graph-aware audit records for that purpose.
+
+\subsection{Summary of Research Gap}
+
+Existing work supplies three ingredients: local attribution identifies salient evidence, process supervision supplies step-level fidelity fields, and graph-based knowledge engineering exposes structural context. The proposed framework combines them into a representation layer that turns exposed knowledge artifacts into inspectable records for fixed-budget knowledge audit.
+
+\subsection{Comparison with Alternative Representations}
+
+The experimental comparisons below use internal scalar views and reproducible ablations aligned with the audit-record object. IG, SHAP, LIME, GNNExplainer, frozen PRM scorers, and related methods define neighboring objectives whose native outputs include feature attributions, local explanations, explanatory subgraphs, and scalar reward fields. The proposed framework targets a decomposed audit record with fidelity, structural dependency, redundancy, bottleneck, audit-reason, and interpretation fields.
+
+\begin{table}[ht]
+\caption{Output objects of neighboring explanation methods and SC-FMA. The table positions each method family by its native representation.}
+\label{tab:alternative-representation-comparison}
+\centering
+\small
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{Z{0.26\linewidth}Z{0.30\linewidth}Z{0.32\linewidth}}
+\toprule
+\textbf{Method family} & \textbf{Native output object} & \textbf{Relation to audit-record construction} \\
+\midrule
+IG, SHAP, LIME & Feature-level or local attribution scores & Provides salience signal. \\
+GNNExplainer-style graph explanation & Compact explanatory subgraph & Provides structural subset. \\
+Frozen PRM or process scorer & Scalar step or prefix signal & Provides fidelity field. \\
+SC-FMA & Decomposed audit record & Constructs fidelity, dependency, redundancy, bottleneck, reason, and interpretation fields. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Method}
+\label{sec:methods}
+
+\subsection{Problem setting}
+
+We study fixed-budget audit over directed dependency-flow graphs. Let $G=(V,E)$ be a directed graph whose nodes are auditable or scaffold artifacts and whose edges encode dependency flow. A trace may contain entity bindings, relation paths, retrieved evidence, validation records, or rule-derived intermediate artifacts. The audit budget permits only a subset of nodes to be inspected, so the system must expose which nodes carry structural risk before any human review is claimed.
+
+The main notation is as follows. A \emph{dependency flow} is a directed edge $(u,v)\in E$ indicating that artifact $v$ depends on artifact $u$ for audit interpretation. An \emph{auditable node} $v\in V_A$ is an artifact that can be inspected under the review budget; a \emph{scaffold node} $v\in V_S$ supports graph structure but is not counted as an ordinary audit target. The audit budget is $K$, and the selected audit set is $S_K\subseteq V$. The scalar \detokenize{raw_risk_score} $r(v)$ is a trace-local normalized impact score used only for same-stratum tie breaking. For selected nodes $S_K$, Impact Coverage@K is the fraction of unselected auditable descendants in $V_A\setminus S_K$ reached from $S_K$ by directed transitive closure.
+
+The method has two parts. First, a structural label extractor converts graph topology into boolean labels. Second, a Life-Saving First allocation policy uses those labels to select audit candidates under a fixed budget. The method is deliberately not a universal scorer. It does not claim to improve model reasoning, recover causal effects, or validate production knowledge-base maintenance.
+
+\subsection{Structural label extractor}
+
+The extractor emits two audit-ready boolean fields for each node: \texttt{bottleneck} and \texttt{redundancy}. A node is marked as a bottleneck when removing it lowers reachable terminal-flow coverage from the frozen source set, or when it lies in a critical source-to-terminal dependency position. This is a graph-theoretic label, not a learned quality prediction.
+
+A node is marked as redundant when its dependency coverage substantially overlaps another node. We define redundancy gold labels using Jaccard \textgreater{} 0.85 over dependency coverage, acknowledging that strict identical coverage is rarely observed in semantic KGs. The corresponding implementation threshold is $\theta=0.85$; threshold sensitivity at $\theta=0.90$ is reported in the supplementary scalability analysis.
+
+The TF-IDF comparator is named Semantic-Similarity Baseline (TF-IDF), not a graph-based method. This baseline is included to show that undirected semantic similarity, which lacks flow direction, cannot recover structural bottleneck/redundancy labels.
+
+\subsection{Cache locking and reproducibility}
+
+The Countries-KG label validation script writes a deterministic cache at \path{outputs/countries_kg_label_validation/countries_kg_labels_cached.json}. The cache stores trace and node identifiers, \texttt{is\_bottleneck}, \texttt{is\_redundant}, redundancy group identifiers, downstream impact counts, auditable flags, thresholds, seed, KG metadata hash, and synthetic graph configuration. The audit case loads this cache and does not recompute graph labels. This cache-locking rule ensures that the label-validation table and the budget-allocation table use the same label source.
+
+All reported Countries-KG and synthetic graph runs use seed 20260711. The semantic fixture contains 30 entities and 189 triples. The synthetic scalability appendix adds directed dependency graphs with 100, 200, 500, 1000, and 5000 nodes, using the 30-node Countries-KG result as the left anchor.
+
+\subsection{Life-Saving First allocation policy}
+
+Budget allocation proceeds sequentially. For the Countries-KG audit case, the budget is fixed as $K=\lceil 0.25|V_A|\rceil$ selected nodes per trace, where $V_A$ is the auditable-node set; this yields $K=1$ for 540 repeated traces and $K=2$ for 60 repeated traces under the locked report. If a layer cumulatively exceeds $K$, selection stops within that layer sorted by downstream impact; subsequent layers are not invoked for this trace. The four strata are Critical Bottleneck, Unique Evidence, Redundancy Group Samples, and Fallback.
+
+Critical Bottleneck includes all nodes with \texttt{is\_bottleneck=True}; these nodes are not excluded for being redundant because a backed-up bottleneck may still require audit visibility. Unique Evidence includes non-redundant high-impact nodes. Redundancy Group Samples allocate at most one representative per redundancy group. Fallback covers remaining candidates only after the earlier strata have not exhausted the budget.
+
+Within a stratum, nodes are ordered by downstream impact and then by the shared raw risk score only to break ties. Raw risk score is used exclusively as a tie-breaker within the same stratification layer, not as the primary allocation driver. Flat Top-K uses the shared \detokenize{raw_risk_score} as the sole ranking criterion. In the KG setting, this scalar is trace-local min--max normalized downstream impact count; deterministic degree and node identifiers break exact ties.
+
+\subsection{Impact Coverage@K}
+
+Impact Coverage@K counts affected unselected auditable descendants reached from selected nodes under the budget. Formally, descendants are computed by directed transitive closure from each selected node, and selected nodes and non-auditable scaffold/root nodes are excluded from the denominator. Impact Coverage counts all reachable descendants (transitive closure) from selected nodes, not only direct successors. This reflects the maintenance reality that a root bottleneck can affect a long downstream chain, and auditors need visibility into the entire affected subgraph.
+
+The audit report also records Average Path Length to Covered Descendants, Early Truncation Rate, and Budget Used. Average path length is computed from shortest directed distances over the same reachable-descendant set used by Impact Coverage@K. Early truncation records whether the budget is exhausted inside an earlier stratum before later strata are invoked.
+
+
+
+\section{Results}
+\label{sec:experimental-results}
+
+Table~\ref{tab:kg-label-validation} shows the proof-of-concept label-validation result. The structural extractor recovers the graph-defined labels, whereas the undirected semantic baseline fails to recover directed-flow bottleneck and redundancy roles. Betweenness centrality and directed out-closeness are added as graph-structural bottleneck baselines under the fixed rule of selecting, within each trace, the same number of highest-centrality nodes as gold bottlenecks. The result supports implementation fidelity on a clean semantic fixture; it is not a claim about noisy open-domain KGs.
+
+\begin{table}[t]
+\caption{Countries-KG proof-of-concept and implementation check for structural label F1. The semantic fixture contains 30 entities and 189 triples; labels are cached with seed 20260711. Graph-centrality baselines predict bottlenecks only by selecting the same number of highest-centrality nodes as gold bottlenecks within each trace, so redundancy F1 is not applicable (N/A).}
+\label{tab:kg-label-validation}
+\centering
+\small
+\begin{tabular}{lccc}
+\toprule
+Method & Bottleneck F1 & Redundancy F1 & Redundancy positives \\
+\midrule
+Structural label extractor & 1.000 & 1.000 & 124 \\
+Semantic-Similarity Baseline (TF-IDF) & 0.242 & 0.405 & 124 \\
+Betweenness Centrality & 0.700 & N/A & 124 \\
+Directed Out-Closeness Centrality & 1.000 & N/A & 124 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The perfect F1 scores for the structural extractor in Table~\ref{tab:kg-label-validation} are expected and intentional, as the extractor implements the same deterministic graph-theoretic rules that define the gold-standard labels (removal-based bottleneck and Jaccard-based redundancy). Directed out-closeness also matches bottleneck labels in this small fixture because the graph construction places many critical nodes upstream of reachable descendants. This overlap is fixture-specific: out-closeness happens to coincide with bottleneck labels here. Crucially, out-closeness provides no redundancy labels, so it cannot support the full audit stratification that requires both bottleneck and redundancy fields. Betweenness is lower, and neither centrality baseline addresses redundancy groups. The purpose of this table is to validate implementation fidelity and controlled label recovery, not to claim state-of-the-art predictive performance on a noisy classification task.
+
+Table~\ref{tab:impact-coverage} evaluates budget allocation on cached Countries-KG labels, and Figure~\ref{fig:impact-coverage-comparison} visualizes the Impact Coverage@K column from the same table. The comparison is deliberately between stratification and controls that share the same node universe, budget, and scalar source. Random Stratified preserves the staged allocation procedure but shuffles bottleneck and redundancy labels within each trace, testing whether the structure labels themselves matter. The No-Fallback Ablation matches the main policy (both 1.000) because, in this seeded Countries-KG fixture, downstream impact scores rarely produce ties within the same stratum. Thus, the \detokenize{raw_risk_score} tie-breaker is almost never invoked, confirming that the observed coverage is fundamentally driven by the structural stratification layers (Critical Bottleneck and Redundancy Group Samples), not by scalar fallback ordering.
+
+\begin{table}[t]
+\caption{Impact Coverage@K of Life-Saving First stratified policy vs. Flat Top-K baseline (using the shared \detokenize{raw_risk_score} as the sole ranking criterion), Degree Centrality, random stratified labels, position, random, and no-fallback ablation.}
+\label{tab:impact-coverage}
+\centering
+\small
+\begin{tabular}{lcccc}
+\toprule
+Method & Impact Coverage@K & Avg. path length & Early truncation & Budget used \\
+\midrule
+Life-Saving First & 1.000 & 1.000 & 0.000 & 1.000 \\
+Flat Top-K & 0.733 & 0.828 & 0.000 & 1.000 \\
+Degree Centrality & 0.650 & 0.761 & 0.000 & 1.000 \\
+Random Stratified & 0.544 & 0.656 & 0.000 & 1.000 \\
+Position & 0.000 & 0.000 & 0.000 & 1.000 \\
+Random & 0.333 & 0.622 & 0.000 & 1.000 \\
+No-Fallback Ablation & 1.000 & 1.000 & 0.000 & 1.000 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/impact_coverage_comparison.pdf}
+\caption{Impact Coverage@K comparison for the cached Countries-KG audit case. The bar chart visualizes the Impact Coverage@K column of Table~\ref{tab:impact-coverage}. Life-Saving First is the main stratified policy, No-Fallback Ablation tests whether same-layer scalar fallback drives the result, Random Stratified shuffles structural labels while preserving the staged selection protocol, and the remaining bars are scalar or non-stratified baselines. The dashed line marks the ideal upper bound of 1.0 in this cached-label setting.}
+\label{fig:impact-coverage-comparison}
+\end{figure}
+
+Figure~\ref{fig:impact-coverage-comparison} makes the main contrast visible: the stratified policy and its no-fallback ablation reach the upper-bound line, while Flat Top-K, Degree Centrality, Random Stratified, Random, and Position remain below it. Although Impact Coverage uses reachable descendants through transitive closure, the selected bottleneck nodes in this fixture are direct upstream nodes of the covered auditable descendants; therefore the average path length for Life-Saving First and the no-fallback ablation is 1.000. This is a special property of the Countries-KG fixture, not a general guarantee: in larger or noisier KGs where important effects require multi-hop propagation, coverage and average path length should be expected to change, as the synthetic path-length diagnostics in Appendix A illustrate. The low early-truncation rate confirms that the policy successfully utilizes multiple strata rather than collapsing entirely inside the first layer.
+
+\section{Appendix A. Synthetic Scalability and Threshold Sensitivity}
+\label{sec:synthetic-scalability}
+
+Countries-KG is deliberately used as a clean semantic fixture, not as a scale claim. To avoid making the 30-node fixture carry the full generalization burden, we add a seeded synthetic scalability test with directed dependency graphs of 100, 200, 500, 1000, and 5000 nodes. The generator plants source-to-terminal chains, bottleneck positions, and redundant dependency-coverage twins so that the graph-theoretic truth is known before extraction. This makes the test an implementation-scalability and controlled-label-recovery check rather than a noisy open-domain KG validation.
+
+The synthetic graphs use seed 20260711 and the same redundancy threshold family as the semantic fixture. Table~\ref{tab:synthetic-scalability} places Countries-KG at the left anchor and then reports macro F1 across the synthetic scale points. The structural extractor remains at macro F1 1.000 through 5000 nodes because the synthetic truth is generated from the same deterministic bottleneck and redundancy rules. This is expected: the point is to check whether the implementation preserves rule fidelity as graph size grows, not to report a learned classifier's out-of-sample accuracy.
+
+\begin{table}[ht]
+\caption{Appendix A synthetic scalability curve. Countries-KG is shown as the 30-node semantic left anchor; the remaining rows are seeded directed dependency graphs.}
+\label{tab:synthetic-scalability}
+\centering
+\small
+\begin{tabular}{lrrrr}
+\toprule
+Source & Nodes & Bottleneck F1 & Redundancy F1 & Macro F1 \\
+\midrule
+Countries-KG & 30 & 1.000 & 1.000 & 1.000 \\
+Synthetic directed graph & 100 & 1.000 & 1.000 & 1.000 \\
+Synthetic directed graph & 200 & 1.000 & 1.000 & 1.000 \\
+Synthetic directed graph & 500 & 1.000 & 1.000 & 1.000 \\
+Synthetic directed graph & 1000 & 1.000 & 1.000 & 1.000 \\
+Synthetic directed graph & 5000 & 1.000 & 1.000 & 1.000 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The threshold-sensitivity check compares $\theta=0.85$ with $\theta=0.90$ for redundancy coverage. In this planted fixture, both thresholds recover the same macro F1 across the left anchor and all synthetic scale points. This does not imply that arbitrary noisy KGs are threshold-insensitive; it only shows that the implementation is stable under the two planned thresholds when the redundancy relation is known.
+
+\begin{table}[ht]
+\caption{Redundancy-threshold sensitivity for the Appendix A scalability check. Values are macro F1.}
+\label{tab:threshold-sensitivity}
+\centering
+\small
+\begin{tabular}{lrrrrrr}
+\toprule
+Threshold & 30 & 100 & 200 & 500 & 1000 & 5000 \\
+\midrule
+$\theta=0.85$ & 1.000 & 1.000 & 1.000 & 1.000 & 1.000 & 1.000 \\
+$\theta=0.90$ & 1.000 & 1.000 & 1.000 & 1.000 & 1.000 & 1.000 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The path-length diagnostic prevents Impact Coverage from being misread as direct-neighbor counting. Synthetic covered descendants have average path lengths above one and increase with graph size, from 2.587 at 100 nodes to 3.883 at 5000 nodes. Thus, the coverage implementation traverses reachable descendants by directed transitive closure rather than stopping at immediate successors.
+
+\begin{table}[ht]
+\caption{Average path length to covered descendants in the seeded synthetic scalability check.}
+\label{tab:synthetic-path-length}
+\centering
+\small
+\begin{tabular}{lrrrrr}
+\toprule
+Nodes & 100 & 200 & 500 & 1000 & 5000 \\
+\midrule
+Average path length & 2.587 & 2.819 & 3.115 & 3.349 & 3.883 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The scalability appendix is paired with a cache-locking checklist because the two main tables depend on the same structural labels. Table~\ref{tab:cache-locking-checklist} records the fields that must remain fixed between label validation and budget allocation. This prevents a common reproducibility error: one script reports label F1 using one graph-construction threshold, while a later audit script silently recomputes labels under a different threshold or seed. In the present package, the audit script loads the cached label file and records a recomputed-label count of zero.
+
+\begin{table}[ht]
+\caption{Cache-locking checklist for Countries-KG label validation and Impact Coverage evaluation.}
+\label{tab:cache-locking-checklist}
+\centering
+\small
+\begin{tabular}{Z{0.30\linewidth}Z{0.58\linewidth}}
+\toprule
+Cached field & Reproducibility role \\
+\midrule
+Trace and node identifiers & Keeps Table~\ref{tab:kg-label-validation} and Table~\ref{tab:impact-coverage} on the same auditable node universe. \\
+Boolean labels & Stores \texttt{is\_bottleneck} and \texttt{is\_redundant} rather than letting the audit script infer them again. \\
+Redundancy group identifier & Ensures that the Redundancy Group Samples layer draws representatives from the same group assignment used in validation. \\
+Downstream impact count & Supplies the impact order used inside strata and the shared scalar source for Flat Top-K. \\
+Auditable flag & Excludes scaffold/root nodes from ordinary baseline denominators while still allowing critical bottlenecks to enter the first stratum. \\
+Thresholds and seed & Records $\theta=0.85$, the alternative $\theta=0.90$ sensitivity check, and seed 20260711. \\
+KG metadata hash & Confirms that the 30-entity, 189-triple semantic fixture has not changed between validation and audit allocation. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+This checklist is deliberately operational. It does not expand the empirical claim beyond the clean semantic fixture. It only states that the reported F1 comparison and Impact Coverage simulation are label-consistent, seed-locked, and derived from the same cached dependency-flow records.
+
+\section{Exploratory Boundary Diagnosis}
+\label{sec:boundary-diagnosis}
+
+While the main Countries-KG experiment shows that structural labels work under directed dependency flows, it is equally important to document when they fail. We therefore include a compact exploratory boundary check on PRM800K, where the graph constructor supplies sparse, topical edges rather than informative dependency flows. Appendix B reports this Necessary Condition Diagnosis as exploratory boundary evidence. The route lacks the directed KG dependency-flow condition used in the main Countries-KG experiment, so it is not treated as a core validation result. Its role is to show what fails when the graph constructor supplies sparse or directionless similarity rather than informative dependency edges.
+
+The compact finding is that annotation-order consistency on PRM800K is dominated by a supervised fidelity field and positional/lexical cues. The supervised \boundarywstruct{} field reaches Spearman $\rho=0.611$ on the locked split. A same-supervision structure-only Ridge control reaches only $\rho=0.043$, while adding position raises it to $\rho=0.603$. Thus, graph-derived fields do not provide independent annotation-order signal in this route; they remain organizational audit-record fields rather than validated ranking predictors.
+
+\begin{table}[ht]
+\caption{Exploratory PRM800K necessary-condition boundary. The table is a compact main-text pointer to Supplementary Appendix B; it is not used as core evidence for the Countries-KG audit-allocation claim.}
+\label{tab:prm800k-boundary-compact}
+\centering
+\small
+\begin{tabular}{lcc}
+\toprule
+Field or control & Spearman $\rho$ & Interpretation \\
+\midrule
+\boundarywstruct{} (supervised fidelity field) & 0.611 & Strong process-annotation signal \\
+Structure graph + position & 0.603 & Mostly position-mediated \\
+Structure graph only & 0.043 & Weak independent graph signal \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+This negative boundary supports the paper's scope. Structural labels require directed dependency flows with interpretable graph semantics; they should not be expected to transfer unchanged to noisy process-annotation traces whose graph edges are sparse, topical, or directionless. The detailed PRM800K confidence intervals, fixed-budget readouts, and archived scorer-route diagnostics are retained in the supplementary material.
+
+
+\section{Discussion}
+\label{sec:discussion}
+
+The central shift in this revision is from scalar audit priority to structural audit labels. The contribution is a systematization of fixed-budget audit allocation into reusable graph labels, strata, and visibility metrics. The Countries-KG fixture is intentionally small and clean because it provides a controlled dependency flow where bottleneck and redundancy labels can be checked against explicit graph-theoretic rules. This choice supports implementation fidelity and label recovery, not robustness to arbitrary open-domain KG noise.
+
+The Life-Saving First policy also changes the interpretation of fixed-budget audit. A flat scalar budget rule can rank nodes, but it does not tell a curator why a node is selected or what downstream dependency chain becomes visible. Stratification makes that decision surface explicit: bottlenecks are handled first, unique evidence is preserved, redundancy groups are sampled rather than exhaustively reviewed, and scalar fallback is restricted to same-layer tie breaking.
+
+The impact-coverage metric should be read as a dependency-flow visibility measure. It asks how much unselected downstream audit surface is affected by the selected nodes under a fixed budget. It does not measure human review speed, decision confidence, correctness of human judgments, production maintenance cost, or causal effect.
+
+\section{Limitations}
+\label{sec:limitations}
+
+The semantic main experiment is deliberately bounded to Countries-KG to provide a ground-truth dependency flow for controlled F1 evaluation. We do not claim that structural labels are robust to arbitrary KG noise; rather, we treat this as a proof-of-concept on a clean semantic fixture. Scaling to noisy, open-domain KGs, including Wikidata-style subgraphs and injected edge perturbations, is a necessary future step, not a claim of the current framework.
+
+The study also does not report human usefulness evidence. The submission package contains a blank future human-evaluation protocol, but no returned ratings, evaluator provenance, declarations, timestamps, hashes, or reliability analysis are available. The present evidence therefore concerns structural label extraction and Impact Coverage on KG dependency flows, not human decision time, human audit accuracy, or production knowledge-base validation.
+
+Future work should therefore focus on three extensions: evaluating the representation on larger noisy KG subsets such as Wikidata-derived dependency flows; designing learned structural-label predictors that reduce reliance on exact graph rules while preserving audit semantics; and conducting user studies that measure whether the audit records improve auditor efficiency, accuracy, and prioritization decisions.
+
+\section{Conclusions}
+\label{sec:conclusions}
+
+This paper reframes the SC-FMA line as structural label extraction and label-guided budget allocation. The contribution is not a new universal scorer. It is a systematization of fixed-budget audit allocation around a graph-topology interface that emits bottleneck and redundancy flags, plus a Life-Saving First policy that uses those flags for audit visibility. The evidence supports controlled label extraction on Countries-KG, seeded scalability in Supplementary Appendix A, Impact Coverage comparison on cached KG flows, and PRM800K necessary-condition boundaries in Supplementary Appendix B.
+
+\section*{Acknowledgments}
+The authors thank the College of Management Science and Engineering at Beijing Information Science and Technology University for research support.
+
+\section*{Funding}
+This work was supported by the National Social Science Fund of China Project (24BSH018) and the Beijing Natural Science Foundation Project (L252145).
+
+\section*{Declaration of Competing Interest}
+The authors declare that they have no conflicts of interest related to this work.
+
+\section*{Declaration of generative AI and AI-assisted technologies in the writing process}
+During the preparation of this work, the authors used OpenAI GPT-5 to improve language clarity and assist with LaTeX formatting checks. The tool was not used to design the study, conduct data analysis, generate results, or derive the conclusions. After using this tool, the authors reviewed and edited the content as needed and take full responsibility for the content of the publication.
+
+\section*{Data Availability}
+The PRM800K process-annotation dataset, MuSiQue, and WebQSP are publicly available from their original sources. Derived locked-split reports, audit-record outputs, validation configurations, and reproduction scripts will be made available through an anonymous review repository during submission and released with the final article where permitted.
+
+\section*{CRediT authorship contribution statement}
+\textbf{Haoran Ma}: Conceptualization, Methodology, Software, Formal analysis, Investigation, Data Curation, Writing -- Original Draft, Visualization. \textbf{Ningning Wang}: Methodology, Validation, Writing -- Review \& Editing, Supervision, Project administration, Funding acquisition.
+
+\clearpage
+
+\bibliography{references}
+
+\end{document}
+

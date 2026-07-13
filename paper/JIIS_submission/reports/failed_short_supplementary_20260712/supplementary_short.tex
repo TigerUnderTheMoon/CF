@@ -1,0 +1,86 @@
+% !TEX root = ./supplementary.tex
+\documentclass[pdflatex,sn-mathphys-num]{sn-jnl}
+
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xurl}
+
+\newcolumntype{Z}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+\begin{document}
+
+\title[Supplementary Material]{Supplementary Material for ``Structural Labels for Stratified Audit Budget Allocation in Knowledge-Graph Dependency Flows''}
+\author*[1]{\fnm{Haoran} \sur{Ma}}
+\affil*[1]{\orgdiv{College of Management Science and Engineering}, \orgname{Beijing Information Science and Technology University}, \orgaddress{\city{Beijing}, \country{China}}}
+\maketitle
+
+\section{Appendix A. Synthetic scalability and threshold sensitivity}
+
+Appendix A supports scalability beyond the Countries-KG semantic fixture without claiming robustness to arbitrary noisy open-domain KGs. The left anchor is the Countries-KG 30-node semantic fixture. Synthetic directed dependency graphs use seed 20260711 and sizes 100, 200, 500, 1000, 5000.
+
+\begin{table}[h]
+\caption{Synthetic scalability curve with Countries-KG as the 30-node left anchor.}
+\centering
+\small
+\begin{tabular}{rlr}
+\toprule
+\textbf{Nodes} & \textbf{Source} & \textbf{Macro F1} \\
+\midrule
+30 & Countries-KG & 1.000 \\
+100 & synthetic\_dag & 1.000 \\
+200 & synthetic\_dag & 1.000 \\
+500 & synthetic\_dag & 1.000 \\
+1000 & synthetic\_dag & 1.000 \\
+5000 & synthetic\_dag & 1.000 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\caption{Synthetic graph diagnostics, including Average Path Length to Covered Descendants.}
+\centering
+\small
+\begin{tabular}{rrr}
+\toprule
+\textbf{Nodes} & \textbf{Macro F1} & \textbf{Average path length} \\
+\midrule
+100 & 1.000 & 2.587 \\
+200 & 1.000 & 2.819 \\
+500 & 1.000 & 3.115 \\
+1000 & 1.000 & 3.349 \\
+5000 & 1.000 & 3.883 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The redundancy threshold sensitivity check compares $\theta=0.85$ and $\theta=0.90$. Countries-KG gives 124 redundancy positives at $\theta=0.85$ and 124 positives at $\theta=0.90$. The synthetic planted-flow runs remain finite through 5k nodes under both thresholds.
+
+\section{Appendix B. Necessary Condition Diagnosis}
+
+This appendix uses \texttt{scripts/run\_prm800k\_strong\_baselines.py} only as boundary evidence. It is titled Necessary Condition Diagnosis because the PRM800K route lacks the directed KG dependency-flow condition used in the main experiment.
+
+\begin{table}[h]
+\caption{PRM800K necessary-condition context. The graph-only row is boundary evidence, not a main result.}
+\centering
+\small
+\begin{tabular}{Z{0.42\linewidth}rr}
+\toprule
+\textbf{Method} & \textbf{Spearman $\rho$} & \textbf{Mass@25\%} \\
+\midrule
+\texttt{w\_struct} & 0.611 & 0.381 \\
+Structure graph + position & 0.603 & 0.380 \\
+Structure graph only & 0.043 & 0.311 \\
+Raw local utility & -0.077 & 0.282 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The requested condition, Trace Length $>20$ and graph density $<0.05$, is represented by an archived high-trace-length sparse-TF-IDF proxy because the locked report does not store an exact joint density stratum. Under that proxy, graph-only $\rho=0.000$. This negative result defines the framework boundary: structural labels need directed dependency edges with at least moderate logical density.
+
+\section{Appendix C. Cached-label audit reproducibility}
+
+The audit case loads \texttt{outputs\textbackslash{}countries\_kg\_label\_validation\textbackslash{}countries\_kg\_labels\_cached.json}. The report records \texttt{recomputed\_label\_count=0}, seed 20260711, 600 simulated audit repetitions, and budget fraction 0.25. The cache includes node identifiers, bottleneck flags, redundancy flags, redundancy group identifiers, downstream impact counts, thresholds, random seed, KG metadata hash, and synthetic DAG configuration.
+
+\bibliography{references}
+\end{document}

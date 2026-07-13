@@ -300,3 +300,277 @@ def scfma_calibrate_ridge(
         iteration_count=1,
         converged=True,
     )
+
+
+def _window_bounds(k: int, window_size: int) -> list[tuple[int, int]]:
+    """Contiguous ``[i, j)`` window boundaries over ``k`` steps.
+
+    A too-small trailing window (shorter than ``max(2, window_size // 2)``) is
+    merged into the preceding window so every window supports a non-trivial QP.
+    """
+    if window_size < 1:
+        window_size = 1
+    bounds: list[tuple[int, int]] = []
+    i = 0
+    while i < k:
+        j = min(i + window_size, k)
+        bounds.append((i, j))
+        i = j
+    if len(bounds) >= 2:
+        last_i, last_j = bounds[-1]
+        if (last_j - last_i) < max(2, window_size // 2):
+            prev_i, _ = bounds[-2]
+            bounds[-2] = (prev_i, last_j)
+            bounds.pop()
+    return bounds
+
+
+def _window_masses(
+    c: np.ndarray,
+    solutions: list[tuple[int, int, np.ndarray]],
+    *,
+    stitch: str,
+    n: np.ndarray,
+) -> list[float]:
+    """Global mass allocated to each window, summing to one.
+
+    ``"mass"`` (default) allocates proportional to each window's non-negative
+    fidelity mass ``sum(max(c, 0))`` — a soft, Ridge-like averaging. ``"ridge"``
+    derives inter-window masses from a softmax blend of per-window mean fidelity
+    and mean necessity via :func:`scfma_calibrate_ridge`.
+    """
+    n_windows = len(solutions)
+    if n_windows == 0:
+        return []
+    if n_windows == 1:
+        return [1.0]
+
+    if stitch == "ridge":
+        cw = np.array([float(np.mean(c[i:j])) for (i, j, _) in solutions])
+        nw = np.array([float(np.mean(n[i:j])) for (i, j, _) in solutions])
+        res = scfma_calibrate_ridge(cw, nw, alpha_ciui=0.7, alpha_nec=0.3)
+        if res.weights:
+            return [float(v) for v in res.weights[0].weights]
+        return [1.0 / n_windows] * n_windows
+
+    raw = np.array([float(np.sum(np.maximum(c[i:j], 0.0))) for (i, j, _) in solutions])
+    if np.sum(raw) < EPSILON:
+        raw = np.array([float(np.sum(np.abs(c[i:j]))) for (i, j, _) in solutions])
+    if np.sum(raw) < EPSILON:
+        return [1.0 / n_windows] * n_windows
+    return [float(v) for v in raw / np.sum(raw)]
+
+
+def _apply_floors(w: np.ndarray, floor_by_index: dict[int, float]) -> np.ndarray:
+    """Project ``w`` onto the simplex subject to per-node lower bounds.
+
+    Deficient bottleneck nodes are raised to their floors; the remaining budget
+    ``1 - sum(floors)`` is distributed over the surplus above each floor,
+    preserving the solver's relative preference. Guarantees ``w_i >= floor_i``
+    and ``sum(w) == 1`` in a single pass.
+    """
+    w = np.maximum(np.asarray(w, dtype=float), 0.0)
+    s = float(np.sum(w))
+    w = w / s if s > EPSILON else np.ones_like(w) / max(1, len(w))
+    k = len(w)
+    floor_vec = np.zeros(k)
+    for idx, floor in floor_by_index.items():
+        if 0 <= idx < k:
+            floor_vec[idx] = max(0.0, float(floor))
+    total_floor = float(np.sum(floor_vec))
+    if total_floor <= EPSILON:
+        return w
+    if total_floor >= 1.0:
+        return floor_vec / (total_floor + EPSILON)
+    excess = np.maximum(w - floor_vec, 0.0)
+    excess_total = float(np.sum(excess))
+    if excess_total > EPSILON:
+        return floor_vec + excess / excess_total * (1.0 - total_floor)
+    return floor_vec + (1.0 - total_floor) / k
+
+
+def _relabel_result(
+    result: CalibrationResult,
+    method_label: str,
+    extra_metadata: dict[str, Any] | None = None,
+) -> CalibrationResult:
+    """Return a copy of ``result`` with a new method label on its weights."""
+    new_weights = []
+    for cw in result.weights:
+        metadata = dict(cw.metadata or {})
+        if extra_metadata:
+            metadata.update(extra_metadata)
+        new_weights.append(
+            CalibratedWeights(
+                weights=cw.weights,
+                sample_id=cw.sample_id,
+                method=method_label,
+                metadata=metadata,
+            )
+        )
+    return CalibrationResult(
+        weights=new_weights,
+        loss_fidelity=result.loss_fidelity,
+        loss_structure=result.loss_structure,
+        loss_redundancy=result.loss_redundancy,
+        loss_total=result.loss_total,
+        alpha=result.alpha,
+        beta=result.beta,
+        gamma=result.gamma,
+        iteration_count=result.iteration_count,
+        converged=result.converged,
+        metadata=result.metadata,
+    )
+
+
+def scfma_calibrate_windowed(
+    c: np.ndarray,
+    n: np.ndarray,
+    R: np.ndarray,
+    bottleneck_constraints: list[BottleneckConstraint] | None = None,
+    sample_id: str = "",
+    window_size: int = 8,
+    stitch: str = "mass",
+    alpha: float = 1.0,
+    beta: float = 0.5,
+    gamma: float = 0.2,
+    delta: float = 0.1,
+    max_iter: int = DEFAULT_MAX_ITER,
+) -> CalibrationResult:
+    """Windowed SC-FMA QP calibration for long reasoning traces.
+
+    Long traces induce dense redundancy blocks, and the global ``γ·wᵀRw`` term
+    then over-equalizes priorities across the whole trace (the observed QP
+    degradation on the long-trace stratum). This variant partitions the trace
+    into contiguous windows of at most ``window_size`` steps, solves the SCU QP
+    independently within each window on the *block-diagonal* redundancy
+    sub-matrix ``R[i:j, i:j]`` (reducing the effective problem size so the
+    redundancy penalty acts only within a window), and stitches the per-window
+    simplex solutions into one global simplex weight vector.
+
+    For ``k <= window_size`` it reduces exactly to :func:`scfma_calibrate`
+    (only the method label differs), preserving the standard guarantees. The
+    returned weights always satisfy ``w >= 0``, ``sum(w) == 1``, and the
+    bottleneck floors.
+    """
+    method_label = "scfma_qp_windowed"
+    k = len(c)
+
+    if k <= window_size:
+        base = scfma_calibrate(
+            c,
+            n,
+            R,
+            bottleneck_constraints=bottleneck_constraints,
+            sample_id=sample_id,
+            alpha=alpha,
+            beta=beta,
+            gamma=gamma,
+            delta=delta,
+            max_iter=max_iter,
+        )
+        return _relabel_result(
+            base,
+            method_label,
+            extra_metadata={
+                "window_size": int(window_size),
+                "n_windows": 1 if k > 0 else 0,
+                "stitch": stitch,
+            },
+        )
+
+    c = np.asarray(c, dtype=float)
+    n = np.asarray(n, dtype=float)
+    R = np.asarray(R, dtype=float)
+
+    floor_by_index: dict[int, float] = {}
+    if bottleneck_constraints:
+        for bc in bottleneck_constraints:
+            if 0 <= bc.node_index < k:
+                floor_by_index[bc.node_index] = bc.floor_weight
+
+    bounds_list = _window_bounds(k, window_size)
+    solutions: list[tuple[int, int, np.ndarray]] = []
+    total_iters = 0
+    all_converged = True
+
+    for (i, j) in bounds_list:
+        local_constraints = [
+            BottleneckConstraint(idx - i, floor_by_index[idx])
+            for idx in range(i, j)
+            if idx in floor_by_index
+        ]
+        res = scfma_calibrate(
+            c[i:j],
+            n[i:j],
+            R[i:j, i:j],
+            bottleneck_constraints=local_constraints or None,
+            sample_id=f"{sample_id}:w{i}",
+            alpha=alpha,
+            beta=beta,
+            gamma=gamma,
+            delta=delta,
+            max_iter=max_iter,
+        )
+        w_local = (
+            np.asarray(res.weights[0].weights, dtype=float)
+            if res.weights
+            else np.ones(j - i) / (j - i)
+        )
+        solutions.append((i, j, w_local))
+        total_iters += int(res.iteration_count)
+        all_converged = all_converged and bool(res.converged)
+
+    masses = _window_masses(c, solutions, stitch=stitch, n=n)
+
+    global_w = np.zeros(k, dtype=float)
+    for (i, j, w_local), mass in zip(solutions, masses):
+        global_w[i:j] = mass * w_local
+
+    global_w = np.maximum(global_w, EPSILON)
+    global_w = global_w / (np.sum(global_w) + EPSILON)
+    if floor_by_index:
+        global_w = _apply_floors(global_w, floor_by_index)
+
+    R_eval = R
+    if not _check_positive_semidefinite(R_eval):
+        R_eval = (R_eval + R_eval.T) / 2.0
+        eigvals = np.linalg.eigvalsh(R_eval)
+        if np.min(eigvals) < 0:
+            R_eval = R_eval - np.min(eigvals) * np.eye(k) + EPSILON * np.eye(k)
+
+    bottleneck_mask = np.zeros(k, dtype=float)
+    for idx in floor_by_index:
+        bottleneck_mask[idx] = 1.0
+    losses = SCULoss(alpha=alpha, beta=beta, gamma=gamma, delta=delta).evaluate(
+        global_w, c, n, R_eval, bottleneck_mask
+    )
+
+    calibrated = CalibratedWeights(
+        weights=tuple(float(v) for v in global_w),
+        sample_id=sample_id,
+        method=method_label,
+        metadata={
+            "alpha": alpha,
+            "beta": beta,
+            "gamma": gamma,
+            "delta": delta,
+            "window_size": int(window_size),
+            "n_windows": len(bounds_list),
+            "stitch": stitch,
+            "converged": all_converged,
+        },
+    )
+
+    return CalibrationResult(
+        weights=[calibrated],
+        loss_fidelity=losses["fidelity"],
+        loss_structure=losses["structure"],
+        loss_redundancy=losses["redundancy"],
+        loss_total=losses["total"],
+        alpha=alpha,
+        beta=beta,
+        gamma=gamma,
+        iteration_count=total_iters,
+        converged=all_converged,
+    )

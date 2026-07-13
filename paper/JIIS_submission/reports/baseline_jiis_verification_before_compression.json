@@ -1,0 +1,41 @@
+{
+  "workspace": "D:\\CF\\paper\\JIIS_submission",
+  "abstract_words": 183,
+  "keyword_count": 6,
+  "manuscript_pages": 35,
+  "package_files": [
+    "Supplementary_Figure_S1_governance_diagnostic_upset.png",
+    "compensation_distribution.png",
+    "fig_local_utility_necessity.png",
+    "fig_mode_comparison.png",
+    "fig_overall_framework.drawio",
+    "fig_overall_framework.pdf",
+    "fig_overall_framework.svg",
+    "fig_overall_framework.vsdx",
+    "fig_redundancy_comp.png",
+    "fig_representation_variant_behavior.png",
+    "fig_resilience.png",
+    "fig_scaling.png",
+    "fig_sensitivity.png",
+    "filtering_accuracy_comparison.png",
+    "manuscript.pdf",
+    "manuscript.tex",
+    "position_stratified.png",
+    "prm_comparison.png",
+    "redundancy_density_histogram.png",
+    "references.bib",
+    "resilience_curves.png",
+    "sn-basic.bst",
+    "sn-jnl.cls",
+    "sn-mathphys-num.bst",
+    "sn-nature.bst",
+    "structural_diagnostics_attribution_vs_necessity.png",
+    "structural_diagnostics_mode_comparison.png",
+    "supplementary.pdf",
+    "supplementary.tex",
+    "task_comparison.png"
+  ],
+  "errors": [
+    "manuscript_pages=35, expected <= 25"
+  ]
+}

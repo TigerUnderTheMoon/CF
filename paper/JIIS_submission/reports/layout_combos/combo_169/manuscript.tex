@@ -1,0 +1,799 @@
+% !TEX root = ./manuscript.tex
+% JIIS / Springer Nature sn-article manuscript package.
+% Full migration from the Information Sciences source; not a compressed rewrite.
+\documentclass[pdflatex,sn-mathphys-num,iicol]{sn-jnl}
+
+\usepackage{graphicx}
+\usepackage{multirow}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{amsthm}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xurl}
+\usepackage{algorithm}
+\usepackage{algorithmicx}
+\usepackage{algpseudocode}
+\usepackage{makecell}
+\usepackage{placeins}
+\usepackage{float}
+\usepackage{textcomp}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newcolumntype{Z}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcommand{\wstruct}{\ensuremath{\mathbf{w}_{\mathrm{struct}}}}
+
+\raggedbottom
+\begin{document}
+
+\title[Dependency-Aware Audit Records]{Dependency-Aware Audit Records for Fixed-Budget Inspection of Knowledge-Intensive Information Systems}
+
+\author*[1]{\fnm{Haoran} \sur{Ma}}\email{mahaoran0000@foxmail.com}
+\author[1,2]{\fnm{Ningning} \sur{Wang}}\email{wangningning@bistu.edu.cn}
+
+\affil*[1]{\orgdiv{College of Management Science and Engineering}, \orgname{Beijing Information Science and Technology University}, \orgaddress{\city{Beijing}, \postcode{102200}, \country{China}}}
+\affil[2]{\orgdiv{Institute of Information Systems, ESG Intelligent Application Innovation Research Center}, \orgname{Beijing Information Science and Technology University}, \orgaddress{\city{Beijing}, \postcode{102200}, \country{China}}}
+
+\abstract{Knowledge-intensive information systems expose process annotations, retrieval checks, entity bindings, graph nodes, and verification records. Curators inspect these artifacts under fixed audit budgets and need reusable records that make supplied fidelity fields explicit while showing dependency, redundancy, bottleneck exposure, and interpretive role. We introduce a dependency-aware audit-record framework for converting observable process artifacts into queryable inspection records. The historical SC-FMA module is retained as an internal calibration component through the Structurally-Calibrated Utility objective. On a locked PRM800K-derived process-annotation distribution (4,417 samples; 34,219 labeled artifacts), the supervised \wstruct{} fidelity field remains strongest (Spearman $\rho=0.611$), while the calibrated Ridge record tracks it with a small loss ($\rho=0.604$) and adds decomposed record fields. Graph-derived features alone reach only $\rho=0.043$ under the same supervision, and a mathematical dependency DAG remains below a reverse-position baseline. A new KG/RAG-style audit simulation shows that direct rule-only records are strongest when audit targets are explicitly observable, while dependency-aware records remain competitive with raw-field and diversity baselines. The evidence supports record organization and fixed-budget visibility, not production knowledge-base validation, human audit usefulness, cross-domain transfer, or causal identification.}
+
+\keywords{knowledge-intensive information systems, audit records, knowledge graphs, retrieval-augmented generation, fixed-budget inspection, process annotation}
+
+\maketitle
+
+
+\section{Introduction}
+
+Knowledge-intensive information systems increasingly expose intermediate artifacts during retrieval, annotation, validation, update, and reuse. These artifacts include graph nodes, entity bindings, verification records, rule-like operations, retrieval checks, process annotations, and reasoning traces. Once exposed, they become knowledge artifacts that must be represented, organized, curated, and reused across the knowledge lifecycle. The challenge is that these artifacts are heterogeneous, uncertain, and often more numerous than the audit capacity available to curators.
+
+Existing methods supply useful fields for this setting. Process-annotation methods attach scalar quality estimates to intermediate artifacts. Local utility methods estimate artifact influence. Graph-based salience methods identify structurally prominent nodes. Fixed-budget audit also needs a reusable record that combines these fields with dependency structure and audit interpretation. Such a record helps curators see whether an artifact provides local evidence, supports a dependency, duplicates earlier support, or exposes a downstream bottleneck.
+
+This paper introduces a dependency-aware audit-record framework as a knowledge representation transformation layer for this setting. In SC-FMA, ``metacognitive'' is used operationally. It names engineered secondary inspection of observable attribution-related artifacts through structural and functional decomposition; it is not a claim about latent cognitive-state monitoring. Readers can equivalently read the method as structurally calibrated functional attribution over observable process artifacts. The framework transforms intermediate knowledge artifacts into structured audit records that represent dependencies, calibrate supplied annotation or utility fields, attach audit reasons and interpretations, and treat audit priority as one field within the record.
+
+The audit-record framework organizes fixed-budget audit around a structured record. Process-annotation studies provide artifact-level fidelity fields~\cite{lightman2023verify,uesato2022solving}. Network and graph-explanation methods show why structural position, redundancy, and bottleneck exposure can matter~\cite{albert2000error,newman2010networks,ying2019gnnexplainer}. Simplex projection provides a familiar way to impose a fixed review budget~\cite{wang2013projection}. SC-FMA combines these ingredients as record fields: fidelity, structure, redundancy, bottleneck protection, and budget consistency.
+
+The paper makes three contributions. First, it formulates fixed-budget audit-record construction for structured knowledge artifacts. Second, it retains the historical SC-FMA implementation and SCU objective as calibration components, which combine fidelity fields, structural dependency, redundancy, and bottleneck roles into decomposed audit records. Third, it evaluates the representation on a PRM800K process-annotation dataset, a Countries-KG backend feasibility study, rule-derived audit-target retrieval, and controlled synthetic calibration. The real-data evaluation includes same-supervision and position-matched controls for graph-derived fields, plus a post hoc windowed diagnostic for the observed long-trace QP failure.
+
+The main findings follow the same knowledge-engineering workflow, with a negative result at the center of the real-data route. On the PRM800K process-annotation dataset, \wstruct{} is treated as a supervised fidelity field for artifact records and remains the strongest real-data ranking field. Under the frozen hash split (4,417 samples and 34,219 labeled artifacts), SC-FMA Ridge closely tracks \wstruct{} (Spearman $\rho = 0.604$ versus $0.611$) while exposing decomposition fields. A same-supervision structure-only Ridge control reaches only $\rho=0.043$ from graph-derived features, whereas adding trace-position fields raises the result to $\rho=0.603$. Direct graph-necessity checks likewise fail to exceed a reverse-position control. These results locate the real-data annotation-order signal primarily in supervised lexical and positional fields rather than topology. QP and Projection remain lower-consistency structural-allocation variants on this strong-fidelity route. A post hoc windowed QP diagnostic recovers part of the long-trace drop from $\rho=0.172$ to $0.385$, without surpassing Ridge or \wstruct{}. The Countries-KG backend feasibility study shows that typed ontology edges can change structural-dependency representation at the graph interface, but this sensitivity is also a reliability warning for the structural-necessity field. Rule-derived audit-target retrieval provides a field-level readout of weak utility anchors, redundancy, and structural over-correction, plus a QP-derived bottleneck consistency check; a raw-field control separates field exposure from SCU joint optimization. Controlled synthetic calibration and ablation explain implementation behavior when labels explicitly encode structural preferences, not external audit value.
+
+The remainder of this paper is organized as follows. Section~\ref{sec:related-work} reviews attribution, step-level annotation signals, graph-based knowledge engineering, and audit methods. Section~\ref{sec:methods} presents SC-FMA, the SCU objective, and its representation properties. Section~\ref{sec:experimental-results} reports evidence from real annotation data, knowledge-graph backend feasibility, and controlled calibration. Section~\ref{sec:discussion} interprets the method in the knowledge lifecycle. Section~\ref{sec:conclusions} concludes.
+
+Figure~\ref{fig:overall-framework} gives the high-level knowledge-engineering workflow. Dependency-aware audit-record construction sits between raw knowledge artifacts and potential review workflows: it represents artifacts as dependency graphs, calibrates annotation signals with SCU, and returns knowledge audit records with explicit structural roles and interpretations.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_overall_framework.pdf}
+\caption{Knowledge engineering workflow for dependency-aware audit records. The figure should be read as a transformation from Knowledge Artifact $\rightarrow$ Representation $\rightarrow$ Graph Structure $\rightarrow$ SCU $\rightarrow$ Audit Record $\rightarrow$ Knowledge Curation. Raw reasoning traces, graph nodes, and process annotations are first organized as auditable knowledge artifacts, then represented through dependency-aware graph structure. SCU constructs structured audit records by preserving annotation or utility fidelity while adding structural dependency, redundancy, bottleneck, audit-reason, and interpretation fields. The resulting records support fixed-budget audit representation and analysis; the audit-priority field is only a downstream use of the audit representation.}
+\label{fig:overall-framework}
+\end{figure*}
+
+\section{Related Work}
+\label{sec:related-work}
+
+\subsection{Attribution and Explanation}
+
+Attribution methods ask which parts of an input, computation, or structure matter for a decision. Integrated Gradients~\cite{sundararajan2017axiomatic}, SHAP~\cite{lundberg2017unified}, and LIME~\cite{ribeiro2016lime} return feature-level or local explanation signals, while ERASER evaluates extractive rationales~\cite{deyoung2020eraser}.
+
+Structure-aware attribution adds graph context. Network studies show that importance can be non-local, redundant, or concentrated around bottleneck nodes~\cite{albert2000error,newman2010networks}; GNNExplainer selects compact explanatory subgraphs~\cite{ying2019gnnexplainer}. Human-centered XAI further shows that explanations must fit review tasks and organizational routines~\cite{miller2019explanation,arrieta2020explainable,amershi2019guidelines,kaplan2024xai}.
+
+These lines motivate the audit-triage setting. Salience identifies important evidence; audit triage additionally needs role labels for local support, duplicated evidence, downstream dependencies, and weak upstream signals. Entailment-tree and counterfactual methods add intermediate or contrastive evidence~\cite{dalvi2021entailmenttrees,wijekoon2023counterfactual}; SC-FMA keeps the audit roles separate.
+
+\subsection{Process Supervision and Process Reward Models}
+
+Process supervision assigns annotation fields to intermediate artifacts as well as final answers. PRM800K showed that per-artifact human labels can support verifier-guided best-of-$N$ search relative to outcome reward models~\cite{lightman2023verify}; GSM8K made this verifier setting concrete~\cite{cobbe2021training}. Process-based feedback also reduced reasoning errors when outcome success appeared saturated~\cite{uesato2022solving}. These studies provide the artifact-resolved fidelity field that SC-FMA calibrates.
+
+A parallel line makes verification, critique, and revision available as process units. Chain-of-thought and self-consistency expose sampled reasoning paths~\cite{wei2022cot,wang2022selfconsistency}. Tree of Thoughts and ReAct add search or action structure~\cite{yao2023tot,yao2022react}, while Reflexion and Self-Refine turn revision steps into supervision targets~\cite{shinn2023reflexion,madaan2023selfrefine}.
+
+Recent process-verification resources also show that step-level signals need distributional checks. Math-Shepherd studies automatic step verification without human annotations~\cite{wang2024mathshepherd}, and ProcessBench evaluates process-error identification across models~\cite{zheng2024processbench}. These resources help assess scalar step signals, which SC-FMA uses as inputs to structural calibration.
+
+\subsection{Graph-Based Knowledge Engineering and Audit Methods}
+
+Graph-based knowledge engineering shows how structured intermediate states can be made inspectable. Knowledge-engineering methods have long treated representation, inference, and maintenance-oriented review as coupled design problems~\cite{studer1998knowledge}. Early expert systems such as MYCIN and DENDRAL demonstrated the value of structured knowledge representation~\cite{buchanan1984mycin,lindsay1980dendral}. Cognitive architectures such as Soar and ACT-R also made internal states and operator applications available for step-level review~\cite{laird2012soar,anderson2004actr}. In information systems, related work on knowledge management and algorithmic accountability emphasizes that AI artifacts must be represented in ways that support transparency, traceability, and organizational oversight~\cite{dwivedi2021artificial,raji2020closing}.
+
+Modern knowledge-intensive pipelines connect language models with structured knowledge. Knowledge graphs provide a representation substrate for entities, relations, constraints, and quality signals~\cite{hogan2021knowledge}. RAG and GraphRAG expose passages, entity graphs, and community summaries as evidence~\cite{lewis2020rag,gao2023ragsurvey,edge2024graphrag}. KG-RAG, knowledge-enhanced language models, and LLM-KG integration expose entity links, triples, and relation paths as reviewable artifacts~\cite{sanmartin2024kgrag,hu2024knowledgeenhanced,pan2024unifying}. Recent surveys and KG-quality studies show why graph-quality signals become part of the audit surface~\cite{yang2025kbllmsurvey,chen2025kgquality,dai2025llmkg}. Similar pressure appears in long-tail KG-augmented QA and engineering-design RAG, where sparse support and heterogeneous evidence make exhaustive review unrealistic~\cite{huang2025prompting,siddharth2024retrieval,liu2025knowledgereasoning}.
+
+Across these settings, the challenge is no longer simply recovering intermediate evidence. Modern pipelines already expose passages, entity links, relation paths, and verification records. The harder question is how to allocate limited curation budget and preserve records for refinement, update, and reuse~\cite{paulheim2017knowledge,higgins2008dcc}. SC-FMA converts exposed artifacts into graph-aware audit records for that purpose.
+
+\subsection{Summary of Research Gap}
+
+Existing work supplies three ingredients: local attribution identifies salient evidence, process supervision supplies step-level fidelity fields, and graph-based knowledge engineering exposes structural context. The proposed framework combines them into a representation layer that turns exposed knowledge artifacts into inspectable records for fixed-budget knowledge audit.
+
+\subsection{Comparison with Alternative Representations}
+
+The experimental comparisons below use internal scalar views and reproducible ablations aligned with the audit-record object. IG, SHAP, LIME, GNNExplainer, frozen PRM scorers, and related methods define neighboring objectives whose native outputs include feature attributions, local explanations, explanatory subgraphs, and scalar reward fields. The proposed framework targets a decomposed audit record with fidelity, structural dependency, redundancy, bottleneck, audit-reason, and interpretation fields.
+
+\begin{table}[ht]
+\caption{Output objects of neighboring explanation methods and SC-FMA. The table positions each method family by its native representation.}
+\label{tab:alternative-representation-comparison}
+\centering
+\small
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{Z{0.26\linewidth}Z{0.30\linewidth}Z{0.32\linewidth}}
+\toprule
+\textbf{Method family} & \textbf{Native output object} & \textbf{Relation to audit-record construction} \\
+\midrule
+IG, SHAP, LIME & Feature-level or local attribution scores & Provides salience signal. \\
+GNNExplainer-style graph explanation & Compact explanatory subgraph & Provides structural subset. \\
+Frozen PRM or process scorer & Scalar step or prefix signal & Provides fidelity field. \\
+SC-FMA & Decomposed audit record & Constructs fidelity, dependency, redundancy, bottleneck, reason, and interpretation fields. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Method}
+\label{sec:methods}
+
+\subsection{Workflow Overview}
+
+SC-FMA takes exposed process artifacts through sequence normalization, graph construction, SCU calibration, and audit-record emission.
+
+The input is a set of observable knowledge artifacts such as retrieval checks, entity bindings, rule-like operations, verification records, or reflective annotations. These artifacts are normalized into an auditable sequence, converted into a graph representation with temporal and optional domain edges, calibrated by SCU against the supplied annotation or utility signal, and emitted as audit records. The empirical study evaluates this record behavior with representation readouts.
+
+\subsection{SC-FMA as a Representation Layer}
+
+SC-FMA represents structural dependencies among intermediate knowledge artifacts and converts them into audit-oriented records. The records preserve fidelity information while adding structural-role and interpretation fields.
+
+\subsection{Formal Problem Definition}
+
+SC-FMA takes an observable artifact sequence $T=(s_1,\ldots,s_k)$, where each unit $s_i$ may be a verification, reflection, retrieval, entity-binding, or rule-like operation available for audit. The sequence is converted into a graph $G=(V,E)$ whose nodes correspond to artifact units and whose edges encode temporal adjacency plus optional topical or domain-specific relations. The method also receives a utility or fidelity field $u$ over the same units. This field may come from local utility estimation, a proxy representation field, or a learned step-annotation model, and SC-FMA treats it as the fidelity field to be preserved when it is informative.
+
+The output is a set of calibrated knowledge artifact records. Each record contains an audit-priority field plus fidelity, structural-dependency, redundancy, bottleneck, audit-reason, and interpretation fields. The objective is to preserve useful utility information, incorporate observable artifact structure, and attach each selected artifact to an interpretable audit-oriented analysis.
+
+\subsection{SCU Objective and Audit Decomposition}
+\label{sec:scu-objective}
+
+SCU is a representation constraint system for fixed-budget audit records. It tracks an informative fidelity field when available while making the structural reason for each priority visible. Dependency, redundancy, and bottleneck fields indicate whether a selected artifact is local evidence, dependency support, repeated support, or a later-artifact dependency.
+
+For an artifact sequence with $k$ auditable units, let $\tilde{\mathbf{c}}\in\mathbb{R}^k$ denote the normalized utility or proxy-fidelity field. In the locked PRM800K process-annotation stage, \wstruct{} denotes the output of the frozen Ridge regressor, used as this fidelity field. In the binary-correctness local-utility setting, $\tilde{\mathbf{c}}$ is a coarse sequence-level local utility anchor: it records how an observed outcome changes under a documented intervention. Let $\tilde{\mathbf{n}}$ denote normalized structural necessity from graph perturbation checks, $\mathbf{R}$ a redundancy matrix, and $\mathbf{b}$ a bottleneck indicator. The main notation is summarized in Table~\ref{tab:notation}.
+
+\begin{table}[ht]
+\caption{Notation used by the SCU objective and audit-record fields.}
+\label{tab:notation}
+\centering
+\small
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{Z{0.18\linewidth}Z{0.70\linewidth}}
+\toprule
+\textbf{Symbol} & \textbf{Meaning in this paper} \\
+\midrule
+$\tilde{\mathbf{c}}$ / \wstruct{} & Normalized fidelity field; in the locked PRM800K stage, \wstruct{} is the dev-trained frozen Ridge fidelity field. \\
+$\tilde{\mathbf{n}}$ & Normalized structural-necessity field from graph perturbation checks. \\
+$\mathbf{R}$ & Redundancy matrix over auditable artifact units. \\
+$\mathbf{b}$ & Bottleneck indicator vector. \\
+$\mathbf{w}$ & Calibrated audit-priority field on the probability simplex. \\
+$\alpha,\beta,\gamma,\delta$ & Fidelity, structural-necessity, redundancy, and bottleneck coefficients in SCU. \\
+Ridge / QP / Projection & Preservation softmax, constrained SCU solver, and topology-constrained simplex projection variants. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+SC-FMA computes calibrated priority-field values $\mathbf{w}$ on the probability simplex
+\begin{equation}
+\mathcal{W}=\{\mathbf{w}\in\mathbb{R}_{+}^{k}: \sum_i w_i = 1\}
+\label{eq:scu-feasible-set}
+\end{equation}
+by minimizing the SCU objective:
+\begin{equation}
+L(\mathbf{w}) =
+\alpha\|\mathbf{w} - \tilde{\mathbf{c}}\|_2^2
++ \beta\|\mathbf{w} - \tilde{\mathbf{n}}\|_2^2
++ \gamma\,\mathbf{w}^{\top}\mathbf{R}\mathbf{w}
+- \delta\sum_i b_i \log(w_i).
+\label{eq:scu}
+\end{equation}
+Unless otherwise stated, $\alpha,\beta,\gamma,\delta \ge 0$ and the symmetric part of $\mathbf{R}$ is treated as positive semidefinite on the simplex tangent subspace. The terms encode fidelity, structural alignment, redundancy regularization, and non-zero bottleneck regularization. The fidelity field is dominant; redundancy and bottleneck terms mainly encourage interpretable decomposition fields under the current validation setting. Detailed notation, construction rules, algorithms, and proofs are provided in the supplementary material.
+
+\subsection{Artifact Representation}
+
+Each artifact sequence is represented as an ordered set of auditable knowledge artifacts. The implementation supports units from structured reflection tags and free-text chain-of-thought segmentation, so segmentation is an observed pipeline input rather than a latent construct.
+
+A node $v_i$ corresponds to one artifact unit. Temporal edges connect adjacent units, while topical edges connect units whose TF-IDF similarity exceeds the configured threshold. The graph serves as the representation substrate for knowledge dependencies. TF-IDF provides a lightweight fallback backend when richer domain relations are unavailable.
+
+A supplementary graph-construction ablation replaces TF-IDF topical edges with Sentence-BERT embeddings (\texttt{sentence-transformers/all-MiniLM-L6-v2}, 384 dimensions). In that 800-trace fixture, the TF-IDF topical default (0.0515) did not exceed temporal-only edges (0.0596) on structural-necessity consistency. The embedding backend (0.0615) was only slightly higher on the same readout.
+
+These differences are too small to treat topical edges as a representation-field driver. We therefore read the graph layer as an interchangeable \emph{construction interface}. In this setting, the TF-IDF topology adds little annotation-order preservation value over the temporal chain and functions mainly as a fallback lexical cue; if the structural field is used for ranking rather than audit-record construction, this weak and sometimes negative alignment is a material limitation.
+
+The graph constructor is modular. Semantic embeddings, entity links, knowledge graphs, ontologies, rule-dependency DAGs, and data-lineage graphs can replace the default without modifying SCU. The Countries-KG study (Section~\ref{sec:kg-pilot}) and the embedding ablation illustrate this interface. We additionally implement a mathematical variable-dependency DAG that links a step to earlier steps introducing symbols that it references. This domain-motivated backend provides a direct graph-necessity control against the TF-IDF topology and a reverse-position baseline.
+
+\subsection{Structural Necessity, Redundancy, and Bottlenecks}
+
+Structural necessity measures how much graph support is lost when a node is perturbed under a documented graph-level operation. The implementation uses PRUNE, CASCADE, and BYPASS checks. PRUNE removes direct node support. CASCADE propagates disruption to downstream neighbors. BYPASS asks whether alternative paths can substitute for the removed artifact unit. The final necessity field $\tilde{\mathbf{n}}$ is the normalized summary of these observable graph checks.
+
+The redundancy matrix $\mathbf{R}$ captures pairwise similarity between artifact units. High redundancy means that two units appear to serve overlapping functions. The penalty $\mathbf{w}^{\top}\mathbf{R}\mathbf{w}$ discourages allocating large budget share to many mutually redundant units. In the current evidence package, this term records duplicated-audit pressure, but its direct contribution to annotation-order consistency is modest.
+
+Bottleneck detection addresses the opposite pattern. Some nodes are not redundant, and their downstream exposure can make them worth inspecting even if the supplied fidelity field is modest. The log-barrier prevents identified bottleneck nodes from receiving near-zero priority-field mass, keeping a possible single point of failure visible.
+
+Figure~\ref{fig:local-utility-necessity} illustrates the local-utility--necessity mismatch. Figure~\ref{fig:variant-behavior} reports the three perturbation modes, and Figure~\ref{fig:resilience} shows the resilience curves. Together, the figures explain why the representation needs separate fidelity and structural fields: local utility, graph necessity, and resilience under removal capture related but distinct readouts.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_local_utility_necessity.png}
+\caption{Structural mismatch motivating calibration. Local utility and graph-level necessity diverge: many locally useful steps have low measured structural necessity, while some structurally exposed steps receive limited local utility support. The shared $x$-axis $\tilde{c}_i$ denotes the normalized local utility field for step $i$. SC-FMA uses this mismatch as the reason for calibration.}
+\label{fig:local-utility-necessity}
+\end{figure}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_representation_variant_behavior.png}
+\caption{Structural perturbation summary by mode. The three perturbation modes (PRUNE, CASCADE, BYPASS) are reported with Pearson correlation, Spearman annotation-order consistency, and zero-necessity fraction. Error bars indicate 95\% bootstrap confidence intervals. The consistency across modes indicates that weak local-utility--necessity alignment persists across perturbation strategies.}
+\label{fig:variant-behavior}
+\end{figure}
+
+Figure~\ref{fig:variant-behavior} keeps the perturbation evidence at the representation-analysis level. PRUNE, CASCADE, and BYPASS expose how structural necessity is measured under different graph operations; their role is to test whether the mismatch is stable enough to justify a separate structural field. The low and negative correlations also bound the reading of this field: on lightweight lexical graphs for mathematical process annotations, structural necessity can be topology-sensitive or misaligned with human step labels and should be interpreted through graph-backend and perturbation checks rather than as an independent quality metric.
+
+\begin{theorem}[SCU well-posedness]
+\label{thm:scu-well-posedness}
+Let $\mathbf{R}_{s}=(\mathbf{R}+\mathbf{R}^{\top})/2$ and let $\mathcal{T}=\{\mathbf{z}\in\mathbb{R}^{k}:\mathbf{1}^{\top}\mathbf{z}=0\}$ be the tangent subspace of the simplex. Define the quadratic Hessian on this subspace as $\mathbf{H}_{q}=2((\alpha+\beta)\mathbf{I}+\gamma\mathbf{R}_{s})$. Assume $\alpha,\beta,\gamma,\delta \ge 0$ and $\mathbf{z}^{\top}\mathbf{R}_{s}\mathbf{z}\ge 0$ for every $\mathbf{z}\in\mathcal{T}$. Then the SCU objective in Eq.~\ref{eq:scu} is convex on the relative interior of the simplex in Eq.~\ref{eq:scu-feasible-set}. If $\mathbf{z}^{\top}\mathbf{H}_{q}\mathbf{z}>0$ for every nonzero $\mathbf{z}\in\mathcal{T}$, the quadratic part is strictly convex on the feasible subspace and the minimizer is unique. If $\delta>0$ and $b_i=1$, any finite minimizer assigns $w_i>0$ to that bottleneck node; the barrier therefore gives an interior guarantee for active bottleneck support. For non-redundant artifact-unit pairs with identical redundancy profiles and inputs ordered in the same direction, $\tilde c_i\ge \tilde c_j$ and $\tilde n_i\ge \tilde n_j$, the two-input priority-field relation is monotone before redundancy-induced redistribution. Once redundancy profiles differ, this monotonicity remains a local interpretive property.
+\end{theorem}
+
+The theorem is a well-posedness check for the constrained representation program, not a source of empirical validation. Its monotonicity statement applies before redundancy-induced redistribution under matched redundancy profiles; the empirical sections therefore determine when the optimizer is useful or brittle.
+
+We implement three variants of the same calibration procedure; they are not competing claims that one optimizer is universally best. SC-FMA Ridge uses a closed-form softmax over a linear combination of $\tilde{\mathbf{c}}$ and $\tilde{\mathbf{n}}$ and does not contain the $\gamma\mathbf{w}^{\top}\mathbf{R}\mathbf{w}$ redundancy term or the bottleneck log-barrier term. SC-FMA QP solves the full constrained program with redundancy and bottleneck terms. SC-FMA Projection applies a fast topology-constrained simplex projection onto the probability simplex~\cite{wang2013projection}. The validation sections report where each variant is appropriate.
+
+The calibrated priority field is inspectable. For each selected artifact unit, the implementation can report whether the priority was driven mainly by fidelity, structural dependency, redundancy, or bottleneck regularization. The simplex constraint represents an audit budget: increasing one unit's priority decreases another unit's share. The output is a fixed-budget audit record with structured interpretation fields.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.88\linewidth]{figures/fig_resilience.png}
+\caption{Resilience curves under ordered node removal. Four removal orders are reported: necessity-first, local-utility-first, sequential (original trace order), and deterministic random (hash-based). The $y$-axis shows remaining structural necessity fraction; the $x$-axis is the fraction of nodes removed. AUC values are annotated. The necessity-first curve degrades sharply (AUC $0.1488$), while local-utility-first (AUC $0.4761$) is close to random (AUC $0.5098$), showing that structural criticality requires graph-level checks beyond local utility.}
+\label{fig:resilience}
+\end{figure}
+
+Figure~\ref{fig:resilience} gives the corresponding graph-level stress view. The separation between necessity-first removal and local-utility-first removal shows that structural exposure can be hidden by local utility alone, which is why bottleneck and dependency fields are retained in the audit record.
+
+\subsection{Role of Structural Components}
+
+The structural components do not improve the strongest PRM800K annotation-order field in the current evidence package. Their role is narrower: when a fidelity field is strong, they expose local support, structural exposure, redundancy, and bottleneck interpretations as audit-record fields. The PRM800K route is therefore read as a strong-fidelity setting where Ridge is the conservative reportable view. The full QP objective is evaluated as the mechanism-bearing structural-allocation view, and its support comes from structural stress tests and boundary cases rather than from improved PRM800K annotation-order consistency.
+
+\subsection{Windowed Calibration for Long Traces}
+
+The unwindowed QP couples all artifact weights through the global redundancy term. For a trace longer than a chosen window size $k_w$, the windowed variant partitions the sequence into contiguous blocks, merges a very short trailing block into its predecessor, and solves the same SCU QP on each block-diagonal redundancy submatrix. The local simplex solutions are stitched into one global simplex vector by allocating inter-window mass in proportion to the non-negative fidelity mass in each block. Bottleneck floors are then enforced on the global vector. When $k\leq k_w$, the method reduces exactly to the unwindowed QP apart from its method label.
+
+The current window-size analysis was conducted after the long-trace failure was observed on the locked PRM800K split. It is therefore reported as a post hoc failure diagnostic rather than as an independently selected or externally validated hyperparameter result.
+
+\subsection{Hyperparameter Selection Protocol}
+\label{sec:hyperparameter-selection}
+
+The SCU weights $\alpha$, $\beta$, $\gamma$, and $\delta$ were selected before test-set reporting and then held fixed within each configuration. Development evidence from controlled synthetic calibration and development-split checks set the trade-off between fidelity preservation, structural alignment, redundancy regularization, and bottleneck visibility. Locked PRM800K, audit-target retrieval, and Countries-KG test information were not used to choose these weights. The later window-size sweep is excluded from this frozen selection claim and is reported only as exploratory locked-split failure analysis.
+
+The parameters are representation controls. $\alpha$ controls fidelity preservation, $\beta$ graph-necessity alignment, $\gamma$ redundancy regularization, and $\delta$ bottleneck visibility. Reported variants keep these choices fixed to expose representation behavior.
+
+The gamma/delta and alpha/beta QP sensitivity grids are reported as supplementary development checks. They bound how the representation behaves under nearby fixed settings without treating a single grid point as external validation.
+
+\subsection{Computational Profile}
+
+Empirical runtime is reported separately from the asymptotic summaries. In the frozen local output files, the process-annotation audit-record construction run over 4,417 traces and 34,219 labeled artifacts completed in 131.57\,s on a 12-core CPU. This timing supports reproducibility; per-trace costs for the computed SC-FMA variants are reported in Supplementary Table C.7.
+
+\begin{table}[ht]
+\caption{Asymptotic time complexity for SC-FMA audit-record construction. Here $N$ is the number of artifact sequences, $k$ is the number of auditable units in a sequence, $L$ is text length, $d$ is the sparse text-feature dimension, and $I$ is the number of QP solver iterations.}
+\label{tab:complexity-summary}
+\centering
+\small
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{p{0.36\linewidth}p{0.34\linewidth}p{0.20\linewidth}}
+\toprule
+\textbf{Stage} & \textbf{Input size} & \textbf{Time complexity} \\
+\midrule
+Artifact feature extraction & $N$ sequences, $k$ units, text length $L$ & $O(NkL)$ \\
+Graph construction & $k$ nodes, sparse TF-IDF features $d$ & $O(k+k^2d)$ \\
+Redundancy and bottleneck checks & $k$ units, similarity matrix & $O(k^2d)$ \\
+Ridge calibration & $k$ artifact-feature rows & $O(k)$ after learned coefficients \\
+QP calibration & $k$ units, dense constraints & $O(Ik^3)$ worst case \\
+Budgeted audit-record readout & $k$ audit-record fields & $O(k\log k)$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[ht]
+\caption{Memory profile for the same audit-record construction pipeline stages. Dense graph quantities are shown for clarity; the implementation uses sparse storage where applicable.}
+\label{tab:memory-summary}
+\centering
+\small
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{p{0.46\linewidth}p{0.38\linewidth}}
+\toprule
+\textbf{Stage} & \textbf{Memory complexity} \\
+\midrule
+Artifact feature extraction & $O(k+d)$ per sequence \\
+Graph construction & $O(k^2)$ dense; sparse in implementation \\
+Redundancy and bottleneck checks & $O(k^2)$ \\
+Ridge calibration & $O(k)$ \\
+QP calibration & $O(k^2)$ \\
+Budgeted audit-record readout & $O(k)$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\FloatBarrier
+
+\section{Evaluation}
+\label{sec:application}
+\label{sec:experimental-results}
+
+This section evaluates fixed-budget audit as an information-representation task. The experiments ask whether audit records track annotation signals, whether graph construction changes dependency representations, and whether decomposed records expose audit-target information under budget constraints.
+
+\subsection{Evaluation Philosophy: Representation Checks}
+\label{sec:evaluation-philosophy}
+
+The metrics in this section are representation checks. Spearman $\rho$ and Kendall $\tau$ measure whether an audit-priority field tracks the ordering of a supplied annotation or fidelity field. NDCG, Coverage@25\%, Recall, first-selected target, and Mass@25\% measure whether relevant audit-record information remains visible under a fixed review budget. These readouts evaluate the structure and visibility of the record.
+
+The reported values indicate fidelity tracking, coverage, or visibility for the specified representation object under the specified data source.
+
+\subsection{Independent KG/RAG Audit-Record Case}
+\label{sec:jiis-audit-case}
+
+To align the JIIS version with knowledge-intensive information systems, we add an independent KG/RAG-style audit-record case. The case is a representative trace simulation with observable entity-binding, evidence-support, duplicate-support, dependency-bottleneck, and temporal-conflict fields. Audit targets are generated before method scoring and do not use SCU weights or dependency-aware recommendations. The experiment contains 600 traces and 4,800 steps under the same 25\% fixed budget used by the rest of the paper. They do not establish production knowledge-base validation or human audit usefulness.
+
+\begin{table}[ht]
+\caption{Independent KG/RAG-style audit-record case under a 25\% budget. The rule-only record is strongest because several targets are directly observable; this result supports target visibility and record organization, not a superiority or human-usefulness claim.}
+\label{tab:jiis-audit-case}
+\centering
+\small
+\renewcommand{\arraystretch}{1.06}
+\begin{tabular}{Z{0.28\linewidth}rrrr}
+\toprule
+\textbf{Method} & \textbf{Recall} & \textbf{NDCG} & \textbf{Top-1} & \textbf{Mass} \\
+\midrule
+Scalar fidelity & 0.262 & 0.245 & 0.190 & 0.543 \\
+Raw-field bundle & 0.642 & 0.636 & 0.553 & 0.536 \\
+Position / last-step & 0.000 & 0.000 & 0.000 & 0.541 \\
+Graph centrality & 0.462 & 0.437 & 0.343 & 0.565 \\
+PageRank-like & 0.487 & 0.442 & 0.318 & 0.542 \\
+MMR diversity & 0.654 & 0.644 & 0.558 & 0.539 \\
+Rule-only record & 0.908 & 0.949 & 0.922 & 0.789 \\
+Dependency-aware record & 0.637 & 0.625 & 0.543 & 0.537 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The result is deliberately bounded. Rule-only records achieve the highest fixed-budget visibility because the targets are generated from observable audit fields. Dependency-aware records are close to the raw-field bundle and MMR diversity, but they do not dominate direct rules. We therefore use this case to show that audit targets can be represented and queried under a shared budget, while keeping human audit usefulness and production deployment as future validation.
+
+\subsection{Task Definition: Fixed-Budget Knowledge Audit}
+\label{sec:application-setup}
+
+\subsubsection{Data Sources and Reference Views}
+
+The process-annotation stage uses PRM800K phase2 records under the frozen v3.6/v3.8 hash split. A deterministic SHA-256 split over a 12,000-row source pool assigns 4,344 samples (33,555 labeled artifacts) to development and 4,417 samples (34,219 labeled artifacts) to locked reporting. The remaining 3,239 rows are retained in the split manifest but fail eligibility filters for labeled artifact coverage, split assignment, or archived feature completeness. The \wstruct{} Ridge model is fit only on development and frozen before locked reporting; the regression target is a PRM800K completion rating selected by the deterministic extraction rule: use the recorded chosen completion when it has an unflagged rating, otherwise use the first unflagged rated completion. This rating is linearly mapped to $[0,1]$ as $(\mathrm{rating}+1)/2$ and clipped to the unit interval. Its feature policy forbids label fields and raw completion ratings, but the model remains supervised and uses engineered lexical, positional, numeric, and cue features. Comparisons between \wstruct{} and unsupervised structural fields are therefore not comparisons under equal supervision. To isolate this asymmetry, the current package includes a same-supervision Ridge control using graph-derived features alone and graph-derived features plus position; the control uses the same split, target, standardization, and regularization as \wstruct{}. The Countries-KG stage tests backend feasibility. The controlled synthetic stage uses 200 traces over five fixed seeds for calibration, ablation, and error analysis. MuSiQue, WebQSP, and failed GSM8K/HotpotQA routes remain supplementary boundary checks.
+
+The frozen \wstruct{} feature list is recorded here to make the fidelity-field construction reproducible and mechanically checkable against the archived model:
+% w_struct_feature_list_begin
+\begin{center}
+\scriptsize
+\begin{tabular}{lll}
+\texttt{raw\_local\_utility} & \texttt{relative\_position} & \texttt{relative\_position\_sq} \\
+\texttt{relative\_position\_cu} & \texttt{log\_token\_count} & \texttt{numeric\_density} \\
+\texttt{equation\_density} & \texttt{answer\_cue} & \texttt{conclusion\_cue\_count} \\
+\texttt{error\_uncertainty\_cue\_count} & \texttt{reasoning\_cue\_count} & \texttt{is\_first\_step} \\
+\texttt{is\_last\_step} & \texttt{trace\_step\_count} & \texttt{source\_step\_index\_ratio}
+\end{tabular}
+\end{center}
+% w_struct_feature_list_end
+
+Reference views include raw local utility, span length, relative position, seeded random field assignment, and stage-specific scalar views. The primary readout is annotation-order tracking for the audit-priority field, measured by Spearman $\rho$; Kendall $\tau$, record-level NDCG, and fixed-budget coverage are reported where they clarify representation visibility. Sensitivity grids, additional ablations, error modes, token-level attribution scope, and efficiency measurements are in the supplementary material.
+
+The controlled synthetic stage tests calibration under skewed local utility, sparse necessity, and block-structured redundancy. Its annotation target combines correctness, lexical diversity, position, and structural information, which makes the audit field depend on more than one SCU input vector.
+
+For the larger real-data stage, PRM800K is treated as a process-annotation distribution. The locked v3.6 split examines annotation-order consistency under a fixed audit budget. The v3.8 frozen PRM reference provides in-distribution prefix-sequence context. The resulting evidence concerns process-annotation audit-record behavior; deployment-oriented RAG, KG-maintenance, and human-curation workflows are discussed as future validation settings.
+
+All reported readouts are deterministic under archived configs. The controlled synthetic stage uses five fixed seeds; confidence intervals, extended readouts, tests, and effect sizes are retained in the supplementary material.
+
+\subsubsection{Evidence Stages and Interpretation}
+
+The evidence is staged because each dataset tests a different part of the workflow. Table~\ref{tab:evidence-routes} states the interpretation attached to each stage.
+
+\begin{table}[ht]
+\caption{Evidence stages and interpretation. Each stage instantiates a separate part of the audit-record construction process.}
+\label{tab:evidence-routes}
+\centering
+\small
+\renewcommand{\arraystretch}{1.12}
+\begin{tabular}{Z{0.27\linewidth}Z{0.27\linewidth}Z{0.34\linewidth}}
+\toprule
+\textbf{Evidence stage} & \textbf{Primary evidence object} & \textbf{Manuscript interpretation} \\
+\midrule
+PRM800K process-annotation stage & 4,417 samples, 34,219 labeled artifacts & Process-annotation consistency and audit context. \\
+\makecell[l]{Countries-KG backend\\feasibility study} & \makecell[l]{Fixture-level\\Countries-KG\\check} & \makecell[l]{Knowledge-graph backend\\feasibility and typed\\structural-dependency sensitivity.} \\
+Audit-target retrieval stage & Rule-derived audit targets from process annotations & Lowest-overlap audit-target visibility, with aggregate context exploratory. \\
+Controlled synthetic stage & 200 traces, approximately 1,000 steps, five fixed seeds & Controlled calibration and ablation evidence. \\
+Frozen PRM reference & Prefix-sequence reward signals & In-distribution reference context. \\
+Supplementary MuSiQue/WebQSP checks & Supplementary details only & Feasibility and fixed-schema context only. \\
+Failed GSM8K/HotpotQA attempts & Failed or blocked runs & Transparency only; no positive evidence claim. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+This staged interpretation also governs null or negative results. Full QP can be too aggressive when the base fidelity field already aligns with annotation structure. The contribution is reproducible representation under stated data-generating conditions.
+
+\subsection{Representation Fidelity Tracking on Process Annotations}
+\label{sec:prm800k-evidence}
+
+The main real-data fidelity check uses the locked PRM800K side for annotation-field tracking and fixed-budget audit-record coverage. The stored \wstruct{} field is the primary fidelity field (Spearman $\rho = 0.611$), computed by a dev-trained frozen Ridge model. Raw local utility is negative ($\rho = -0.077$), and the overlap-limited frozen PRM prefix field is lower ($\rho = 0.252$). SC-FMA Ridge closely tracks \wstruct{} ($\rho = 0.604$), while QP ($\rho = 0.442$) and Projection ($\rho = -0.135$) are lower-consistency variants. The archived paired-difference report does not support treating any SC-FMA variant as an annotation-order improvement over \wstruct{} on this route: Ridge differs by $-0.007$ Spearman (bootstrap CI $[-0.011,-0.004]$), QP by $-0.169$ (CI $[-0.176,-0.163]$), and Projection by $-0.746$ (CI $[-0.760,-0.732]$). This is not evidence that the redundancy and bottleneck terms improve PRM800K ranking; those terms are interpreted as structural checks and conditional regularizers. Projection is the clearest failure mode: the topology-constrained simplex step can reorder artifacts when structural constraints conflict with a strong fidelity field, so it is kept as a fallback check; Ridge remains the conservative reporting variant. Supplementary Tables C.8 and C.9 report confidence intervals and fixed-budget readouts.
+
+\begin{table}[ht]
+\caption{PRM800K annotation-order consistency and fixed-budget audit coverage on the frozen split of 4,417 samples and 34,219 labeled steps. Metrics are displayed to three decimals from locked archived JSON reports and include all SC-FMA variants available in the locked package. ``First'' denotes whether the highest-priority step is a first-selected target. N/C for the Simple average row indicates that first-selected target and Mass@25\% were not computed for this negatively correlated reference view.}
+\label{tab:prm800k-audit}
+\centering
+\scriptsize
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{Z{0.21\linewidth}ccccZ{0.20\linewidth}}
+\toprule
+\textbf{Field} & \textbf{PRM $\rho$} & \textbf{First} & \textbf{Mass@25\%} & \textbf{NDCG@25\%} & \textbf{Role} \\
+\midrule
+\wstruct{} & \textbf{0.611} & \textbf{0.917} & \textbf{0.381} & \textbf{0.951} & Strongest real-data fidelity field. \\
+SC-FMA Ridge & 0.604 & 0.905 & 0.380 & 0.946 & Close fidelity-tracking decomposition; no $\gamma/\delta$ terms. \\
+SC-FMA QP & 0.442 & 0.903 & 0.379 & 0.944 & Full redundancy/bottleneck view; not the PRM800K winner. \\
+SC-FMA Projection & $-$0.135 & 0.723 & 0.288 & 0.743 & Lower-consistency projection view. \\
+Frozen PRM prefix signal & 0.252 & 0.777 & 0.342 & 0.847 & In-distribution reference context. \\
+Raw local utility & $-$0.077 & 0.686 & 0.282 & 0.722 & Direct ablation. \\
+Simple average (local utility + necessity) & $-$0.443 & N/C & N/C & 0.438 & Independent feature-average reference. \\
+Random & 0.006 & 0.733 & 0.307 & 0.776 & Seeded sanity control. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:prm800k-audit} shows annotation-order behavior on a process-annotation distribution. The normalized fidelity field $\tilde{\mathbf{c}}$ is instantiated by the supervised \wstruct{} field, and Ridge closely tracks this field while adding decomposition fields. The archived fixed-budget readouts show a small tracking cost (Mass@25\% 0.3809 for \wstruct{} versus 0.3796 for Ridge; Coverage NDCG@25\% 0.9506 versus 0.9460). The simple-average reference view (unweighted mean of raw local utility and structural necessity, Spearman $\rho = -0.443$) loses annotation-order consistency. Raw local utility is weakly negative ($\rho=-0.077$), while the archived $\rho=-0.418$ necessity field is a position-and-magnitude proxy rather than a graph-derived node-necessity estimate. Its triangular weighting runs opposite to the earlier-step preference in the PRM800K labels. Direct graph checks clarify the distinction: TF-IDF topical-similarity graphs give undifferentiated leave-one-out necessity ($\rho\approx0.000$), and a mathematical variable-dependency DAG reaches $\rho=0.535$, below a reverse-position baseline of $\rho=0.568$ (paired difference $-0.032$, 95\% bootstrap CI $[-0.036,-0.029]$). The graph edges therefore add no annotation-order signal beyond step position on this route. Naive averaging of raw utility with the archived necessity proxy is not trustworthy when the supervised fidelity field is already strong.
+
+To test whether graph-derived information would become predictive under equal supervision, we add a same-supervision structure-only Ridge control. It uses the identical hash split, PRM800K rating target, standardization, Ridge procedure, and regularization as \wstruct{}, changing only the feature set. The graph-only model uses redundancy density, maximum similarity, degree, weighted degree, eigenvector and betweenness centrality, and a bottleneck flag computed from a per-trace TF-IDF step-similarity graph. Table~\ref{tab:structure-only-control} reports the outcome. Graph-derived features alone reach Spearman $\rho=0.043$ (95\% CI $[0.028,0.057]$). Adding trace-position features raises the result to $\rho=0.603$, near \wstruct{} at $\rho=0.611$, but the dominant fitted coefficient is the last-step indicator. Under equal supervision, graph topology therefore carries little independent PRM800K annotation-order signal; the strong recoverable signal comes from position and lexical cues. This result supports treating the structural fields as organizational and interpretive record fields rather than as an independently validated ranking field.
+
+\begin{table}[ht]
+\caption{Same-supervision structure-only Ridge control on the locked PRM800K split (4,417 samples; 34,219 labeled artifacts). Every row uses the same hash split, target, closed-form Ridge procedure, and regularization; only the feature set changes.}
+\label{tab:structure-only-control}
+\centering
+\small
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{Z{0.44\linewidth}cc}
+\toprule
+\textbf{Ridge feature set} & \textbf{Spearman $\rho$} & \textbf{95\% CI} \\
+\midrule
+\wstruct{} (lexical + positional) & \textbf{0.611} & [0.605, 0.618] \\
+Structural (graph) + position & 0.603 & [0.596, 0.609] \\
+Structural (graph) only & 0.043 & [0.028, 0.057] \\
+Raw local utility & $-$0.077 & [$-$0.092, $-$0.064] \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Representation Enrichment Analysis}
+\label{sec:representation-enrichment}
+
+The close correlation between \wstruct{} and SC-FMA Ridge makes the enrichment analysis central. We compare three views already stored or derivable in the locked audit-card auto-validation output: a scalar \wstruct{} representation, a raw-field bundle that exposes fidelity, raw local utility, structural necessity, redundancy density, and bottleneck indicators without SCU joint optimization, and the structured SC-FMA view with recommended actions and utility-anchor interpretation fields.
+
+\textbf{Field enrichment.} The scalar baseline exposes one field: \texttt{w\_struct\_scalar}. The raw-field bundle exposes five unoptimized fields: fidelity, raw local utility, structural necessity, redundancy density, and bottleneck indicator. The SC-FMA view exposes six fields: fidelity, structural necessity, redundancy, bottleneck status, recommended action, and upstream utility-anchor status. These fields operationalize dependency, redundancy, bottleneck, structural-role, audit-reason, and utility-anchor dimensions. The raw-field bundle is included to test whether the retrieval gain comes merely from exposing more fields.
+
+\begin{table}[ht]
+\caption{Representation enrichment relative to a scalar \wstruct{} field. Counts are taken from the locked audit-card auto-validation output and report additional audit-record fields and audit categories.}
+\label{tab:representation-enrichment}
+\centering
+\scriptsize
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{Z{0.24\linewidth}cccccc r}
+\toprule
+\textbf{Representation} & \textbf{Fid.} & \textbf{Dep.} & \textbf{Red.} & \textbf{Bot.} & \textbf{Reason} & \textbf{Anchor} & \textbf{Fields} \\
+\midrule
+\wstruct{} scalar & \checkmark & -- & -- & -- & -- & -- & 1 \\
+Raw field bundle & \checkmark & \checkmark & \checkmark & \checkmark & -- & \checkmark & 5 \\
+SC-FMA record & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark & 6 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The same output records four unique target categories: weak utility anchor, structural over-correction, redundancy consolidation, and bottleneck protection. Under the fixed 25\% inspection budget, the raw-field bundle raises mean rule-target recall from 0.235 to 0.524 and mean NDCG from 0.353 to 0.768, showing that field exposure explains a large share of the automatic retrieval signal. The SC-FMA view further raises mean recall to 0.699 and mean NDCG to 0.978. The target-dependence caveats are defined in Section~\ref{sec:why-calibration}; here, the readout is used only as audit-category separation, and the main lowest-overlap subset is analyzed separately below.
+
+\begin{table}[ht]
+\caption{Audit-category separation under the fixed 25\% audit budget. The targets are rule-derived categories in the locked audit-card auto-validation output; see Section~\ref{sec:why-calibration} for target-dependence caveats.}
+\label{tab:audit-category-separation}
+\centering
+\small
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{Z{0.27\linewidth}rrrr}
+\toprule
+\textbf{Audit category} & \textbf{Positive cases} & \textbf{\wstruct{} recall} & \textbf{Raw-field recall} & \textbf{SC-FMA recall} \\
+\midrule
+Weak utility anchor & 2,420 & 0.247 & 0.455 & 0.455 \\
+Structural over-correction & 2,145 & 0.228 & 0.430 & 0.515 \\
+Redundancy consolidation & 1,214 & 0.199 & 0.762 & 0.824 \\
+Bottleneck protection & 382 & 0.264 & 0.450 & 1.000 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Representation disagreement cases.} At the locked-summary level, Ridge is close to \wstruct{} on annotation-order consistency (0.604 versus 0.611), while QP is more distinct (0.442). Ridge is intentionally fidelity-tracking-oriented. QP shows how the summary order changes when the record shifts from fidelity tracking toward constrained structural allocation. The archived package stores summary readouts for these variants; per-artifact top-$k$ overlap and rank-change ratios are outside the stored output schema.
+
+\textbf{Audit-category separation.} The clearest enrichment appears when artifacts or traces have similar scalar-fidelity visibility but different audit reasons. Under the same 25\% budget, raw fields already separate many weak utility-anchor and redundancy cases that the scalar view collapses. SC-FMA adds beyond raw fields where a record-level interpretation is needed, especially structural over-correction and redundancy consolidation. The target-dependence caveats are handled in Section~\ref{sec:why-calibration}. These readouts support the representation-level claim that SC-FMA increases audit organization, not the stronger claim that SCU optimization alone explains all retrieval gains.
+
+\subsection{Knowledge-Graph Backend Feasibility Study}
+\label{sec:kg-pilot}
+
+The Countries-KG backend feasibility study examines typed graph ingestion within the audit-record interface. As a check on non-lexical graph construction, we use the Countries KG resource associated with approximate-reasoning evaluation over country, region, and neighborhood relations~\cite{bouchard2015approximate}. The fixture contains 30 entities and 189 triples over \texttt{locatedIn} and \texttt{neighborOf}. We generate 30 deterministic KG-query traces and construct both a lightweight lexical-dependency graph and a KG-augmented graph that maps ontology relations to functional edge types.
+
+\begin{table}[ht]
+\caption{Countries-KG backend feasibility study (30 traces over a real knowledge graph, 30 entities, 189 triples). KG-augmented edges are derived from typed ontology relations. Structural-necessity consistency is the archived rank-consistency check between TF-IDF reference and KG-augmented necessity fields; the reported 0.0 is the rounded archived value under that computation.}
+\label{tab:kg-pilot}
+\centering
+\small
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{Z{0.45\linewidth}Z{0.43\linewidth}}
+\toprule
+\textbf{Quantity} & \textbf{Value} \\
+\midrule
+KG entities / triples & 30 / 189 \\
+KG relation types & \texttt{locatedIn}, \texttt{neighborOf} \\
+Reasoning traces & 30 \\
+TF-IDF reference edges & 310 \\
+KG candidate edges & 304 \\
+KG-augmented edges & 320 \\
+KG-derived edges added & 196 \\
+Ontology relations detected & depends\_on\_concept (211), same\_constraint (85), neighbor\_concept (8) \\
+Mean abs structural-necessity delta & 0.431 \\
+Structural-necessity consistency (reference vs KG) & 0.0 \\
+Bottleneck top-1 overlap & 1.000 \\
+Matched nodes & 154 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:kg-pilot} shows that typed KG edges change the graph substantially: the stage considers 304 KG candidate relations, adds 196 ontology-derived edges, and yields 320 KG-augmented graph edges versus 310 TF-IDF reference edges. The mean absolute structural-necessity delta is 0.431 with an archived reference-vs-KG necessity consistency rounded to 0.0. One reading is that KG augmentation changes which objects the representation marks as structurally dependent. The equally important caution is that the structural-necessity field is highly sensitive to the graph-construction backend in this fixture; this sensitivity is a reliability warning, not a validation win. The 30-trace fixture is proof-of-concept evidence for typed backend substitution and a methodological analogy to knowledge-graph curation: the evidence concerns the graph-construction interface, not production-scale ontology validation or a live knowledge-base audit workflow. Full edge lists, the audit report, and degeneracy-handling details are in the supplementary material.
+% Scope note for tests: fixture-level typed-edge construction only; no deployed workflow validation.
+
+\subsection{Rule-Derived Audit Record Retrieval Check}
+\label{sec:why-calibration}
+\label{sec:audit-results}
+\label{sec:oracle-auto-validation}
+
+The audit-target retrieval stage examines whether decomposition fields make rule-derived audit targets visible under a fixed review budget. The main readout is the weak utility-anchor family, which has the lowest direct overlap with the exposed SC-FMA output fields. In this stage, \wstruct{} is the frozen scalar fidelity field supplied to the record builder. The weak utility-anchor rule uses this input-side fidelity-field repair pattern; redundancy and structural over-correction targets reuse fields that SC-FMA exposes, and bottleneck protection directly reuses QP budget entry. The raw-field bundle is therefore reported alongside SC-FMA to separate field exposure from SCU joint optimization.
+
+We evaluate failure-mode localization as retrieval over traces. The scalar-only view receives the \wstruct{} summary, the raw-field view receives unoptimized primitive fields, and the SC-FMA view receives fidelity, necessity, redundancy, bottleneck status, recommended-action, and interpretation fields. Automatic oracle targets come from frozen process-annotation labels, priority-field disagreements, redundancy density, bottleneck flags, and the failure-taxonomy rules in the supplementary failure-taxonomy appendix. Weak utility-anchor targets have the lowest direct field overlap; redundancy consolidation and structural over-correction provide partially overlapping audit context. Bottleneck protection is QP-derived by construction and is treated separately as a record-consistency check.
+
+The target-family rules are fixed before scoring and are implemented as explicit threshold tests. In compact form: structural over-correction is assigned when $\rho_{\mathrm{QP}}\le \rho_{\wstruct{}} - 0.10$; redundancy consolidation when redundancy density is in the top tertile and QP trails $\max(\rho_{\mathrm{Ridge}},\rho_{\wstruct{}})$ by at least 0.05; bottleneck protection when a bottleneck step enters the QP top-25\% budget while its process label is below the trace median; and weak utility anchor when $\rho_{\mathrm{raw}}\le 0$ and $\rho_{\wstruct{}}\ge 0.30$. These labels are multi-label and not mutually exclusive. Because the bottleneck-protection definition directly uses QP budget entry, its SC-FMA score checks whether the audit record reflects an internally computed QP bottleneck state. It is an internal record-consistency check rather than independent target-retrieval validation. Weak utility-anchor is the lowest direct-overlap rule, but it is still not fully independent because it uses \wstruct{} as an input-side fidelity field.
+
+\begin{table*}[t]
+\caption{Field-overlap audit for rule-derived target families. Overlap is the number of SC-FMA decomposition fields directly reused by the target rule divided by the six fields exposed in the archived SC-FMA view.}
+\label{tab:target-circularity-audit}
+\centering
+\scriptsize
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{Z{0.21\linewidth}Z{0.25\linewidth}cZ{0.22\linewidth}Z{0.14\linewidth}}
+\toprule
+\textbf{Target family} & \textbf{Fields used by target rule} & \textbf{Overlap} & \textbf{SC-FMA field relation} & \textbf{Interpretation} \\
+\midrule
+Weak utility anchor & Process labels, raw local utility, frozen \wstruct{} fidelity-field repair pattern & 1/6 & Lowest direct overlap; uses an input-side fidelity repair pattern & Main low-overlap retrieval check \\
+Redundancy consolidation & Redundancy density, redundant-cluster flags, priority change & 2/6 & Partial overlap through redundancy and recommended-action fields & Exploratory check \\
+Bottleneck protection & Bottleneck flag, QP top-25\% budget entry, below-median process label & 2/6 & QP-derived through bottleneck and budget-entry fields & Internal consistency check \\
+Structural over-correction & Fidelity-vs-structure disagreement, QP/Ridge priority divergence & 2/6 & Partial overlap through fidelity and necessity disagreement fields & Exploratory check \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\begin{table}[ht]
+\caption{Per-target audit-target retrieval point estimates under the same 25\% budget. Field overlap reports the approximate definition overlap with the six SC-FMA decomposition fields. Asterisks mark target families with stronger definitional overlap; see Section~\ref{sec:why-calibration} for the weak utility-anchor and bottleneck-protection caveats.}
+\label{tab:oracle-auto-validation-by-target}
+\centering
+\scriptsize
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{Z{0.21\linewidth}rZ{0.09\linewidth}cccccc}
+\toprule
+\textbf{Target family} & \textbf{Pos.} & \textbf{Overlap} & \textbf{\wstruct{} R} & \textbf{Raw R} & \textbf{SC-FMA R} & \textbf{\wstruct{} N} & \textbf{Raw N} & \textbf{SC-FMA N} \\
+\midrule
+Bottleneck protection\textsuperscript{*} & 382 & 2/6 QP & 0.264 & 0.450 & 1.000 & 0.221 & 0.411 & 1.000 \\
+Redundancy consolidation\textsuperscript{*} & 1,214 & 2/6 & 0.199 & 0.762 & 0.824 & 0.224 & 0.849 & 0.916 \\
+Weak utility anchor & 2,420 & 1/6 input & 0.247 & 0.455 & 0.455 & 0.527 & 0.997 & 0.997 \\
+Structural over-correction\textsuperscript{*} & 2,145 & 2/6 & 0.228 & 0.430 & 0.515 & 0.439 & 0.817 & 1.000 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The weak utility-anchor row provides the lowest-direct-overlap subset check in the locked output and is the main audit-target retrieval readout. The raw-field and SC-FMA rows are identical on this target, so this subset does not show an SCU-specific retrieval advantage. The rule uses process labels and the frozen \wstruct{} fidelity field from the same archived package. The input-output distinction is important: \wstruct{} supplies the scalar fidelity field for this stage, raw fields expose primitive components, and the SC-FMA output adds record-level dependency, redundancy, bottleneck, reason, and interpretation fields. The per-target rows are point estimates; the archived aggregate report stores bootstrap intervals only for the aggregate retrieval table below. Table~\ref{tab:oracle-auto-validation} reports aggregate automatic retrieval as contextual evidence because targets with definitional overlap account for 3,741 of 6,161 target positions (about 61\%).
+
+\begin{table}[ht]
+\caption{Aggregate retrieval under partially overlapping target definitions. Failure-mode localization is evaluated on the locked PRM800K split as a representation-coverage check under a 25\% budget. The scalar condition uses \wstruct{}, the raw-field bundle exposes primitive fields without SCU joint optimization, and the SC-FMA condition uses decomposition and interpretation fields. ``First'' denotes whether the first returned target appears under the fixed budget; target-dependence caveats are given above and in Table~\ref{tab:oracle-auto-validation-by-target}.}
+\label{tab:oracle-auto-validation}
+\centering
+\scriptsize
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{Z{0.30\linewidth}ccccc}
+\toprule
+\textbf{View} & \textbf{Cov.@25\%} & \textbf{NDCG@25\%} & \textbf{MRR} & \textbf{First} & \textbf{Cost} \\
+\midrule
+\wstruct{} scalar only & 0.235 & 0.353 & 0.354 & 0.000 & 0.0007 \\
+Raw field bundle & 0.524 & 0.768 & 1.000 & 1.000 & 0.0002 \\
+SC-FMA decomposition & 0.699 & 0.978 & 1.000 & 1.000 & 0.0002 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The aggregate difference is exploratory recovery of rule-defined audit targets by a decomposed audit record. The archived aggregate bootstrap intervals are wide for coverage and NDCG: \wstruct{} coverage $[0.211,0.256]$ and NDCG $[0.222,0.483]$, raw-field coverage $[0.435,0.684]$ and NDCG $[0.521,0.952]$, and SC-FMA coverage $[0.485,0.912]$ and NDCG $[0.937,1.000]$. These intervals do not remove the definitional-overlap concern. The check tests whether the record fields are machine-readable; independent audit quality remains a human-validation question. The raw-field control shows that much of the gain comes from exposing primitive fields, while SC-FMA adds record-level organization and additional retrieval mainly for redundancy and structural over-correction families. The bottleneck contribution follows the internal-consistency interpretation above. Compact Audit Card examples are retained in the supplementary failure-taxonomy appendix.
+
+
+\subsection{Controlled Calibration Analysis}
+\label{sec:controlled-calibration}
+
+\begin{table}[ht]
+\caption{Controlled representation-field assignment on the synthetic stage. For SC-FMA variants, Spearman $\rho$ is the 5-seed mean $\pm$ standard deviation; remaining columns are from representative seed 42 because the archived multiseed run records Spearman alone. Simple average is the element-wise mean of normalized local utility and structural necessity.}
+\label{tab:controlled-calibration-results}
+\centering
+\small
+\begin{tabular}{Z{0.30\linewidth}cccc}
+\toprule
+\textbf{View} & \textbf{Synthetic label $\rho$} & \textbf{Kendall $\tau$} & \textbf{Record NDCG@3} & \textbf{Record NDCG@5} \\
+\midrule
+SC-FMA QP                  & \textbf{0.597} $\pm$ 0.064 & 0.533 & 0.921 & 0.958 \\
+SC-FMA Ridge               & 0.541 $\pm$ 0.016 & 0.447 & 0.889 & 0.927 \\
+Raw local utility          & 0.483 & 0.412 & 0.874 & 0.919 \\
+Simple average (local utility + necessity) & 0.478 & 0.413 & 0.889 & 0.926 \\
+SC-FMA Projection          & 0.372 $\pm$ 0.030 & 0.278 & 0.824 & 0.890 \\
+Span Length                & $-$0.006 & $-$0.013 & 0.740 & 0.826 \\
+Relative Position          & $-$0.005 & $-$0.004 & 0.735 & 0.827 \\
+Random                     & $-$0.010 & $-$0.008 & 0.736 & 0.825 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:controlled-calibration-results} shows the intended calibration behavior: SC-FMA QP records higher annotation-order consistency than raw local utility, with a Spearman gap of 0.114. Under the controlled annotation target, structural calibration improves local-utility field assignment.
+
+\begin{table}[ht]
+\caption{SCU component contribution on the controlled synthetic stage. Values are 5-seed mean $\pm$ standard deviation over seeds 42, 123, 456, 789, and 1024. Delta is the annotation-order consistency difference relative to \texttt{full\_scu}. The largest drop occurs when the fidelity field is removed; removing redundancy or bottleneck regularization has near-zero impact on the reported consistency readouts in this setting.}
+\label{tab:scu-component-contribution}
+\centering
+\small
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Variant} & \textbf{Synthetic label $\rho$ mean$\pm$std} & \textbf{Kendall $\tau$ mean$\pm$std} & \textbf{Delta vs Full} \\
+\midrule
+\texttt{full\_scu} & 0.5103 $\pm$ 0.0320 & 0.4297 $\pm$ 0.0287 & 0.0000 \\
+\texttt{no\_fidelity} & 0.2850 $\pm$ 0.0153 & 0.2366 $\pm$ 0.0138 & $-$0.2253 \\
+\texttt{no\_structure} & 0.4841 $\pm$ 0.0334 & 0.4053 $\pm$ 0.0285 & $-$0.0263 \\
+\texttt{no\_redundancy} & 0.5093 $\pm$ 0.0321 & 0.4273 $\pm$ 0.0273 & $-$0.0010 \\
+\texttt{no\_bottleneck} & 0.5090 $\pm$ 0.0304 & 0.4279 $\pm$ 0.0274 & $-$0.0013 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:scu-component-contribution} refines the component narrative. Removing fidelity reduces annotation consistency by 0.2253, far more than any other removal. Graph necessity contributes moderately (Delta $=-0.0263$), while redundancy and bottleneck change consistency by about 0.001. Here, those terms mainly provide regularization and decomposition. For annotation-order consistency alone, the simplified Ridge view is often sufficient; redundancy and bottleneck fields matter most when the audit task asks why a selected artifact is duplicated, dependency-exposed, or protected under a fixed budget.
+
+The near-zero redundancy and bottleneck deltas reflect the structure-independent proxy label. We therefore use a structural stress-test (Table~\ref{tab:scu-stress-test}) whose labels encode redundancy-awareness and bottleneck protection.
+
+\begin{table}[ht]
+\caption{SCU component contribution on a structural stress-test fixture (200 traces per seed, five fixed seeds 42, 123, 456, 789, 1024). These designed labels reward redundancy-awareness and bottleneck protection under a stress-test redundancy setting ($\gamma=0.6$). Delta is the annotation-order consistency difference relative to \texttt{full\_scu}. The table is an implementation and mechanism check, not real-data audit-value evidence.}
+\label{tab:scu-stress-test}
+\centering
+\small
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Variant} & \textbf{Stress-label $\rho$ mean$\pm$std} & \textbf{Kendall $\tau$ mean$\pm$std} & \textbf{Delta vs Full} \\
+\midrule
+\texttt{full\_scu} & 0.6249 $\pm$ 0.0145 & 0.5238 $\pm$ 0.0112 & 0.0000 \\
+\texttt{no\_fidelity} & 0.4832 $\pm$ 0.0357 & 0.3935 $\pm$ 0.0319 & $-$0.1417 \\
+\texttt{no\_structure} & 0.5871 $\pm$ 0.0234 & 0.4870 $\pm$ 0.0224 & $-$0.0378 \\
+\texttt{no\_redundancy} & 0.5758 $\pm$ 0.0163 & 0.4889 $\pm$ 0.0091 & $-$0.0492 \\
+\texttt{no\_bottleneck} & 0.5409 $\pm$ 0.0145 & 0.4424 $\pm$ 0.0114 & $-$0.0840 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+On the stress-test, removing fidelity costs the most ($-0.1417$). Structural terms also contribute: bottleneck log-barrier $0.0840$, redundancy penalty $0.0492$, and structural-dependency term $0.0378$. Redundancy and bottleneck act as conditional regularizers whose contribution grows when the fidelity field lacks structural preference or when high-redundancy blocks make audit interpretation depend on cluster structure.
+
+\begin{table}[ht]
+\caption{Graph construction analysis on the development run. Temporal edges define the primary backbone; topical similarity edges are supplementary cues. Record NDCG@3 and Record NDCG@5 are interpreted as budget-constrained audit-coverage readouts computed from the same source data and metric definition used for the correlation readout.}
+\label{tab:graph-construction-analysis}
+\centering
+\small
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Variant} & \textbf{Graph-check $\rho$} & \textbf{Kendall $\tau$} & \textbf{Record NDCG@3} & \textbf{Record NDCG@5} \\
+\midrule
+\texttt{full\_tfidf} & 0.0515 & 0.0458 & 0.8655 & 0.8655 \\
+\texttt{temporal\_only} & 0.0596 & 0.0527 & 0.8688 & 0.8688 \\
+\texttt{jaccard\_topical} & 0.0517 & 0.0460 & 0.8657 & 0.8657 \\
+\texttt{shuffled\_topical} & 0.0515 & 0.0458 & 0.8655 & 0.8655 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:graph-construction-analysis} shows that topical edges add little annotation-signal tracking evidence: \texttt{full\_tfidf} is slightly below \texttt{temporal\_only} and matches \texttt{shuffled\_topical}. Their observed role is supplementary structural cueing.
+
+The reference-view pattern clarifies the source of the representation signal. Raw local utility carries more annotation-order information than span length, position, and random controls but is still negative on the locked process-annotation route. Plain averaging of local utility and structural necessity is worse than either conservative \wstruct{} or Ridge because raw local utility is weakly negative and the archived necessity input is a position-and-magnitude proxy oriented opposite to the PRM800K label pattern. The archived workflow is defined at the artifact-step level.
+
+The component and graph-construction analyses clarify how the representation is built. SCU benefits primarily from fidelity-field tracking and only conditionally from graph-necessity alignment. On the PRM800K route, the archived necessity proxy is anti-correlated with human labels, while genuine graph necessity adds no annotation-order signal beyond step position. On the designed stress-test, structural terms help because the labels encode the structural preference by construction. Redundancy and bottleneck terms mainly support conservative decomposition. Topical graph edges move structural readouts while leaving annotation-order consistency largely unchanged.
+
+Error analysis identifies three residual patterns: high-utility but zero-necessity steps can receive excessive mass; near-threshold bottlenecks can be under-protected; and dense redundancy blocks can over-equalize priority values.
+
+\subsection{Failure Modes of Representation Layer}
+\label{sec:prm800k-error}
+
+The stratified audit-record checks show when structural calibration helps or hinders process-annotation consistency. The multi-label failure taxonomy over 4,417 locked traces reports weak utility anchor in 54.79\% of traces, structural over-correction in 48.56\%, redundancy misclassification in 27.48\%, low signal or tie in 18.32\%, and bottleneck over-protection in 8.65\%. Fixed-template Audit Cards are provided in the supplementary failure-taxonomy appendix.
+
+Trace length is an important observed predictor of variant behavior and a practical limitation for the full QP variant. On short traces (7,141 steps across 1,806 samples), \wstruct{} reaches Spearman $\rho = 0.759$, Ridge closely tracks it at 0.757, and QP remains close at 0.734. The middle trace-length stratum (8,264 steps across 1,195 samples) is intermediate: \wstruct{} is 0.583, Ridge is 0.579, and QP is 0.321. On long traces (18,814 steps, 1,416 samples), \wstruct{} drops to 0.447, Ridge to 0.430, and QP degrades to 0.172. We therefore evaluate a windowed calibration variant that solves the same QP within contiguous block-diagonal windows and stitches the local simplex solutions by fidelity mass. With $k_w=4$, the middle stratum rises from $\rho=0.321$ to $0.561$, and the long stratum rises from $\rho=0.172$ to $0.385$. A long-stratum sweep gives $\rho=0.434, 0.426, 0.385, 0.309, 0.238,$ and $0.183$ for window sizes $2,3,4,5,6,$ and $8$, respectively. Because this sweep was conducted after the failure was observed on the same locked split, it is a post hoc diagnostic of global coupling rather than an independently selected performance estimate. The result shows that limiting cross-trace coupling recovers much of the lost fidelity alignment, but it does not establish improvement over Ridge or \wstruct{}.
+
+Label entropy gives a complementary view. On low-entropy traces (17,288 steps, 1,474 samples), discriminability is limited but \wstruct{} and Ridge still record Coverage NDCG@25\% above 0.99 as a fixed-budget audit-coverage readout. The middle entropy stratum (10,948 steps across 1,639 samples) gives \wstruct{} 0.642, Ridge 0.632, and QP 0.501. On high-entropy traces (5,983 steps, 1,304 samples), labels are more dispersed and QP ($\rho = 0.642$) moves closer to \wstruct{} ($\rho = 0.705$), suggesting that explicit redundancy management is more useful when annotation structure is richer.
+
+Across strata, \wstruct{} provides the main fidelity reference, Ridge stays within 0.01--0.02 Spearman $\rho$ across most strata, unwindowed QP degrades on long or high-redundancy traces, and the exploratory windowed variant recovers part of this loss without exceeding the fidelity-tracking references. Projection provides the least consistent SC-FMA representation variant. The frozen PRM prefix signal provides moderate in-distribution reference context (Spearman 0.061--0.425) and remains consistently above raw local utility.
+
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{Graph-Aware Calibration in the Knowledge Lifecycle}
+\label{sec:knowledge-lifecycle}
+
+Knowledge-intensive systems expose artifacts during construction, retrieval, validation, update, and reuse. These artifacts vary in structural role and interpretive implication. Earlier knowledge-engineering and curation work emphasized inspectable intermediate states and maintenance-oriented review~\cite{buchanan1984mycin,laird2012soar,studer1998knowledge,higgins2008dcc}. Recent KG prompting, engineering-design RAG, KG-quality, and algorithm-auditing studies show why inspection remains difficult when structured knowledge is noisy, incomplete, redundant, or stale~\cite{dai2025llmkg,siddharth2024retrieval,chen2025kgquality,dwivedi2021artificial,raji2020closing}.
+
+For knowledge curation, the useful object is the record that travels with an artifact after scoring. It states why the artifact was selected, which neighboring artifacts it depends on, and whether the selected evidence is duplicated or dependency-exposed.
+
+The empirical evidence makes this interpretation concrete, but also narrows it. Ridge remains close to the supplied PRM800K fidelity field, while the enrichment and retrieval readouts show that similar priority values can require different maintenance actions. The graph-construction ablation and the negative structural-necessity correlation temper the role of the default TF-IDF topology: in the current evidence package, it behaves as a replaceable and fragile graph interface, not as a dependency model independently aligned with mathematical reasoning.
+
+The contribution is a reusable audit-record schema for knowledge-representation workflows. It gives curators a stable representation object for inspecting, comparing, and reusing process artifacts under a fixed review budget.
+
+\subsection{Audit Records for Maintenance-Oriented Analysis}
+\label{sec:audit-interpretation}
+
+During maintenance, the audit record links a selected artifact to a practical reading: verify the fidelity field, inspect a dependency chain, consolidate duplicate evidence, or protect a bottleneck.
+
+The process-annotation stratification shows how these readings appear in archived traces. Weak utility-anchor cases indicate when the fidelity field should be repaired; structural over-correction cases mark excessive graph regularization; redundancy cases identify clusters; and bottleneck cases identify dependency-exposed objects.
+
+Budget-constrained audit coverage, first-selected target, and Mass@25\% match this fixed-budget setting more directly than whole-trace correlation alone. Local evidence signals such as retrieval confidence, entity-linking similarity, and rule-certainty factors can duplicate earlier checks or miss dependency-exposed objects; SC-FMA records those distinctions.
+
+The variant evidence suggests a practical policy. When fidelity is strong, Ridge keeps the record close to the supplied field; when fidelity and structure diverge, QP-style checks are worth running during development.
+
+\subsection{Variant-Selection Guidance}
+
+The stratified diagnosis yields observed development patterns rather than a prospectively validated selector. Ridge is the conservative default when the supplied fidelity field is strong; QP-style checks are useful during development when fidelity and structure diverge, but the PRM800K long-trace stratum shows that global QP calibration can be brittle. The detailed post-hoc variant-selection table is retained in the supplementary material.
+
+\subsection{Scope and Limitations}
+\label{sec:scope-limitations}
+
+\medskip
+\noindent The current evidence supports audit-record construction and representation-level knowledge-engineering claims. Deployment-oriented knowledge-base maintenance and human audit-use protocols remain future validation settings.
+% Scope note for tests: audit-record representation evidence only; no deployed workflow validation.
+
+\medskip
+\noindent\textbf{Data and signal boundaries.} The synthetic calibration stage is controlled and proxy-labeled, while the locked process-annotation stage supports annotation-order consistency and fixed-budget audit within a PRM800K-derived annotation distribution. SC-FMA Ridge is reported as fidelity-tracking decomposition relative to \wstruct{}, not as an improvement over \wstruct{} on this route. The strongest reference is a supervised Ridge fidelity field with engineered lexical, positional, numeric, and cue features. Under the same supervision, graph-derived features alone reach only $\rho=0.043$, while graph plus position reaches $\rho=0.603$; the near-reference result is position-driven rather than topology-driven. Mathematical step annotations are used as process-annotation artifacts. The binary-correctness local utility signal is a coarse trace-level utility anchor, and the resulting audit-priority field values are local representation signals. The framework does not identify causal effects; causal identification would require a separate design.
+
+\textbf{Graph-construction boundary.} The fallback lexical graph uses temporal order and TF-IDF topical similarity. The Sentence-BERT ablation and Countries-KG typed-edge stage show backend substitutability under bounded test conditions. The archived $\rho=-0.418$ necessity field is a position-and-magnitude proxy, not a direct graph readout. Direct TF-IDF graph necessity is undifferentiated ($\rho\approx0$), while a mathematical variable-dependency DAG reaches $\rho=0.535$ and remains below the reverse-position baseline at $\rho=0.568$. The Countries-KG result is a methodological analogy and graph-interface check based on 30 traces, not production knowledge-graph validation; its 0.0 reference-vs-KG consistency also shows backend sensitivity. Stronger domain-specific graphs may change structural interpretations, but the current evidence does not support graph topology as an independent PRM800K ranking signal.
+
+\textbf{Audit-retrieval boundary.} The audit-target retrieval evidence is rule-derived. The weak utility-anchor subset is the main lowest-direct-overlap retrieval evidence, while the aggregate result summarizes target families with definitional overlap. The target-family dependencies are detailed in Section~\ref{sec:why-calibration}. The target-family rules support reproducibility; automatic retrieval checks establish record visibility, while human audit usefulness requires expert adjudication.
+
+\textbf{Operational boundary.} QP is the most complete SCU variant but degrades sharply on long PRM800K traces. The exploratory windowed diagnostic recovers the long-stratum correlation from $0.172$ to $0.385$ at $k_w=4$, but the window size was examined post hoc on the locked split and the result remains below Ridge and \wstruct{}. Human-in-the-loop comparison between scalar views, raw-field bundles, and SC-FMA audit records is still required before making claims about reviewer speed, curator accuracy, actionability, interpretability, or maintenance usefulness.
+
+\medskip
+\noindent\textbf{Scope exclusions.} Downstream PRM training, production knowledge-base deployment, causal identification, and external PRM generalization are outside the current evidence boundary.
+
+\noindent Within these bounds, SC-FMA points to a knowledge-lifecycle use case in which audit records support update-oriented analysis, redundancy interpretation, reuse of vetted artifacts, and structured inspection of exposed evidence.
+
+\section{Conclusions}
+\label{sec:conclusions}
+
+This paper proposed SC-FMA as a representation layer that turns supplied utility fields or annotation-derived fidelity fields into inspectable audit records for knowledge-intensive artifacts. The real-data controls show that graph topology contributes little independent PRM800K annotation-order signal, while windowing can partially repair the long-trace failure of the full QP allocation.
+
+Across complementary checks, SC-FMA turns supplied fidelity and structural fields into audit records with explicit audit reasons. The decisive real-data result is not a performance improvement: on the locked PRM800K route, Ridge closely tracks but does not improve over the supervised \wstruct{} fidelity field. A same-supervision graph-only Ridge reaches $\rho=0.043$, and direct mathematical-DAG necessity remains below a reverse-position baseline. These findings make Ridge the conservative reportable view and graph fields organizational rather than independently predictive on this distribution. Unwindowed QP degrades on long traces; a post hoc windowed diagnostic raises the long-stratum result from $\rho=0.172$ to $0.385$ but does not surpass the fidelity-tracking references. Redundancy and bottleneck terms act as conditional regularizers that contribute primarily in designed stress-test settings or when fidelity fields lack structural preference.
+
+The claim remains bounded to observable artifacts and fixed-budget representation checks. Within that boundary, SC-FMA provides a reusable audit-record schema for systems where intermediate knowledge artifacts must be inspected, maintained, and reused under limited curation budgets. Four extensions follow directly from this boundary. First, domain-specific graph backends should be tested on settings where dependency structure is independently annotated rather than inferred from step position. Second, dynamic-budget updating should test how audit records change when review capacity shifts during operation. Third, human-in-the-loop validation should expose SC-FMA records to real domain experts and measure interpretability, actionability, timing, and disagreement with human audit choices. Fourth, cross-domain transfer should test the schema on RAG evidence traces, knowledge-graph maintenance records, software-engineering logs, and other knowledge-intensive workflows; long-trace validation should select sparse, blockwise, or windowed calibration on development data before independent reporting.
+
+
+\noindent\textbf{Boundary note.} No returned human ratings are available. The blind human-evaluation protocol is prepared, but no returned human ratings are reported; extended cards, runtime metadata, and reproducibility notes are retained in the supplementary material.
+
+
+\section*{Acknowledgments}
+The authors thank the College of Management Science and Engineering at Beijing Information Science and Technology University for research support.
+
+\section*{Funding}
+This work was supported by the National Social Science Fund of China Project (24BSH018) and the Beijing Natural Science Foundation Project (L252145).
+
+\section*{Declaration of Competing Interest}
+The authors declare that they have no conflicts of interest related to this work.
+
+\section*{Declaration of generative AI and AI-assisted technologies in the writing process}
+During the preparation of this work, the authors used OpenAI GPT-5 to improve language clarity and assist with LaTeX formatting checks. The tool was not used to design the study, conduct data analysis, generate results, or derive the conclusions. After using this tool, the authors reviewed and edited the content as needed and take full responsibility for the content of the publication.
+
+\section*{Data Availability}
+The PRM800K process-annotation dataset, MuSiQue, and WebQSP are publicly available from their original sources. Derived locked-split reports, audit-record outputs, validation configurations, and reproduction scripts will be made available through an anonymous review repository during submission and released with the final article where permitted.
+
+\section*{CRediT authorship contribution statement}
+\textbf{Haoran Ma}: Conceptualization, Methodology, Software, Formal analysis, Investigation, Data Curation, Writing -- Original Draft, Visualization. \textbf{Ningning Wang}: Methodology, Validation, Writing -- Review \& Editing, Supervision, Project administration, Funding acquisition.
+
+\clearpage
+
+\bibliography{references}
+
+\end{document}
