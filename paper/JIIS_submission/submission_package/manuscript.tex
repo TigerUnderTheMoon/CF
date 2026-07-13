@@ -36,7 +36,7 @@
 \affil*[1]{\orgdiv{College of Management Science and Engineering}, \orgname{Beijing Information Science and Technology University}, \orgaddress{\city{Beijing}, \postcode{102200}, \country{China}}}
 \affil[2]{\orgdiv{Institute of Information Systems, ESG Intelligent Application Innovation Research Center}, \orgname{Beijing Information Science and Technology University}, \orgaddress{\city{Beijing}, \postcode{102200}, \country{China}}}
 
-\abstract{Knowledge-graph and retrieval-augmented information systems expose dependency flows, entity bindings, and verification records that must be audited under fixed budgets. Prior score-centered formulations make this task look like another ranking problem, but a scalar score does not tell curators which artifacts are bottlenecks, which evidence is redundant, or how downstream records are affected. We recast the framework as a systematization of fixed-budget audit allocation around structural labels rather than score improvement. The first contribution is a structural label extractor, not a scorer, that converts graph topology into audit-ready boolean flags for bottleneck and redundancy. The second contribution is a Life-Saving First stratified budget allocation policy guided by these labels and evaluated with Impact Coverage@K over reachable descendants in KG dependency flows. On the Countries-KG proof-of-concept fixture, the extractor recovers controlled bottleneck and redundancy labels while undirected semantic and graph-centrality baselines expose different failure modes. In the cached-label audit case, the stratified policy covers transitive downstream impact under the same budget and is compared against Flat Top-K, degree centrality, random stratified labels, and other controls. The evidence is deliberately bounded: it is a clean semantic fixture and seeded scalability test, not production knowledge-base validation, human usefulness evidence, arbitrary-noise robustness, or causal identification.}
+\abstract{Knowledge-graph and retrieval-augmented information systems expose dependency flows, entity bindings, and verification records that must be audited under fixed budgets. A scalar score does not indicate which artifacts are bottlenecks, which evidence is redundant, or what downstream records become visible. We systematize fixed-budget audit allocation around graph-topology labels and evaluate a label-guided Life-Saving First policy with Impact Coverage@K. Countries-KG serves as a clean implementation fixture. A complementary controlled knowledge-maintenance experiment uses a corrected multidisciplinary Wikidata substrate with 2000 nodes and 6039 edges. At the prespecified 25\% budget, Flat Top-K attains higher reachability coverage than Life-Saving First (0.993 versus 0.953), whereas Life-Saving First protects more uniquely at-risk records (0.972 versus 0.895). At 5\%, its small coverage advantage over Flat Top-K does not confirm across 16 discipline anchor clusters after Holm correction ($p=0.385$). Edge deletion and insertion further degrade the stratified policy more than Flat Top-K on clean-reference coverage. The findings support the audit-record representation and expose a budget-dependent coverage--protection trade-off; they do not establish a universally superior allocation policy, native Wikidata roles, production effectiveness, human usefulness, or causal identification.}
 
 \keywords{knowledge graphs, structural labels, audit budget allocation, impact coverage, information systems, dependency flows}
 
@@ -48,18 +48,18 @@
 
 Knowledge-intensive information systems increasingly expose intermediate records rather than only final answers. A knowledge-graph workflow may expose entity nodes, relation paths, retrieval passages, verification steps, and dependency links. These artifacts are useful for maintenance only when a curator can decide what to inspect under a fixed budget. The difficulty is not simply that some artifacts receive low scalar scores. A curator also needs to know whether an artifact is a bottleneck for later records, whether another artifact provides redundant coverage, and which downstream nodes would be affected if the selected artifact is audited.
 
-This paper therefore moves the contribution away from a scoring race. It systematizes the fixed-budget audit allocation problem into structural label extraction and label-guided budget allocation. We propose a \emph{structural label extractor}, not a scorer, that turns directed graph topology into audit-ready boolean fields: \texttt{bottleneck} and \texttt{redundancy}. These fields are not reward-model predictions and are not claimed to improve task reasoning. They are reusable labels for audit records in dependency-flow settings.
+This paper therefore moves the contribution away from a scoring race and toward audit-record representation rather than score improvement. It provides a systematization of fixed-budget audit allocation through structural label extraction and label-guided budget allocation. We propose a \emph{structural label extractor}, not a scorer, that turns directed graph topology into audit-ready boolean fields: \texttt{bottleneck} and \texttt{redundancy}. These fields are not reward-model predictions and are not claimed to improve task reasoning. They are reusable labels for audit records in dependency-flow settings.
 
 The second contribution is a \emph{stratified budget allocation} policy, Life-Saving First. The policy first allocates budget to Critical Bottleneck nodes, then to Unique Evidence nodes, then to Redundancy Group Samples, and finally to Fallback nodes. Raw risk score is used exclusively as a tie-breaker within the same stratification layer, not as the primary allocation driver. Flat Top-K uses the shared \detokenize{raw_risk_score} as the sole ranking criterion, where the KG setting defines it as trace-local min--max normalized downstream impact count.
 
-The evaluation follows this reframing. Table~\ref{tab:kg-label-validation} reports Countries-KG as a proof-of-concept and implementation check, with Countries-KG used as a clean semantic fixture containing 30 entities and 189 triples. Table~\ref{tab:impact-coverage} reports Impact Coverage@K rather than a top-$k$ recall framing. Impact Coverage counts all reachable descendants (transitive closure) from selected nodes, not only direct successors. This reflects the maintenance reality that a root bottleneck can affect a long downstream chain, and auditors need visibility into the entire affected subgraph.
+The evaluation follows this reframing. Countries-KG is retained as a 30-entity, 189-triple implementation fixture. The main external substrate is a 2000-node Wikidata scientist--institution--field subgraph with controlled maintenance motifs, fixed-budget comparisons, edge perturbations, anchor-cluster confirmation, efficiency measurements, and verified revision-history examples. The Wikidata experiment evaluates controlled audit scenarios on a real KG substrate rather than native Wikidata structural roles.
 
 Figure~\ref{fig:overall-framework} gives the high-level knowledge-engineering workflow. Structural label extraction sits between raw dependency-flow artifacts and fixed-budget audit allocation: it represents artifacts as directed dependency graphs, converts topology into reusable labels, and allocates inspection budget by structural strata.
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=\linewidth]{figures/fig_knowledge_maintenance_workflow.pdf}
-\caption{Knowledge engineering workflow for structural labels and stratified audit budget allocation. Raw knowledge artifacts are organized as directed dependency flows; the structural label extractor emits bottleneck and redundancy flags; the Life-Saving First policy allocates fixed audit budget by structural strata; and Impact Coverage@K reports how much transitive downstream impact remains visible under the budget.}
+\includegraphics[width=\linewidth]{figures/wikidata_overall_workflow.png}
+\caption{Controlled knowledge-maintenance workflow. A real Wikidata substrate is extracted and layered before controlled audit motifs are added; structural labels guide fixed-budget selection, Impact Coverage measures downstream visibility, and revision-history cases provide maintenance context without implying historical deployment.}
 \label{fig:overall-framework}
 \end{figure}
 
@@ -155,15 +155,23 @@ Impact Coverage@K counts affected unselected auditable descendants reached from 
 
 The audit report also records Average Path Length to Covered Descendants, Early Truncation Rate, and Budget Used. Average path length is computed from shortest directed distances over the same reachable-descendant set used by Impact Coverage@K. Early truncation records whether the budget is exhausted inside an earlier stratum before later strata are invoked.
 
+\subsection{Wikidata controlled maintenance protocol}
+
+This experiment validates the proposed audit representation under controlled knowledge-maintenance scenarios on a real KG substrate, rather than evaluating native Wikidata structural roles. The corrected substrate contains scientists born in 1980 or later from physical, life, computing, and social-science occupations. Entity-only relations are extracted to three hops, duplicate predicates are aggregated by ordered node pair, and the cleaned graph is layered into a directed acyclic audit overlay. Layer 3 contains out-neighbors of Layer 2 that do not occur in Layers 0--2.
+
+Evaluation is performed against controlled audit motifs rather than native Wikidata annotations. Each of 30 seeds adds bottleneck, redundant-pair, and degree-matched control records without exposing motif identifiers to the extractor. The primary budget is fixed at $K=25\%$; $K\in\{5,10,15,20,25,30,40,50\}\%$ is reported only as sensitivity analysis. Edge deletion and erroneous edge insertion are evaluated separately at 0--20\%. For each seed, the absolute selection budget is computed once from the clean-reference candidate count and reused at every noise rate. Selection uses the perturbed graph, while all noise outcomes and structural-protection denominators are scored on the clean reference graph.
+
+The low-budget confirmation partitions each discipline into four stable SHA-256 anchor clusters and uses the 16 clusters, not motif seeds, as paired statistical units. Paired Wilcoxon tests use Holm correction and report Cliff's delta with bootstrap confidence intervals. Revision-history cases require JSON claim differences between parent and updated revisions. The corrected cache is SHA-256 locked; it supersedes a physical-science-only pilot cache and is not a same-graph rerun.
+
 
 
 \section{Results}
 \label{sec:experimental-results}
 
-Table~\ref{tab:kg-label-validation} shows the proof-of-concept label-validation result. The structural extractor recovers the graph-defined labels, whereas the undirected semantic baseline fails to recover directed-flow bottleneck and redundancy roles. Betweenness centrality and directed out-closeness are added as graph-structural bottleneck baselines under the fixed rule of selecting, within each trace, the same number of highest-centrality nodes as gold bottlenecks. The result supports implementation fidelity on a clean semantic fixture; it is not a claim about noisy open-domain KGs.
+Table~\ref{tab:kg-label-validation} shows the proof-of-concept label check. The structural extractor reproduces the fixture-defined labels, whereas the undirected semantic baseline fails to reproduce directed-flow bottleneck and redundancy roles. Betweenness centrality and directed out-closeness are graph-structural bottleneck baselines that select the same number of nodes as the controlled bottleneck reference. The result supports implementation fidelity on a clean semantic fixture; it does not evaluate intrinsic Wikidata roles.
 
 \begin{table}[t]
-\caption{Countries-KG proof-of-concept and implementation check for structural label F1. The semantic fixture contains 30 entities and 189 triples; labels are cached with seed 20260711. Graph-centrality baselines predict bottlenecks only by selecting the same number of highest-centrality nodes as gold bottlenecks within each trace, so redundancy F1 is not applicable (N/A).}
+\caption{Countries-KG proof-of-concept and implementation check for structural label F1. The semantic fixture contains 30 entities and 189 triples; labels are cached with seed 20260711. Graph-centrality baselines select the same number of highest-centrality nodes as controlled reference bottlenecks within each trace, so redundancy F1 is not applicable (N/A).}
 \label{tab:kg-label-validation}
 \centering
 \small
@@ -179,12 +187,12 @@ Directed Out-Closeness Centrality & 1.000 & N/A & 124 \\
 \end{tabular}
 \end{table}
 
-The perfect F1 scores for the structural extractor in Table~\ref{tab:kg-label-validation} are expected and intentional, as the extractor implements the same deterministic graph-theoretic rules that define the gold-standard labels (removal-based bottleneck and Jaccard-based redundancy). Directed out-closeness also matches bottleneck labels in this small fixture because the graph construction places many critical nodes upstream of reachable descendants. This overlap is fixture-specific: out-closeness happens to coincide with bottleneck labels here. Crucially, out-closeness provides no redundancy labels, so it cannot support the full audit stratification that requires both bottleneck and redundancy fields. Betweenness is lower, and neither centrality baseline addresses redundancy groups. The purpose of this table is to validate implementation fidelity and controlled label recovery, not to claim state-of-the-art predictive performance on a noisy classification task.
+The perfect F1 scores for the structural extractor in Table~\ref{tab:kg-label-validation} are expected because the extractor implements the deterministic rules that define the controlled reference labels. Directed out-closeness also coincides with bottleneck labels in this small fixture, but provides no redundancy field. The table is therefore an implementation-consistency check, not out-of-sample classification evidence.
 
-Table~\ref{tab:impact-coverage} evaluates budget allocation on cached Countries-KG labels, and Figure~\ref{fig:impact-coverage-comparison} visualizes the Impact Coverage@K column from the same table. The comparison is deliberately between stratification and controls that share the same node universe, budget, and scalar source. Random Stratified preserves the staged allocation procedure but shuffles bottleneck and redundancy labels within each trace, testing whether the structure labels themselves matter. The No-Fallback Ablation matches the main policy (both 1.000) because, in this seeded Countries-KG fixture, downstream impact scores rarely produce ties within the same stratum. Thus, the \detokenize{raw_risk_score} tie-breaker is almost never invoked, confirming that the observed coverage is fundamentally driven by the structural stratification layers (Critical Bottleneck and Redundancy Group Samples), not by scalar fallback ordering.
+Table~\ref{tab:impact-coverage} evaluates the cached Countries-KG fixture at $K=25\%$. Random Stratified shuffles the role fields while preserving staged selection. The No-Fallback Ablation matches the main policy in this fixture, showing internal consistency with the frozen layer ordering; it does not establish that the same ordering will dominate on another graph.
 
 \begin{table}[t]
-\caption{Impact Coverage@K of Life-Saving First stratified policy vs. Flat Top-K baseline (using the shared \detokenize{raw_risk_score} as the sole ranking criterion), Degree Centrality, random stratified labels, position, random, and no-fallback ablation.}
+\caption{Countries-KG Impact Coverage@K at the fixed $K=25\%$ budget. Flat Top-K uses the shared \detokenize{raw_risk_score}; all methods share the same candidate universe and budget.}
 \label{tab:impact-coverage}
 \centering
 \small
@@ -205,12 +213,83 @@ No-Fallback Ablation & 1.000 & 1.000 & 0.000 & 1.000 \\
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\linewidth]{figures/impact_coverage_comparison.pdf}
-\caption{Impact Coverage@K comparison for the cached Countries-KG audit case. The bar chart visualizes the Impact Coverage@K column of Table~\ref{tab:impact-coverage}. Life-Saving First is the main stratified policy, No-Fallback Ablation tests whether same-layer scalar fallback drives the result, Random Stratified shuffles structural labels while preserving the staged selection protocol, and the remaining bars are scalar or non-stratified baselines. The dashed line marks the ideal upper bound of 1.0 in this cached-label setting.}
+\includegraphics[width=\linewidth]{figures/wikidata_impact_coverage_comparison.png}
+\caption{Countries-KG and Wikidata Impact Coverage at their prespecified $K=25\%$ budgets. The bars are descriptive within each dataset; no cross-dataset significance test is performed. LSF-Clustered is omitted because no Countries-KG counterpart exists.}
 \label{fig:impact-coverage-comparison}
 \end{figure}
 
-Figure~\ref{fig:impact-coverage-comparison} makes the main contrast visible: the stratified policy and its no-fallback ablation reach the upper-bound line, while Flat Top-K, Degree Centrality, Random Stratified, Random, and Position remain below it. Although Impact Coverage uses reachable descendants through transitive closure, the selected bottleneck nodes in this fixture are direct upstream nodes of the covered auditable descendants; therefore the average path length for Life-Saving First and the no-fallback ablation is 1.000. This is a special property of the Countries-KG fixture, not a general guarantee: in larger or noisier KGs where important effects require multi-hop propagation, coverage and average path length should be expected to change, as the synthetic path-length diagnostics in Appendix A illustrate. The low early-truncation rate confirms that the policy successfully utilizes multiple strata rather than collapsing entirely inside the first layer.
+Figure~\ref{fig:impact-coverage-comparison} shows that the Countries-KG ordering does not transfer unchanged to the real substrate. This is the intended role of the external experiment: it tests the allocation policy rather than using the clean fixture as evidence of general superiority.
+
+\subsection{Controlled Wikidata audit results}
+
+The corrected Wikidata graph contains 2000 nodes, 6039 directed edges, one weakly connected component, diameter 9, and largest-component average shortest-path length 4.189. Its 293 scientist anchors comprise 84 physical-science, 56 life-science, 26 computing, and 127 social-science entities. Controlled Audit Role Evaluation yields bottleneck F1 1.000 and redundancy F1 1.000 over 20 bottleneck, 40 redundant, and 20 matched-control candidates. These values indicate consistency with the controlled motifs, not native Wikidata annotation quality.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.88\linewidth]{figures/wikidata_core_structure.png}
+\caption{Controlled audit motifs attached to real Wikidata anchors. The extractor reads topology only; the motif manifest and controlled identifiers are restricted to evaluation.}
+\label{fig:wikidata-core-structure}
+\end{figure}
+
+Table~\ref{tab:wikidata-primary-budget} exposes a coverage--protection trade-off. At $K=25\%$, Flat Top-K covers more reachable descendants than Life-Saving First (0.993 versus 0.953; paired difference $-0.040$, Holm-adjusted $p<0.001$, Cliff's $\delta=-1.000$). Life-Saving First instead protects more uniquely at-risk records (0.972 versus 0.895) and greater sink-drop mass (0.782 versus 0.595). It is therefore not a universal Impact Coverage maximizer.
+
+\begin{table}[t]
+\caption{Wikidata primary-budget results over 30 paired motif seeds ($K=25\%$). Values are mean $\pm$ SD except path length.}
+\label{tab:wikidata-primary-budget}
+\centering
+\small
+\begin{tabular}{lcccc}
+\toprule
+Method & Impact Coverage & At-risk protection & Sink-drop mass & Avg. path \\
+\midrule
+Life-Saving First & $0.953\pm0.002$ & 0.972 & 0.782 & 1.342 \\
+LSF-Clustered & $0.952\pm0.002$ & 0.968 & 0.785 & 1.337 \\
+Flat Top-K & $0.993\pm0.001$ & 0.895 & 0.595 & 1.511 \\
+Degree Centrality & $0.890\pm0.002$ & 0.891 & 0.645 & 1.361 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The layer report explains this trade-off. Of 1288 candidates, 537 are classified as Critical Bottleneck and the budget admits 322; all 322 selections occur in the first stratum, while Unique Evidence, Redundancy Group Samples, and Fallback receive zero budget. No-Fallback consequently matches Life-Saving First. LSF-Clustered reduces selected redundancy waste from 0.025 to 0 but does not improve coverage or at-risk protection. The observed policy has collapsed to bottleneck-first selection at the primary budget.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\linewidth]{figures/wikidata_budget_sensitivity.png}
+\caption{Wikidata budget sensitivity over 30 paired seeds. Life-Saving First has a small advantage at low budgets, whereas Flat Top-K dominates reachability coverage from $K=15\%$ onward. Error bars show one standard deviation.}
+\label{fig:wikidata-budget}
+\end{figure}
+
+At $K=5\%$ on the full substrate, Life-Saving First exceeds Flat Top-K by 0.021 (Holm-adjusted $p<0.001$, Cliff's $\delta=0.539$). This seed-level result does not confirm under the stricter anchor-cluster unit. Across 16 prespecified discipline clusters, Life-Saving First is $0.960\pm0.048$ and Flat Top-K is $0.956\pm0.051$; the difference is 0.004 with Holm-adjusted $p=0.385$ and $\delta=0.051$ (95\% bootstrap interval $[-0.020,0.156]$). LSF-Clustered is identical to Life-Saving First in this confirmation.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.82\linewidth]{figures/wikidata_anchor_cluster_confirmation.png}
+\caption{Prespecified $K=5\%$ confirmation with 16 discipline anchor clusters as paired units. The small Life-Saving First--Flat Top-K difference is not statistically significant after Holm correction.}
+\label{fig:wikidata-anchor-confirmation}
+\end{figure}
+
+Noise is scored on the clean reference graph, so inserted erroneous edges cannot directly inflate evaluation reachability. At 20\% deletion, Life-Saving First falls from 0.953 to 0.932 while Flat Top-K falls from 0.993 to 0.987. At 20\% insertion, Life-Saving First falls to 0.878 while Flat Top-K rises descriptively to 0.996 because noisy selection changes which nodes are chosen, not because erroneous edges are counted during scoring. Relative to Flat Top-K, Life-Saving First degrades more for Impact Coverage and at-risk protection under both perturbations (Holm-adjusted $p<0.001$). Table~\ref{tab:wikidata-noise} reports the endpoints.
+
+\begin{table}[t]
+\caption{Clean-reference noise endpoints over 30 paired seeds. IC is Impact Coverage and AR is protected at-risk coverage.}
+\label{tab:wikidata-noise}
+\centering
+\small
+\begin{tabular}{llcccc}
+\toprule
+Noise & Method & IC@0 & IC@20\% & AR@0 & AR@20\% \\
+\midrule
+Deletion & Life-Saving First & 0.953 & 0.932 & 0.972 & 0.940 \\
+Deletion & Flat Top-K & 0.993 & 0.987 & 0.895 & 0.895 \\
+Insertion & Life-Saving First & 0.953 & 0.878 & 0.972 & 0.900 \\
+Insertion & Flat Top-K & 0.993 & 0.996 & 0.895 & 0.892 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Efficiency measurements use one warm-up and ten measured runs per size. Mean total runtime is 0.643, 0.714, and 5.855 seconds at 500, 1000, and 2000 nodes; peak traced Python memory is 2.175, 3.893, and 8.769 MB. The empirical log--log runtime slope is 1.594. Role extraction dominates at 2000 nodes (5.570 seconds), consistent with the pairwise coverage-comparison stage; these observations document scaling rather than theoretical optimality.
+
+Finally, two verified Wikidata revision events ground the maintenance interpretation: a P108 institution addition for Q100156655 (revision 1288194332) and a P166 award addition for Q100166319 (revision 1348244988). JSON claim differences confirm the old and new values. In the controlled one-of-four overlay, Life-Saving First selects the sole bottleneck and protects three uniquely at-risk records, while Flat Top-K selects a bypassed high-impact control. The revision events are real; the prioritization scenario is controlled and was not part of the historical editing decision.
 
 \section{Appendix A. Synthetic Scalability and Threshold Sensitivity}
 \label{sec:synthetic-scalability}
@@ -295,15 +374,17 @@ KG metadata hash & Confirms that the 30-entity, 189-triple semantic fixture has 
 
 This checklist is deliberately operational. It does not expand the empirical claim beyond the clean semantic fixture. It only states that the reported F1 comparison and Impact Coverage simulation are label-consistent, seed-locked, and derived from the same cached dependency-flow records.
 
-\section{Exploratory Boundary Diagnosis}
+\section{Boundary Diagnosis}
 \label{sec:boundary-diagnosis}
 
-While the main Countries-KG experiment shows that structural labels work under directed dependency flows, it is equally important to document when they fail. We therefore include a compact exploratory boundary check on PRM800K, where the graph constructor supplies sparse, topical edges rather than informative dependency flows. Appendix B reports this Necessary Condition Diagnosis as exploratory boundary evidence. The route lacks the directed KG dependency-flow condition used in the main Countries-KG experiment, so it is not treated as a core validation result. Its role is to show what fails when the graph constructor supplies sparse or directionless similarity rather than informative dependency edges.
+Countries-KG supplies an internal consistency check under a directed dependency fixture, but the representation should not be assumed informative when graph semantics are weak. We therefore retain a compact exploratory boundary check on PRM800K, where the graph constructor supplies sparse topical edges rather than explicit dependency flows. Appendix B reports this route as exploratory boundary evidence, not as a necessary-condition or causal test.
+
+In this route, TF-IDF graph edges are sparse and directionless relative to the explicit dependency semantics required by the KG audit representation.
 
 The compact finding is that annotation-order consistency on PRM800K is dominated by a supervised fidelity field and positional/lexical cues. The supervised \boundarywstruct{} field reaches Spearman $\rho=0.611$ on the locked split. A same-supervision structure-only Ridge control reaches only $\rho=0.043$, while adding position raises it to $\rho=0.603$. Thus, graph-derived fields do not provide independent annotation-order signal in this route; they remain organizational audit-record fields rather than validated ranking predictors.
 
 \begin{table}[ht]
-\caption{Exploratory PRM800K necessary-condition boundary. The table is a compact main-text pointer to Supplementary Appendix B; it is not used as core evidence for the Countries-KG audit-allocation claim.}
+\caption{Exploratory PRM800K boundary diagnosis. The table is a compact main-text pointer to Supplementary Appendix B and is not used as core evidence for the KG audit-allocation claim.}
 \label{tab:prm800k-boundary-compact}
 \centering
 \small
@@ -312,7 +393,7 @@ The compact finding is that annotation-order consistency on PRM800K is dominated
 Field or control & Spearman $\rho$ & Interpretation \\
 \midrule
 \boundarywstruct{} (supervised fidelity field) & 0.611 & Strong process-annotation signal \\
-Structure graph + position & 0.603 & Mostly position-mediated \\
+Structure graph + position & 0.603 & Mostly position-associated \\
 Structure graph only & 0.043 & Weak independent graph signal \\
 \bottomrule
 \end{tabular}
@@ -324,25 +405,25 @@ This negative boundary supports the paper's scope. Structural labels require dir
 \section{Discussion}
 \label{sec:discussion}
 
-The central shift in this revision is from scalar audit priority to structural audit labels. The contribution is a systematization of fixed-budget audit allocation into reusable graph labels, strata, and visibility metrics. The Countries-KG fixture is intentionally small and clean because it provides a controlled dependency flow where bottleneck and redundancy labels can be checked against explicit graph-theoretic rules. This choice supports implementation fidelity and label recovery, not robustness to arbitrary open-domain KG noise.
+The central shift is from scalar audit priority to an explicit audit-record representation: reusable graph labels, strata, downstream visibility, and structural-protection fields. Countries-KG remains an implementation fixture. The corrected Wikidata substrate adds a real graph topology, multidisciplinary entities, noise perturbations, revision evidence, and engineering measurements, while controlled motifs keep the evaluation target observable.
 
-The Life-Saving First policy also changes the interpretation of fixed-budget audit. A flat scalar budget rule can rank nodes, but it does not tell a curator why a node is selected or what downstream dependency chain becomes visible. Stratification makes that decision surface explicit: bottlenecks are handled first, unique evidence is preserved, redundancy groups are sampled rather than exhaustively reviewed, and scalar fallback is restricted to same-layer tie breaking.
+Life-Saving First should be read as an illustrative consumer of the representation, not as the paper's universal optimizer. At $K=25\%$, it sacrifices reachability coverage for higher protection of uniquely at-risk records and exhausts its budget inside the bottleneck stratum. At $K=5\%$, its seed-level advantage does not confirm across anchor clusters. The clustered variant removes selected redundancy waste but does not improve the confirmation result. These findings motivate exposing both reachability and structural protection rather than collapsing audit allocation into one headline metric.
 
 The impact-coverage metric should be read as a dependency-flow visibility measure. It asks how much unselected downstream audit surface is affected by the selected nodes under a fixed budget. It does not measure human review speed, decision confidence, correctness of human judgments, production maintenance cost, or causal effect.
 
 \section{Limitations}
 \label{sec:limitations}
 
-The semantic main experiment is deliberately bounded to Countries-KG to provide a ground-truth dependency flow for controlled F1 evaluation. We do not claim that structural labels are robust to arbitrary KG noise; rather, we treat this as a proof-of-concept on a clean semantic fixture. Scaling to noisy, open-domain KGs, including Wikidata-style subgraphs and injected edge perturbations, is a necessary future step, not a claim of the current framework.
+The Wikidata experiment remains controlled. Its F1 target comes from audit motifs attached to a real substrate, not from native Wikidata role annotations. The corrected multidisciplinary cache differs from the earlier physical-science-only pilot substrate, and the provenance record explicitly marks it as not a same-graph rerun. Sixteen anchor clusters are units from one extracted KG, not 16 independent KGs. Edge perturbations test selection robustness against a clean reference graph; they do not reproduce all ontology, temporal, or adversarial errors in production knowledge bases. These experiments do not show that the representation is robust to arbitrary KG noise. Robustness to arbitrary KG noise is not a claim of the current framework.
 
-The study also does not report human usefulness evidence. The submission package contains a blank future human-evaluation protocol, but no returned ratings, evaluator provenance, declarations, timestamps, hashes, or reliability analysis are available. The present evidence therefore concerns structural label extraction and Impact Coverage on KG dependency flows, not human decision time, human audit accuracy, or production knowledge-base validation.
+The study also does not report human usefulness evidence. The submission package contains a blank future human-evaluation protocol, but no returned ratings, evaluator provenance, declarations, timestamps, hashes, or reliability analysis are available. The present evidence therefore concerns structural label extraction and Impact Coverage on KG dependency flows, not human decision time or human audit accuracy. It is not production knowledge-base validation.
 
-Future work should therefore focus on three extensions: evaluating the representation on larger noisy KG subsets such as Wikidata-derived dependency flows; designing learned structural-label predictors that reduce reliance on exact graph rules while preserving audit semantics; and conducting user studies that measure whether the audit records improve auditor efficiency, accuracy, and prioritization decisions.
+Future work should therefore use independently extracted KGs and native maintenance outcomes, compare multi-objective allocation policies that explicitly trade reachability against at-risk protection, and conduct provenance-complete user studies of auditor efficiency, accuracy, and prioritization. Learned role predictors are relevant only if their targets are independently annotated rather than regenerated from the extractor's own rules.
 
 \section{Conclusions}
 \label{sec:conclusions}
 
-This paper reframes the SC-FMA line as structural label extraction and label-guided budget allocation. The contribution is not a new universal scorer. It is a systematization of fixed-budget audit allocation around a graph-topology interface that emits bottleneck and redundancy flags, plus a Life-Saving First policy that uses those flags for audit visibility. The evidence supports controlled label extraction on Countries-KG, seeded scalability in Supplementary Appendix A, Impact Coverage comparison on cached KG flows, and PRM800K necessary-condition boundaries in Supplementary Appendix B.
+This paper reframes SC-FMA as an audit-record representation for fixed-budget knowledge maintenance. The graph-topology interface emits bottleneck, redundancy, downstream-impact, and protection fields that can support multiple allocation policies. Countries-KG and seeded synthetic graphs establish implementation consistency; the corrected Wikidata substrate provides a controlled real-KG test, noise diagnostics, anchor-cluster confirmation, efficiency measurements, and verified revision context. The results do not support Life-Saving First as a universal coverage maximizer: its structural-protection advantage at $K=25\%$ accompanies lower reachability coverage, and its low-budget advantage over Flat Top-K is not significant across anchor clusters. The contribution is therefore the inspectable representation and evidence boundary, not production validation, human usefulness, evaluation of intrinsic Wikidata roles, or causal identification.
 
 \section*{Acknowledgments}
 The authors thank the College of Management Science and Engineering at Beijing Information Science and Technology University for research support.
@@ -357,7 +438,7 @@ The authors declare that they have no conflicts of interest related to this work
 During the preparation of this work, the authors used OpenAI GPT-5 to improve language clarity and assist with LaTeX formatting checks. The tool was not used to design the study, conduct data analysis, generate results, or derive the conclusions. After using this tool, the authors reviewed and edited the content as needed and take full responsibility for the content of the publication.
 
 \section*{Data Availability}
-The PRM800K process-annotation dataset, MuSiQue, and WebQSP are publicly available from their original sources. Derived locked-split reports, audit-record outputs, validation configurations, and reproduction scripts will be made available through an anonymous review repository during submission and released with the final article where permitted.
+The PRM800K process-annotation dataset, MuSiQue, WebQSP, and Wikidata revision histories are publicly available from their original sources. The locked Wikidata cache hash, SPARQL query log, triples, motif manifests, seed-level metrics, verified revision differences, figures, configurations, and reproduction scripts are included in the experiment outputs and will be released through the review repository where permitted.
 
 \section*{CRediT authorship contribution statement}
 \textbf{Haoran Ma}: Conceptualization, Methodology, Software, Formal analysis, Investigation, Data Curation, Writing -- Original Draft, Visualization. \textbf{Ningning Wang}: Methodology, Validation, Writing -- Review \& Editing, Supervision, Project administration, Funding acquisition.

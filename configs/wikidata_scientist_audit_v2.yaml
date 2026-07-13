@@ -1,0 +1,83 @@
+experiment:
+  name: wikidata_scientist_kg_controlled_maintenance_v2
+  seed: 20260713
+  seeds:
+    - 20260713
+    - 20260714
+    - 20260715
+    - 20260716
+    - 20260717
+    - 20260718
+    - 20260719
+    - 20260720
+    - 20260721
+    - 20260722
+    - 20260723
+    - 20260724
+    - 20260725
+    - 20260726
+    - 20260727
+    - 20260728
+    - 20260729
+    - 20260730
+    - 20260731
+    - 20260732
+    - 20260733
+    - 20260734
+    - 20260735
+    - 20260736
+    - 20260737
+    - 20260738
+    - 20260739
+    - 20260740
+    - 20260741
+    - 20260742
+
+output_dir: outputs/wikidata_scientist_kg_audit_v2
+countries_report_path: paper/JIIS_submission/reports/jiis_audit_case/jiis_audit_case_report.json
+
+substrate_provenance:
+  version: corrected_multidisciplinary_v2
+  same_as_v1: false
+  supersedes_cache_sha256: 7977bf819292fdd579d28cc76ed501e226f13a2ddc55003f1efda047ec59c32b
+  correction_reason: V1 seed selection yielded 300 physical-science scientists and no other discipline groups
+
+extraction:
+  endpoint: https://query.wikidata.org/sparql
+  query_mode: staged
+  prefer_cache: true
+  batch_size: 100
+  scientist_limits: [300, 350, 400, 450, 500]
+  min_nodes: 2000
+  max_nodes: 2000
+  min_edges: 3000
+  max_edges: 10000
+  timeout_seconds: 180
+  cache_path: outputs/wikidata_scientist_kg_audit_v2/data/wdqs_cache.json
+  expected_cache_sha256: 9c9b9aec985e87f6d098aa4dd7cbc06875638a7a6298ea61a18c9215668d1cfe
+
+audit:
+  primary_budget_fraction: 0.25
+
+anchor_confirmation:
+  budget_fraction: 0.05
+  clusters_per_discipline: 4
+  motif_seed: 20260713
+  require_complete_clusters: true
+
+noise:
+  rates: [0.00, 0.05, 0.10, 0.15, 0.20]
+
+budget:
+  fractions: [0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.40, 0.50]
+
+statistics:
+  bootstrap_rounds: 1000
+
+efficiency:
+  sizes: [500, 1000, 2000]
+  warmups: 1
+  repeats: 10
+
+case_studies:
+  max_entities: 100

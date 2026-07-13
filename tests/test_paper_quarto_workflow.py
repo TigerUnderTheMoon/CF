@@ -26,8 +26,11 @@ def test_jiis_submission_source_declares_current_latex_contract() -> None:
     assert r"\input{" not in manuscript
     assert "Impact Coverage@K" in manuscript
     assert "Life-Saving First" in manuscript
-    assert "The semantic main experiment is deliberately bounded to Countries-KG" in manuscript
-    assert "necessary future step" in manuscript
+    assert (
+        "This experiment validates the proposed audit representation under controlled "
+        "knowledge-maintenance scenarios on a real KG substrate"
+    ) in manuscript
+    assert "not a same-graph rerun" in manuscript
     assert "10.1016/j.knosys.2025.113503" in references
     assert "10.1016/j.knosys.2025.113648" in references
     assert "10.1016/j.knosys.2024.112410" in references

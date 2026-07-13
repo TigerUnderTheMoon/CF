@@ -51,19 +51,19 @@ def test_jiis_source_is_flat_and_bounded() -> None:
     assert "Impact Coverage@K" in manuscript
     assert "reachable descendants" in manuscript
     assert "Life-Saving First" in manuscript
-    assert "No-Fallback Ablation matches the main policy (both 1.000)" in manuscript
+    assert "No-Fallback Ablation matches the main policy in this fixture" in manuscript
     assert "Random Stratified" in manuscript
     assert "Betweenness Centrality" in manuscript
     assert "Directed Out-Closeness Centrality" in manuscript
     assert "average path length" in manuscript
     assert "transitive closure" in manuscript
-    assert "Flat Top-K baseline (using the shared" in manuscript
+    assert "Flat Top-K uses the shared" in manuscript
     assert "sole ranking criterion" in manuscript
     assert "Recall@25%" not in manuscript
     assert "Supplementary Tables C.8 and C.9" not in manuscript
     assert "Full edge lists" not in manuscript
     assert "production knowledge-base validation" in manuscript
-    assert "do not claim that structural labels are robust to arbitrary KG noise" in manuscript
+    assert "do not show that the representation is robust to arbitrary KG noise" in manuscript
     assert "| Method |" not in manuscript
 
 
