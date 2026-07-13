@@ -47,3 +47,6 @@ $out/
 # poetry.lock
 # pdm.lock
 /data
+
+# Local paper manuscripts and submission materials
+/paper/
