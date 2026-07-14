@@ -10,8 +10,8 @@ FINAL_SOURCE = JIIS / "source"
 FINAL_PACKAGE = JIIS / "submission_package"
 
 TITLE = (
-    "Structural Labels for Stratified Audit Budget Allocation in "
-    "Knowledge-Graph Dependency Flows"
+    "A Structural Contract for Audit Records in Budget-Aware "
+    "Knowledge-Graph Maintenance"
 )
 
 
@@ -22,15 +22,23 @@ def test_jiis_submission_source_declares_current_latex_contract() -> None:
 
     assert TITLE in manuscript
     assert TITLE in supplementary
-    assert r"\documentclass[pdflatex,sn-mathphys-num]{sn-jnl}" in manuscript
+    assert r"\documentclass[pdflatex,sn-basic]{sn-jnl}" in manuscript
+    assert "Numbered" not in manuscript.split("\n", 6)[3]
     assert r"\input{" not in manuscript
     assert "Impact Coverage@K" in manuscript
     assert "Life-Saving First" in manuscript
     assert (
-        "This experiment validates the proposed audit representation under controlled "
+        "This experiment evaluates the proposed audit representation under controlled "
         "knowledge-maintenance scenarios on a real KG substrate"
     ) in manuscript
+    assert "A boundary analysis for process-annotation routes" not in manuscript
+    assert "Process-Annotation Variant Details and Audit Readout" not in supplementary
+    assert "Process-annotation calibration and external representation validity fall outside its scope" in supplementary
     assert "not a same-graph rerun" in manuscript
+    assert "10.1145/3331166" in references
+    assert "10.1016/j.ijinfomgt.2019.07.008" in references
+    assert "address = {Sydney, NSW, Australia}" in references
+    assert "address = {Oxford, UK}" in references
     assert "10.1016/j.knosys.2025.113503" in references
     assert "10.1016/j.knosys.2025.113648" in references
     assert "10.1016/j.knosys.2024.112410" in references
@@ -44,7 +52,7 @@ def test_jiis_final_upload_boundary_contains_required_files() -> None:
         "supplementary.tex",
         "references.bib",
         "sn-jnl.cls",
-        "sn-mathphys-num.bst",
+        "sn-basic.bst",
     }
     forbidden_suffixes = (
         ".aux",

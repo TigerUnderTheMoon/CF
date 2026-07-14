@@ -49,4 +49,10 @@ $out/
 /data
 
 # Local paper manuscripts and submission materials
-/paper/
+/paper/*
+!/paper/JIIS_submission/
+/paper/JIIS_submission/*
+!/paper/JIIS_submission/reproducibility_manifest.md
+!/paper/JIIS_submission/submission_package/
+/paper/JIIS_submission/submission_package/*
+!/paper/JIIS_submission/submission_package/reproducibility_archive.zip

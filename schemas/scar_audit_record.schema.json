@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/schemas/scar-audit-record-1.0.json",
+  "title": "SCAR Audit Record 1.0",
+  "description": "Frozen audit-record interchange contract for controlled SCAR evidence.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "artifact_id",
+    "graph_snapshot",
+    "auditable",
+    "is_bottleneck",
+    "is_redundant",
+    "redundancy_group_id",
+    "downstream_impact_count",
+    "sink_drop_count",
+    "at_risk_terminal_ids",
+    "raw_risk_score",
+    "extractor_metadata"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "scar-1.0"
+    },
+    "artifact_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "graph_snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["snapshot_id", "sha256"],
+      "properties": {
+        "snapshot_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "auditable": {
+      "type": "boolean"
+    },
+    "is_bottleneck": {
+      "type": "boolean"
+    },
+    "is_redundant": {
+      "type": "boolean"
+    },
+    "redundancy_group_id": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "downstream_impact_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "sink_drop_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "at_risk_terminal_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "raw_risk_score": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0
+    },
+    "extractor_metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "extractor",
+        "protocol_version",
+        "candidate_rule",
+        "source_unit_id",
+        "replicate_id",
+        "candidate_id_sha256"
+      ],
+      "properties": {
+        "extractor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "protocol_version": {
+          "const": "fair-v1"
+        },
+        "candidate_rule": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_unit_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "replicate_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "candidate_id_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    }
+  }
+}

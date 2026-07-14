@@ -19,6 +19,7 @@ from fma.eval.wikidata_controlled_audit import METHODS, MotifBundle
 DISPLAY_NAMES = {
     "life_saving_first": "Life-Saving First",
     "life_saving_clustered": "LSF-Clustered",
+    "greedy_maximum_coverage": "Greedy Maximum Coverage",
     "flat_top_k": "Flat Top-K",
     "degree_centrality": "Degree",
     "centrality": "Degree",
@@ -27,22 +28,32 @@ DISPLAY_NAMES = {
     "random": "Random",
     "no_fallback": "No-Fallback",
     "no_fallback_ablation": "No-Fallback",
+    "lsf_minus_bottleneck": "LSF minus bottleneck",
+    "lsf_minus_redundancy": "LSF minus redundancy",
+    "lsf_minus_unique_layer": "LSF minus unique layer",
 }
+
+OVERALL_WORKFLOW_STAGES = (
+    "Intelligent Information System",
+    "Dependency Graph Construction",
+    "Structural Audit Representation",
+    "Budget-Aware Audit Decision",
+    "Knowledge Maintenance",
+)
 
 
 def plot_overall_workflow(path: Path) -> None:
     labels = [
-        "Wikidata",
-        "Subgraph\nExtraction",
-        "Controlled\nAudit Motifs",
-        "Life-Saving\nFirst",
-        "Impact\nCoverage",
-        "Revision-History\nCase Study",
+        "Intelligent\nInformation\nSystem",
+        "Dependency\nGraph\nConstruction",
+        "Structural\nAudit\nRepresentation",
+        "Budget-Aware\nAudit\nDecision",
+        "Knowledge\nMaintenance",
     ]
-    colors = ["#2f6f4e", "#4178a8", "#b65d3a", "#7b5ea7", "#d29b28", "#58636d"]
-    fig, ax = plt.subplots(figsize=(13, 2.8))
-    ax.set_xlim(-0.6, len(labels) - 0.4)
-    ax.set_ylim(-0.8, 0.8)
+    colors = ["#2f6f4e", "#4178a8", "#7b5ea7", "#b65d3a", "#58636d"]
+    fig, ax = plt.subplots(figsize=(7.2, 1.5))
+    ax.set_xlim(-0.65, len(labels) - 0.35)
+    ax.set_ylim(-0.65, 0.65)
     ax.axis("off")
     for index, (label, color) in enumerate(zip(labels, colors, strict=True)):
         ax.text(
@@ -52,9 +63,9 @@ def plot_overall_workflow(path: Path) -> None:
             ha="center",
             va="center",
             color="white",
-            fontsize=10,
+            fontsize=7.5,
             fontweight="bold",
-            bbox={"boxstyle": "round,pad=0.55", "facecolor": color, "edgecolor": "none"},
+            bbox={"boxstyle": "round,pad=0.45", "facecolor": color, "edgecolor": "none"},
         )
         if index < len(labels) - 1:
             ax.annotate(
@@ -63,6 +74,7 @@ def plot_overall_workflow(path: Path) -> None:
                 xytext=(index + 0.38, 0),
                 arrowprops={"arrowstyle": "->", "color": "#3c444b", "lw": 1.6},
             )
+    ax.set_title("Maintenance Workflow for Structural Audit Records", fontsize=9.5)
     _save(fig, path)
 
 
@@ -179,25 +191,35 @@ def plot_impact_comparison(
     budget_fraction: float,
     path: Path,
 ) -> None:
-    methods = [method for method in METHODS if method != "life_saving_clustered"]
     countries_keys = {
         "life_saving_first": "life_saving_first",
+        "greedy_maximum_coverage": "greedy_max_coverage",
         "flat_top_k": "flat_top_k",
         "degree_centrality": "centrality",
         "random_stratified": "random_stratified",
         "position": "position",
         "random": "random",
         "no_fallback": "no_fallback_ablation",
+        "lsf_minus_bottleneck": "lsf_minus_bottleneck",
+        "lsf_minus_redundancy": "lsf_minus_redundancy",
+        "lsf_minus_unique_layer": "lsf_minus_unique_layer",
     }
-    countries = []
-    for method in methods:
-        key = countries_keys[method]
-        countries.append(float(countries_report["methods"][key]["impact_coverage_at_k"]["mean"]))
     wiki_by_method = {
         str(row["method"]): float(row["mean"])
         for row in wikidata_summary
         if float(row["budget_fraction"]) == float(budget_fraction)
     }
+    methods = [
+        method
+        for method in METHODS
+        if method not in {"life_saving_clustered", "no_fallback"}
+        and countries_keys.get(method) in countries_report["methods"]
+        and method in wiki_by_method
+    ]
+    countries = []
+    for method in methods:
+        key = countries_keys[method]
+        countries.append(float(countries_report["methods"][key]["impact_coverage_at_k"]["mean"]))
     wikidata = [wiki_by_method[method] for method in methods]
     x = np.arange(len(methods))
     width = 0.38
@@ -231,8 +253,18 @@ def plot_sweep(
         "#d09a32",
         "#68727a",
         "#bf4f75",
+        "#7a6f55",
+        "#5f8f4e",
+        "#995f7a",
+        "#4d8795",
     ]
-    for method, color in zip(METHODS, palette, strict=True):
+    available = {str(row["method"]) for row in summary}
+    methods = [
+        method
+        for method in METHODS
+        if method != "no_fallback" and method in available
+    ]
+    for method, color in zip(methods, palette[: len(methods)]):
         rows = sorted(
             (row for row in summary if row["method"] == method),
             key=lambda row: float(row[condition_name]),
@@ -288,16 +320,18 @@ def plot_anchor_cluster_confirmation(
     summary: Sequence[Mapping[str, Any]],
     path: Path,
 ) -> None:
-    methods = [
+    by_method = {str(row["method"]): row for row in summary}
+    preferred_order = [
         "life_saving_first",
         "life_saving_clustered",
+        "greedy_maximum_coverage",
         "flat_top_k",
         "degree_centrality",
     ]
-    by_method = {str(row["method"]): row for row in summary}
+    methods = [method for method in preferred_order if method in by_method]
     means = [float(by_method[method]["mean"]) for method in methods]
     errors = [float(by_method[method]["std"]) for method in methods]
-    colors = ["#357a68", "#2f9e9e", "#b45b3e", "#5279a8"]
+    colors = ["#357a68", "#2f9e9e", "#8d6aa8", "#b45b3e", "#5279a8"]
     x = np.arange(len(methods))
     fig, ax = plt.subplots(figsize=(8.5, 5.2))
     ax.bar(x, means, yerr=errors, capsize=3, color=colors)
@@ -318,11 +352,17 @@ def plot_structural_sweep(
     x_label: str,
     path: Path,
 ) -> None:
+    available = {str(row["method"]) for row in summary}
     methods = [
-        "life_saving_first",
-        "life_saving_clustered",
-        "flat_top_k",
-        "degree_centrality",
+        method
+        for method in (
+            "life_saving_first",
+            "life_saving_clustered",
+            "greedy_maximum_coverage",
+            "flat_top_k",
+            "degree_centrality",
+        )
+        if method in available
     ]
     metrics = [
         (
@@ -332,11 +372,11 @@ def plot_structural_sweep(
         ),
         ("mean_sink_drop_mass", "std_sink_drop_mass", "Sink-drop mass"),
     ]
-    colors = ["#357a68", "#2f9e9e", "#b45b3e", "#5279a8"]
-    markers = ["o", "s", "^", "D"]
+    colors = ["#357a68", "#2f9e9e", "#8d6aa8", "#b45b3e", "#5279a8"]
+    markers = ["o", "s", "P", "^", "D"]
     fig, axes = plt.subplots(1, 2, figsize=(12.5, 5.2), sharey=True)
     for ax, (mean_key, std_key, metric_label) in zip(axes, metrics, strict=True):
-        for method, color, marker in zip(methods, colors, markers, strict=True):
+        for method, color, marker in zip(methods, colors, markers):
             method_rows = sorted(
                 (row for row in summary if row["method"] == method),
                 key=lambda row: float(row[condition_name]),

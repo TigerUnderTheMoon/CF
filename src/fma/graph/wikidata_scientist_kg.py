@@ -247,6 +247,8 @@ def extract_wikidata_triples(
         return _validate_expected_cache_hash(
             _load_cached_extraction(config, cache_path), config
         )
+    if bool(config.get("offline")):
+        raise FileNotFoundError(f"offline Wikidata cache is missing: {cache_path}")
     if str(config.get("query_mode", "canonical")) == "staged":
         return _validate_expected_cache_hash(
             _extract_wikidata_triples_staged(config, fetch_json=fetch_json), config

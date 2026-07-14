@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import hashlib
 import json
 import math
 import subprocess
@@ -15,12 +16,17 @@ import networkx as nx
 import yaml
 
 from fma.eval.wikidata_controlled_audit import (
+    CANDIDATE_RULE,
+    FAIR_PROTOCOL_VERSION,
     METHODS,
     MotifBundle,
     add_controlled_audit_motifs,
+    apply_holm_correction,
+    compute_utility_tradeoff,
     evaluate_controlled_audit_roles,
     evaluate_impact_coverage,
     extract_audit_roles,
+    greedy_utility_oracle_selection,
     run_anchor_cluster_confirmation,
     run_budget_sweep,
     run_efficiency_experiment,
@@ -113,12 +119,49 @@ def run_wikidata_scientist_audit(
         seed=seed,
     )
     _write_motif_manifest(primary_motif, directories["traces"] / "motif_manifest.json")
+    _write_audit_records(
+        primary_impact,
+        snapshot_path=directories["data"] / "audit_overlay.graphml",
+        output_path=directories["traces"] / "audit_records.jsonl",
+    )
 
     budget_report = run_budget_sweep(
         overlay,
         seeds=seeds,
         budget_fractions=[float(value) for value in config["budget"]["fractions"]],
         motif_count=motif_count,
+        bootstrap_rounds=bootstrap_rounds,
+        primary_budget_fraction=primary_budget,
+    )
+    utility_config = config.get("utility", {})
+    oracle_lambdas = [
+        float(value)
+        for value in utility_config.get(
+            "oracle_lambdas", [index / 20 for index in range(21)]
+        )
+    ]
+    primary_roles = extract_audit_roles(primary_motif.graph)
+    primary_budget_k = int(
+        primary_impact["methods"]["life_saving_first"]["budget_k"]
+    )
+    utility_oracle = [
+        greedy_utility_oracle_selection(
+            primary_motif.graph,
+            primary_impact["candidate_records"],
+            primary_roles,
+            budget=primary_budget_k,
+            lambda_weight=lambda_weight,
+        )
+        for lambda_weight in oracle_lambdas
+    ]
+    utility_tradeoff = compute_utility_tradeoff(
+        [
+            row
+            for row in budget_report["rows"]
+            if float(row["budget_fraction"]) == primary_budget
+        ],
+        lambda_values=[index / 100 for index in range(101)],
+        seed=seed,
         bootstrap_rounds=bootstrap_rounds,
     )
     anchor_config = config.get("anchor_confirmation", {})
@@ -154,6 +197,17 @@ def run_wikidata_scientist_audit(
         motif_count=motif_count,
         bootstrap_rounds=bootstrap_rounds,
     )
+    noise_inference_family = []
+    for mode, noise_report in (
+        ("deletion", deletion_report),
+        ("insertion", insertion_report),
+    ):
+        for row in noise_report["degradation_statistics"]:
+            family_row = {key: value for key, value in row.items() if key != "p_value_holm"}
+            family_row["mode"] = mode
+            family_row["holm_family"] = "noise_20pct_predeclared_eight"
+            noise_inference_family.append(family_row)
+    apply_holm_correction(noise_inference_family)
     efficiency_config = config["efficiency"]
     efficiency_report = run_efficiency_experiment(
         extraction.graph,
@@ -165,17 +219,13 @@ def run_wikidata_scientist_audit(
         motif_count=motif_count,
     )
 
-    case_error = None
-    try:
-        revision_cases = fetch_verified_revision_cases(
-            sorted(extraction.scientist_ids),
-            fetch_history=revision_history_loader,
-            fetch_revision=revision_entity_loader,
-            max_entities=int(config.get("case_studies", {}).get("max_entities", 100)),
-        )
-    except Exception as exc:
-        revision_cases = []
-        case_error = f"{type(exc).__name__}: {exc}"
+    revision_cases, case_error = _load_revision_cases(
+        extraction_config,
+        extraction.scientist_ids,
+        max_entities=int(config.get("case_studies", {}).get("max_entities", 100)),
+        revision_history_loader=revision_history_loader,
+        revision_entity_loader=revision_entity_loader,
+    )
     case_studies = _build_case_studies(
         revision_cases, primary_motif, primary_impact, primary_budget
     )
@@ -189,6 +239,8 @@ def run_wikidata_scientist_audit(
         primary_budget,
     )
     report = {
+        "protocol_version": FAIR_PROTOCOL_VERSION,
+        "candidate_rule": CANDIDATE_RULE,
         "experiment": str(experiment.get("name", "wikidata_scientist_kg_audit")),
         "positioning": POSITIONING,
         "controlled_role_statement": EVALUATION_STATEMENT,
@@ -220,6 +272,9 @@ def run_wikidata_scientist_audit(
                 if float(row["budget_fraction"]) == primary_budget
             ],
         },
+        "utility_oracle": utility_oracle,
+        "utility_tradeoff": utility_tradeoff,
+        "noise_inference_family": noise_inference_family,
         "case_studies": case_studies,
         "case_study_error": case_error,
         "anchor_cluster_confirmation": anchor_confirmation,
@@ -244,7 +299,13 @@ def run_wikidata_scientist_audit(
     _write_json(directories["metrics"] / "impact_coverage.json", report["impact_coverage"])
     _write_json(directories["metrics"] / "noise_deletion.json", deletion_report)
     _write_json(directories["metrics"] / "noise_insertion.json", insertion_report)
+    _write_json(
+        directories["metrics"] / "noise_inference_family.json",
+        noise_inference_family,
+    )
     _write_json(directories["metrics"] / "budget_sensitivity.json", budget_report)
+    _write_json(directories["metrics"] / "utility_oracle.json", utility_oracle)
+    _write_json(directories["metrics"] / "utility_tradeoff.json", utility_tradeoff)
     _write_json(directories["metrics"] / "efficiency.json", efficiency_report)
     _write_json(
         directories["metrics"] / "anchor_cluster_confirmation.json",
@@ -329,6 +390,7 @@ def run_wikidata_scientist_audit(
                 f"finish_utc={finish_time}",
                 f"git_commit={git_commit}",
                 f"seed={seed}",
+                f"protocol_version={FAIR_PROTOCOL_VERSION}",
                 f"source_mode={extraction.source_mode}",
                 f"cache_sha256={extraction.cache_sha256}",
                 "substrate_version="
@@ -348,6 +410,30 @@ def run_wikidata_scientist_audit(
         encoding="utf-8",
     )
     return report
+
+
+def _load_revision_cases(
+    extraction_config: Mapping[str, Any],
+    scientist_ids: set[str],
+    *,
+    max_entities: int,
+    revision_history_loader: Callable[[str], Sequence[Mapping[str, Any]]] | None,
+    revision_entity_loader: Callable[[str, int], Mapping[str, Any]] | None,
+) -> tuple[list[RevisionCase], str | None]:
+    if bool(extraction_config.get("offline")):
+        return [], "offline_mode: revision-history cases not fetched"
+    try:
+        return (
+            fetch_verified_revision_cases(
+                sorted(scientist_ids),
+                fetch_history=revision_history_loader,
+                fetch_revision=revision_entity_loader,
+                max_entities=max_entities,
+            ),
+            None,
+        )
+    except Exception as exc:
+        return [], f"{type(exc).__name__}: {exc}"
 
 
 def _write_extraction_artifacts(
@@ -375,6 +461,47 @@ def _write_motif_manifest(bundle: MotifBundle, path: Path) -> None:
             "anchor_by_candidate": bundle.manifest.anchor_by_candidate,
         },
     )
+
+
+def _write_audit_records(
+    impact_report: Mapping[str, Any],
+    *,
+    snapshot_path: Path,
+    output_path: Path,
+) -> None:
+    snapshot_sha256 = hashlib.sha256(snapshot_path.read_bytes()).hexdigest()
+    snapshot_id = f"wikidata-audit-overlay:{impact_report['replicate_id']}"
+    lines = []
+    for candidate in sorted(
+        impact_report["candidate_records"], key=lambda row: str(row["node_id"])
+    ):
+        record = {
+            "schema_version": "scar-1.0",
+            "artifact_id": str(candidate["node_id"]),
+            "graph_snapshot": {
+                "snapshot_id": snapshot_id,
+                "sha256": snapshot_sha256,
+            },
+            "auditable": True,
+            "is_bottleneck": bool(candidate["is_bottleneck"]),
+            "is_redundant": bool(candidate["is_redundant"]),
+            "redundancy_group_id": candidate["redundancy_group_id"],
+            "downstream_impact_count": int(candidate["downstream_impact_count"]),
+            "sink_drop_count": int(candidate["sink_drop_count"]),
+            "at_risk_terminal_ids": list(candidate["at_risk_terminal_ids"]),
+            "raw_risk_score": float(candidate["raw_risk_score"]),
+            "extractor_metadata": {
+                "extractor": "structural-audit-v1",
+                "protocol_version": str(impact_report["protocol_version"]),
+                "candidate_rule": str(impact_report["candidate_rule"]),
+                "source_unit_id": str(impact_report["source_unit_id"]),
+                "replicate_id": str(impact_report["replicate_id"]),
+                "candidate_id_sha256": str(impact_report["candidate_id_sha256"]),
+            },
+        }
+        lines.append(json.dumps(record, sort_keys=True))
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 def _build_case_studies(
@@ -541,23 +668,32 @@ def _summary_rows(
                 "impact_coverage_std": row["std"],
                 "covered_path_length_mean": row["mean_average_path_length"],
                 "p_value_holm_vs_lsf": stat.get("p_value_holm"),
-                "cliffs_delta_lsf_minus_method": stat.get("cliffs_delta"),
+                "rank_biserial_lsf_minus_method": stat.get("rank_biserial"),
+                "paired_mean_difference_lsf_minus_method": stat.get("mean_difference"),
+                "paired_mean_difference_ci95": stat.get("mean_difference_ci95"),
             }
         )
     countries_keys = {
         "life_saving_first": "life_saving_first",
+        "greedy_maximum_coverage": "greedy_maximum_coverage",
         "flat_top_k": "flat_top_k",
         "degree_centrality": "centrality",
         "random_stratified": "random_stratified",
         "position": "position",
         "random": "random",
         "no_fallback": "no_fallback_ablation",
+        "lsf_minus_bottleneck": "lsf_minus_bottleneck",
+        "lsf_minus_redundancy": "lsf_minus_redundancy",
+        "lsf_minus_unique_layer": "lsf_minus_unique_layer",
     }
     countries_rows = []
     for method in METHODS:
         if method == "life_saving_clustered":
             continue
-        metrics = countries_report["methods"][countries_keys[method]]
+        country_key = countries_keys.get(method)
+        if country_key not in countries_report["methods"]:
+            continue
+        metrics = countries_report["methods"][country_key]
         countries_rows.append(
             {
                 "dataset": "Countries-KG diagnostic fixture",
@@ -574,7 +710,9 @@ def _summary_rows(
                     "average_path_length_to_covered_descendants"
                 ]["mean"],
                 "p_value_holm_vs_lsf": None,
-                "cliffs_delta_lsf_minus_method": None,
+                "rank_biserial_lsf_minus_method": None,
+                "paired_mean_difference_lsf_minus_method": None,
+                "paired_mean_difference_ci95": None,
             }
         )
     return countries_rows + wiki_rows

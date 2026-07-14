@@ -6,9 +6,46 @@ import subprocess
 import sys
 from pathlib import Path
 
+import scripts.jiis_countries_kg_validation_core as validation_core
+from fma.graph.reflection_graph import ReflectionEdge, ReflectionGraph, ReflectionNode
+
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "run_countries_kg_label_validation.py"
+
+
+def _graph(edges: list[tuple[str, str]]) -> ReflectionGraph:
+    node_ids = sorted({node_id for edge in edges for node_id in edge})
+    nodes = [
+        ReflectionNode(
+            node_id=node_id,
+            trace_id="fixture",
+            step_index=index,
+            taxonomy_label="VERIFICATION",
+            utility_score=0.0,
+            structural_influence=0.0,
+            content=node_id,
+        )
+        for index, node_id in enumerate(node_ids)
+    ]
+    graph_edges = [
+        ReflectionEdge(source=source, target=target, edge_type="verifies")
+        for source, target in edges
+    ]
+    return ReflectionGraph("fixture", nodes, graph_edges, source_ids=[node_ids[0]])
+
+
+def test_undirected_articulation_predictions_use_native_binary_output() -> None:
+    helper = getattr(validation_core, "_undirected_articulation_predictions", None)
+    assert callable(helper)
+
+    chain = _graph([("a", "b"), ("b", "c")])
+    diamond = _graph([("a", "b"), ("a", "c"), ("b", "d"), ("c", "d")])
+    ring = _graph([("a", "b"), ("b", "c"), ("c", "d"), ("a", "e"), ("e", "d")])
+
+    assert helper(chain) == {"a": False, "b": True, "c": False}
+    assert helper(diamond) == {"a": False, "b": False, "c": False, "d": False}
+    assert ring.nodes and not any(helper(ring).values())
 
 
 def test_countries_kg_label_validation_writes_cache_and_scalability_outputs(tmp_path: Path) -> None:
@@ -46,6 +83,8 @@ def test_countries_kg_label_validation_writes_cache_and_scalability_outputs(tmp_
     assert report["baseline_names"]["tfidf"] == "Semantic-Similarity Baseline (TF-IDF)"
     assert report["baseline_names"]["betweenness"] == "Betweenness Centrality"
     assert report["baseline_names"]["out_closeness"] == "Directed Out-Closeness Centrality"
+    assert report["baseline_names"]["articulation_point"] == "Undirected Articulation Point"
+    assert report["articulation_point_protocol"] == "native_binary_undirected_projection"
     assert report["countries_kg"]["redundancy_positive_count"] >= 5
     assert report["countries_kg"]["limited_redundancy_positive_warning"] is False
     assert report["countries_kg"]["bottleneck_f1"] >= 0.8
@@ -54,6 +93,9 @@ def test_countries_kg_label_validation_writes_cache_and_scalability_outputs(tmp_
     assert math.isfinite(report["countries_kg"]["tfidf_redundancy_f1"])
     assert math.isfinite(report["countries_kg"]["betweenness_bottleneck_f1"])
     assert math.isfinite(report["countries_kg"]["out_closeness_bottleneck_f1"])
+    assert report["countries_kg"]["articulation_point_bottleneck_f1"] == 0.0
+    assert report["countries_kg"]["articulation_point_predicted_positive_count"] == 0
+    assert report["metric_details"]["articulation_point_bottleneck"]["f1"] == 0.0
 
     assert report["synthetic_scalability"]["sizes"] == [100, 200, 500, 1000, 5000]
     for size in ("100", "200", "500", "1000", "5000"):
@@ -70,4 +112,4 @@ def test_countries_kg_label_validation_writes_cache_and_scalability_outputs(tmp_
 
     first_trace = cache["traces"][0]
     first_node = first_trace["nodes"][0]
-    assert {"trace_id", "node_id", "is_bottleneck", "is_redundant", "redundancy_group_id", "downstream_impact_count", "auditable", "betweenness_centrality", "out_closeness_centrality"} <= set(first_node)
+    assert {"trace_id", "node_id", "is_bottleneck", "is_redundant", "redundancy_group_id", "downstream_impact_count", "auditable", "betweenness_centrality", "out_closeness_centrality", "is_articulation_point"} <= set(first_node)

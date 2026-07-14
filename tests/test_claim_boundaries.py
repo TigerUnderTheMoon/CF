@@ -191,18 +191,18 @@ def test_jiis_source_claims_stay_in_structural_label_boundary():
     ).read_text(encoding="utf-8").lower()
 
     assert "structural label extractor" in manuscript
-    assert "stratified budget allocation" in manuscript
+    assert "audit-record representation contract" in manuscript
+    assert "illustrative policy consumer" in manuscript
     assert "impact coverage@k" in manuscript
     assert "reachable descendants" in manuscript
     assert "life-saving first" in manuscript
-    assert "not a scorer" in manuscript
-    assert "score improvement" in manuscript
+    assert "controlled audit motifs" in manuscript
+    assert "native wikidata structural roles fall outside the evaluation target" in manuscript
     assert "robust to arbitrary kg noise" in manuscript
-    assert "causal identification" in manuscript
+    assert "causal effects were not evaluated" in manuscript
     assert "human usefulness" in manuscript
-    assert "does not report human usefulness evidence" in manuscript
-    assert "not production knowledge-base validation" in manuscript
-    assert "not a claim of the current framework" in manuscript
+    assert "reports no evidence of human usefulness" in manuscript
+    assert "production effectiveness" in manuscript
 
 
 def _jiis_manuscript_text() -> str:
@@ -242,28 +242,38 @@ def test_jiis_main_text_keeps_legacy_scorer_terms_out_of_method_and_results():
         assert term not in method_and_results
 
 
-def test_jiis_narrative_order_prioritizes_structural_policy_before_boundary_diagnostics():
+def test_jiis_narrative_order_prioritizes_representation_before_policy_consumption():
     manuscript = _jiis_manuscript_text()
 
-    impact_idx = manuscript.index("Impact Coverage")
-    spearman_idx = manuscript.index("Spearman")
-    life_idx = manuscript.index("Life-Saving First")
+    fidelity_idx = manuscript.index("Controlled extraction fidelity")
+    policy_idx = manuscript.index("Illustrative policy consumption on controlled substrates")
 
-    assert impact_idx < spearman_idx
-    for term in ("Ridge", "QP"):
-        term_idx = manuscript.find(term)
-        if term_idx >= 0:
-            assert life_idx < term_idx
+    assert fidelity_idx < policy_idx
+    assert "Spearman" not in manuscript
+    assert "Ridge" not in manuscript
+    assert "QP" not in manuscript
 
 
-def test_jiis_boundary_section_contains_legacy_scorer_diagnostics():
+def test_jiis_supplementary_excludes_legacy_scorer_diagnostics():
     manuscript = _jiis_manuscript_text()
-    boundary_start = manuscript.index(r"\section{Boundary Diagnosis}")
-    boundary_text = manuscript[boundary_start:]
+    supplementary = (
+        ROOT / "paper" / "JIIS_submission" / "source" / "supplementary.tex"
+    ).read_text(encoding="utf-8")
 
-    assert "Spearman" in boundary_text
-    assert "Ridge" in boundary_text or "QP" in boundary_text
-    assert "TF-IDF graph edges are sparse and directionless" in boundary_text
+    assert r"\section{Boundary Diagnosis}" not in manuscript
+    for legacy in (
+        "Spearman",
+        "Ridge",
+        "QP",
+        "SCU",
+        "PRM800K",
+        "WebQSP",
+        "MuSiQue",
+        "Failure Taxonomy",
+        "Audit Cards",
+    ):
+        assert legacy not in supplementary
+    assert supplementary.count(r"\section{Appendix") == 3
 
 
 def test_active_file_scope_excludes_superseded_manuscripts_and_plan_docs():

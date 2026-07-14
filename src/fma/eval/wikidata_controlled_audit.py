@@ -15,7 +15,7 @@ from statistics import mean, stdev
 from typing import Any, Mapping, Sequence
 
 import networkx as nx
-from scipy.stats import wilcoxon
+from scipy.stats import rankdata, wilcoxon
 
 from fma.graph.similarity import TextSimilarity
 from fma.graph.wikidata_scientist_kg import DagOverlay, Triple, build_dag_overlay
@@ -300,15 +300,28 @@ def evaluate_controlled_audit_roles(
     }
 
 
+FAIR_PROTOCOL_VERSION = "fair-v1"
+CANDIDATE_RULE = "layer > 0 and downstream_impact_count > 0"
+
 METHODS = (
     "life_saving_first",
     "life_saving_clustered",
+    "greedy_maximum_coverage",
     "flat_top_k",
     "degree_centrality",
     "random_stratified",
     "position",
     "random",
     "no_fallback",
+    "lsf_minus_bottleneck",
+    "lsf_minus_redundancy",
+    "lsf_minus_unique_layer",
+)
+
+PRIMARY_INFERENCE_BASELINES = (
+    "flat_top_k",
+    "greedy_maximum_coverage",
+    "degree_centrality",
 )
 
 POLICY_LAYERS = (
@@ -331,6 +344,7 @@ DISCIPLINE_OCCUPATIONS = (
 ANCHOR_CONFIRMATION_METHODS = (
     "life_saving_first",
     "life_saving_clustered",
+    "greedy_maximum_coverage",
     "flat_top_k",
     "degree_centrality",
 )
@@ -343,12 +357,15 @@ def evaluate_impact_coverage(
     seed: int,
     reference_graph: nx.DiGraph | None = None,
     fixed_budget_k: int | None = None,
+    _roles: Mapping[str, Mapping[str, Any]] | None = None,
     _reference_roles: Mapping[str, Mapping[str, Any]] | None = None,
+    source_unit_id: str = "wikidata_scientist_substrate",
+    replicate_id: str | None = None,
 ) -> dict[str, Any]:
     """Evaluate Life-Saving First and fixed-budget baselines on one audit DAG."""
     if not 0.0 < budget_fraction <= 1.0:
         raise ValueError("budget_fraction must be in (0, 1]")
-    roles = extract_audit_roles(graph)
+    roles = _roles or extract_audit_roles(graph)
     evaluation_graph = reference_graph if reference_graph is not None else graph
     reference_roles = (
         roles
@@ -356,14 +373,16 @@ def evaluate_impact_coverage(
         else (_reference_roles or extract_audit_roles(evaluation_graph))
     )
     records = _node_records(graph, roles)
-    candidates = [record for record in records if record["downstream_impact_count"] > 0]
+    candidates = [record for record in records if _is_fair_candidate(record)]
+    candidate_ids = sorted(str(record["node_id"]) for record in candidates)
+    candidate_id_sha256 = _candidate_id_sha256(candidate_ids)
     reference_records = records if reference_graph is None else _node_records(
         evaluation_graph, reference_roles
     )
     reference_candidate_ids = [
         str(record["node_id"])
         for record in reference_records
-        if record["downstream_impact_count"] > 0
+        if _is_fair_candidate(record)
     ]
     proportional_budget = (
         max(1, math.ceil(len(candidates) * budget_fraction)) if candidates else 0
@@ -401,6 +420,9 @@ def evaluate_impact_coverage(
     selections = {
         "life_saving_first": life_saving,
         "life_saving_clustered": life_saving_clustered,
+        "greedy_maximum_coverage": greedy_maximum_coverage_selection(
+            graph, candidates, budget=budget
+        ),
         "flat_top_k": _ordered_selection(
             candidates, budget, lambda row: (-row["raw_risk_score"], row["node_id"])
         ),
@@ -413,6 +435,27 @@ def evaluate_impact_coverage(
         ),
         "random": _random_selection(candidates, budget, seed),
         "no_fallback": no_fallback,
+        "lsf_minus_bottleneck": _life_saving_selection(
+            candidates,
+            budget=budget,
+            seed=seed,
+            include_fallback=True,
+            use_bottleneck=False,
+        ),
+        "lsf_minus_redundancy": _life_saving_selection(
+            candidates,
+            budget=budget,
+            seed=seed,
+            include_fallback=True,
+            use_redundancy=False,
+        ),
+        "lsf_minus_unique_layer": _life_saving_selection(
+            candidates,
+            budget=budget,
+            seed=seed,
+            include_fallback=True,
+            use_unique_layer=False,
+        ),
     }
     methods: dict[str, dict[str, Any]] = {}
     for method, selection in selections.items():
@@ -428,8 +471,19 @@ def evaluate_impact_coverage(
             "budget_k": budget,
             "budget_used": len(selection["selected_node_ids"]),
             "selected_node_ids": selection["selected_node_ids"],
+            "candidate_id_sha256": candidate_id_sha256,
+            "selection_changed_vs_lsf": (
+                selection["selected_node_ids"] != life_saving["selected_node_ids"]
+            ),
         }
     return {
+        "protocol_version": FAIR_PROTOCOL_VERSION,
+        "candidate_rule": CANDIDATE_RULE,
+        "candidate_ids": candidate_ids,
+        "candidate_id_sha256": candidate_id_sha256,
+        "candidate_records": [dict(record) for record in candidates],
+        "source_unit_id": str(source_unit_id),
+        "replicate_id": str(replicate_id if replicate_id is not None else seed),
         "budget_fraction": float(budget_fraction),
         "candidate_count": len(candidates),
         "budget_source": budget_source,
@@ -503,7 +557,7 @@ def paired_statistical_test(
     seed: int,
     bootstrap_rounds: int = 1000,
 ) -> dict[str, Any]:
-    """Return paired Wilcoxon significance and Cliff's delta effect size."""
+    """Return paired Wilcoxon, signed-rank effect, and paired bootstrap intervals."""
     if len(primary) != len(baseline) or not primary:
         raise ValueError("paired samples must be non-empty and have equal length")
     differences = [
@@ -513,32 +567,36 @@ def paired_statistical_test(
     if all(abs(value) <= 1e-15 for value in differences):
         return {
             "p_value": 1.0,
-            "cliffs_delta": 0.0,
+            "rank_biserial": 0.0,
             "effect_ci95": [0.0, 0.0],
             "degenerate": True,
             "mean_difference": 0.0,
+            "mean_difference_ci95": [0.0, 0.0],
+            "bootstrap_rounds": int(bootstrap_rounds),
         }
     p_value = float(wilcoxon(differences, alternative="two-sided").pvalue)
-    effect = _cliffs_delta(primary, baseline)
+    effect = _matched_rank_biserial(differences)
     rng = random.Random(seed)
     effects = []
+    mean_differences = []
     for _ in range(bootstrap_rounds):
         indices = [rng.randrange(len(primary)) for _ in primary]
-        effects.append(
-            _cliffs_delta(
-                [primary[index] for index in indices],
-                [baseline[index] for index in indices],
-            )
-        )
-    effects.sort()
-    lower = effects[max(0, int(0.025 * len(effects)))] if effects else effect
-    upper = effects[min(len(effects) - 1, int(0.975 * len(effects)))] if effects else effect
+        sampled = [differences[index] for index in indices]
+        effects.append(_matched_rank_biserial(sampled))
+        mean_differences.append(float(mean(sampled)))
+    effect_ci = _percentile_interval(effects, fallback=effect)
+    mean_ci = _percentile_interval(
+        mean_differences,
+        fallback=float(mean(differences)),
+    )
     return {
         "p_value": p_value,
-        "cliffs_delta": float(effect),
-        "effect_ci95": [float(lower), float(upper)],
+        "rank_biserial": float(effect),
+        "effect_ci95": effect_ci,
         "degenerate": False,
         "mean_difference": float(mean(differences)),
+        "mean_difference_ci95": mean_ci,
+        "bootstrap_rounds": int(bootstrap_rounds),
     }
 
 
@@ -549,16 +607,22 @@ def run_budget_sweep(
     budget_fractions: Sequence[float],
     motif_count: int | None = None,
     bootstrap_rounds: int = 1000,
+    primary_budget_fraction: float = 0.25,
 ) -> dict[str, Any]:
     rows: list[dict[str, Any]] = []
+    layer_counts: Counter[str] = Counter()
     for seed in seeds:
         motif = add_controlled_audit_motifs(overlay, seed, motif_count=motif_count)
+        roles = extract_audit_roles(motif.graph)
         for budget_fraction in budget_fractions:
             report = evaluate_impact_coverage(
                 motif.graph,
                 budget_fraction=float(budget_fraction),
                 seed=int(seed),
+                _roles=roles,
             )
+            for layer in report["life_saving_first_layers"]:
+                layer_counts[str(layer["layer"])] += int(layer["selected_count"])
             rows.extend(
                 _method_rows(
                     report,
@@ -567,12 +631,23 @@ def run_budget_sweep(
                     condition_value=float(budget_fraction),
                 )
             )
-    return _sweep_report(
+    result = _sweep_report(
         rows,
         condition_name="budget_fraction",
         seeds=seeds,
         bootstrap_rounds=bootstrap_rounds,
+        inference_condition=float(primary_budget_fraction),
+        inference_baselines=PRIMARY_INFERENCE_BASELINES,
+        holm_family="primary_budget_predeclared",
     )
+    result["layer_activation"] = {
+        "counts": {layer: int(layer_counts.get(layer, 0)) for layer in POLICY_LAYERS},
+        "unexercised_layers": [
+            layer for layer in POLICY_LAYERS if layer_counts.get(layer, 0) == 0
+        ],
+        "unit": "selected_records_across_motif_seed_and_budget",
+    }
+    return result
 
 
 def run_noise_sweep(
@@ -594,7 +669,7 @@ def run_noise_sweep(
         reference_candidates = [
             record
             for record in _node_records(motif.graph, reference_roles)
-            if record["downstream_impact_count"] > 0
+            if _is_fair_candidate(record)
         ]
         fixed_budget = (
             max(1, math.ceil(len(reference_candidates) * budget_fraction))
@@ -632,6 +707,9 @@ def run_noise_sweep(
         condition_name="noise_rate",
         seeds=seeds,
         bootstrap_rounds=bootstrap_rounds,
+        inference_condition=None,
+        inference_baselines=(),
+        holm_family=None,
     )
     result["mode"] = mode
     result["evaluation_graph"] = "clean_reference"
@@ -671,6 +749,7 @@ def run_anchor_cluster_confirmation(
     units: list[dict[str, Any]] = []
     rows: list[dict[str, Any]] = []
     skipped_units: list[dict[str, Any]] = []
+    clustered_changed = False
     for discipline, cluster_index, anchors in clusters:
         unit_id = f"{discipline}:{cluster_index:02d}"
         neighborhood = _outgoing_neighborhood(raw_graph, set(anchors), cutoff=3)
@@ -695,6 +774,10 @@ def run_anchor_cluster_confirmation(
             motif.graph,
             budget_fraction=budget_fraction,
             seed=motif_seed,
+        )
+        clustered_changed = clustered_changed or (
+            evaluation["methods"]["life_saving_clustered"]["selected_node_ids"]
+            != evaluation["methods"]["life_saving_first"]["selected_node_ids"]
         )
         units.append(
             {
@@ -739,11 +822,17 @@ def run_anchor_cluster_confirmation(
             for unit in units
         ]
         _require_complete_anchor_clusters(evaluated, clusters_per_discipline)
-    summary = _anchor_cluster_summary(rows)
+    reporting_methods = [
+        method
+        for method in ANCHOR_CONFIRMATION_METHODS
+        if method != "life_saving_clustered" or clustered_changed
+    ]
+    summary = _anchor_cluster_summary(rows, methods=reporting_methods)
     statistics = _anchor_cluster_statistics(
         rows,
         motif_seed=motif_seed,
         bootstrap_rounds=bootstrap_rounds,
+        include_clustered=clustered_changed,
     )
     return {
         "statistical_unit": "anchor_cluster",
@@ -759,6 +848,9 @@ def run_anchor_cluster_confirmation(
         "rows": rows,
         "summary": summary,
         "statistics": statistics,
+        "non_informative_methods": (
+            [] if clustered_changed else ["life_saving_clustered"]
+        ),
         "independence_boundary": (
             "Anchor clusters are paired units from one extracted Wikidata substrate, "
             "not independent knowledge graphs."
@@ -847,9 +939,13 @@ def _outgoing_neighborhood(
     return selected
 
 
-def _anchor_cluster_summary(rows: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
+def _anchor_cluster_summary(
+    rows: Sequence[Mapping[str, Any]],
+    *,
+    methods: Sequence[str] = ANCHOR_CONFIRMATION_METHODS,
+) -> list[dict[str, Any]]:
     summary = []
-    for method in ANCHOR_CONFIRMATION_METHODS:
+    for method in methods:
         method_rows = [row for row in rows if row["method"] == method]
         values = [float(row["impact_coverage"]) for row in method_rows]
         summary.append(
@@ -880,19 +976,26 @@ def _anchor_cluster_statistics(
     *,
     motif_seed: int,
     bootstrap_rounds: int,
+    include_clustered: bool = True,
 ) -> list[dict[str, Any]]:
     indexed = {
         (str(row["unit_id"]), str(row["method"])): float(row["impact_coverage"])
         for row in rows
     }
     unit_ids = sorted({str(row["unit_id"]) for row in rows})
-    comparisons = (
-        ("life_saving_first", "life_saving_clustered"),
+    comparisons = [
+        ("life_saving_first", "greedy_maximum_coverage"),
         ("life_saving_first", "flat_top_k"),
         ("life_saving_first", "degree_centrality"),
-        ("life_saving_clustered", "flat_top_k"),
-        ("life_saving_clustered", "degree_centrality"),
-    )
+    ]
+    if include_clustered:
+        comparisons = [
+            ("life_saving_first", "life_saving_clustered"),
+            *comparisons,
+            ("life_saving_clustered", "greedy_maximum_coverage"),
+            ("life_saving_clustered", "flat_top_k"),
+            ("life_saving_clustered", "degree_centrality"),
+        ]
     statistics = []
     for primary, baseline in comparisons:
         result = paired_statistical_test(
@@ -920,9 +1023,9 @@ def _noise_degradation_statistics(
     seeds: Sequence[int],
     bootstrap_rounds: int,
 ) -> list[dict[str, Any]]:
-    metrics = ("impact_coverage", "protected_at_risk_coverage", "sink_drop_mass")
+    metrics = ("impact_coverage", "protected_at_risk_coverage")
     rates = sorted({float(row["noise_rate"]) for row in rows})
-    if not rates:
+    if not rates or 0.20 not in rates:
         return []
     reference_rate = rates[0]
     index = {
@@ -930,37 +1033,38 @@ def _noise_degradation_statistics(
         for row in rows
     }
     statistics: list[dict[str, Any]] = []
-    for rate in rates[1:]:
-        for metric in metrics:
-            primary_delta = [
-                float(index[(seed, rate, "life_saving_first")][metric])
-                - float(index[(seed, reference_rate, "life_saving_first")][metric])
+    rate = 0.20
+    for metric in metrics:
+        primary_delta = [
+            float(index[(seed, rate, "life_saving_first")][metric])
+            - float(index[(seed, reference_rate, "life_saving_first")][metric])
+            for seed in seeds
+        ]
+        for baseline in ("flat_top_k", "greedy_maximum_coverage"):
+            baseline_delta = [
+                float(index[(seed, rate, baseline)][metric])
+                - float(index[(seed, reference_rate, baseline)][metric])
                 for seed in seeds
             ]
-            for baseline in METHODS[1:]:
-                baseline_delta = [
-                    float(index[(seed, rate, baseline)][metric])
-                    - float(index[(seed, reference_rate, baseline)][metric])
-                    for seed in seeds
-                ]
-                result = paired_statistical_test(
-                    primary_delta,
-                    baseline_delta,
-                    seed=int(sum(seeds) + round(rate * 10000) + len(metric) + len(baseline)),
-                    bootstrap_rounds=bootstrap_rounds,
-                )
-                statistics.append(
-                    {
-                        "noise_rate": rate,
-                        "reference_noise_rate": reference_rate,
-                        "metric": metric,
-                        "baseline": baseline,
-                        "life_saving_first_mean_change": float(mean(primary_delta)),
-                        "baseline_mean_change": float(mean(baseline_delta)),
-                        "positive_mean_difference_means_less_degradation": True,
-                        **result,
-                    }
-                )
+            result = paired_statistical_test(
+                primary_delta,
+                baseline_delta,
+                seed=int(sum(seeds) + round(rate * 10000) + len(metric) + len(baseline)),
+                bootstrap_rounds=bootstrap_rounds,
+            )
+            statistics.append(
+                {
+                    "noise_rate": rate,
+                    "reference_noise_rate": reference_rate,
+                    "metric": metric,
+                    "baseline": baseline,
+                    "life_saving_first_mean_change": float(mean(primary_delta)),
+                    "baseline_mean_change": float(mean(baseline_delta)),
+                    "positive_mean_difference_means_less_degradation": True,
+                    "holm_family": "noise_20pct_predeclared",
+                    **result,
+                }
+            )
     _apply_holm_correction(statistics)
     return statistics
 
@@ -1056,9 +1160,308 @@ def _node_records(
                 "is_bottleneck": bool(roles[node]["is_bottleneck"]),
                 "is_redundant": bool(roles[node]["is_redundant"]),
                 "redundancy_group_id": roles[node]["redundancy_group_id"],
+                "sink_drop_count": int(roles[node]["sink_drop_count"]),
+                "at_risk_terminal_ids": list(roles[node]["at_risk_terminal_ids"]),
             }
         )
     return records
+
+
+def _is_fair_candidate(record: Mapping[str, Any]) -> bool:
+    return int(record["layer"]) > 0 and int(record["downstream_impact_count"]) > 0
+
+
+def _candidate_id_sha256(candidate_ids: Sequence[str]) -> str:
+    payload = "\n".join(sorted(map(str, candidate_ids))).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def greedy_maximum_coverage_selection(
+    graph: nx.DiGraph,
+    candidates: Sequence[Mapping[str, Any]],
+    *,
+    budget: int,
+) -> dict[str, Any]:
+    """Select nodes by deterministic marginal descendant coverage."""
+    if budget < 0:
+        raise ValueError("budget must be non-negative")
+    by_id = {str(row["node_id"]): row for row in candidates}
+    auditable = {
+        str(node)
+        for node, data in graph.nodes(data=True)
+        if int(data.get("layer", 0)) > 0
+    }
+    descendant_sets = {
+        node_id: {str(node) for node in nx.descendants(graph, node_id)} & auditable
+        for node_id in by_id
+        if node_id in graph
+    }
+    selected: list[str] = []
+    covered: set[str] = set()
+    marginal_counts: list[int] = []
+    remaining = set(by_id)
+    while remaining and len(selected) < budget:
+        ranked = sorted(
+            remaining,
+            key=lambda node_id: (
+                -len(descendant_sets.get(node_id, set()) - covered),
+                _selection_order_key(by_id[node_id]),
+            ),
+        )
+        chosen = ranked[0]
+        newly_covered = descendant_sets.get(chosen, set()) - covered
+        selected.append(chosen)
+        marginal_counts.append(len(newly_covered))
+        covered.update(newly_covered)
+        remaining.remove(chosen)
+    return {
+        "selected_node_ids": selected,
+        "marginal_descendant_counts": marginal_counts,
+    }
+
+
+def greedy_utility_oracle_selection(
+    graph: nx.DiGraph,
+    candidates: Sequence[Mapping[str, Any]],
+    reference_roles: Mapping[str, Mapping[str, Any]],
+    *,
+    budget: int,
+    lambda_weight: float,
+) -> dict[str, Any]:
+    """Greedily maximize the diagnostic coverage-protection utility."""
+    if budget < 0:
+        raise ValueError("budget must be non-negative")
+    if not 0.0 <= lambda_weight <= 1.0:
+        raise ValueError("lambda_weight must be in [0, 1]")
+    by_id = {str(row["node_id"]): row for row in candidates}
+    auditable = sorted(
+        str(node)
+        for node, data in graph.nodes(data=True)
+        if int(data.get("layer", 0)) > 0
+    )
+    auditable_index = {node: index for index, node in enumerate(auditable)}
+    descendant_bits: dict[str, int] = {}
+    for node in reversed(list(map(str, nx.topological_sort(graph)))):
+        bits = 0
+        for child in graph.successors(node):
+            child = str(child)
+            bits |= descendant_bits[child]
+            if child in auditable_index:
+                bits |= 1 << auditable_index[child]
+        descendant_bits[node] = bits
+    at_risk_ids = sorted(
+        {
+            str(terminal)
+            for node_id in by_id
+            for terminal in reference_roles.get(node_id, {}).get(
+                "at_risk_terminal_ids", ()
+            )
+        }
+    )
+    risk_index = {terminal: index for index, terminal in enumerate(at_risk_ids)}
+    risk_bits = {
+        node_id: sum(
+            1 << risk_index[str(terminal)]
+            for terminal in reference_roles.get(node_id, {}).get(
+                "at_risk_terminal_ids", ()
+            )
+            if str(terminal) in risk_index
+        )
+        for node_id in by_id
+    }
+    selected: list[str] = []
+    selected_bits = 0
+    covered_bits = 0
+    protected_bits = 0
+    marginal_utilities: list[float] = []
+    current_utility = 0.0
+    remaining = set(by_id)
+    while remaining and len(selected) < budget:
+        denominator = max(1, len(auditable) - len(selected) - 1)
+
+        def score(node_id: str) -> tuple[float, tuple[int, float, int, str]]:
+            node_bit = (
+                1 << auditable_index[node_id] if node_id in auditable_index else 0
+            )
+            coverage = (
+                (covered_bits | descendant_bits.get(node_id, 0))
+                & ~(selected_bits | node_bit)
+            ).bit_count() / denominator
+            protection = (
+                (protected_bits | risk_bits.get(node_id, 0)).bit_count()
+                / len(at_risk_ids)
+                if at_risk_ids
+                else 0.0
+            )
+            utility = lambda_weight * coverage + (1.0 - lambda_weight) * protection
+            return utility, _selection_order_key(by_id[node_id])
+
+        chosen = min(remaining, key=lambda node_id: (-score(node_id)[0], score(node_id)[1]))
+        utility, _ = score(chosen)
+        selected.append(chosen)
+        if chosen in auditable_index:
+            selected_bits |= 1 << auditable_index[chosen]
+        covered_bits = (covered_bits | descendant_bits.get(chosen, 0)) & ~selected_bits
+        protected_bits |= risk_bits.get(chosen, 0)
+        marginal_utilities.append(float(utility - current_utility))
+        current_utility = utility
+        remaining.remove(chosen)
+    denominator = max(1, len(auditable) - len(selected))
+    coverage = covered_bits.bit_count() / denominator if auditable else 0.0
+    protection = (
+        protected_bits.bit_count() / len(at_risk_ids) if at_risk_ids else 0.0
+    )
+    return {
+        "selected_node_ids": selected,
+        "lambda": float(lambda_weight),
+        "impact_coverage": float(coverage),
+        "protected_at_risk_coverage": float(protection),
+        "utility": float(lambda_weight * coverage + (1.0 - lambda_weight) * protection),
+        "marginal_utilities": marginal_utilities,
+        "diagnostic_oracle": True,
+    }
+
+
+def compute_utility_tradeoff(
+    rows: Sequence[Mapping[str, Any]],
+    *,
+    baselines: Sequence[str] = PRIMARY_INFERENCE_BASELINES,
+    lambda_values: Sequence[float] | None = None,
+    seed: int,
+    bootstrap_rounds: int = 10000,
+) -> dict[str, Any]:
+    """Summarize paired seed-level coverage-protection tradeoffs."""
+    lambdas = [
+        float(value)
+        for value in (
+            lambda_values
+            if lambda_values is not None
+            else [index / 100 for index in range(101)]
+        )
+    ]
+    if not lambdas or lambdas != sorted(lambdas) or lambdas[0] < 0.0 or lambdas[-1] > 1.0:
+        raise ValueError("lambda_values must be a sorted non-empty grid within [0, 1]")
+    index = {
+        (int(row["seed"]), str(row["method"])): (
+            float(row["impact_coverage"]),
+            float(row["protected_at_risk_coverage"]),
+        )
+        for row in rows
+    }
+    available_methods = {method for _, method in index}
+    methods = [
+        method
+        for method in ("life_saving_first", *baselines)
+        if method in available_methods
+    ]
+    seed_ids = sorted(
+        seed_id
+        for seed_id in {seed_id for seed_id, _ in index}
+        if all((seed_id, method) in index for method in methods)
+    )
+    if "life_saving_first" not in methods or not seed_ids:
+        raise ValueError("utility tradeoff requires paired Life-Saving First rows")
+
+    def mean_point(method: str, sampled_seeds: Sequence[int]) -> tuple[float, float]:
+        return (
+            float(mean(index[(seed_id, method)][0] for seed_id in sampled_seeds)),
+            float(mean(index[(seed_id, method)][1] for seed_id in sampled_seeds)),
+        )
+
+    method_points = {
+        method: mean_point(method, seed_ids)
+        for method in methods
+    }
+    pareto = {
+        method: not any(
+            other != method
+            and method_points[other][0] >= point[0]
+            and method_points[other][1] >= point[1]
+            and method_points[other] != point
+            for other in methods
+        )
+        for method, point in method_points.items()
+    }
+    curves = [
+        {
+            "lambda": lambda_weight,
+            "method": method,
+            "mean_utility": float(
+                lambda_weight * method_points[method][0]
+                + (1.0 - lambda_weight) * method_points[method][1]
+            ),
+        }
+        for lambda_weight in lambdas
+        for method in methods
+    ]
+    rng = random.Random(seed)
+    crossovers = []
+    for baseline in methods[1:]:
+        observed = _utility_grid_crossover(
+            method_points["life_saving_first"], method_points[baseline], lambdas
+        )
+        bootstrapped: list[float] = []
+        for _ in range(bootstrap_rounds):
+            sampled = [seed_ids[rng.randrange(len(seed_ids))] for _ in seed_ids]
+            crossover = _utility_grid_crossover(
+                mean_point("life_saving_first", sampled),
+                mean_point(baseline, sampled),
+                lambdas,
+            )
+            if crossover is not None:
+                bootstrapped.append(crossover)
+        valid_fraction = len(bootstrapped) / bootstrap_rounds if bootstrap_rounds else 0.0
+        stable = observed is not None and valid_fraction >= 0.95
+        crossovers.append(
+            {
+                "baseline": baseline,
+                "valid_fraction": float(valid_fraction),
+                "stable": stable,
+                "lambda_star": float(observed) if stable and observed is not None else None,
+                "lambda_star_ci95": (
+                    _percentile_interval(bootstrapped, fallback=float(observed))
+                    if stable and observed is not None
+                    else None
+                ),
+                "decision_rule": "report threshold only when bootstrap valid fraction >= 0.95",
+            }
+        )
+    return {
+        "statistical_unit": "motif_seed",
+        "paired_seed_count": len(seed_ids),
+        "lambda_values": lambdas,
+        "lambda_step": float(lambdas[1] - lambdas[0]) if len(lambdas) > 1 else 0.0,
+        "bootstrap_rounds": int(bootstrap_rounds),
+        "method_points": [
+            {
+                "method": method,
+                "mean_impact_coverage": method_points[method][0],
+                "mean_protected_at_risk_coverage": method_points[method][1],
+                "pareto_nondominated": pareto[method],
+            }
+            for method in methods
+        ],
+        "curves": curves,
+        "crossovers": crossovers,
+    }
+
+
+def _utility_grid_crossover(
+    primary: tuple[float, float],
+    baseline: tuple[float, float],
+    lambdas: Sequence[float],
+) -> float | None:
+    differences = [
+        lambda_weight * (primary[0] - baseline[0])
+        + (1.0 - lambda_weight) * (primary[1] - baseline[1])
+        for lambda_weight in lambdas
+    ]
+    for index, difference in enumerate(differences):
+        if abs(difference) <= 1e-15:
+            return float(lambdas[index])
+        if index and difference * differences[index - 1] < 0.0:
+            return float(lambdas[index])
+    return None
 
 
 def _life_saving_selection(
@@ -1067,6 +1470,9 @@ def _life_saving_selection(
     budget: int,
     seed: int,
     include_fallback: bool,
+    use_bottleneck: bool = True,
+    use_redundancy: bool = True,
+    use_unique_layer: bool = True,
 ) -> dict[str, Any]:
     del seed  # deterministic structural ordering; retained for the shared interface
     selected: list[Mapping[str, Any]] = []
@@ -1083,15 +1489,23 @@ def _life_saving_selection(
         selected_ids.update(str(row["node_id"]) for row in chosen)
         layer_records[layer] = [str(row["node_id"]) for row in chosen]
 
-    add("critical_bottleneck", [row for row in candidates if row["is_bottleneck"]])
-    add(
-        "unique_evidence",
-        [row for row in candidates if not row["is_bottleneck"] and not row["is_redundant"]],
-    )
+    if use_bottleneck:
+        add("critical_bottleneck", [row for row in candidates if row["is_bottleneck"]])
+    if use_unique_layer:
+        add(
+            "unique_evidence",
+            [
+                row
+                for row in candidates
+                if (not use_bottleneck or not row["is_bottleneck"])
+                and (not use_redundancy or not row["is_redundant"])
+            ],
+        )
     groups: dict[str, list[Mapping[str, Any]]] = defaultdict(list)
-    for row in candidates:
-        if row["redundancy_group_id"]:
-            groups[str(row["redundancy_group_id"])].append(row)
+    if use_redundancy:
+        for row in candidates:
+            if row["redundancy_group_id"]:
+                groups[str(row["redundancy_group_id"])].append(row)
     representatives = [sorted(group, key=_selection_order_key)[0] for group in groups.values()]
     add("redundancy_group_samples", representatives)
     if include_fallback:
@@ -1392,6 +1806,8 @@ def _method_rows(
             "redundancy_waste": float(metrics["redundancy_waste_at_k"]),
             "budget_k": int(metrics["budget_k"]),
             "budget_used": int(metrics["budget_used"]),
+            "selected_node_ids": list(metrics["selected_node_ids"]),
+            "selection_changed_vs_lsf": bool(metrics["selection_changed_vs_lsf"]),
         }
         for method, metrics in report["methods"].items()
     ]
@@ -1403,9 +1819,29 @@ def _sweep_report(
     condition_name: str,
     seeds: Sequence[int],
     bootstrap_rounds: int,
+    inference_condition: float | None = None,
+    inference_baselines: Sequence[str] = (),
+    holm_family: str | None = None,
 ) -> dict[str, Any]:
+    conditional_methods = {"life_saving_clustered", "no_fallback"}
+    informative_conditional = {
+        method
+        for method in conditional_methods
+        if any(
+            str(row["method"]) == method
+            and bool(row.get("selection_changed_vs_lsf", False))
+            for row in rows
+        )
+    }
+    non_informative_methods = sorted(conditional_methods - informative_conditional)
+    reporting_rows = [
+        row
+        for row in rows
+        if str(row["method"]) not in conditional_methods
+        or str(row["method"]) in informative_conditional
+    ]
     grouped: dict[tuple[float, str], list[float]] = defaultdict(list)
-    for row in rows:
+    for row in reporting_rows:
         grouped[(float(row[condition_name]), str(row["method"]))].append(
             float(row["impact_coverage"])
         )
@@ -1418,30 +1854,30 @@ def _sweep_report(
             "mean_average_path_length": float(
                 mean(
                     float(row["average_path_length"])
-                    for row in rows
+                    for row in reporting_rows
                     if float(row[condition_name]) == condition and str(row["method"]) == method
                 )
             ),
             "mean_protected_at_risk_coverage": _condition_method_mean(
-                rows, condition_name, condition, method, "protected_at_risk_coverage"
+                reporting_rows, condition_name, condition, method, "protected_at_risk_coverage"
             ),
             "std_protected_at_risk_coverage": _condition_method_std(
-                rows, condition_name, condition, method, "protected_at_risk_coverage"
+                reporting_rows, condition_name, condition, method, "protected_at_risk_coverage"
             ),
             "mean_sink_drop_mass": _condition_method_mean(
-                rows, condition_name, condition, method, "sink_drop_mass"
+                reporting_rows, condition_name, condition, method, "sink_drop_mass"
             ),
             "std_sink_drop_mass": _condition_method_std(
-                rows, condition_name, condition, method, "sink_drop_mass"
+                reporting_rows, condition_name, condition, method, "sink_drop_mass"
             ),
             "mean_bottleneck_precision": _condition_method_mean(
-                rows, condition_name, condition, method, "bottleneck_precision"
+                reporting_rows, condition_name, condition, method, "bottleneck_precision"
             ),
             "mean_bottleneck_recall": _condition_method_mean(
-                rows, condition_name, condition, method, "bottleneck_recall"
+                reporting_rows, condition_name, condition, method, "bottleneck_recall"
             ),
             "mean_redundancy_waste": _condition_method_mean(
-                rows, condition_name, condition, method, "redundancy_waste"
+                reporting_rows, condition_name, condition, method, "redundancy_waste"
             ),
             "n": len(values),
         }
@@ -1456,14 +1892,19 @@ def _sweep_report(
     for row in summary:
         row["mean_change_from_first_condition"] = float(row["mean"] - first_means[row["method"]])
     statistics = []
-    conditions = sorted({float(row[condition_name]) for row in rows})
+    conditions = (
+        [float(inference_condition)]
+        if inference_condition is not None
+        and any(float(row[condition_name]) == float(inference_condition) for row in rows)
+        else []
+    )
     for condition in conditions:
         primary_by_seed = {
             int(row["seed"]): float(row["impact_coverage"])
             for row in rows
             if float(row[condition_name]) == condition and row["method"] == "life_saving_first"
         }
-        for method in METHODS[1:]:
+        for method in inference_baselines:
             baseline_by_seed = {
                 int(row["seed"]): float(row["impact_coverage"])
                 for row in rows
@@ -1476,9 +1917,21 @@ def _sweep_report(
                 seed=int(sum(seeds) + round(condition * 10000) + len(method)),
                 bootstrap_rounds=bootstrap_rounds,
             )
-            statistics.append({condition_name: condition, "baseline": method, **result})
+            statistics.append(
+                {
+                    condition_name: condition,
+                    "baseline": method,
+                    "holm_family": holm_family,
+                    **result,
+                }
+            )
     _apply_holm_correction(statistics)
-    return {"rows": [dict(row) for row in rows], "summary": summary, "statistics": statistics}
+    return {
+        "rows": [dict(row) for row in rows],
+        "summary": summary,
+        "statistics": statistics,
+        "non_informative_methods": non_informative_methods,
+    }
 
 
 def _condition_method_mean(
@@ -1522,10 +1975,29 @@ def _apply_holm_correction(statistics: list[dict[str, Any]]) -> None:
         statistics[index]["p_value_holm"] = float(running)
 
 
-def _cliffs_delta(left: Sequence[float], right: Sequence[float]) -> float:
-    greater = sum(1 for x in left for y in right if x > y)
-    lower = sum(1 for x in left for y in right if x < y)
-    return (greater - lower) / (len(left) * len(right))
+def apply_holm_correction(statistics: list[dict[str, Any]]) -> None:
+    """Apply Holm correction in place to one explicitly declared family."""
+    _apply_holm_correction(statistics)
+
+
+def _matched_rank_biserial(differences: Sequence[float]) -> float:
+    nonzero = [float(value) for value in differences if abs(float(value)) > 1e-15]
+    if not nonzero:
+        return 0.0
+    ranks = rankdata([abs(value) for value in nonzero], method="average")
+    positive = sum(float(rank) for rank, value in zip(ranks, nonzero, strict=True) if value > 0)
+    negative = sum(float(rank) for rank, value in zip(ranks, nonzero, strict=True) if value < 0)
+    total = positive + negative
+    return float((positive - negative) / total) if total else 0.0
+
+
+def _percentile_interval(values: Sequence[float], *, fallback: float) -> list[float]:
+    if not values:
+        return [float(fallback), float(fallback)]
+    ordered = sorted(float(value) for value in values)
+    lower_index = max(0, math.floor(0.025 * (len(ordered) - 1)))
+    upper_index = min(len(ordered) - 1, math.ceil(0.975 * (len(ordered) - 1)))
+    return [ordered[lower_index], ordered[upper_index]]
 
 
 def _deterministic_graph_sample(
@@ -1584,7 +2056,7 @@ def _measure_efficiency_once(
     role_seconds = time.perf_counter() - start
     start = time.perf_counter()
     records = _node_records(motif.graph, roles)
-    candidates = [record for record in records if record["downstream_impact_count"] > 0]
+    candidates = [record for record in records if _is_fair_candidate(record)]
     budget = max(1, math.ceil(0.25 * len(candidates))) if candidates else 0
     selection = _life_saving_selection(candidates, budget=budget, seed=seed, include_fallback=True)
     selection_seconds = time.perf_counter() - start

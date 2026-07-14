@@ -41,10 +41,10 @@ def main(argv: Sequence[str] | None = None) -> None:
         "seed": args.seed,
         "bottleneck_f1": report["countries_kg"]["bottleneck_f1"],
         "redundancy_f1": report["countries_kg"]["redundancy_f1"],
+        "articulation_point_bottleneck_f1": report["countries_kg"]["articulation_point_bottleneck_f1"],
         "redundancy_positive_count": report["countries_kg"]["redundancy_positive_count"],
     }, indent=2))
 
 
 if __name__ == "__main__":
     main()
-

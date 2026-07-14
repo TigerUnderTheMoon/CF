@@ -465,3 +465,28 @@ def test_prefer_cache_replays_without_network_call(tmp_path: Path) -> None:
             fetch_json=lambda *_args: (_ for _ in ()).throw(AssertionError("network used")),
         )
     assert calls == 0
+
+
+def test_offline_extraction_fails_before_network_when_cache_is_missing(
+    tmp_path: Path,
+) -> None:
+    calls = 0
+
+    def unexpected_fetch(*_args):
+        nonlocal calls
+        calls += 1
+        raise AssertionError("network used")
+
+    with pytest.raises(FileNotFoundError, match="offline Wikidata cache is missing"):
+        extract_wikidata_triples(
+            {
+                "endpoint": "https://query.wikidata.org/sparql",
+                "query_mode": "staged",
+                "prefer_cache": True,
+                "offline": True,
+                "cache_path": tmp_path / "missing.json",
+            },
+            fetch_json=unexpected_fetch,
+        )
+
+    assert calls == 0

@@ -1,19 +1,51 @@
 {
   "workspace": "D:\\CF\\paper\\JIIS_submission",
-  "abstract_words": 185,
+  "abstract_words": 214,
   "keyword_count": 6,
-  "manuscript_pages": 16,
+  "manuscript_pages": 19,
   "package_files": [
-    "figures",
+    "fig_scar_framework.pdf",
     "manuscript.pdf",
     "manuscript.tex",
     "references.bib",
+    "reproducibility_archive.zip",
     "sn-basic.bst",
     "sn-jnl.cls",
-    "sn-mathphys-num.bst",
-    "sn-nature.bst",
     "supplementary.pdf",
-    "supplementary.tex"
+    "supplementary.tex",
+    "wikidata_core_structure.png",
+    "wikidata_impact_coverage_comparison.png"
   ],
+  "package_directories": [],
+  "figure_references": [
+    "fig_scar_framework.pdf",
+    "wikidata_core_structure.png",
+    "wikidata_impact_coverage_comparison.png"
+  ],
+  "paired_hashes": {
+    "manuscript.tex": {
+      "source": "be65a81ef5c62757732bb45007a95a159747409fad4c267efbea0613e5b5c127",
+      "package": "be65a81ef5c62757732bb45007a95a159747409fad4c267efbea0613e5b5c127"
+    },
+    "supplementary.tex": {
+      "source": "9f8832e6fdf014226fdcb543a897a5781f35400e87d061b31a0aaafd6fc38958",
+      "package": "9f8832e6fdf014226fdcb543a897a5781f35400e87d061b31a0aaafd6fc38958"
+    },
+    "references.bib": {
+      "source": "a4fabaebff35bbe0bc5f43b55f120e879f7017681baf70967c997b7d2acec49d",
+      "package": "a4fabaebff35bbe0bc5f43b55f120e879f7017681baf70967c997b7d2acec49d"
+    },
+    "manuscript.pdf": {
+      "source": "2746fddeb58d9180e8949480784ce470a6de14dac9fa5acaea344a3146e4ba33",
+      "package": "2746fddeb58d9180e8949480784ce470a6de14dac9fa5acaea344a3146e4ba33"
+    },
+    "supplementary.pdf": {
+      "source": "9d2993c80f2dfe7d076ac15885889508d74fbcf97c7e51fb4103ce10ffe98034",
+      "package": "9d2993c80f2dfe7d076ac15885889508d74fbcf97c7e51fb4103ce10ffe98034"
+    }
+  },
+  "schema_valid": true,
+  "archive_checksum_errors": [],
+  "latex_warnings": [],
   "errors": []
 }

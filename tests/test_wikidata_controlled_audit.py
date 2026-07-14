@@ -8,6 +8,9 @@ from fma.eval.wikidata_controlled_audit import (
     evaluate_controlled_audit_roles,
     evaluate_impact_coverage,
     extract_audit_roles,
+    compute_utility_tradeoff,
+    greedy_maximum_coverage_selection,
+    greedy_utility_oracle_selection,
     impact_coverage_metrics,
     life_saving_clustered_selection,
     paired_statistical_test,
@@ -110,12 +113,16 @@ def test_impact_coverage_uses_shared_budget_and_reports_policy_layers() -> None:
     assert set(report["methods"]) == {
         "life_saving_first",
         "life_saving_clustered",
+        "greedy_maximum_coverage",
         "flat_top_k",
         "degree_centrality",
         "random_stratified",
         "position",
         "random",
         "no_fallback",
+        "lsf_minus_bottleneck",
+        "lsf_minus_redundancy",
+        "lsf_minus_unique_layer",
     }
     budgets = {row["budget_k"] for row in report["methods"].values()}
     assert len(budgets) == 1
@@ -138,6 +145,96 @@ def test_impact_coverage_uses_shared_budget_and_reports_policy_layers() -> None:
     assert 0.0 <= structural_metrics["bottleneck_precision_at_k"] <= 1.0
     assert 0.0 <= structural_metrics["bottleneck_recall_at_k"] <= 1.0
     assert 0.0 <= structural_metrics["redundancy_waste_at_k"] <= 1.0
+    assert report["protocol_version"] == "fair-v1"
+    assert report["candidate_rule"] == "layer > 0 and downstream_impact_count > 0"
+    assert len(report["candidate_id_sha256"]) == 64
+    candidate_ids = set(report["candidate_ids"])
+    assert candidate_ids
+    assert all(
+        set(metrics["selected_node_ids"]) <= candidate_ids
+        for metrics in report["methods"].values()
+    )
+
+
+def test_fair_candidate_rule_excludes_layer_zero_scaffolds() -> None:
+    graph = nx.DiGraph()
+    graph.add_nodes_from(
+        [
+            ("root", {"layer": 0}),
+            ("a", {"layer": 1}),
+            ("b", {"layer": 1}),
+            ("t1", {"layer": 3}),
+            ("t2", {"layer": 3}),
+        ]
+    )
+    graph.add_edges_from(
+        [("root", "a"), ("root", "b"), ("a", "t1"), ("a", "t2"), ("b", "t2")]
+    )
+
+    report = evaluate_impact_coverage(graph, budget_fraction=0.5, seed=17)
+
+    assert report["candidate_ids"] == ["a", "b"]
+    assert all(
+        "root" not in metrics["selected_node_ids"]
+        for metrics in report["methods"].values()
+    )
+
+
+def test_greedy_maximum_coverage_uses_deterministic_marginal_gain() -> None:
+    graph = nx.DiGraph()
+    graph.add_nodes_from(
+        [
+            ("a", {"layer": 1}),
+            ("b", {"layer": 1}),
+            ("t1", {"layer": 3}),
+            ("t2", {"layer": 3}),
+        ]
+    )
+    graph.add_edges_from([("a", "t1"), ("a", "t2"), ("b", "t2")])
+    candidates = [
+        {"node_id": "b", "downstream_impact_count": 1, "raw_risk_score": 0.5, "degree": 1},
+        {"node_id": "a", "downstream_impact_count": 2, "raw_risk_score": 1.0, "degree": 2},
+    ]
+
+    selected = greedy_maximum_coverage_selection(graph, candidates, budget=2)
+    permuted = greedy_maximum_coverage_selection(graph, list(reversed(candidates)), budget=2)
+
+    assert selected["selected_node_ids"] == ["a", "b"]
+    assert permuted["selected_node_ids"] == selected["selected_node_ids"]
+    assert selected["marginal_descendant_counts"] == [2, 0]
+
+
+def test_greedy_utility_oracle_respects_lambda_endpoints() -> None:
+    graph = nx.DiGraph()
+    graph.add_nodes_from(
+        [
+            ("coverage", {"layer": 1}),
+            ("protection", {"layer": 1}),
+            ("t1", {"layer": 3}),
+            ("t2", {"layer": 3}),
+        ]
+    )
+    graph.add_edges_from([("coverage", "t1"), ("coverage", "t2"), ("protection", "t1")])
+    candidates = [
+        {"node_id": "coverage", "downstream_impact_count": 2, "raw_risk_score": 1.0, "degree": 2},
+        {"node_id": "protection", "downstream_impact_count": 1, "raw_risk_score": 0.5, "degree": 1},
+    ]
+    roles = {
+        "coverage": {"at_risk_terminal_ids": ()},
+        "protection": {"at_risk_terminal_ids": ("t1",)},
+    }
+
+    coverage = greedy_utility_oracle_selection(
+        graph, candidates, roles, budget=1, lambda_weight=1.0
+    )
+    protection = greedy_utility_oracle_selection(
+        graph, candidates, roles, budget=1, lambda_weight=0.0
+    )
+
+    assert coverage["selected_node_ids"] == ["coverage"]
+    assert protection["selected_node_ids"] == ["protection"]
+    assert coverage["diagnostic_oracle"] is True
+    assert protection["diagnostic_oracle"] is True
 
 
 def test_clean_reference_graph_prevents_erroneous_edge_coverage_inflation() -> None:
@@ -291,9 +388,25 @@ def test_paired_statistics_handle_all_zero_differences() -> None:
     result = paired_statistical_test([0.5, 0.5, 0.5], [0.5, 0.5, 0.5], seed=3, bootstrap_rounds=50)
 
     assert result["p_value"] == 1.0
-    assert result["cliffs_delta"] == 0.0
+    assert result["rank_biserial"] == 0.0
     assert result["degenerate"] is True
     assert result["effect_ci95"] == [0.0, 0.0]
+    assert result["mean_difference_ci95"] == [0.0, 0.0]
+
+
+def test_paired_statistics_use_signed_rank_biserial_and_paired_bootstrap() -> None:
+    result = paired_statistical_test(
+        [3.0, 2.0, 1.0],
+        [1.0, 1.0, 2.0],
+        seed=11,
+        bootstrap_rounds=200,
+    )
+
+    assert result["rank_biserial"] == pytest.approx(0.5)
+    assert result["mean_difference"] == pytest.approx(2.0 / 3.0)
+    assert "cliffs_delta" not in result
+    assert result["mean_difference_ci95"][0] <= result["mean_difference"]
+    assert result["mean_difference_ci95"][1] >= result["mean_difference"]
 
 
 def test_budget_and_noise_sweeps_emit_paired_seed_records() -> None:
@@ -316,8 +429,8 @@ def test_budget_and_noise_sweeps_emit_paired_seed_records() -> None:
         bootstrap_rounds=20,
     )
 
-    assert len(budget["rows"]) == 2 * 2 * 8
-    assert len(noise["rows"]) == 2 * 2 * 8
+    assert len(budget["rows"]) == 2 * 2 * 12
+    assert len(noise["rows"]) == 2 * 2 * 12
     assert {row["seed"] for row in budget["rows"]} == {5, 7}
     assert {row["budget_fraction"] for row in budget["rows"]} == {0.10, 0.25}
     assert {row["noise_rate"] for row in noise["rows"]} == {0.0, 0.20}
@@ -328,17 +441,85 @@ def test_budget_and_noise_sweeps_emit_paired_seed_records() -> None:
     for seed in {5, 7}:
         assert len({row["budget_k"] for row in noise["rows"] if row["seed"] == seed}) == 1
     assert budget["statistics"]
-    assert noise["statistics"]
+    assert {
+        (row["budget_fraction"], row["baseline"])
+        for row in budget["statistics"]
+    } == {
+        (0.25, "flat_top_k"),
+        (0.25, "greedy_maximum_coverage"),
+        (0.25, "degree_centrality"),
+    }
+    assert all(row["holm_family"] == "primary_budget_predeclared" for row in budget["statistics"])
+    assert noise["statistics"] == []
     assert noise["degradation_statistics"]
     assert {row["metric"] for row in noise["degradation_statistics"]} == {
         "impact_coverage",
         "protected_at_risk_coverage",
-        "sink_drop_mass",
     }
+    assert {row["baseline"] for row in noise["degradation_statistics"]} == {
+        "flat_top_k",
+        "greedy_maximum_coverage",
+    }
+    assert len(noise["degradation_statistics"]) == 4
     assert all("mean_average_path_length" in row for row in budget["summary"])
     assert all("std_protected_at_risk_coverage" in row for row in budget["summary"])
     assert all("std_sink_drop_mass" in row for row in noise["summary"])
     assert all("mean_change_from_first_condition" in row for row in noise["summary"])
+    assert set(budget["layer_activation"]["counts"]) == {
+        "critical_bottleneck",
+        "unique_evidence",
+        "redundancy_group_samples",
+        "fallback",
+    }
+    assert budget["layer_activation"]["unexercised_layers"] == [
+        layer
+        for layer, count in budget["layer_activation"]["counts"].items()
+        if count == 0
+    ]
+    assert {"life_saving_clustered", "no_fallback"} <= set(
+        budget["non_informative_methods"]
+    )
+    assert not (
+        {"life_saving_clustered", "no_fallback"}
+        & {row["method"] for row in budget["summary"]}
+    )
+
+
+def test_utility_tradeoff_reports_stable_paired_crossover() -> None:
+    rows = []
+    for seed in (1, 2, 3):
+        rows.extend(
+            [
+                {
+                    "seed": seed,
+                    "method": "life_saving_first",
+                    "impact_coverage": 0.5,
+                    "protected_at_risk_coverage": 0.8,
+                },
+                {
+                    "seed": seed,
+                    "method": "greedy_maximum_coverage",
+                    "impact_coverage": 0.8,
+                    "protected_at_risk_coverage": 0.4,
+                },
+            ]
+        )
+
+    report = compute_utility_tradeoff(
+        rows,
+        baselines=("greedy_maximum_coverage",),
+        lambda_values=[index / 100 for index in range(101)],
+        seed=19,
+        bootstrap_rounds=200,
+    )
+
+    crossover = report["crossovers"][0]
+    assert crossover["baseline"] == "greedy_maximum_coverage"
+    assert crossover["valid_fraction"] == 1.0
+    assert crossover["stable"] is True
+    assert crossover["lambda_star"] == pytest.approx(0.58)
+    assert report["bootstrap_rounds"] == 200
+    assert report["lambda_step"] == pytest.approx(0.01)
 
 
 def test_anchor_cluster_confirmation_uses_discipline_units_at_five_percent() -> None:
@@ -387,10 +568,11 @@ def test_anchor_cluster_confirmation_uses_discipline_units_at_five_percent() -> 
         "computing",
         "social_sciences",
     }
-    assert len(report["rows"]) == len(report["units"]) * 4
+    assert len(report["rows"]) == len(report["units"]) * 5
     assert {row["method"] for row in report["rows"]} == {
         "life_saving_first",
         "life_saving_clustered",
+        "greedy_maximum_coverage",
         "flat_top_k",
         "degree_centrality",
     }
@@ -399,6 +581,10 @@ def test_anchor_cluster_confirmation_uses_discipline_units_at_five_percent() -> 
     assert all(row["n"] == len(report["units"]) for row in report["summary"])
     assert report["statistics"]
     assert all("p_value_holm" in row for row in report["statistics"])
+    assert report["non_informative_methods"] == ["life_saving_clustered"]
+    assert "life_saving_clustered" not in {
+        row["method"] for row in report["summary"]
+    }
 
 
 def test_anchor_cluster_confirmation_requires_all_discipline_clusters() -> None:

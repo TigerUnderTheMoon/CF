@@ -149,6 +149,7 @@
     .section-title { font-size: 28px; font-weight: 700; fill: #123f91; }
     .label { font-size: 27px; }
     .small { font-size: 27px; }
+    .requirement { font-size: 24px; }
     .white { fill: #ffffff; }
     .blue { fill: #0f46a4; }
     .green { fill: #176b35; }
@@ -252,15 +253,15 @@
   <g id="design-requirements">
     <rect x="1180" y="430" width="380" height="320" rx="9" fill="#fbfffe" stroke="#167b78" stroke-width="2"/>
     <text x="1370" y="468" text-anchor="middle" class="stage-title" fill="#08706e">Design Requirements</text>
-    <circle cx="1218" cy="505" r="17" fill="#167b78"/><text x="1218" y="515" text-anchor="middle" class="small white" font-weight="700">1</text><text x="1252" y="514" class="small">Snapshot Identity</text>
+    <circle cx="1218" cy="505" r="17" fill="#167b78"/><text x="1218" y="515" text-anchor="middle" class="small white" font-weight="700">1</text><text x="1252" y="514" class="requirement">Snapshot Identity</text>
     <line x1="1200" y1="531" x2="1540" y2="531" stroke="#46a4a1" stroke-width="1.5" stroke-dasharray="5 4"/>
-    <circle cx="1218" cy="558" r="17" fill="#167b78"/><text x="1218" y="568" text-anchor="middle" class="small white" font-weight="700">2</text><text x="1252" y="567" class="small">Candidate Reproducibility</text>
+    <circle cx="1218" cy="558" r="17" fill="#167b78"/><text x="1218" y="568" text-anchor="middle" class="small white" font-weight="700">2</text><text x="1252" y="567" class="requirement">Candidate Reproducibility</text>
     <line x1="1200" y1="584" x2="1540" y2="584" stroke="#46a4a1" stroke-width="1.5" stroke-dasharray="5 4"/>
-    <circle cx="1218" cy="611" r="17" fill="#167b78"/><text x="1218" y="621" text-anchor="middle" class="small white" font-weight="700">3</text><text x="1252" y="603" class="small"><tspan x="1252">Structural Role</tspan><tspan x="1252" dy="28">Preservation</tspan></text>
+    <circle cx="1218" cy="611" r="17" fill="#167b78"/><text x="1218" y="621" text-anchor="middle" class="small white" font-weight="700">3</text><text x="1252" y="603" class="requirement"><tspan x="1252">Structural Role</tspan><tspan x="1252" dy="25">Preservation</tspan></text>
     <line x1="1200" y1="640" x2="1540" y2="640" stroke="#46a4a1" stroke-width="1.5" stroke-dasharray="5 4"/>
-    <circle cx="1218" cy="667" r="17" fill="#167b78"/><text x="1218" y="677" text-anchor="middle" class="small white" font-weight="700">4</text><text x="1252" y="659" class="small"><tspan x="1252">Dependency</tspan><tspan x="1252" dy="28">Consequences</tspan></text>
+    <circle cx="1218" cy="667" r="17" fill="#167b78"/><text x="1218" y="677" text-anchor="middle" class="small white" font-weight="700">4</text><text x="1252" y="659" class="requirement"><tspan x="1252">Dependency</tspan><tspan x="1252" dy="25">Consequences</tspan></text>
     <line x1="1200" y1="696" x2="1540" y2="696" stroke="#46a4a1" stroke-width="1.5" stroke-dasharray="5 4"/>
-    <circle cx="1218" cy="722" r="17" fill="#167b78"/><text x="1218" y="732" text-anchor="middle" class="small white" font-weight="700">5</text><text x="1252" y="714" class="small"><tspan x="1252">Policy-independent</tspan><tspan x="1252" dy="28">Consumption</tspan></text>
+    <circle cx="1218" cy="722" r="17" fill="#167b78"/><text x="1218" y="732" text-anchor="middle" class="small white" font-weight="700">5</text><text x="1252" y="714" class="requirement"><tspan x="1252">Policy-independent</tspan><tspan x="1252" dy="25">Consumption</tspan></text>
     <path d="M1158 480l14-10v7h18v6h-18v7z" fill="#167b78"/><path d="M1178 480l-14-10v7h-18v6h18v7z" fill="#167b78"/>
   </g>
 

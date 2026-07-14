@@ -43,12 +43,14 @@ def main(argv: Sequence[str] | None = None) -> None:
     )
     print(json.dumps({
         "output_dir": str(args.output_dir),
+        "protocol_version": report["protocol_version"],
         "n_traces": args.n_traces,
+        "unique_source_units": report["statistical_units"]["unique_source_unit_count"],
         "impact_coverage_at_k": report["metrics"]["impact_coverage_at_k"]["mean"],
         "flat_top_k": report["baselines"]["flat_top_k"]["metrics"]["impact_coverage_at_k"]["mean"],
+        "greedy_max_coverage": report["baselines"]["greedy_max_coverage"]["metrics"]["impact_coverage_at_k"]["mean"],
     }, indent=2))
 
 
 if __name__ == "__main__":
     main()
-
