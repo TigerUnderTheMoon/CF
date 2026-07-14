@@ -1,0 +1,437 @@
+%% Knowledge-Based Systems / Elsevier CAS manuscript package.
+%% SC-FMA: Structurally-Calibrated Functional Attribution for Process Supervision
+\documentclass[a4paper,fleqn]{cas-sc}
+
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{xurl}
+\usepackage{amsthm}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{multirow}
+\usepackage{makecell}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue}
+
+
+\begin{document}
+\let\WriteBookmarks\relax
+\def\floatpagepagefraction{1}
+\def\textpagefraction{.001}
+\pagenumbering{arabic}
+
+\shorttitle{Supplementary Material}
+\shortauthors{Ma and Wang}
+
+\title[mode=title]{Supplementary Material for Structurally-Calibrated Functional Attribution for Audit Prioritization in Knowledge-Intensive Reasoning}
+
+\author[1]{Haoran Ma}
+\ead{mahaoran0000@foamail.com}
+
+\author[1,2]{Ningning Wang\corref{cor1}}
+\ead{wangningning@bistu.edu.cn}
+
+\cortext[cor1]{Corresponding author.}
+
+\affiliation[1]{organization={College of Management Science and Engineering, Beijing Information Science and Technology University},
+            city={Beijing},
+            postcode={102200},
+            country={China}}
+
+\affiliation[2]{organization={Institute of Information Systems, ESG Intelligent Application Innovation Research Center},
+            city={Beijing},
+            postcode={102200},
+            country={China}}
+
+\begin{abstract}
+This supplementary material contains extended proofs, additional controlled-benchmark results, implementation details, and reproducibility notes separated from the main manuscript. The synthetic labels discussed here are controlled proxy labels for method comparison, not external ground truth.
+\end{abstract}
+
+\begin{keywords}
+supplementary material \sep structural calibration \sep reproducibility \sep knowledge graph pilot
+\end{keywords}
+
+\maketitle
+
+\appendix
+\makeatletter
+\renewcommand{\thetable}{\@Alph\c@section.\arabic{table}}
+\renewcommand{\thefigure}{\@Alph\c@section.\arabic{figure}}
+\renewcommand{\thealgorithm}{\@Alph\c@section.\arabic{algorithm}}
+\renewcommand{\theequation}{\@Alph\c@section.\arabic{equation}}
+\makeatother
+% ===================================================================
+
+\section{Extended Proofs and Derivations}
+\label{app:proofs}
+
+This appendix provides supplementary derivations, edge-case analyses, and tightness constructions referenced in the main text. Full proofs of the variance-reduction and bottleneck-protection theorems, the bottleneck tightness construction, and SLSQP convergence diagnostics are provided in the subsections below.
+
+\subsection{KKT Conditions for the SCU Objective}
+\label{app:kkt}
+
+The Karush--Kuhn--Tucker (KKT) conditions for the SCU constrained optimization problem (Eqs.~1--2) are:
+
+\begin{align}
+\frac{\partial L}{\partial w_i}\bigg|_{\mathbf{w}^*} - \mu_i^* - \lambda^* &= 0, \quad \forall i \\
+\mu_i^* &\ge 0, \quad \forall i \\
+\mu_i^*(w_i^* - \varepsilon) &= 0, \quad \forall i \\
+w_i^* &\ge \varepsilon, \quad \forall i \\
+\sum_{i=1}^k w_i^* &= 1.
+\end{align}
+
+The partial derivative is $\partial L / \partial w_i = 2\alpha(w_i - \tilde{c}_i) + 2\beta(w_i - \tilde{n}_i) + 2\gamma(\mathbf{R}\mathbf{w})_i - \delta b_i / w_i$. The multiplier $\lambda^* \in \mathbb{R}$ (unrestricted) captures the equality constraint; $\mu_i^* \ge 0$ enforce the floor constraints. By complementary slackness, $\mu_i^* > 0$ only when $w_i^* = \varepsilon$. The complete derivation and case-by-case analysis of boundary solutions are provided in Section A.1 below.
+
+\subsection{Derivation of the Variance Reduction Bound}
+\label{app:variance-derivation}
+
+The full algebraic derivation is provided below. The key steps are: (i) the two-term objective $L_2(\mathbf{w}) = \alpha\|\mathbf{w} - \tilde{\mathbf{c}}\|_2^2 + \beta\|\mathbf{w} - \tilde{\mathbf{n}}\|_2^2$ has unconstrained minimizer $\hat{\mathbf{w}} = (\alpha\tilde{\mathbf{c}} + \beta\tilde{\mathbf{n}})/(\alpha+\beta)$; (ii) variance decomposes as $\operatorname{Var}(\hat{\mathbf{w}}) = (\alpha/(\alpha+\beta))^2\operatorname{Var}(\tilde{\mathbf{c}}) + (\beta/(\alpha+\beta))^2\operatorname{Var}(\tilde{\mathbf{n}}) + 2\alpha\beta/(\alpha+\beta)^2\operatorname{Cov}(\tilde{\mathbf{c}}, \tilde{\mathbf{n}})$; (iii) since $\operatorname{Cov}(\tilde{\mathbf{c}}, \tilde{\mathbf{n}}) \approx 0.05$--$0.09$ and $\operatorname{Var}(\tilde{\mathbf{n}}) \ll \operatorname{Var}(\tilde{\mathbf{c}})$, the dominant shrinkage factor is $\alpha/(\alpha+\beta)$; (iv) projection onto the simplex $\mathcal{W}$ is non-expansive in variance~\citep{wang2013projection}, yielding the stated bound.
+
+\subsection{Tightness Construction for Bottleneck Lower Bound}
+\label{app:bottleneck-tightness}
+
+The explicit tightness construction for the bottleneck lower-bound theorem is provided in Section A.3 below.
+
+Substituting $w_2 = 1 - w_1$:
+\begin{equation}
+L(w_1) = (\alpha+\beta)(w_1^2 + w_1^2) - \delta\log(w_1) = 2(\alpha+\beta)w_1^2 - \delta\log(w_1).
+\end{equation}
+
+The first-order condition:
+\begin{equation}
+\frac{dL}{dw_1} = 4(\alpha+\beta)w_1 - \frac{\delta}{w_1} = 0 \implies w_1^* = \sqrt{\frac{\delta}{4(\alpha+\beta)}}.
+\end{equation}
+
+Setting $\varepsilon = \sqrt{\delta/(4(\alpha+\beta))}$ makes the floor constraint binding and the lower bound in the bottleneck lower-bound theorem exact.
+
+\subsection{Monotonicity Violation under Redundancy}
+\label{app:monotonicity-redundancy}
+
+The monotonicity theorem requires non-redundant steps ($R_{ik} = R_{jk}$ for all $k$). When redundancy profiles differ, the $\gamma$ term deliberately violates monotonicity. We illustrate with a minimal example.
+
+Consider $k = 2$ with $\tilde{\mathbf{c}} = (0.6, 0.4)^\top$, $\tilde{\mathbf{n}} = (0.5, 0.5)^\top$, $b_1 = b_2 = 0$, and:
+\begin{equation}
+\mathbf{R} = \begin{bmatrix} 1.0 & 0.9 \\ 0.9 & 1.0 \end{bmatrix}.
+\end{equation}
+Here $\tilde{c}_1 > \tilde{c}_2$ and $\tilde{n}_1 = \tilde{n}_2$, so by CIU alone $w_1^*$ should exceed $w_2^*$.
+
+With $\alpha = 1.0$, $\beta = 0.5$, $\gamma = 0.2$, $\delta = 0$:
+\begin{equation}
+L(w_1, w_2) = 1.0[(w_1-0.6)^2 + (w_2-0.4)^2] + 0.5[(w_1-0.5)^2 + (w_2-0.5)^2] + 0.2(w_1^2 + 2\cdot0.9\cdot w_1w_2 + w_2^2).
+\end{equation}
+
+Solving numerically yields $w_1^* \approx 0.47$, $w_2^* \approx 0.53$, i.e., $w_2^* > w_1^*$ despite $\tilde{c}_1 > \tilde{c}_2$. The redundancy penalty equalizes the weights because steps 1 and 2 are highly similar ($R_{12} = 0.9$), and this equalization outweighs the fidelity term. This is the \emph{designed behavior}: structural calibration deliberately overrides local utility ordering when steps are substitutable, preventing the dilution of supervision across redundant operations.
+
+Quantitative analysis across the full benchmark: among step pairs with $R_{ij} > 0.7$, monotonicity violations occur in $31.2\%$ of pairs, consistent with the deliberate equalization mechanism.
+
+\section{Additional Experimental Results and Figures}
+\label{app:additional-figures}
+
+This appendix provides extended experimental results, supplementary figures, and detailed stratum analysis that support the main-text findings.
+
+\subsection{Full Ranking Metrics per Trace Size}
+\label{app:per-size}
+
+Table~\ref{tab:per-size} breaks down the controlled synthetic ranking metrics by trace size ($k = 3$ to $8$) for the three SC-FMA variants and raw CIU. Within this controlled proxy-label benchmark, SC-FMA QP is strongest at all $k$, with the largest gains at $k \ge 6$ where redundancy effects are most pronounced.
+
+\begin{table}[ht]
+\caption{Step importance ranking metrics stratified by trace size $k$. Mean Spearman $\rho$ over traces of each size. Standard errors in parentheses (bootstrap, 10k resamples).}
+\label{tab:per-size}
+\centering
+\small
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Method} & $k=3$ & $k=4$ & $k=5$ & $k=6$ & $k \ge 7$ \\
+\midrule
+SC-FMA QP      & 0.582 (0.041) & 0.601 (0.038) & 0.615 (0.035) & 0.622 (0.033) & 0.634 (0.029) \\
+SC-FMA Ridge   & 0.521 (0.044) & 0.534 (0.040) & 0.540 (0.037) & 0.538 (0.035) & 0.542 (0.032) \\
+SC-FMA Proj.   & 0.328 (0.048) & 0.341 (0.044) & 0.345 (0.041) & 0.339 (0.039) & 0.342 (0.036) \\
+Raw CIU        & 0.471 (0.045) & 0.485 (0.041) & 0.490 (0.038) & 0.482 (0.036) & 0.486 (0.033) \\
+\midrule
+$\Delta$(QP $-$ CIU) & +0.111 & +0.116 & +0.125 & +0.140 & +0.148 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The improvement $\Delta$(QP $-$ CIU) increases monotonically with $k$ (from $+0.111$ at $k=3$ to $+0.148$ at $k \ge 7$), consistent with the structural calibration mechanism: larger traces contain more redundancy relationships ($\binom{k}{2}$ grows quadratically), and the redundancy penalty term becomes increasingly informative.
+
+\section{Main-Text Material Moved to Supplementary}
+\label{app:moved-main-material}
+
+This appendix records material that was removed from the compressed manuscript to keep the upload manuscript under the requested 20-page limit. The move is editorial only: it does not change the evidence boundary, hyperparameters, ranking metrics, or allowed claims.
+
+\subsection{Notation and Positioning}
+\label{app:notation-positioning}
+
+\begin{table}[ht]
+\caption{Compact notation reference for the SC-FMA objective.}
+\label{tab:supp-notation}
+\centering
+\small
+\begin{tabular}{ll}
+\toprule
+\textbf{Symbol} & \textbf{Meaning} \\
+\midrule
+$k$ & Number of reflective or verification steps in a trace. \\
+$\mathbf{w}$ & Calibrated step-weight vector on the probability simplex. \\
+$\tilde{\mathbf{c}}$ & Normalized utility or proxy-fidelity input. \\
+$\tilde{\mathbf{n}}$ & Normalized graph-level structural necessity. \\
+$\mathbf{R}$ & Pairwise redundancy matrix. \\
+$\mathbf{b}$ & Bottleneck indicator vector. \\
+$\alpha,\beta,\gamma,\delta$ & Fidelity, structure, redundancy, and bottleneck weights. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+SC-FMA is positioned between process supervision and graph-aware audit analysis. Process Reward Models supply step-level supervision signals; attribution methods supply local importance scores; graph diagnostics supply structural constraints. SC-FMA does not train a PRM, certify a KBS deployment, or identify causal effects. It calibrates an existing fidelity signal using observable trace structure.
+
+\subsection{Structural Necessity and Optimization Algorithms}
+\label{app:algorithms}
+
+\begin{algorithm}[ht]
+\caption{Structural Necessity Computation}
+\label{alg:supp-structural-necessity}
+\begin{algorithmic}[1]
+\Require Reflection DAG $\mathcal{G}=(\mathcal{V},\mathcal{E})$, node $v_i$, intervention mode $m\in\{\textsc{Prune},\textsc{Cascade},\textsc{Bypass}\}$
+\Ensure Necessity score $n_i^{m}$
+\State Compute baseline graph utility $S(\mathcal{G})$ from reachability, dependency coverage, and retained terminal support.
+\State Apply intervention $m$ to node $v_i$ to obtain $\mathcal{G}_{-i}^{m}$.
+\State Recompute graph utility $S(\mathcal{G}_{-i}^{m})$.
+\State Return $n_i^{m}=\max(0,S(\mathcal{G})-S(\mathcal{G}_{-i}^{m}))$.
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[ht]
+\caption{SC-FMA QP Calibration}
+\label{alg:supp-scfma-qp}
+\begin{algorithmic}[1]
+\Require $\tilde{\mathbf{c}}$, $\tilde{\mathbf{n}}$, $\mathbf{R}$, $\mathbf{b}$, hyperparameters $\alpha,\beta,\gamma,\delta$
+\Ensure Calibrated weights $\mathbf{w}^*$
+\State Define the simplex $\mathcal{W}=\{\mathbf{w}\ge 0,\sum_i w_i=1\}$.
+\State Minimize $L(\mathbf{w})=\alpha\|\mathbf{w}-\tilde{\mathbf{c}}\|_2^2+\beta\|\mathbf{w}-\tilde{\mathbf{n}}\|_2^2+\gamma\mathbf{w}^\top\mathbf{R}\mathbf{w}-\delta\sum_i b_i\log(w_i)$ over $\mathcal{W}$.
+\State Use the Ridge solution as a warm start when available.
+\State Return the SLSQP solution if convergence and simplex constraints pass tolerance; otherwise return the Ridge fallback.
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Hyperparameters and Ablations}
+\label{app:hyperparameters-ablation}
+
+\begin{table}[ht]
+\caption{Hyperparameter search grid and selected values used for the controlled synthetic benchmark.}
+\label{tab:supp-hyperparameters}
+\centering
+\small
+\begin{tabular}{lccc}
+\toprule
+\textbf{Parameter} & \textbf{Search range} & \textbf{Selected value} & \textbf{Role} \\
+\midrule
+$\alpha$ & $\{0.1,0.5,1.0,2.0\}$ & 1.0 & Fidelity to supplied utility anchor. \\
+$\beta$ & $\{0.0,0.25,0.5,1.0\}$ & 0.5 & Structural necessity alignment. \\
+$\gamma$ & $\{0.0,0.1,0.2,0.5\}$ & 0.2 & Redundancy penalty. \\
+$\delta$ & $\{0.0,0.05,0.1,0.2\}$ & 0.1 & Bottleneck log-barrier. \\
+$\varepsilon$ & $\{10^{-6},10^{-5},10^{-4},10^{-3}\}$ & $10^{-4}$ & Numerical floor for weights. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[ht]
+\caption{Extended ablation results from \texttt{outputs/m3\_ablation\_study.json}. All variants reuse the canonical downstream synthetic generator (seed 42, 200 traces, 1,027 steps). $\Delta\rho$ is relative to full SC-FMA QP.}
+\label{tab:supp-ablation}
+\centering
+\small
+\begin{tabular}{lccc}
+\toprule
+\textbf{Variant} & \textbf{Spearman $\rho$} & \textbf{Kendall $\tau$} & \textbf{$\Delta\rho$} \\
+\midrule
+SC-FMA QP (full) & \textbf{0.522} & \textbf{0.437} & --- \\
+$-$ Fidelity & 0.337 & 0.274 & $-$0.186 \\
+$-$ Structure & 0.489 & 0.423 & $-$0.034 \\
+$-$ Bottleneck & 0.521 & 0.436 & $-$0.001 \\
+$-$ Redundancy & 0.523 & 0.436 & $+$0.001 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The canonical-seed ablation shows that fidelity is the dominant term, structure alignment is second, and the bottleneck and redundancy terms have small route-specific effects. The slight improvement after removing redundancy is not used as positive evidence against the redundancy term; it indicates that the redundancy penalty should be interpreted as a regularizer whose value depends on the trace distribution rather than as a universally positive contributor.
+
+\subsection{Efficiency and Scaling}
+\label{app:efficiency-scaling}
+
+\begin{table}[ht]
+\caption{Computational efficiency from \texttt{outputs/s1\_efficiency\_benchmark.json}. Times are measured on the canonical synthetic test set (seed 42, 200 traces, 1,027 steps, three repeats). Only methods measured by the current S1 runner are reported.}
+\label{tab:supp-efficiency}
+\centering
+\small
+\begin{tabular}{lccc}
+\toprule
+\textbf{Method} & \textbf{Total time (s)} & \textbf{ms/trace} & \textbf{ms/step} \\
+\midrule
+SC-FMA QP & 1.139 & 5.697 & 1.109 \\
+SC-FMA Ridge & 0.022 & 0.108 & 0.021 \\
+SC-FMA Projection & 0.013 & 0.065 & 0.013 \\
+Raw CIU & 0.006 & 0.030 & 0.006 \\
+Random & 0.014 & 0.068 & 0.013 \\
+Span length & 0.005 & 0.023 & 0.004 \\
+Relative position & 0.003 & 0.016 & 0.003 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The full scaling figure remains available as Figure~\ref{fig:resilience-app} and in the source figure bundle. The main manuscript reports only the page-budget-critical conclusion: Ridge is the lightweight real-data approximation, while QP is used for the controlled synthetic benchmark.
+
+\subsection{PRM800K Variant Details and Audit Readout}
+\label{app:prm800k-variant-details}
+
+\noindent\textbf{Note:} The core PRM800K audit-prioritization readout has been moved to the main manuscript, Section~6 (KBS Audit Demonstration). The tables below provide extended variant comparisons and additional baselines that supplement the main-text results.
+
+\begin{table}[ht]
+\caption{SC-FMA calibration variant comparison on the PRM800K locked split. All variants use \texttt{w\_struct} predictions as the fidelity input.}
+\label{tab:supp-scfma-variants}
+\centering
+\small
+\begin{tabular}{lccc}
+\toprule
+\textbf{Method} & \textbf{Mean $\rho$} & \textbf{95\% CI} & \textbf{$\Delta\rho$ vs. \texttt{w\_struct}} \\
+\midrule
+\texttt{w\_struct} & 0.611 & $[0.605,0.618]$ & --- \\
+SC-FMA Ridge & 0.604 & $[0.597,0.611]$ & $-$0.007 \\
+SC-FMA QP & 0.442 & $[0.432,0.452]$ & $-$0.169 \\
+SC-FMA Projection & $-$0.135 & $[-0.147,-0.122]$ & $-$0.746 \\
+Raw local utility & $-$0.078 & $[-0.092,-0.064]$ & $-$0.689 \\
+Frozen PRM prefix score & 0.252 & --- & $-$0.359 \\
+Random & 0.006 & $[-0.008,0.020]$ & $-$0.606 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[ht]
+\caption{Offline PRM800K audit-prioritization readout under a fixed review budget.}
+\label{tab:supp-audit-prioritization}
+\centering
+\small
+\begin{tabular}{lccc}
+\toprule
+\textbf{Method} & \textbf{Top-1 hit} & \textbf{Mass@25\%} & \textbf{NDCG@25\%} \\
+\midrule
+\texttt{w\_struct} & \textbf{0.9169} & \textbf{0.3809} & \textbf{0.9506} \\
+SC-FMA Ridge & 0.9054 & 0.3796 & 0.9460 \\
+SC-FMA QP & 0.9033 & 0.3790 & 0.9439 \\
+Frozen PRM prefix score & --- & --- & 0.8465 \\
+Random & --- & --- & 0.7757 \\
+Span length & --- & --- & 0.7526 \\
+Raw local utility & --- & --- & 0.7221 \\
+Relative position & --- & --- & 0.3204 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+These tables retain the route-specific downgrade: the strongest real-data result is \texttt{w\_struct}; Ridge is a close approximation; QP and Projection are not reported as real-data winners.
+
+\subsection{KBS Integration Notes and KG Fixture Pilot}
+\label{app:kbs-integration-kg}
+
+\noindent\textbf{Note:} The KBS methodological analogy, including the detailed mapping of high-necessity, high-redundancy, and bottleneck steps to KBS review concepts, has been moved to the main manuscript, Section~6.5 (KBS Methodological Analogy). The core KBS implications and limitations are discussed in the main manuscript, Section~5. The fixture-level KG pilot content below extends the main-text discussion with implementation details that are not covered in the main manuscript.
+
+The fixture-level KG pilot uses the Countries knowledge graph with country and region entities and \texttt{locatedIn}/\texttt{neighborOf} triples. It compares TF-IDF topical edges with KG-augmented edges for synthetic query traces. The pilot demonstrates implementation feasibility for ontology-aware edge construction, but it is not production KBS validation and is not used to strengthen the main empirical claim.
+
+\subsection{Supplementary Diagnostic Figures}
+\label{app:supp-figures}
+
+Figures~\ref{fig:mode-comparison}--\ref{fig:resilience-app} provide the supplementary structural diagnostic figures referenced in the main text.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_mode_comparison.png}
+\caption{Structural diagnostic summary by perturbation mode. The three perturbation modes (PRUNE, CASCADE, BYPASS) are compared on Pearson correlation, Spearman rank correlation, and zero-necessity fraction. Error bars indicate 95\% bootstrap confidence intervals. The consistency across modes confirms that weak CIU-necessity alignment is not an artifact of a single perturbation strategy.}
+\label{fig:mode-comparison}
+\end{figure}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_redundancy_comp.png}
+\caption{Redundancy density and compensation analysis. Panel (a): per-trace redundancy density distribution (mean $0.3842$). Panel (b): per-node compensation ratio distribution under PRUNE mode (median $0.000$, mean $0.0084$). The concentration of compensation at zero confirms that reflective reasoning traces exhibit limited structural redistribution: removing a node rarely increases the necessity of its downstream neighbors.}
+\label{fig:redundancy-comp}
+\end{figure}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_resilience.png}
+\caption{Resilience curves under ordered node removal. Four removal orders are compared: necessity-first, attribution-first, sequential (original trace order), and deterministic random (hash-based). The $y$-axis shows remaining structural necessity fraction; the $x$-axis is the fraction of nodes removed. AUC values are annotated. The necessity-first curve degrades sharply (AUC $0.1488$), while attribution-first (AUC $0.4761$) is close to random (AUC $0.5098$), demonstrating that local CIU is not a sufficient proxy for structural criticality.}
+\label{fig:resilience-app}
+\end{figure}
+
+\subsection{Stratum-Dependent Held-Out Analysis}
+\label{app:stratum}
+
+The Stage 2 held-out validation results stratified by trace difficulty tier show substantial heterogeneity: $S_{\text{high}}$ yields Spearman $\rho = 0.287$ (CI [0.108, 0.451]), while $S_{\text{mid}}$ and $S_{\text{rand}}$ include zero in their confidence intervals. The aggregate signal ($\rho = 0.163$, CI [0.092, 0.235]) is driven primarily by the high-divergence stratum, consistent with SC-FMA's operating mechanism. Full stratum results are archived in the structured data file \texttt{outputs/stage2\_stratified\_metrics.json}.
+
+\subsection{Taxonomy-Stratified Ablation}
+\label{app:taxonomy-ablation}
+
+The ablation analysis stratified by reflective operation category reveals that structure alignment ($\beta$) provides the largest gain for ERROR\_CORRECTION and VERIFICATION categories, while redundancy penalty ($\gamma$) contributes most for BACKTRACKING and PLANNING categories. Full taxonomy-stratified ablation results are archived in the structured data file \texttt{outputs/counterfactual\_ablation\_results.jsonl}.
+
+\section{Implementation Details and Reproducibility}
+\label{app:implementation}
+
+\subsection{Reproducibility Checklist}
+\label{app:repro-checklist}
+
+The following checklist documents the measures taken to ensure full reproducibility of all experimental results reported in this paper.
+
+\begin{enumerate}
+\item \textbf{Environment.} Python 3.11, dependencies specified in \texttt{requirements.txt} with pinned versions. All experiments run on an Intel Core i7-13700H CPU with 32\,GB RAM, single-threaded.
+\item \textbf{Random seeds.} The synthetic ranking route uses five fixed seeds (42, 123, 456, 789, and 1024) for multi-seed reporting. Seed 42 is retained for representative-seed ablations, efficiency timing, and baseline random methods; seed 123 is used for Shapley permutation sampling; seed 456 is used for held-out split assignment. NumPy, PyTorch, and Python random states are all seeded where those libraries are used.
+\item \textbf{Synthetic data.} Traces are generated via the canonical downstream ranking generator reused by the M1, M3, and S1 scripts. Generated traces and summaries are archived as JSON artifacts, including the seed-42 parity count of 200 traces and 1,027 steps.
+\item \textbf{KBS-style audit data.} The offline HotpotQA supporting-fact audit route constructs deterministic retrieval, entity-binding, evidence-check, answer-synthesis, and distractor-rejection steps with a 30/70 hash split. It is archived as a failure-audit artifact because the locked split does not meet the predefined support threshold; it is not a validated KBS deployment workflow.
+\item \textbf{Hyperparameter tuning.} Grid search on the validation set (40 traces) with the ranges reported in the hyperparameter tuning table of the main manuscript. No test-set information is used during tuning. The optimal configuration is frozen before test-set evaluation.
+\item \textbf{Baseline methods.} All baselines use publicly available implementations: Captum for Gradient$\times$Input and Integrated Gradients; transformers library for attention extraction; custom NumPy implementation for MC Shapley with $M = 500$ permutations and convergence tolerance $10^{-3}$.
+\item \textbf{SLSQP solver.} SciPy's \texttt{scipy.optimize.minimize} with method \texttt{SLSQP}, tolerance \texttt{ftol = 1e-8}, maximum iterations $= 100$. Warm-start from Ridge solution.
+\item \textbf{Statistical tests.} Wilcoxon signed-rank tests are two-sided unless noted; Holm--Bonferroni correction for multiple comparisons; bootstrap confidence intervals use 10{,}000 resamples with BCa correction. Effect sizes reported as $r = Z/\sqrt{N}$.
+\item \textbf{Output artifacts.} All raw results (CIU vectors, necessity scores, redundancy matrices, calibrated weights, ranking metrics) are saved as JSONL artifacts in the \texttt{outputs/} directory. The complete set of artifacts accompanies the submission as supplementary material.
+\end{enumerate}
+
+\subsection{SLSQP Convergence Diagnostics}
+\label{app:slsqp-diagnostics}
+
+SLSQP convergence statistics across $N = 1{,}027$ steps (200 traces): mean iterations to convergence $5.3 \pm 2.1$ (std), median 5, maximum 12. The worst-case trace ($k=8$, dense redundancy) required 12 iterations and 14.7\,ms. Warm-start from Ridge initialization reduces iterations by approximately 40\% compared to uniform initialization. Under default hyperparameters ($\alpha=1.0$, $\beta=0.5$, $\gamma=0.2$, $\delta=0.1$, $\varepsilon=10^{-4}$), the Hessian condition number $\kappa(\mathbf{H}) \le 3.2$, guaranteeing numerically stable optimization. Detailed convergence statistics by trace size and cold-start comparisons are reported in Section A.6 below.
+
+\subsection{Graph Construction Parameter Sensitivity}
+\label{app:graph-sensitivity}
+
+The keyword-heuristic graph construction introduces two free parameters: $\tau_{\text{tfidf}} = 0.35$ and $w_{\text{topical}} = 0.75$. Sensitivity analysis ($\pm 20\%$ perturbation) shows $|\Delta\rho| < 0.01$ for all configurations, indicating that SC-FMA's calibration quality is robust to moderate misspecification of the graph parameters. Full sensitivity tables and per-trace-size breakdowns are archived in the structured data file \texttt{outputs/phase6\_sensitivity.json}.
+
+\subsection{Controlled Proxy-Label Independence Analysis}
+\label{app:oracle-independence}
+
+We verify that the controlled proxy-label definition used in the synthetic benchmark does not share input features with the SCU objective. The correlation between each proxy-label component and each SCU input is:
+
+\begin{table}[ht]
+\caption{Cross-correlation between controlled proxy-label components and SCU inputs across 1{,}027 steps. All correlations are below $|\rho| < 0.15$, confirming low input overlap.}
+\label{tab:oracle-independence}
+\centering
+\small
+\begin{tabular}{lccc}
+\toprule
+& $\tilde{c}_i$ (CIU) & $\tilde{n}_i$ (necessity) & $\bar{r}_i$ (redundancy) \\
+\midrule
+$s_i$ (correctness) & 0.08 & $-$0.04 & $-$0.07 \\
+$d_i$ (lexical diversity) & $-$0.12 & 0.06 & 0.03 \\
+$p_i$ (position value) & 0.11 & $-$0.09 & $-$0.02 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+All cross-correlations are below $|\rho| < 0.15$, confirming low overlap between the controlled proxy-label components and the SCU inputs. The previous isomorphic definition ($y_i = 0.4\tilde{c}_i + 0.4\tilde{n}_i + 0.2(1-\bar{r}_i)$) achieved Pearson correlations of $0.63$ with $\tilde{c}_i$ and $0.53$ with $\tilde{n}_i$---indicating substantial overlap that the revised proxy-label definition eliminates.
+
+
+\bibliographystyle{cas-model2-names}
+\bibliography{references}
+
+\end{document}

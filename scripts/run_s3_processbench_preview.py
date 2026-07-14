@@ -17,6 +17,7 @@ import hashlib
 import json
 import sys
 import time
+from collections.abc import Sequence as RuntimeSequence
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -42,6 +43,7 @@ RIDGE_LAMBDA = 1.0
 DEV_MOD_UPPER = 30  # 30% dev, 70% locked (matches PRM800K v3.6 ratio)
 SALT = "processbench_s3_preview"
 MAX_SAMPLES = 2000  # Cap to keep runtime reasonable
+GUARD_REPORT_NAME = "s3_processbench_label_shape_guard.json"
 
 
 def make_sample_id(question: str, idx: int) -> str:
@@ -125,8 +127,7 @@ def compute_kendall(pred: np.ndarray, labels: np.ndarray) -> float:
     return float(tau) if np.isfinite(tau) else 0.0
 
 
-def load_processbench_direct() -> list:
-    """Load ProcessBench from directly downloaded JSON files."""
+def load_processbench_raw_rows() -> list[dict[str, Any]]:
     raw_path = PROJECT_ROOT / "outputs" / "s3_processbench_preview" / "raw_data" / "all_processbench.json"
     if not raw_path.exists():
         raise FileNotFoundError(
@@ -134,11 +135,26 @@ def load_processbench_direct() -> list:
             "Run scripts/download_processbench_direct.py first."
         )
     data = json.loads(raw_path.read_text(encoding="utf-8"))
+    if not isinstance(data, list):
+        raise TypeError(f"Expected a JSON array in {raw_path}")
+    return [row for row in data if isinstance(row, dict)]
+
+
+def load_processbench_direct(raw_rows: Sequence[Mapping[str, Any]] | None = None) -> list:
+    """Load ProcessBench from directly downloaded JSON files."""
+    if raw_rows is None:
+        raw_rows = load_processbench_raw_rows()
     records = []
-    for row in data:
+    for row in raw_rows:
         problem = str(row.get("problem", ""))
         steps = row.get("steps", [])
-        labels = row.get("label", [])
+        raw_labels = row.get("label", [])
+        labels = (
+            list(raw_labels)
+            if isinstance(raw_labels, RuntimeSequence)
+            and not isinstance(raw_labels, (str, bytes, bytearray))
+            else []
+        )
         is_correct = bool(row.get("final_answer_correct", True))
         generator = str(row.get("generator", "unknown"))
         source_file = str(row.get("_source_file", "unknown"))
@@ -178,6 +194,73 @@ def load_processbench_direct() -> list:
     return records
 
 
+def build_label_shape_audit(records: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    total = len(records)
+    step_label_records = 0
+    trace_level_records = 0
+    invalid_records = 0
+    examples: list[dict[str, Any]] = []
+
+    for record in records:
+        steps = record.get("steps", [])
+        labels = record.get("label")
+        if isinstance(labels, RuntimeSequence) and not isinstance(labels, (str, bytes, bytearray)):
+            if len(labels) == len(steps) and len(labels) > 0:
+                step_label_records += 1
+            else:
+                invalid_records += 1
+                examples.append(
+                    {
+                        "problem": record.get("problem", ""),
+                        "label_type": type(labels).__name__,
+                        "label_length": len(labels),
+                        "step_length": len(steps),
+                    }
+                )
+        else:
+            trace_level_records += 1
+            examples.append(
+                {
+                    "problem": record.get("problem", ""),
+                    "label_type": type(labels).__name__,
+                    "label_value_preview": labels,
+                    "step_length": len(steps),
+                }
+            )
+
+    step_label_available = total > 0 and step_label_records == total and invalid_records == 0
+    failure_reason = (
+        "per-step labels unavailable: raw ProcessBench labels are trace-level values, not a "
+        "step-wise ranking target"
+        if not step_label_available
+        else ""
+    )
+
+    return {
+        "dataset": "processbench/ProcessBench",
+        "total_records": total,
+        "step_label_records": step_label_records,
+        "trace_level_records": trace_level_records,
+        "invalid_records": invalid_records,
+        "step_label_available": step_label_available,
+        "claim_boundary": (
+            "step_ranking_validation"
+            if step_label_available
+            else "not_step_ranking_validation"
+        ),
+        "failure_reason": failure_reason,
+        "examples": examples[:5],
+        "validated_kbs_workflow": False,
+    }
+
+
+def write_guard_report(audit: Mapping[str, Any], output_dir: Path = OUTPUT_DIR) -> Path:
+    output_dir.mkdir(parents=True, exist_ok=True)
+    out_path = output_dir / GUARD_REPORT_NAME
+    out_path.write_text(json.dumps(dict(audit), indent=2, ensure_ascii=False), encoding="utf-8")
+    return out_path
+
+
 def main() -> None:
     print("=" * 80)
     print("S3: ProcessBench Cross-Distribution Preview (EXPLORATORY)")
@@ -188,17 +271,27 @@ def main() -> None:
 
     print("\nLoading ProcessBench from local download...")
     t0 = time.time()
-    all_records = load_processbench_direct()
+    all_records = load_processbench_raw_rows()
     elapsed_load = time.time() - t0
-    print(f"Loaded {len(all_records)} records in {elapsed_load:.1f}s")
+    print(f"Loaded {len(all_records)} raw records in {elapsed_load:.1f}s")
+
+    label_audit = build_label_shape_audit(all_records)
+    if not label_audit["step_label_available"]:
+        guard_path = write_guard_report(label_audit)
+        print("\nProcessBench labels are not step-wise; writing guard report only.")
+        print(f"Guard report saved to {guard_path}")
+        return
 
     # Cap samples
-    records = all_records[:MAX_SAMPLES] if MAX_SAMPLES > 0 else all_records
-    print(f"Using first {len(records)} records (cap={MAX_SAMPLES})")
+    raw_records = all_records[:MAX_SAMPLES] if MAX_SAMPLES > 0 else all_records
+    print(f"Using first {len(raw_records)} raw records (cap={MAX_SAMPLES})")
 
-    if not records:
+    if not raw_records:
         print("ERROR: No ProcessBench records loaded")
         return
+
+    records = load_processbench_direct(raw_records)
+    print(f"Converted {len(records)} records with per-step labels")
 
     # Show sample structure
     sample_rec = records[0]
