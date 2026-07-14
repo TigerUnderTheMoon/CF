@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="1600" height="1080" viewBox="0 0 1600 1080" role="img"
+     aria-labelledby="figure-title figure-desc">
+  <title id="figure-title">SCAR framework for budget-aware knowledge-graph maintenance</title>
+  <desc id="figure-desc">Artifacts from an intelligent information system are extracted into a dependency graph, serialized as policy-independent SCAR records, and consumed by several maintenance policies.</desc>
+
+  <defs>
+    <linearGradient id="scar-header" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#0b3b8f"/>
+      <stop offset="1" stop-color="#1558b0"/>
+    </linearGradient>
+    <linearGradient id="blue-wash" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fbfdff"/>
+      <stop offset="1" stop-color="#f2f7ff"/>
+    </linearGradient>
+    <linearGradient id="green-wash" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fbfffb"/>
+      <stop offset="1" stop-color="#f0f8ef"/>
+    </linearGradient>
+    <linearGradient id="orange-wash" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fffdfb"/>
+      <stop offset="1" stop-color="#fff5ed"/>
+    </linearGradient>
+    <marker id="arrow-blue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L12,6 L0,12 z" fill="#17499e"/>
+    </marker>
+    <marker id="arrow-green" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L12,6 L0,12 z" fill="#238147"/>
+    </marker>
+
+    <symbol id="i-network" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="3">
+        <path d="M10 45L20 16l25 8 9 27-28 3z"/>
+        <path d="M20 16l6 38M45 24L10 45M45 24L26 54"/>
+      </g>
+      <g fill="currentColor"><circle cx="10" cy="45" r="5"/><circle cx="20" cy="16" r="5"/><circle cx="45" cy="24" r="5"/><circle cx="54" cy="51" r="5"/><circle cx="26" cy="54" r="5"/></g>
+    </symbol>
+    <symbol id="i-document-search" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M13 7h28l10 10v25H13z"/><path d="M41 7v11h10M21 25h18M21 33h13"/>
+        <circle cx="43" cy="45" r="10"/><path d="M50 52l8 8"/>
+      </g>
+    </symbol>
+    <symbol id="i-database" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="3"><ellipse cx="32" cy="13" rx="22" ry="8"/><path d="M10 13v15c0 4 10 8 22 8s22-4 22-8V13M10 28v15c0 4 10 8 22 8s22-4 22-8V28"/></g>
+    </symbol>
+    <symbol id="i-shield" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M32 6c8 7 15 8 23 10v17c0 13-9 21-23 27C18 54 9 46 9 33V16c8-2 15-3 23-10z"/>
+        <circle cx="32" cy="23" r="4"/><circle cx="21" cy="39" r="4"/><circle cx="43" cy="39" r="4"/>
+        <path d="M29 26l-6 9M35 26l6 9M25 39h14"/>
+      </g>
+    </symbol>
+    <symbol id="i-clipboard" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="13" y="10" width="38" height="47" rx="3"/><path d="M24 10c0-5 16-5 16 0v6H24z"/>
+        <path d="M22 28h4M32 28h11M22 38h4M32 38h11M22 48h4M32 48h11"/>
+      </g>
+    </symbol>
+    <symbol id="i-graph" viewBox="0 0 90 64">
+      <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <path d="M8 45L28 20l24 25 28-28M28 20l9 35M52 45l-15 10"/>
+        <path d="M9 45h13M29 20h13M53 45h13M80 17h8" stroke-dasharray="5 4"/>
+      </g>
+      <g fill="#dbe5f5" stroke="currentColor" stroke-width="2"><circle cx="8" cy="45" r="7"/><circle cx="28" cy="20" r="7"/><circle cx="37" cy="55" r="7"/><circle cx="52" cy="45" r="7"/><circle cx="80" cy="17" r="7"/></g>
+    </symbol>
+    <symbol id="i-users" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="3"><circle cx="24" cy="22" r="9"/><circle cx="45" cy="25" r="7"/><path d="M8 53c1-12 7-18 16-18s15 6 16 18M38 53c0-8 4-13 11-14 6 1 9 6 9 14"/></g>
+    </symbol>
+    <symbol id="i-link" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"><path d="M26 39l-5 5c-11 11-25-3-14-14l10-10c8-8 17-3 19 2"/><path d="M38 25l5-5c11-11 25 3 14 14L47 44c-8 8-17 3-19-2"/><path d="M22 42l20-20"/></g>
+    </symbol>
+    <symbol id="i-document" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"><path d="M14 6h27l10 11v41H14z"/><path d="M41 6v12h10M22 29h20M22 38h20M22 47h15"/></g>
+    </symbol>
+    <symbol id="i-check" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="46" height="46" rx="5"/><path d="M20 33l8 8 17-21" stroke-width="5"/></g>
+    </symbol>
+    <symbol id="i-stamp" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"><path d="M22 30c0-8 4-12 4-18 0-8 12-8 12 0 0 6 4 10 4 18zM16 30h32v11H16zM11 48h42v9H11z"/></g>
+    </symbol>
+    <symbol id="i-tag" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"><path d="M8 10h24l24 24-22 22L10 32z"/><circle cx="22" cy="22" r="5"/></g>
+    </symbol>
+    <symbol id="i-toggle" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="3"><rect x="7" y="18" width="50" height="28" rx="14"/><circle cx="42" cy="32" r="10" fill="currentColor"/></g>
+    </symbol>
+    <symbol id="i-camera" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"><path d="M8 19h13l5-7h14l5 7h11v37H8z"/><circle cx="32" cy="37" r="12"/></g>
+    </symbol>
+    <symbol id="i-bridge" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 50h52M10 50V25M54 50V25M10 28c12 0 12-14 22-14s10 14 22 14M18 28v22M32 14v36M46 28v22M7 38h50"/></g>
+    </symbol>
+    <symbol id="i-redundancy" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 19a22 22 0 0 1 34 5"/><path d="M47 15l3 10-10-2M49 45a22 22 0 0 1-34-5"/><path d="M17 49l-3-10 10 2"/></g>
+    </symbol>
+    <symbol id="i-impact" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 32h18M27 32l15-16M27 32l15 16M42 16h13M42 48h13"/><path d="M49 10l6 6-6 6M49 42l6 6-6 6"/></g>
+    </symbol>
+    <symbol id="i-sink" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M32 8v30M21 28l11 11 11-11M10 45v10h44V45"/></g>
+    </symbol>
+    <symbol id="i-gauge" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M9 48a23 23 0 1 1 46 0"/><path d="M16 42l-5-3M21 28l-4-5M32 23v-7M43 28l4-5M48 42l5-3M32 46l13-14"/><circle cx="32" cy="46" r="4" fill="currentColor"/></g>
+    </symbol>
+    <symbol id="i-warning" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"><path d="M32 7L59 56H5z"/><path d="M32 23v17" stroke-width="5"/><circle cx="32" cy="48" r="2.5" fill="currentColor"/></g>
+    </symbol>
+    <symbol id="i-code" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M23 16L8 32l15 16M41 16l15 16-15 16M37 9L27 55"/></g>
+    </symbol>
+    <symbol id="i-shield-check" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M32 6c8 7 15 8 23 10v17c0 13-9 21-23 27C18 54 9 46 9 33V16c8-2 15-3 23-10z"/><path d="M20 33l8 8 16-20" stroke-width="5"/></g>
+    </symbol>
+    <symbol id="i-refresh" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 26a20 20 0 0 1 34-8l4 5M50 38a20 20 0 0 1-34 8l-4-5"/><path d="M51 12l1 11-11-1M13 52l-1-11 11 1"/></g>
+    </symbol>
+    <symbol id="i-fingerprint" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M14 28c0-24 36-24 36 0M9 29c0-31 46-31 46 0M20 29c0-16 24-16 24 0 0 12-3 22-8 30M26 29c0-8 12-8 12 0 0 12-2 20-5 29M15 36c1 10 0 16-3 21M21 38c1 8 0 15-2 21M49 37c-1 9-3 15-7 21"/></g>
+    </symbol>
+    <symbol id="i-lifering" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="4"><circle cx="32" cy="32" r="25"/><circle cx="32" cy="32" r="11"/><path d="M14 14l10 10M40 40l10 10M50 14L40 24M24 40L14 50"/></g>
+    </symbol>
+    <symbol id="i-target" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="4"><circle cx="28" cy="36" r="22"/><circle cx="28" cy="36" r="11"/><path d="M28 36L54 10M43 10h11v11"/></g>
+    </symbol>
+    <symbol id="i-bars" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"><path d="M8 56h49M14 48h9V34h-9zM29 48h9V22h-9zM44 48h9V10h-9z"/></g>
+    </symbol>
+    <symbol id="i-dots" viewBox="0 0 64 64">
+      <g fill="currentColor"><circle cx="17" cy="32" r="5"/><circle cx="32" cy="32" r="5"/><circle cx="47" cy="32" r="5"/></g><circle cx="32" cy="32" r="25" fill="none" stroke="currentColor" stroke-width="3"/>
+    </symbol>
+    <symbol id="i-search" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"><circle cx="27" cy="27" r="18"/><path d="M40 40l17 17"/></g>
+    </symbol>
+    <symbol id="i-calendar" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><rect x="8" y="13" width="48" height="43" rx="3"/><path d="M8 25h48M20 7v13M44 7v13M18 35h7M31 35h7M44 35h4M18 45h7M31 45h7M44 45h4"/></g>
+    </symbol>
+    <symbol id="i-building" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"><path d="M7 24l25-15 25 15zM11 29h42M14 29v22M25 29v22M39 29v22M50 29v22M7 56h50"/></g>
+    </symbol>
+  </defs>
+
+  <style>
+    text { font-family: "Arial", "Liberation Sans", sans-serif; fill: #172033; letter-spacing: 0; }
+    .title { font-size: 34px; font-weight: 700; }
+    .stage-title { font-size: 31px; font-weight: 700; }
+    .section-title { font-size: 28px; font-weight: 700; fill: #123f91; }
+    .label { font-size: 27px; }
+    .small { font-size: 27px; }
+    .white { fill: #ffffff; }
+    .blue { fill: #0f46a4; }
+    .green { fill: #176b35; }
+    .orange { fill: #c84b0a; }
+    .muted { fill: #5f6978; }
+    .icon-blue { color: #0f46a4; }
+    .icon-teal { color: #087588; }
+    .icon-purple { color: #5a3ba5; }
+    .icon-orange { color: #c84b0a; }
+    .icon-gold { color: #ad7600; }
+    .icon-green { color: #176b35; }
+    .divider { stroke: #aeb9ca; stroke-width: 2; }
+  </style>
+
+  <rect width="1600" height="1080" fill="#ffffff"/>
+
+  <g id="system-inputs">
+    <rect x="20" y="18" width="1560" height="165" rx="10" fill="#fbfcfe" stroke="#657182" stroke-width="2"/>
+    <text x="800" y="55" text-anchor="middle" class="title">Intelligent Information System</text>
+    <line x1="332" y1="72" x2="332" y2="166" class="divider"/>
+    <line x1="638" y1="72" x2="638" y2="166" class="divider"/>
+    <line x1="944" y1="72" x2="944" y2="166" class="divider"/>
+    <line x1="1250" y1="72" x2="1250" y2="166" class="divider"/>
+    <use xlink:href="#i-network" x="58" y="82" width="70" height="70" class="icon-blue"/>
+    <text x="148" y="105" class="label"><tspan x="148">Knowledge</tspan><tspan x="148" dy="31">Graphs</tspan></text>
+    <use xlink:href="#i-document-search" x="365" y="84" width="68" height="68" class="icon-teal"/>
+    <text x="453" y="105" class="label"><tspan x="453">RAG</tspan><tspan x="453" dy="31">Pipelines</tspan></text>
+    <use xlink:href="#i-database" x="670" y="84" width="68" height="68" class="icon-purple"/>
+    <text x="758" y="105" class="label"><tspan x="758">Databases</tspan><tspan x="758" dy="31" class="small">Relational / Graph</tspan></text>
+    <use xlink:href="#i-shield" x="972" y="83" width="70" height="70" class="icon-orange"/>
+    <text x="1060" y="92" class="label"><tspan x="1060">Provenance</tspan><tspan x="1060" dy="31">Metadata</tspan><tspan x="1060" dy="31" class="small">PROV-O &amp; logs</tspan></text>
+    <use xlink:href="#i-clipboard" x="1278" y="83" width="70" height="70" class="icon-gold"/>
+    <text x="1365" y="92" class="label"><tspan x="1365">Workflow Logs</tspan><tspan x="1365" dy="31" class="small">Actions and</tspan><tspan x="1365" dy="31" class="small">audit trails</tspan></text>
+  </g>
+
+  <g aria-hidden="true" fill="#7d8796"><rect x="791" y="184" width="18" height="14"/><path d="M776 198h48l-24 22z"/></g>
+
+  <g id="graph-extraction">
+    <rect x="20" y="220" width="1560" height="150" rx="10" fill="url(#blue-wash)" stroke="#0d51ca" stroke-width="2"/>
+    <text x="800" y="255" text-anchor="middle" class="stage-title blue">Dependency Graph Construction &amp; Artifact Extraction</text>
+    <line x1="230" y1="275" x2="230" y2="352" class="divider"/>
+    <line x1="500" y1="275" x2="500" y2="352" class="divider"/>
+    <line x1="770" y1="275" x2="770" y2="352" class="divider"/>
+    <line x1="1040" y1="275" x2="1040" y2="352" class="divider"/>
+    <line x1="1310" y1="275" x2="1310" y2="352" class="divider"/>
+    <use xlink:href="#i-graph" x="56" y="277" width="118" height="78" class="icon-blue"/>
+    <use xlink:href="#i-users" x="258" y="282" width="62" height="62" class="icon-blue"/><text x="340" y="307" class="label"><tspan x="340">Entity</tspan><tspan x="340" dy="31">Bindings</tspan></text>
+    <use xlink:href="#i-link" x="528" y="282" width="62" height="62" class="icon-blue"/><text x="610" y="307" class="label"><tspan x="610">Relation</tspan><tspan x="610" dy="31">Paths</tspan></text>
+    <use xlink:href="#i-document" x="798" y="282" width="62" height="62" class="icon-blue"/><text x="880" y="307" class="label"><tspan x="880">Evidence</tspan><tspan x="880" dy="31">Records</tspan></text>
+    <use xlink:href="#i-check" x="1068" y="282" width="62" height="62" class="icon-blue"/><text x="1150" y="307" class="label"><tspan x="1150">Verification</tspan><tspan x="1150" dy="31">Artifacts</tspan></text>
+    <use xlink:href="#i-stamp" x="1338" y="282" width="62" height="62" class="icon-blue"/><text x="1420" y="307" class="label"><tspan x="1420">Provenance</tspan><tspan x="1420" dy="31">Capture</tspan></text>
+  </g>
+
+  <g aria-hidden="true" fill="#7d8796"><rect x="791" y="371" width="18" height="14"/><path d="M776 385h48l-24 22z"/></g>
+
+  <g id="scar-contract">
+    <rect x="40" y="407" width="1110" height="393" rx="9" fill="#ffffff" stroke="#0d459f" stroke-width="3"/>
+    <path d="M49 407h1092a9 9 0 0 1 9 9v36H40v-36a9 9 0 0 1 9-9z" fill="url(#scar-header)"/>
+    <text x="595" y="439" text-anchor="middle" class="stage-title white">SCAR (Structural Contract for Audit Records)</text>
+    <line x1="40" y1="452" x2="1150" y2="452" stroke="#0d459f" stroke-width="2"/>
+    <line x1="40" y1="520" x2="1150" y2="520" stroke="#0d459f" stroke-width="2"/>
+    <line x1="40" y1="640" x2="1150" y2="640" stroke="#0d459f" stroke-width="2"/>
+    <line x1="40" y1="705" x2="1150" y2="705" stroke="#0d459f" stroke-width="2"/>
+
+    <text x="63" y="494" class="section-title">Identity &amp; Snapshot</text>
+    <use xlink:href="#i-tag" x="330" y="462" width="48" height="48" class="icon-blue"/><text x="392" y="494" class="label">Artifact ID</text>
+    <use xlink:href="#i-toggle" x="570" y="462" width="48" height="48" class="icon-blue"/><text x="632" y="494" class="label">Auditable Status</text>
+    <line x1="830" y1="461" x2="830" y2="511" stroke="#2963bb" stroke-width="2" stroke-dasharray="7 6"/>
+    <use xlink:href="#i-camera" x="855" y="461" width="50" height="50" class="icon-blue"/><text x="921" y="480" class="label"><tspan x="921">Graph Snapshot</tspan><tspan x="921" dy="30" class="small">Identifier &amp; digest</tspan></text>
+
+    <text x="63" y="551" class="section-title">Structural Fields</text>
+    <line x1="240" y1="530" x2="240" y2="628" class="divider"/>
+    <line x1="422" y1="558" x2="422" y2="632" class="divider"/>
+    <line x1="604" y1="558" x2="604" y2="632" class="divider"/>
+    <line x1="786" y1="558" x2="786" y2="632" class="divider"/>
+    <line x1="968" y1="558" x2="968" y2="632" class="divider"/>
+    <use xlink:href="#i-bridge" x="309" y="557" width="38" height="38" class="icon-blue"/><text x="331" y="606" text-anchor="middle" class="small"><tspan x="331">Bottleneck</tspan><tspan x="331" dy="28">Status</tspan></text>
+    <use xlink:href="#i-redundancy" x="491" y="557" width="38" height="38" class="icon-blue"/><text x="513" y="606" text-anchor="middle" class="small"><tspan x="513">Redundancy</tspan><tspan x="513" dy="28">Status</tspan></text>
+    <use xlink:href="#i-users" x="673" y="557" width="38" height="38" class="icon-blue"/><text x="695" y="606" text-anchor="middle" class="small"><tspan x="695">Redundancy</tspan><tspan x="695" dy="28">Group ID</tspan></text>
+    <use xlink:href="#i-impact" x="855" y="552" width="38" height="38" class="icon-blue"/><text x="877" y="578" text-anchor="middle" class="small"><tspan x="877">Downstream</tspan><tspan x="877" dy="28">Impact</tspan><tspan x="877" dy="28">Count</tspan></text>
+    <use xlink:href="#i-sink" x="1037" y="557" width="38" height="38" class="icon-blue"/><text x="1059" y="606" text-anchor="middle" class="small"><tspan x="1059">Sink Drop</tspan><tspan x="1059" dy="28">Count</tspan></text>
+
+    <text x="63" y="681" class="section-title">Risk &amp; Impact</text>
+    <use xlink:href="#i-gauge" x="280" y="648" width="48" height="48" class="icon-blue"/><text x="342" y="666" class="small"><tspan x="342">Raw Risk Score</tspan><tspan x="342" dy="28">Impact-normalized tie-breaker</tspan></text>
+    <line x1="675" y1="650" x2="675" y2="695" class="divider"/>
+    <use xlink:href="#i-warning" x="715" y="648" width="48" height="48" class="icon-blue"/><text x="777" y="666" class="small"><tspan x="777">At-risk Terminals</tspan><tspan x="777" dy="28">Identifier list</tspan></text>
+
+    <text x="63" y="744" class="section-title"><tspan x="63">Source &amp; Run</tspan><tspan x="63" dy="31">Metadata</tspan></text>
+    <line x1="300" y1="715" x2="300" y2="790" class="divider"/>
+    <line x1="470" y1="715" x2="470" y2="790" class="divider"/>
+    <line x1="640" y1="715" x2="640" y2="790" class="divider"/>
+    <line x1="810" y1="715" x2="810" y2="790" class="divider"/>
+    <line x1="980" y1="715" x2="980" y2="790" class="divider"/>
+    <use xlink:href="#i-code" x="366" y="711" width="38" height="38" class="icon-blue"/><text x="385" y="762" text-anchor="middle" class="small"><tspan x="385">Candidate</tspan><tspan x="385" dy="28">Rule</tspan></text>
+    <use xlink:href="#i-shield-check" x="536" y="711" width="38" height="38" class="icon-blue"/><text x="555" y="762" text-anchor="middle" class="small"><tspan x="555">Protocol</tspan><tspan x="555" dy="28">Version</tspan></text>
+    <use xlink:href="#i-database" x="706" y="714" width="38" height="38" class="icon-blue"/><text x="725" y="783" text-anchor="middle" class="small">Source Unit</text>
+    <use xlink:href="#i-refresh" x="876" y="714" width="38" height="38" class="icon-blue"/><text x="895" y="783" text-anchor="middle" class="small">Replicate</text>
+    <use xlink:href="#i-fingerprint" x="1046" y="714" width="38" height="38" class="icon-blue"/><text x="1065" y="763" text-anchor="middle" class="small"><tspan x="1065">Candidate-set</tspan><tspan x="1065" dy="28">Digest</tspan></text>
+  </g>
+
+  <g id="design-requirements">
+    <rect x="1180" y="430" width="380" height="320" rx="9" fill="#fbfffe" stroke="#167b78" stroke-width="2"/>
+    <text x="1370" y="468" text-anchor="middle" class="stage-title" fill="#08706e">Design Requirements</text>
+    <circle cx="1218" cy="505" r="17" fill="#167b78"/><text x="1218" y="515" text-anchor="middle" class="small white" font-weight="700">1</text><text x="1252" y="514" class="small">Snapshot Identity</text>
+    <line x1="1200" y1="531" x2="1540" y2="531" stroke="#46a4a1" stroke-width="1.5" stroke-dasharray="5 4"/>
+    <circle cx="1218" cy="558" r="17" fill="#167b78"/><text x="1218" y="568" text-anchor="middle" class="small white" font-weight="700">2</text><text x="1252" y="567" class="small">Candidate Reproducibility</text>
+    <line x1="1200" y1="584" x2="1540" y2="584" stroke="#46a4a1" stroke-width="1.5" stroke-dasharray="5 4"/>
+    <circle cx="1218" cy="611" r="17" fill="#167b78"/><text x="1218" y="621" text-anchor="middle" class="small white" font-weight="700">3</text><text x="1252" y="603" class="small"><tspan x="1252">Structural Role</tspan><tspan x="1252" dy="28">Preservation</tspan></text>
+    <line x1="1200" y1="640" x2="1540" y2="640" stroke="#46a4a1" stroke-width="1.5" stroke-dasharray="5 4"/>
+    <circle cx="1218" cy="667" r="17" fill="#167b78"/><text x="1218" y="677" text-anchor="middle" class="small white" font-weight="700">4</text><text x="1252" y="659" class="small"><tspan x="1252">Dependency</tspan><tspan x="1252" dy="28">Consequences</tspan></text>
+    <line x1="1200" y1="696" x2="1540" y2="696" stroke="#46a4a1" stroke-width="1.5" stroke-dasharray="5 4"/>
+    <circle cx="1218" cy="722" r="17" fill="#167b78"/><text x="1218" y="732" text-anchor="middle" class="small white" font-weight="700">5</text><text x="1252" y="714" class="small"><tspan x="1252">Policy-independent</tspan><tspan x="1252" dy="28">Consumption</tspan></text>
+    <path d="M1158 480l14-10v7h18v6h-18v7z" fill="#167b78"/><path d="M1178 480l-14-10v7h-18v6h18v7z" fill="#167b78"/>
+  </g>
+
+  <g id="contract-divider">
+    <line x1="105" y1="828" x2="560" y2="828" stroke="#707a88" stroke-width="2" stroke-dasharray="10 7"/>
+    <line x1="1040" y1="828" x2="1495" y2="828" stroke="#707a88" stroke-width="2" stroke-dasharray="10 7"/>
+    <text x="800" y="838" text-anchor="middle" class="stage-title muted" font-style="italic">Policy-independent Representation Contract</text>
+  </g>
+
+  <g id="policy-consumers">
+    <rect x="100" y="855" width="1400" height="96" rx="9" fill="url(#green-wash)" stroke="#3b8745" stroke-width="2"/>
+    <text x="124" y="888" class="section-title green"><tspan x="124">Policy Consumers</tspan><tspan x="124" dy="30" class="small">Shared SCAR</tspan></text>
+    <line x1="390" y1="868" x2="390" y2="938" stroke="#76a77d" stroke-width="2"/>
+    <line x1="670" y1="868" x2="670" y2="938" stroke="#76a77d" stroke-width="2"/>
+    <line x1="950" y1="868" x2="950" y2="938" stroke="#76a77d" stroke-width="2"/>
+    <line x1="1230" y1="868" x2="1230" y2="938" stroke="#76a77d" stroke-width="2"/>
+    <use xlink:href="#i-lifering" x="410" y="874" width="58" height="58" class="icon-green"/><text x="486" y="892" class="small green"><tspan x="486">Life-Saving First</tspan><tspan x="486" dy="30">(LSF)</tspan></text>
+    <use xlink:href="#i-target" x="690" y="874" width="58" height="58" class="icon-green"/><text x="766" y="892" class="small green"><tspan x="766">Greedy</tspan><tspan x="766" dy="30">Coverage</tspan></text>
+    <use xlink:href="#i-bars" x="970" y="874" width="58" height="58" class="icon-green"/><text x="1046" y="892" class="small green"><tspan x="1046">Flat Top-K /</tspan><tspan x="1046" dy="30">Centrality</tspan></text>
+    <use xlink:href="#i-dots" x="1250" y="874" width="58" height="58" class="icon-green"/><text x="1326" y="892" class="small green"><tspan x="1326">Additional</tspan><tspan x="1326" dy="30">Consumers</tspan></text>
+  </g>
+
+  <g aria-hidden="true" stroke="#238147" stroke-width="4" marker-end="url(#arrow-green)"><line x1="520" y1="952" x2="520" y2="969"/><line x1="800" y1="952" x2="800" y2="969"/><line x1="1080" y1="952" x2="1080" y2="969"/><line x1="1360" y1="952" x2="1360" y2="969"/></g>
+
+  <g id="illustrative-uses">
+    <rect x="100" y="973" width="1400" height="96" rx="9" fill="url(#orange-wash)" stroke="#e36a22" stroke-width="2"/>
+    <text x="124" y="993" class="small orange" font-weight="700"><tspan x="124">Illustrative</tspan><tspan x="124" dy="28">Downstream</tspan><tspan x="124" dy="28">Maintenance Uses</tspan></text>
+    <line x1="400" y1="985" x2="400" y2="1057" stroke="#e4a17c" stroke-width="2"/>
+    <line x1="620" y1="985" x2="620" y2="1057" stroke="#e4a17c" stroke-width="2"/>
+    <line x1="840" y1="985" x2="840" y2="1057" stroke="#e4a17c" stroke-width="2"/>
+    <line x1="1060" y1="985" x2="1060" y2="1057" stroke="#e4a17c" stroke-width="2"/>
+    <line x1="1280" y1="985" x2="1280" y2="1057" stroke="#e4a17c" stroke-width="2"/>
+    <use xlink:href="#i-search" x="415" y="993" width="50" height="50" class="icon-orange"/><text x="478" y="1010" class="small orange"><tspan x="478">Audit</tspan><tspan x="478" dy="30">Prioritization</tspan></text>
+    <use xlink:href="#i-clipboard" x="635" y="993" width="50" height="50" class="icon-orange"/><text x="698" y="1010" class="small orange"><tspan x="698">Review</tspan><tspan x="698" dy="30">Planning</tspan></text>
+    <use xlink:href="#i-calendar" x="855" y="993" width="50" height="50" class="icon-orange"/><text x="918" y="1010" class="small orange"><tspan x="918">Maintenance</tspan><tspan x="918" dy="30">Scheduling</tspan></text>
+    <use xlink:href="#i-building" x="1075" y="993" width="50" height="50" class="icon-orange"/><text x="1138" y="1010" class="small orange"><tspan x="1138">Governance</tspan><tspan x="1138" dy="30">Support</tspan></text>
+    <use xlink:href="#i-document" x="1295" y="993" width="50" height="50" class="icon-orange"/><text x="1358" y="1010" class="small orange"><tspan x="1358">Provenance &amp;</tspan><tspan x="1358" dy="30">Traceability</tspan></text>
+  </g>
+</svg>
